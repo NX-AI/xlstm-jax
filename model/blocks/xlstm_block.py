@@ -2,21 +2,22 @@
 # Maximilian Beck
 from dataclasses import dataclass
 
-import torch
-from torch import nn
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.ln import LayerNorm
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
-from .slstm.layer import sLSTMLayer, sLSTMLayerConfig
 
 
 @dataclass
 class xLSTMBlockConfig:
     mlstm: mLSTMLayerConfig | None = None
-    slstm: sLSTMLayerConfig | None = None
+    slstm: None = None
 
     feedforward: FeedForwardConfig | None = None
+    dtype: jnp.dtype = jnp.bfloat16
 
     # we initialize these with None to catch the case where they are not set
     _num_blocks: int = None
@@ -52,55 +53,56 @@ class xLSTMBlock(nn.Module):
     It contains the pre-LayerNorms and the skip connections.
     """
 
-    config_class = xLSTMBlockConfig
+    config: xLSTMBlockConfig
 
-    def __init__(self, config: xLSTMBlockConfig) -> None:
-        super().__init__()
-        self.config = config
-        embedding_dim = (
-            self.config.mlstm.embedding_dim
-            if self.config.mlstm is not None
-            else self.config.slstm.embedding_dim
-        )
-
-        self.xlstm_norm = LayerNorm(ndim=embedding_dim, weight=True, bias=False)
-
+    @nn.compact
+    def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
+        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm")
         if self.config.mlstm is not None:
-            self.xlstm = mLSTMLayer(config=self.config.mlstm)
+            xlstm = mLSTMLayer(config=self.config.mlstm)
         elif self.config.slstm is not None:
-            self.xlstm = sLSTMLayer(config=self.config.slstm)
+            # xlstm = sLSTMLayer(config=self.config.slstm)
+            raise NotImplementedError("sLSTM not implemented in JAX yet.")
         else:
             raise ValueError("Either mlstm or slstm must be provided")
+        x = x + xlstm(xlstm_norm(x), **kwargs)
 
         if self.config.feedforward is not None:
-            self.ffn_norm = LayerNorm(
-                ndim=self.config.feedforward.embedding_dim, weight=True, bias=False
+            ffn_norm = LayerNorm(
+                weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm"
             )
-            self.ffn = create_feedforward(config=self.config.feedforward)
-        else:
-            self.ffn_norm = None
-            self.ffn = None
-
-        self.reset_parameters()
-
-    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
-        x = x + self.xlstm(self.xlstm_norm(x), **kwargs)
-        if self.ffn is not None:
-            x = x + self.ffn(self.ffn_norm(x), **kwargs)
+            ffn = create_feedforward(config=self.config.feedforward)
+            x = x + ffn(ffn_norm(x), **kwargs)
         return x
 
-    def step(
-        self, x: torch.Tensor, **kwargs
-    ) -> tuple[torch.Tensor, dict[str, tuple[torch.Tensor, ...]]]:
-        x_xlstm, xlstm_state = self.xlstm.step(self.xlstm_norm(x), **kwargs)
-        x = x + x_xlstm
-        if self.ffn is not None:
-            x = x + self.ffn(self.ffn_norm(x), **kwargs)
-        return x, xlstm_state
-
-    def reset_parameters(self) -> None:
-        self.xlstm.reset_parameters()
-        self.xlstm_norm.reset_parameters()
-        if self.ffn is not None:
-            self.ffn.reset_parameters()
-            self.ffn_norm.reset_parameters()
+def test_xLSTMBlock():
+    config = xLSTMBlockConfig(
+        mlstm=mLSTMLayerConfig(
+            conv1d_kernel_size=4,
+            qkv_proj_blocksize=4,
+            num_heads=4,
+            proj_factor=2.0,
+            embedding_dim=16,
+            bias=True,
+            dropout=0.2,
+            context_length=128,
+            dtype=jnp.bfloat16,
+        ),
+        _num_blocks=1,
+        _block_idx=0,
+        feedforward=FeedForwardConfig(
+            proj_factor=4.0,
+            embedding_dim=16,
+            dropout=0.2,
+            dtype=jnp.bfloat16,
+        ),
+    )
+    rng = jax.random.PRNGKey(0)
+    inp_rng, model_rng, dp_rng = jax.random.split(rng, 3)
+    block = xLSTMBlock(config=config)
+    input_tensor = jax.random.normal(inp_rng, (2, 128, 16), dtype=jnp.bfloat16)
+    params = block.init(model_rng, input_tensor)
+    output_tensor = block.apply(params, input_tensor, rngs={"dropout": dp_rng}, train=True)
+    assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
+    assert output_tensor.dtype == jnp.bfloat16, f"Expected dtype {jnp.bfloat16}, got {output_tensor.dtype}"
+    print("All tests for xLSTMBlock passed successfully.")

@@ -2,20 +2,20 @@
 # Maximilian Beck
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Literal, Any
+from typing import Literal, Optional, Union
 
-import jax
-from flax import linen as nn
-import jax.numpy as jnp
+import torch
+from torch import nn
 
-from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
+from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
+from .blocks.slstm.block import sLSTMBlock, sLSTMBlockConfig
 from .components.ln import LayerNorm
 
 
 @dataclass
 class xLSTMBlockStackConfig:
     mlstm_block: mLSTMBlockConfig | None = None
-    slstm_block: None = None
+    slstm_block: sLSTMBlockConfig | None = None
 
     context_length: int = -1
     num_blocks: int = 1
@@ -23,7 +23,6 @@ class xLSTMBlockStackConfig:
     add_post_blocks_norm: bool = True
     bias: bool = False
     dropout: float = 0.0
-    dtype: Any = jnp.bfloat16
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.
@@ -43,9 +42,7 @@ class xLSTMBlockStackConfig:
         block_map = [0] * self.num_blocks
 
         for slstm_position_idx in self.slstm_at:
-            assert (
-                slstm_position_idx < self.num_blocks
-            ), f"Invalid slstm position {slstm_position_idx}"
+            assert slstm_position_idx < self.num_blocks, f"Invalid slstm position {slstm_position_idx}"
             block_map[slstm_position_idx] = 1
 
         block_map_str = ",".join(map(str, block_map))
@@ -78,16 +75,17 @@ class xLSTMBlockStackConfig:
 
 
 class xLSTMBlockStack(nn.Module):
-    config: xLSTMBlockStackConfig
+    config_class = xLSTMBlockStackConfig
 
-    @nn.compact
-    def __call__(self, x: jnp.ndarray, **kwargs) -> jnp.ndarray:
-        blocks = self._create_blocks(config=self.config)
-        for block in blocks:
-            x = block(x, **kwargs)
-        if self.config.add_post_blocks_norm:
-            x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
-        return x
+    def __init__(self, config: xLSTMBlockStackConfig):
+        super().__init__()
+        self.config = config
+
+        self.blocks = self._create_blocks(config=config)
+        if config.add_post_blocks_norm:
+            self.post_blocks_norm = LayerNorm(ndim=config.embedding_dim)
+        else:
+            self.post_blocks_norm = nn.Identity()
 
     def _create_blocks(self, config: xLSTMBlockStackConfig):
         blocks = []
@@ -103,46 +101,35 @@ class xLSTMBlockStack(nn.Module):
                 if hasattr(config, "_block_idx"):
                     config._block_idx = block_idx
                     config.__post_init__()
-                # blocks.append(sLSTMBlock(config=config))
-                raise NotImplementedError("sLSTM not implemented in JAX yet.")
+                blocks.append(sLSTMBlock(config=config))
             else:
                 raise ValueError(f"Invalid block type {block_type_int}")
 
-        return blocks
+        return nn.ModuleList(blocks)
 
+    def reset_parameters(self) -> None:
+        for block in self.blocks:
+            block.reset_parameters()
+        if not isinstance(self.post_blocks_norm, nn.Identity):
+            self.post_blocks_norm.reset_parameters()
 
-def test_xLSTMBlockStack():
-    config = xLSTMBlockStackConfig(
-        mlstm_block=mLSTMBlockConfig(
-            mlstm=mLSTMLayerConfig(
-                conv1d_kernel_size=4,
-                qkv_proj_blocksize=4,
-                num_heads=4,
-                proj_factor=2.0,
-                embedding_dim=16,
-                bias=True,
-                dropout=0.0,
-                context_length=128,
-                dtype=jnp.bfloat16,
-            ),
-            _num_blocks=8,
-            _block_idx=0,
-        ),
-        context_length=128,
-        num_blocks=8,
-        embedding_dim=16,
-        add_post_blocks_norm=True,
-        bias=True,
-        dropout=0.0,
-        dtype=jnp.bfloat16,
-        slstm_at=[],
-    )
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng, dp_rng = jax.random.split(rng, 3)
-    block = xLSTMBlockStack(config=config)
-    input_tensor = jax.random.normal(inp_rng, (2, 128, 16), dtype=jnp.bfloat16)
-    params = block.init(model_rng, input_tensor)
-    output_tensor = block.apply(params, input_tensor, rngs={"dropout": dp_rng}, train=True)
-    assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
-    assert output_tensor.dtype == jnp.bfloat16
-    print("All tests for xLSTMBlockStack passed successfully.")
+    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
+        for block in self.blocks:
+            x = block(x, **kwargs)
+
+        x = self.post_blocks_norm(x)
+
+        return x
+
+    def step(
+        self, x: torch.Tensor, state: dict[str, dict[str, tuple[torch.Tensor, ...]]] = None
+    ) -> tuple[torch.Tensor, dict[str, dict[str, tuple[torch.Tensor, ...]]]]:
+        if state is None:
+            state = {}
+
+        for block_idx, block in enumerate(self.blocks):
+            x, state[f"block_{block_idx}"] = block.step(x, **state.get(f"block_{block_idx}", {}))
+
+        x = self.post_blocks_norm(x)
+
+        return x, state

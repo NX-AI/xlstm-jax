@@ -8,11 +8,11 @@ from flax import linen as nn
 class LayerNorm(nn.Module):
     """LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False."""
 
-    ndim: int = -1  # Unused in JAX
     weight: bool = True
     bias: bool = False
     eps: float = 1e-5
     residual_weight: bool = True
+    dtype: jnp.dtype = jnp.bfloat16
 
     @nn.compact
     def __call__(self, x: jax.Array) -> jax.Array:
@@ -20,24 +20,25 @@ class LayerNorm(nn.Module):
             epsilon=self.eps,
             use_bias=self.bias,
             use_scale=self.weight,
-            dtype=x.dtype,
+            dtype=self.dtype,
         )(x)
 
 
-MultiHeadLayerNorm = nn.vmap(
-    LayerNorm,
-    variable_axes={"params": None},
-    in_axes=1,
-    out_axes=1,
-    split_rngs={"params": False},
-)
+def MultiHeadLayerNorm(*args, axis: int = 1, **kwargs):
+    return nn.vmap(
+        LayerNorm,
+        variable_axes={"params": None},
+        in_axes=axis,
+        out_axes=axis,
+        split_rngs={"params": False},
+    )(*args, **kwargs)
 
 
-if __name__ == "__main__":
-    rng = jax.random.PRNGKey(0)
+def test_ln():
+    rng = jax.random.PRNGKey(42)
     inp_rng, model_rng = jax.random.split(rng)
     x = jax.random.normal(inp_rng, (2, 3, 4))
-    model = LayerNorm()
+    model = LayerNorm(dtype=jnp.float32)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
     assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
@@ -45,10 +46,10 @@ if __name__ == "__main__":
     assert y.shape == (2, 3, 4)
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
-    print("LayerNorm test successful")
+    print("All tests for LayerNorm passed successfully.")
 
     x = jax.random.normal(inp_rng, (2, 8, 3, 4))
-    model = MultiHeadLayerNorm()
+    model = MultiHeadLayerNorm(dtype=jnp.float32)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
     assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
@@ -56,4 +57,4 @@ if __name__ == "__main__":
     assert y.shape == (2, 8, 3, 4)
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
-    print("MultiHeadLayerNorm test successful")
+    print("All tests for MultiHeadLayerNorm passed successfully.")

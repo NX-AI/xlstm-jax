@@ -51,12 +51,13 @@ class GatedFeedForward(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        gate_preact, up_proj = nn.Dense(
+        up_out = nn.Dense(
             features=2 * self.config._proj_up_dim,
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up",
-        )(x).split(self.config._proj_up_dim, axis=-1)
+        )(x)
+        gate_preact, up_proj = jnp.split(up_out, 2, axis=-1)
         gate_act = get_act_fn(self.config.act_fn)(gate_preact)
         out = nn.Dense(
             features=self.config.embedding_dim,

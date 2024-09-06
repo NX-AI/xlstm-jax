@@ -2,8 +2,9 @@
 # Maximilian Beck
 from dataclasses import dataclass, field
 
-import torch
-from torch import nn
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 from ...components.init import bias_linspace_init_
 from ...components.ln import MultiHeadLayerNorm
@@ -22,138 +23,49 @@ class mLSTMCellConfig:
     backend: mLSTMBackendNameAndKwargs = field(
         default_factory=lambda: mLSTMBackendNameAndKwargs(name="parallel_stabilized")
     )
+    dtype: jnp.dtype = jnp.bfloat16
 
 
 class mLSTMCell(nn.Module):
-    config_class = mLSTMCellConfig
+    config: mLSTMCellConfig
 
-    def __init__(self, config: mLSTMCellConfig):
-        super().__init__()
-        self.config = config
+    @nn.compact
+    def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, **kwargs):
+        B, S, _ = q.shape
+        qkv = jnp.concatenate([q, k, v], axis=-1)
 
-        self.backend_fn = create_mlstm_backend(self.config)
-        self.backend_fn_step = recurrent_step_stabilized_simple
+        # compute input and forget gate pre-activations  - why taking all heads as input?
+        igate_preact = nn.Dense(
+            features=self.config.num_heads,
+            dtype=self.config.dtype,
+            bias_init=nn.initializers.normal(stddev=0.1),
+            kernel_init=nn.initializers.zeros,
+            name="i_gate",
+        )(qkv)
+        fgate_preact = nn.Dense(
+            features=self.config.num_heads,
+            dtype=self.config.dtype,
+            bias_init=bias_linspace_init_(3.0, 6.0),
+            kernel_init=nn.initializers.zeros,
+            name="f_gate",
+        )(qkv)
 
-        self.igate = nn.Linear(3 * config.embedding_dim, config.num_heads)
-        self.fgate = nn.Linear(3 * config.embedding_dim, config.num_heads)
+        q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
+        k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
+        v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
 
-        self.outnorm = MultiHeadLayerNorm(
-            ndim=config.embedding_dim, weight=True, bias=False
-        )
+        q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+        k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+        v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
 
-        self.reset_parameters()
+        igate_preact = igate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
+        fgate_preact = fgate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
 
-    def forward(
-        self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, **kwargs
-    ) -> torch.Tensor:
-        B, S, _ = q.shape  # (B, S, H)
+        backend_fn = create_mlstm_backend(self.config)
+        h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
-        if_gate_input = torch.cat([q, k, v], dim=-1)
-        q = q.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        k = k.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        v = v.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-
-        q = q.transpose(1, 2)  # (B, NH, S, DH)
-        k = k.transpose(1, 2)  # (B, NH, S, DH)
-        v = v.transpose(1, 2)  # (B, NH, S, DH)
-
-        # compute input and forget gate pre-activations
-        igate_preact = self.igate(if_gate_input)  # (B, S, NH)
-        igate_preact = igate_preact.transpose(-1, -2).unsqueeze(-1)  # (B, NH, S, 1)
-        fgate_preact = self.fgate(if_gate_input)  # (B, S, NH)
-        fgate_preact = fgate_preact.transpose(-1, -2).unsqueeze(-1)  # (B, NH, S, 1)#
-
-        h_state = self.backend_fn(q, k, v, igate_preact, fgate_preact)  # (B, NH, S, DH)
-
-        h_state_norm = self.outnorm(h_state)  # (B, NH, S, DH)
-        h_state_norm = h_state_norm.transpose(1, 2).reshape(
-            B, S, -1
-        )  # (B, NH, S, DH) -> (B, S, NH, DH) -> (B, S, H)
-
+        h_state_norm = MultiHeadLayerNorm(
+            weight=True, bias=False, dtype=self.config.dtype, name="out_norm"
+        )(h_state)
+        h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
         return h_state_norm
-
-    def step(
-        self,
-        q: torch.Tensor,
-        k: torch.Tensor,
-        v: torch.Tensor,
-        mlstm_state: tuple[torch.Tensor, torch.Tensor, torch.Tensor] = None,
-        **kwargs,
-    ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
-        B, S, _ = q.shape  # (B, S, H)
-        assert (
-            S == 1
-        ), f"mLSTMCell.step only supports sequence length S=1, but got S={S}."
-
-        if_gate_input = torch.cat([q, k, v], dim=-1)
-        q = q.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        k = k.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        v = v.view(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-
-        _, _, NH, DH = q.shape
-
-        q = q.transpose(1, 2)  # (B, NH, S, DH)
-        k = k.transpose(1, 2)  # (B, NH, S, DH)
-        v = v.transpose(1, 2)  # (B, NH, S, DH)
-
-        # compute input and forget gate pre-activations
-        igate_preact = self.igate(if_gate_input)  # (B, S, NH)
-        igate_preact = igate_preact.transpose(-1, -2).unsqueeze(-1)  # (B, NH, S, 1)
-        fgate_preact = self.fgate(if_gate_input)  # (B, S, NH)
-        fgate_preact = fgate_preact.transpose(-1, -2).unsqueeze(-1)  # (B, NH, S, 1)
-
-        if mlstm_state is None:
-            c_state = torch.zeros(size=(B, NH, DH, DH), device=q.device, dtype=q.dtype)
-            n_state = torch.zeros(size=(B, NH, DH, 1), device=q.device, dtype=q.dtype)
-            m_state = torch.zeros(size=(B, NH, 1, 1), device=q.device, dtype=q.dtype)
-        else:
-            c_state, n_state, m_state = mlstm_state
-            c_state = c_state.to(device=q.device, dtype=q.dtype)
-            n_state = n_state.to(device=q.device, dtype=q.dtype)
-            m_state = m_state.to(device=q.device, dtype=q.dtype)
-
-        assert c_state.shape == (
-            B,
-            NH,
-            DH,
-            DH,
-        ), f"Expected c_state shape {(B, NH, DH, DH)}, but got {c_state.shape}."
-        assert n_state.shape == (
-            B,
-            NH,
-            DH,
-            1,
-        ), f"Expected n_state shape {(B, NH, DH, 1)}, but got {n_state.shape}."
-        assert m_state.shape == (
-            B,
-            NH,
-            1,
-            1,
-        ), f"Expected m_state shape {(B, NH, 1, 1)}, but got {m_state.shape}."
-
-        h_state, mlstm_state = self.backend_fn_step(
-            c_state=c_state,
-            n_state=n_state,
-            m_state=m_state,
-            q=q,
-            k=k,
-            v=v,
-            igate_preact=igate_preact,
-            fgate_preact=fgate_preact,
-        )  # (B, NH, 1 DH), ((B, NH, DH, DH), (B, NH, DH, 1), (B, NH, 1, 1))
-
-        h_state_norm = self.outnorm(h_state)  # (B, NH, S, DH)
-        h_state_norm = h_state_norm.transpose(1, 2).reshape(
-            B, S, -1
-        )  # (B, NH, S, DH) -> (B, S, NH, DH) -> (B, S, H)
-
-        return h_state_norm, mlstm_state
-
-    def reset_parameters(self):
-        self.outnorm.reset_parameters()
-        # forget gate initialization
-        torch.nn.init.zeros_(self.fgate.weight)
-        bias_linspace_init_(self.fgate.bias, start=3.0, end=6.0)
-        # input gate initialization
-        torch.nn.init.zeros_(self.igate.weight)
-        torch.nn.init.normal_(self.igate.bias, mean=0.0, std=0.1)

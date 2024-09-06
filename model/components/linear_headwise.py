@@ -83,7 +83,7 @@ class LinearHeadwiseExpand(nn.Module):
         )
 
 
-if __name__ == "__main__":
+def test_linear_headwise():
     config = LinearHeadwiseExpandConfig(in_features=4, num_heads=2, expand_factor_up=1)
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng = jax.random.split(rng)
@@ -101,4 +101,4 @@ if __name__ == "__main__":
     assert not jnp.any(diff[0, 1:]), "Output tensor changed unexpectedly."
     assert not jnp.any(diff[0, 0, :2]), "Output tensor changed unexpectedly."
     assert jnp.all(diff[0, 0, 3:]), "Output tensor changed unexpectedly."
-    print("All tests passed successfully.")
+    print("All tests for LinearHeadwiseExpand passed successfully.")

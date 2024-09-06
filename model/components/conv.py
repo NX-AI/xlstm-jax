@@ -59,7 +59,7 @@ class CausalConv1d(nn.Module):
         return x
 
 
-if __name__ == "__main__":
+def test_causal_conv1d():
     config = CausalConv1dConfig(feature_dim=3, kernel_size=4, channel_mixing=False)
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng = jax.random.split(rng)
@@ -88,4 +88,4 @@ if __name__ == "__main__":
     assert not diff[
         1
     ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    print("All tests passed successfully.")
+    print("All tests for CausalConv1D passed successfully.")

@@ -2,11 +2,11 @@
 # Maximilian Beck
 from dataclasses import dataclass, field
 
-import torch
-from torch import nn
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 from ...components.conv import CausalConv1d, CausalConv1dConfig
-from ...components.init import small_init_init_, wang_init_
 from ...components.linear_headwise import (
     LinearHeadwiseExpand,
     LinearHeadwiseExpandConfig,
@@ -27,6 +27,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     bias: bool = False
     dropout: float = 0.0
     context_length: int = -1
+    dtype: jnp.dtype = jnp.bfloat16
 
     _num_blocks: int = 1
     _inner_embedding_dim: int = None
@@ -42,152 +43,85 @@ class mLSTMLayerConfig(UpProjConfigMixin):
 
 
 class mLSTMLayer(nn.Module):
-    config_class = mLSTMLayerConfig
+    config: mLSTMLayerConfig
 
-    def __init__(self, config: mLSTMLayerConfig):
-        super().__init__()
-        self.config = config
+    @nn.compact
+    def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
+        B, S, _ = x.shape
 
-        self.proj_up = nn.Linear(
-            in_features=self.config.embedding_dim,
-            out_features=2 * self.config._inner_embedding_dim,
-            bias=self.config.bias,
-        )
+        # up-projection
+        x_inner = nn.Dense(
+            features=2 * self.config._inner_embedding_dim,
+            dtype=self.config.dtype,
+            name="proj_up",
+        )(x)
+        x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
 
-        num_proj_heads = round(
-            self.config._inner_embedding_dim // self.config.qkv_proj_blocksize
-        )
-        self.q_proj = LinearHeadwiseExpand(
-            config=LinearHeadwiseExpandConfig(
-                in_features=self.config._inner_embedding_dim,
-                num_heads=num_proj_heads,
-                bias=self.config.bias,
-            )
-        )
-        self.k_proj = LinearHeadwiseExpand(
-            config=LinearHeadwiseExpandConfig(
-                in_features=self.config._inner_embedding_dim,
-                num_heads=num_proj_heads,
-                bias=self.config.bias,
-            )
-        )
-        self.v_proj = LinearHeadwiseExpand(
-            config=LinearHeadwiseExpandConfig(
-                in_features=self.config._inner_embedding_dim,
-                num_heads=num_proj_heads,
-                bias=self.config.bias,
-            )
-        )
-
-        self.conv1d = CausalConv1d(
+        # mlstm branch
+        x_mlstm_conv = CausalConv1d(
             config=CausalConv1dConfig(
                 feature_dim=self.config._inner_embedding_dim,
                 kernel_size=self.config.conv1d_kernel_size,
-            )
-        )
-        self.conv_act_fn = nn.SiLU()
-        self.mlstm_cell = mLSTMCell(config=self.config.mlstm_cell)
-        self.ogate_act_fn = nn.SiLU()
+            ),
+            name="conv1d",
+        )(x_mlstm)
+        x_mlstm_conv_act = nn.swish(x_mlstm_conv)
 
-        self.learnable_skip = nn.Parameter(
-            torch.ones(self.config._inner_embedding_dim, requires_grad=True)
-        )
+        qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
+            config=LinearHeadwiseExpandConfig(
+                in_features=self.config._inner_embedding_dim,
+                num_heads=self.config.num_heads,
+                bias=self.config.bias,
+            ),
+            name="qk_proj",
+        )(x_mlstm_conv_act)
+        q, k = qk[0], qk[1]
+        v = LinearHeadwiseExpand(
+            config=LinearHeadwiseExpandConfig(
+                in_features=self.config._inner_embedding_dim,
+                num_heads=self.config.num_heads,
+                bias=self.config.bias,
+            ),
+            name="v_proj",
+        )(x_mlstm)
 
-        self.proj_down = nn.Linear(
-            in_features=self.config._inner_embedding_dim,
-            out_features=self.config.embedding_dim,
-            bias=self.config.bias,
-        )
-        self.dropout = nn.Dropout(self.config.dropout)
-        self.reset_parameters()
-
-    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
-        B, S, _ = x.shape
-
-        # up-projection
-        x_inner = self.proj_up(x)
-        x_mlstm, z = torch.split(
-            x_inner, split_size_or_sections=self.config._inner_embedding_dim, dim=-1
-        )
-
-        # mlstm branch
-        x_mlstm_conv = self.conv1d(x_mlstm)
-        x_mlstm_conv_act = self.conv_act_fn(x_mlstm_conv)
-
-        q = self.q_proj(x_mlstm_conv_act)
-        k = self.k_proj(x_mlstm_conv_act)
-        v = self.v_proj(x_mlstm)
-
-        h_tilde_state = self.mlstm_cell(q=q, k=k, v=v)
-
-        h_tilde_state_skip = h_tilde_state + (self.learnable_skip * x_mlstm_conv_act)
+        h_tilde_state = mLSTMCell(config=self.config.mlstm_cell)(q=q, k=k, v=v)
+        learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
+        learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
+        h_tilde_state_skip = h_tilde_state + (learnable_skip * x_mlstm_conv_act)
 
         # output / z branch
-        h_state = h_tilde_state_skip * self.ogate_act_fn(z)
+        h_state = h_tilde_state_skip * nn.swish(z)
 
         # down-projection
-        y = self.dropout(self.proj_down(h_state))
+        y = nn.Dense(
+            features=self.config.embedding_dim,
+            dtype=self.config.dtype,
+            name="proj_down",
+        )(h_state)
+        y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)
         return y
 
-    def step(
-        self,
-        x: torch.Tensor,
-        mlstm_state: tuple[torch.Tensor, torch.Tensor, torch.Tensor] = None,
-        conv_state: tuple[torch.Tensor] = None,
-    ) -> tuple[torch.Tensor, dict[str, tuple[torch.Tensor, ...]]]:
-        B, S, _ = x.shape
 
-        # up-projection
-        x_inner = self.proj_up(x)
-        x_mlstm, z = torch.split(
-            x_inner, split_size_or_sections=self.config._inner_embedding_dim, dim=-1
-        )
-
-        # mlstm branch
-        x_mlstm_conv, conv_state = self.conv1d.step(x_mlstm, conv_state=conv_state)
-        x_mlstm_conv_act = self.conv_act_fn(x_mlstm_conv)
-
-        q = self.q_proj(x_mlstm_conv_act)
-        k = self.k_proj(x_mlstm_conv_act)
-        v = self.v_proj(x_mlstm)
-
-        h_tilde_state, mlstm_state = self.mlstm_cell.step(
-            q=q, k=k, v=v, mlstm_state=mlstm_state
-        )
-
-        h_tilde_state_skip = h_tilde_state + (self.learnable_skip * x_mlstm_conv_act)
-
-        # output / z branch
-        h_state = h_tilde_state_skip * self.ogate_act_fn(z)
-
-        # down-projection
-        y = self.dropout(self.proj_down(h_state))
-        return y, {"mlstm_state": mlstm_state, "conv_state": conv_state}
-
-    def reset_parameters(self):
-        # init inproj
-        small_init_init_(self.proj_up.weight, dim=self.config.embedding_dim)
-        if self.proj_up.bias is not None:
-            nn.init.zeros_(self.proj_up.bias)
-        # init outproj
-        wang_init_(
-            self.proj_down.weight,
-            dim=self.config.embedding_dim,
-            num_blocks=self.config._num_blocks,
-        )
-        if self.proj_down.bias is not None:
-            nn.init.zeros_(self.proj_down.bias)
-
-        nn.init.ones_(self.learnable_skip)
-
-        def _init_qkv_proj(qkv_proj: LinearHeadwiseExpand):
-            # use the embedding dim instead of the inner embedding dim
-            small_init_init_(qkv_proj.weight, dim=self.config.embedding_dim)
-            if qkv_proj.bias is not None:
-                nn.init.zeros_(qkv_proj.bias)
-
-        _init_qkv_proj(self.q_proj)
-        _init_qkv_proj(self.k_proj)
-        _init_qkv_proj(self.v_proj)
-
-        self.mlstm_cell.reset_parameters()
+def test_mLSTMLayer():
+    config = mLSTMLayerConfig(
+        embedding_dim=8,
+        context_length=16,
+        num_heads=4,
+        proj_factor=2.0,
+        conv1d_kernel_size=4,
+        qkv_proj_blocksize=4,
+        mlstm_cell=mLSTMCellConfig(
+            context_length=16,
+            num_heads=4,
+            embedding_dim=8,
+        ),
+    )
+    rng = jax.random.PRNGKey(0)
+    inp_rng, model_rng = jax.random.split(rng)
+    input_tensor = jax.random.normal(inp_rng, (2, config.context_length, config.embedding_dim))
+    model = mLSTMLayer(config)
+    params = model.init(model_rng, input_tensor)
+    output_tensor = model.apply(params, input_tensor)
+    assert output_tensor.shape == input_tensor.shape, f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
+    print("All tests for mLSTMLayer passed successfully.")
