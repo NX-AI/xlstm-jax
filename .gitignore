@@ -1,0 +1,75 @@
+# local files
+wandb
+outputs
+data/*
+local
+
+# PyCharm
+.idea
+
+# Ruff cache
+.ruff_cache
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+**/build/**
+
+# Distribution / packaging
+.Python
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# IPython / Jupyter Notebooks
+profile_default/
+ipython_config.py
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# exclude data
+*.tar
+*.gz
+*.xz
+
+# MacOS
+.DS_Store
