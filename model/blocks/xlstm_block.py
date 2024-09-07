@@ -59,7 +59,7 @@ class xLSTMBlock(nn.Module):
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
         xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm")
         if self.config.mlstm is not None:
-            xlstm = mLSTMLayer(config=self.config.mlstm)
+            xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
             # xlstm = sLSTMLayer(config=self.config.slstm)
             raise NotImplementedError("sLSTM not implemented in JAX yet.")

@@ -54,6 +54,7 @@ class CausalConv1d(nn.Module):
             padding=[(pad, 0)],
             use_bias=self.config.causal_conv_bias,
             dtype=self.config.dtype,
+            name="conv",
             **self.config.conv1d_kwargs,
         )(x)
         return x

@@ -96,7 +96,7 @@ class xLSTMBlockStack(nn.Module):
                 if hasattr(config, "_block_idx"):
                     config._block_idx = block_idx
                     config.__post_init__()
-                blocks.append(mLSTMBlock(config=config))
+                blocks.append(mLSTMBlock(config=config, name=f"{block_idx}"))
             elif block_type_int == 1:
                 config = deepcopy(self.config.slstm_block)
                 if hasattr(config, "_block_idx"):

@@ -91,8 +91,8 @@ def test_ln():
     model = LayerNorm(dtype=jnp.float32)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
-    assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
-    assert len(params["params"]["LayerNorm_0"]) == 1
+    assert params["params"]["scale"].shape == (4,)
+    assert len(params["params"]) == 1
     assert y.shape == (2, 3, 4)
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
@@ -101,8 +101,8 @@ def test_ln():
     model = MultiHeadLayerNorm(dtype=jnp.float32)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
-    assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
-    assert len(params["params"]["LayerNorm_0"]) == 1
+    assert params["params"]["scale"].shape == (4,)
+    assert len(params["params"]) == 1
     assert y.shape == (2, 8, 3, 4)
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)

@@ -40,14 +40,14 @@ class mLSTMCell(nn.Module):
             dtype=self.config.dtype,
             bias_init=nn.initializers.normal(stddev=0.1),
             kernel_init=nn.initializers.zeros,
-            name="i_gate",
+            name="igate",
         )(qkv)
         fgate_preact = nn.Dense(
             features=self.config.num_heads,
             dtype=self.config.dtype,
             bias_init=bias_linspace_init_(3.0, 6.0),
             kernel_init=nn.initializers.zeros,
-            name="f_gate",
+            name="fgate",
         )(qkv)
 
         q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
@@ -65,7 +65,7 @@ class mLSTMCell(nn.Module):
         h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
         h_state_norm = MultiHeadLayerNorm(
-            weight=True, bias=False, dtype=self.config.dtype, name="out_norm"
+            weight=True, bias=False, dtype=self.config.dtype, name="outnorm"
         )(h_state)
         h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
         return h_state_norm

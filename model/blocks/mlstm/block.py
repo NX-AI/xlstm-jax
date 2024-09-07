@@ -22,15 +22,11 @@ class mLSTMBlockConfig:
         self.mlstm.__post_init__()
 
 
-class mLSTMBlock(xLSTMBlock):
-    config: mLSTMBlockConfig
-
-    @nn.compact
-    def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        return xLSTMBlock(config=xLSTMBlockConfig(
-                mlstm=self.config.mlstm,
-                slstm=None,
-                feedforward=None,
-                _num_blocks=self.config._num_blocks,
-                _block_idx=self.config._block_idx,
-            ))(x, train=train, **kwargs)
+def mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> nn.Module:
+    return xLSTMBlock(config=xLSTMBlockConfig(
+        mlstm=config.mlstm,
+        slstm=None,
+        feedforward=None,
+        _num_blocks=config._num_blocks,
+        _block_idx=config._block_idx,
+    ), *args, **kwargs)

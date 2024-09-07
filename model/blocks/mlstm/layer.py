@@ -85,7 +85,7 @@ class mLSTMLayer(nn.Module):
             name="v_proj",
         )(x_mlstm)
 
-        h_tilde_state = mLSTMCell(config=self.config.mlstm_cell)(q=q, k=k, v=v)
+        h_tilde_state = mLSTMCell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
         h_tilde_state_skip = h_tilde_state + (learnable_skip * x_mlstm_conv_act)

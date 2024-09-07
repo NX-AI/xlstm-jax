@@ -5,30 +5,24 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 
-class LayerNorm(nn.Module):
-    """LayerNorm but with an optional bias. PyTorch doesn't support simply bias=False."""
-
-    weight: bool = True
-    bias: bool = False
-    eps: float = 1e-5
-    residual_weight: bool = True
-    dtype: jnp.dtype = jnp.bfloat16
-
-    @nn.compact
-    def __call__(self, x: jax.Array) -> jax.Array:
-        return nn.LayerNorm(
-            epsilon=self.eps,
-            use_bias=self.bias,
-            use_scale=self.weight,
-            dtype=self.dtype,
-        )(x)
+def LayerNorm(weight: bool = True, bias: bool = False, eps: float = 1e-5, residual_weight: bool = True, dtype: jnp.dtype = jnp.bfloat16, **kwargs):
+    return nn.LayerNorm(
+        epsilon=eps,
+        use_bias=bias,
+        use_scale=weight,
+        dtype=dtype,
+        **kwargs
+    )
 
 
-def MultiHeadLayerNorm(*args, axis: int = 1, **kwargs):
+def MultiHeadLayerNorm(weight: bool = True, bias: bool = False, eps: float = 1e-5, residual_weight: bool = True, dtype: jnp.dtype = jnp.bfloat16, axis: int = 1, **kwargs):
     return nn.vmap(
-        LayerNorm,
+        nn.LayerNorm,
         variable_axes={"params": None},
         in_axes=axis,
         out_axes=axis,
         split_rngs={"params": False},
-    )(*args, **kwargs)
+    )(epsilon=eps,
+        use_bias=bias,
+        use_scale=weight,
+        dtype=dtype, **kwargs)
