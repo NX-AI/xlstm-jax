@@ -3,10 +3,10 @@ from functools import partial
 
 from .layer_factory import create_layer
 from .config_utils import NameAndKwargs
-from .simple import mLSTMBackendTorch, recurrent_step_stabilized_simple
+from .simple import mLSTMBackendJax, recurrent_step_stabilized_simple
 
 _mlstm_backend_registry = {
-    "parallel_stabilized": mLSTMBackendTorch,
+    "parallel_stabilized": mLSTMBackendJax,
 }
 
 

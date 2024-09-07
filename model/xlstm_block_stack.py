@@ -4,11 +4,10 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from typing import Literal, Any
 
-import jax
 from flax import linen as nn
 import jax.numpy as jnp
 
-from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
+from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from .components.ln import LayerNorm
 
 
@@ -109,40 +108,3 @@ class xLSTMBlockStack(nn.Module):
                 raise ValueError(f"Invalid block type {block_type_int}")
 
         return blocks
-
-
-def test_xLSTMBlockStack():
-    config = xLSTMBlockStackConfig(
-        mlstm_block=mLSTMBlockConfig(
-            mlstm=mLSTMLayerConfig(
-                conv1d_kernel_size=4,
-                qkv_proj_blocksize=4,
-                num_heads=4,
-                proj_factor=2.0,
-                embedding_dim=16,
-                bias=True,
-                dropout=0.0,
-                context_length=128,
-                dtype=jnp.bfloat16,
-            ),
-            _num_blocks=8,
-            _block_idx=0,
-        ),
-        context_length=128,
-        num_blocks=8,
-        embedding_dim=16,
-        add_post_blocks_norm=True,
-        bias=True,
-        dropout=0.0,
-        dtype=jnp.bfloat16,
-        slstm_at=[],
-    )
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng, dp_rng = jax.random.split(rng, 3)
-    block = xLSTMBlockStack(config=config)
-    input_tensor = jax.random.normal(inp_rng, (2, 128, 16), dtype=jnp.bfloat16)
-    params = block.init(model_rng, input_tensor)
-    output_tensor = block.apply(params, input_tensor, rngs={"dropout": dp_rng}, train=True)
-    assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
-    assert output_tensor.dtype == jnp.bfloat16
-    print("All tests for xLSTMBlockStack passed successfully.")

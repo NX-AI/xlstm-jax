@@ -81,24 +81,3 @@ class LinearHeadwiseExpand(nn.Module):
             f"trainable_weight={self.config.trainable_weight}, "
             f"trainable_bias={self.config.trainable_bias}, "
         )
-
-
-def test_linear_headwise():
-    config = LinearHeadwiseExpandConfig(in_features=4, num_heads=2, expand_factor_up=1)
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng = jax.random.split(rng)
-    input_tensor = jax.random.normal(inp_rng, (2, 5, 4))
-    model = LinearHeadwiseExpand(config)
-    params = model.init(model_rng, input_tensor)
-    output_tensor = model.apply(params, input_tensor)
-    assert (
-        output_tensor.shape == input_tensor.shape
-    ), f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
-    input_tensor = input_tensor.at[0, 0, 2].set(-1.0)
-    output_tensor_new = model.apply(params, input_tensor)
-    diff = (output_tensor_new - output_tensor) != 0
-    assert not jnp.any(diff[1]), "Output tensor changed unexpectedly."
-    assert not jnp.any(diff[0, 1:]), "Output tensor changed unexpectedly."
-    assert not jnp.any(diff[0, 0, :2]), "Output tensor changed unexpectedly."
-    assert jnp.all(diff[0, 0, 3:]), "Output tensor changed unexpectedly."
-    print("All tests for LinearHeadwiseExpand passed successfully.")

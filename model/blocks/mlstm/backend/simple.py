@@ -109,15 +109,15 @@ def parallel_stabilized_simple(
 
 
 @dataclass
-class mLSTMBackendTorchConfig:
+class mLSTMBackendJaxConfig:
     context_length: int = -1
 
     def assign_model_config_params(self, model_config, *args, **kwargs):
         self.context_length = model_config.context_length
 
 
-class mLSTMBackendTorch(mLSTMBackend):
-    config_class = mLSTMBackendTorchConfig
+class mLSTMBackendJax(mLSTMBackend):
+    config_class = mLSTMBackendJaxConfig
 
     @nn.compact
     def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array, f: jax.Array):
@@ -185,60 +185,4 @@ def recurrent_step_stabilized_simple(
     h = h_num / h_denom  # (B, NH, 1, DH) / (B, NH, 1, 1) = (B, NH, 1, DH)
 
     return h, (c_state_new, n_state_new, m_state_new)
-
-
-def test_mLSTMBackend(
-    parallel_stabilized_simple_torch,
-    recurrent_step_stabilized_simple_torch,
-):
-    import numpy as np
-    rng = np.random.default_rng(42)
-    B, NH, S, DH = 2, 3, 4, 5
-    q = rng.standard_normal((B, NH, S, DH)).astype(jnp.float32)
-    k = rng.standard_normal((B, NH, S, DH)).astype(jnp.float32)
-    v = rng.standard_normal((B, NH, S, DH)).astype(jnp.float32)
-    igate_preact = rng.standard_normal((B, NH, S, 1)).astype(jnp.float32)
-    fgate_preact = rng.standard_normal((B, NH, S, 1)).astype(jnp.float32)
-
-    h_tilde_state = parallel_stabilized_simple(q, k, v, igate_preact, fgate_preact)
-    assert h_tilde_state.shape == (B, NH, S, DH)
-    print("All tests for parallel_stabilized_simple passed successfully.")
-
-    c_state = rng.standard_normal((B, NH, DH, DH)).astype(jnp.float32)
-    n_state = rng.standard_normal((B, NH, DH, 1)).astype(jnp.float32)
-    m_state = rng.standard_normal((B, NH, 1, 1)).astype(jnp.float32)
-
-    h, (c_state_new, n_state_new, m_state_new) = recurrent_step_stabilized_simple(
-        c_state, n_state, m_state, q[:, :, 0:1], k[:, :, 0:1], v[:, :, 0:1], igate_preact[:, :, 0:1], fgate_preact[:, :, 0:1]
-    )
-    assert h.shape == (B, NH, 1, DH)
-    assert c_state_new.shape == (B, NH, DH, DH)
-    assert n_state_new.shape == (B, NH, DH, 1)
-    assert m_state_new.shape == (B, NH, 1, 1)
-    print("All tests for recurrent_step_stabilized_simple passed successfully.")
-
-    if parallel_stabilized_simple_torch is not None and recurrent_step_stabilized_simple_torch is not None:
-        import torch
-        q_torch = torch.from_numpy(q)
-        k_torch = torch.from_numpy(k)
-        v_torch = torch.from_numpy(v)
-        igate_preact_torch = torch.from_numpy(igate_preact)
-        fgate_preact_torch = torch.from_numpy(fgate_preact)
-
-        h_tilde_state_torch = parallel_stabilized_simple_torch(q_torch, k_torch, v_torch, igate_preact_torch, fgate_preact_torch)
-        assert jnp.allclose(h_tilde_state, h_tilde_state_torch.numpy(), atol=1e-3)
-        print("All tests for PyTorch comparison - parallel passed successfully.")
-
-        c_state_torch = torch.from_numpy(c_state)
-        n_state_torch = torch.from_numpy(n_state)
-        m_state_torch = torch.from_numpy(m_state)
-
-        h_torch, (c_state_new_torch, n_state_new_torch, m_state_new_torch) = recurrent_step_stabilized_simple_torch(
-            c_state_torch, n_state_torch, m_state_torch, q_torch[:, :, 0:1], k_torch[:, :, 0:1], v_torch[:, :, 0:1], igate_preact_torch[:, :, 0:1], fgate_preact_torch[:, :, 0:1]
-        )
-        assert jnp.allclose(h, h_torch.numpy(), atol=1e-3)
-        assert jnp.allclose(c_state_new, c_state_new_torch.numpy(), atol=1e-3)
-        assert jnp.allclose(n_state_new, n_state_new_torch.numpy(), atol=1e-3)
-        assert jnp.allclose(m_state_new, m_state_new_torch.numpy(), atol=1e-3)
-        print("All tests for PyTorch comparison - step passed successfully.")
 

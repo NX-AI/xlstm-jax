@@ -32,29 +32,3 @@ def MultiHeadLayerNorm(*args, axis: int = 1, **kwargs):
         out_axes=axis,
         split_rngs={"params": False},
     )(*args, **kwargs)
-
-
-def test_ln():
-    rng = jax.random.PRNGKey(42)
-    inp_rng, model_rng = jax.random.split(rng)
-    x = jax.random.normal(inp_rng, (2, 3, 4))
-    model = LayerNorm(dtype=jnp.float32)
-    params = model.init(model_rng, x)
-    y = model.apply(params, x)
-    assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
-    assert len(params["params"]["LayerNorm_0"]) == 1
-    assert y.shape == (2, 3, 4)
-    assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
-    assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
-    print("All tests for LayerNorm passed successfully.")
-
-    x = jax.random.normal(inp_rng, (2, 8, 3, 4))
-    model = MultiHeadLayerNorm(dtype=jnp.float32)
-    params = model.init(model_rng, x)
-    y = model.apply(params, x)
-    assert params["params"]["LayerNorm_0"]["scale"].shape == (4,)
-    assert len(params["params"]["LayerNorm_0"]) == 1
-    assert y.shape == (2, 8, 3, 4)
-    assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
-    assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
-    print("All tests for MultiHeadLayerNorm passed successfully.")

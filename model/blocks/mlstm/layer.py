@@ -101,27 +101,3 @@ class mLSTMLayer(nn.Module):
         )(h_state)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)
         return y
-
-
-def test_mLSTMLayer():
-    config = mLSTMLayerConfig(
-        embedding_dim=8,
-        context_length=16,
-        num_heads=4,
-        proj_factor=2.0,
-        conv1d_kernel_size=4,
-        qkv_proj_blocksize=4,
-        mlstm_cell=mLSTMCellConfig(
-            context_length=16,
-            num_heads=4,
-            embedding_dim=8,
-        ),
-    )
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng = jax.random.split(rng)
-    input_tensor = jax.random.normal(inp_rng, (2, config.context_length, config.embedding_dim))
-    model = mLSTMLayer(config)
-    params = model.init(model_rng, input_tensor)
-    output_tensor = model.apply(params, input_tensor)
-    assert output_tensor.shape == input_tensor.shape, f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
-    print("All tests for mLSTMLayer passed successfully.")

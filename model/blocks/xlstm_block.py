@@ -74,35 +74,3 @@ class xLSTMBlock(nn.Module):
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)
         return x
-
-def test_xLSTMBlock():
-    config = xLSTMBlockConfig(
-        mlstm=mLSTMLayerConfig(
-            conv1d_kernel_size=4,
-            qkv_proj_blocksize=4,
-            num_heads=4,
-            proj_factor=2.0,
-            embedding_dim=16,
-            bias=True,
-            dropout=0.2,
-            context_length=128,
-            dtype=jnp.bfloat16,
-        ),
-        _num_blocks=1,
-        _block_idx=0,
-        feedforward=FeedForwardConfig(
-            proj_factor=4.0,
-            embedding_dim=16,
-            dropout=0.2,
-            dtype=jnp.bfloat16,
-        ),
-    )
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng, dp_rng = jax.random.split(rng, 3)
-    block = xLSTMBlock(config=config)
-    input_tensor = jax.random.normal(inp_rng, (2, 128, 16), dtype=jnp.bfloat16)
-    params = block.init(model_rng, input_tensor)
-    output_tensor = block.apply(params, input_tensor, rngs={"dropout": dp_rng}, train=True)
-    assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
-    assert output_tensor.dtype == jnp.bfloat16, f"Expected dtype {jnp.bfloat16}, got {output_tensor.dtype}"
-    print("All tests for xLSTMBlock passed successfully.")

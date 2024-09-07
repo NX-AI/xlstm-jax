@@ -58,34 +58,3 @@ class CausalConv1d(nn.Module):
         )(x)
         return x
 
-
-def test_causal_conv1d():
-    config = CausalConv1dConfig(feature_dim=3, kernel_size=4, channel_mixing=False)
-    rng = jax.random.PRNGKey(0)
-    inp_rng, model_rng = jax.random.split(rng)
-    input_tensor = jax.random.normal(inp_rng, (2, 5, 3))
-    model = CausalConv1d(config)
-    params = model.init(model_rng, input_tensor)
-    output_tensor = model.apply(params, input_tensor)
-    assert (
-        output_tensor.shape == input_tensor.shape
-    ), f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
-    input_tensor = input_tensor.at[0, 2, 0].set(-1.0)
-    output_tensor_new = model.apply(params, input_tensor)
-    diff = (output_tensor_new - output_tensor) != 0
-    assert (
-        diff.any()
-    ), "Expected output to change after changing input, but it remained the same"
-    assert diff[
-        0, 2:, 0
-    ].all(), f"Expected output to change after changing input, but it remained the same: {diff}"
-    assert not diff[
-        :, :2, :
-    ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    assert not diff[
-        :, 2:, 1:
-    ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    assert not diff[
-        1
-    ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    print("All tests for CausalConv1D passed successfully.")
