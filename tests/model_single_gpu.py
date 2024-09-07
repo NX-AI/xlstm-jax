@@ -1,3 +1,4 @@
+import pytest
 import jax
 import jax.numpy as jnp
 from model.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
@@ -34,6 +35,7 @@ def test_xLSTMLMModel():
                 dropout=0.2,
                 embedding_dim=16,
                 context_length=128,
+                vmap_qk=True,
                 dtype=jnp.bfloat16
             )
         )
@@ -232,8 +234,8 @@ def test_xLSTMBlock():
     assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
     assert output_tensor.dtype == jnp.bfloat16, f"Expected dtype {jnp.bfloat16}, got {output_tensor.dtype}"
 
-
-def test_mLSTMLayer():
+@pytest.mark.parametrize("vmap_qk", [True, False])
+def test_mLSTMLayer(vmap_qk: bool):
     config = mLSTMLayerConfig(
         embedding_dim=8,
         context_length=16,
@@ -241,6 +243,7 @@ def test_mLSTMLayer():
         proj_factor=2.0,
         conv1d_kernel_size=4,
         qkv_proj_blocksize=4,
+        vmap_qk=vmap_qk,
         mlstm_cell=mLSTMCellConfig(
             context_length=16,
             num_heads=4,

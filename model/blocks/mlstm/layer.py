@@ -21,6 +21,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     qkv_proj_blocksize: int = 4
     num_heads: int = 4
     proj_factor: float = 2.0
+    vmap_qk: bool = False
 
     # will be set toplevel config
     embedding_dim: int = -1
@@ -67,19 +68,38 @@ class mLSTMLayer(nn.Module):
         )(x_mlstm)
         x_mlstm_conv_act = nn.swish(x_mlstm_conv)
 
-        qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
-            config=LinearHeadwiseExpandConfig(
-                in_features=self.config._inner_embedding_dim,
-                num_heads=self.config.num_heads,
-                bias=self.config.bias,
-            ),
-            name="qk_proj",
-        )(x_mlstm_conv_act)
-        q, k = qk[0], qk[1]
+        num_proj_heads = round(self.config._inner_embedding_dim // self.config.qkv_proj_blocksize)
+        if self.config.vmap_qk:
+            qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
+                config=LinearHeadwiseExpandConfig(
+                    in_features=self.config._inner_embedding_dim,
+                    num_heads=num_proj_heads,
+                    bias=self.config.bias,
+                ),
+                name="qk_proj",
+            )(x_mlstm_conv_act)
+            q, k = qk[0], qk[1]
+        else:
+            q = LinearHeadwiseExpand(
+                config=LinearHeadwiseExpandConfig(
+                    in_features=self.config._inner_embedding_dim,
+                    num_heads=num_proj_heads,
+                    bias=self.config.bias,
+                ),
+                name="q_proj",
+            )(x_mlstm)
+            k = LinearHeadwiseExpand(
+                config=LinearHeadwiseExpandConfig(
+                    in_features=self.config._inner_embedding_dim,
+                    num_heads=num_proj_heads,
+                    bias=self.config.bias,
+                ),
+                name="k_proj",
+            )(x_mlstm)
         v = LinearHeadwiseExpand(
             config=LinearHeadwiseExpandConfig(
                 in_features=self.config._inner_embedding_dim,
-                num_heads=self.config.num_heads,
+                num_heads=num_proj_heads,
                 bias=self.config.bias,
             ),
             name="v_proj",

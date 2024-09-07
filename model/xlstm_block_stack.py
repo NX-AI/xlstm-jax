@@ -6,6 +6,7 @@ from typing import Literal, Any
 
 from flax import linen as nn
 import jax.numpy as jnp
+import jax
 
 from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from .components.ln import LayerNorm
@@ -81,13 +82,26 @@ class xLSTMBlockStack(nn.Module):
 
     @nn.compact
     def __call__(self, x: jnp.ndarray, **kwargs) -> jnp.ndarray:
-        blocks = self._create_blocks(config=self.config)
-        for block in blocks:
-            x = block(x, **kwargs)
+        blocks = BlockStack(config=self.config, name='blocks')
+        # for block in blocks:
+        #     x = block(x, **kwargs)
+        x = blocks(x, **kwargs)
         if self.config.add_post_blocks_norm:
             x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
         return x
 
+    
+
+class BlockStack(nn.Module):
+    config: xLSTMBlockStackConfig
+
+    @nn.compact
+    def __call__(self, x: jax.Array, *args, **kwargs) -> jax.Array:
+        blocks = self._create_blocks(config=self.config)
+        for block in blocks:
+            x = block(x, *args, **kwargs)
+        return x
+    
     def _create_blocks(self, config: xLSTMBlockStackConfig):
         blocks = []
         for block_idx, block_type_int in enumerate(config.block_map):
@@ -106,5 +120,4 @@ class xLSTMBlockStack(nn.Module):
                 raise NotImplementedError("sLSTM not implemented in JAX yet.")
             else:
                 raise ValueError(f"Invalid block type {block_type_int}")
-
         return blocks

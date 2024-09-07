@@ -31,7 +31,7 @@ class xLSTMLMModel(nn.Module):
         )(idx)
         if self.config.add_embedding_dropout:
             x = nn.Dropout(rate=self.config.dropout)(x, deterministic=not train)
-        x = xLSTMBlockStack(config=self.config, name="blocks")(x, train=train)
+        x = xLSTMBlockStack(config=self.config, name="xlstm_block_stack")(x, train=train)
         logits = nn.Dense(
             features=self.config.vocab_size,
             use_bias=False,

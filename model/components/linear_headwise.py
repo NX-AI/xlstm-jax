@@ -52,7 +52,7 @@ class LinearHeadwiseExpand(nn.Module):
         out_features_per_head = self.config._out_features // self.config.num_heads
 
         weight = self.param(
-            "weight",
+            "kernel",
             jax.nn.initializers.normal(stddev=sqrt(2 / 5 / in_features_per_head)),
             (self.config.num_heads, out_features_per_head, in_features_per_head),
         )
