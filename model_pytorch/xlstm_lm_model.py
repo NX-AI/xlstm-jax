@@ -48,13 +48,9 @@ class xLSTMLMModel(WeightDecayOptimGroupMixin, nn.Module):
 
     def forward(self, idx: torch.Tensor) -> torch.Tensor:
         x = self.token_embedding(idx)
-        print("TORCH - Embedding", x[0, :2, :2])
         x = self.emb_dropout(x)
-        print("TORCH - Embed Dropout", x[0, :2, :2].numpy())
         x = self.xlstm_block_stack(x)
-        print("TORCH - LSTM Block", x[0, :2, :2])
         logits = self.lm_head(x)
-        print("TORCH - Logits", logits[0, :2, :2])
         return logits
 
     def step(

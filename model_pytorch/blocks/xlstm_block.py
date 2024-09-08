@@ -76,8 +76,6 @@ class xLSTMBlock(nn.Module):
         x_norm = self.xlstm_norm(x)
         x_xlstm = self.xlstm(x_norm, **kwargs)
         x = x + x_xlstm
-        print("TORCH xLSTM Block - norm", x_norm[0, :2, :2].numpy())
-        print("TORCH xLSTM Block - layer", x_xlstm[0, :2, :2])
         if self.ffn is not None:
             x = x + self.ffn(self.ffn_norm(x), **kwargs)
         return x

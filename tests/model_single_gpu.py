@@ -103,7 +103,7 @@ def test_ln():
     model = MultiHeadLayerNorm(dtype=jnp.float32)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
-    assert params["params"]["scale"].shape == (4,)
+    assert params["params"]["scale"].shape == (8, 4)
     assert len(params["params"]) == 1
     assert y.shape == (2, 8, 3, 4)
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
@@ -200,8 +200,7 @@ def test_causal_conv1d():
     assert not diff[
         1
     ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    print("All tests for CausalConv1D passed successfully.")
-
+    
 
 def test_xLSTMBlock():
     config = xLSTMBlockConfig(

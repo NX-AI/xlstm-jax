@@ -64,7 +64,6 @@ class mLSTMCell(nn.Module):
         backend_fn = create_mlstm_backend(self.config)
         h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
-        print("H state shape", h_state.shape)
         h_state_norm = MultiHeadLayerNorm(
             weight=True, bias=False, dtype=self.config.dtype, name="outnorm"
         )(h_state)

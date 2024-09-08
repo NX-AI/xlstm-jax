@@ -50,8 +50,7 @@ class mLSTMLayer(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
         B, S, _ = x.shape
-        print("----- DTYPE -----", self.config.dtype)
-
+        
         # up-projection
         x_inner = nn.Dense(
             features=2 * self.config._inner_embedding_dim,

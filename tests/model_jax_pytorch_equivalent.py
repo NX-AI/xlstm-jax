@@ -59,7 +59,6 @@ def test_xLSTMLMModel(config_torch):
     assert logits_torch.shape == (2, 128, 100)
     assert logits_torch.dtype == torch.float32
 
-    print("Parameters", {key: value.shape for key, value in model_torch.named_parameters()})
     config_jax = mLSTMLayerConfig_jax(
         proj_factor=config_torch.mlstm_block.mlstm.proj_factor,
         conv1d_kernel_size=config_torch.mlstm_block.mlstm.conv1d_kernel_size,
@@ -86,25 +85,17 @@ def test_xLSTMLMModel(config_torch):
     )
     model_jax = xLSTMLMModel_jax(config_jax)
     params_jax = model_jax.init(jax.random.PRNGKey(0), input_tensor, train=False)["params"]
-    print("Params JAX", jax.tree.map(lambda x: x.shape, params_jax))
     params_jax = jax.device_get(params_jax)
     params_jax = _convert_params_torch_to_jax(params_torch=dict(model_torch.named_parameters()), params_jax=params_jax, config=config_torch)
-    print(input_tensor)
     logits_jax = model_jax.apply({"params": params_jax}, input_tensor, train=False)
     assert logits_jax.shape == (2, 128, 100)
     assert logits_jax.dtype == jnp.float32
-    diff = np.abs(logits_torch.numpy() - logits_jax)
-    for i in range(logits_jax.shape[0]):
-        print(f"Max diff batch {i}", diff[i].max())
-        print("Torch", logits_torch[i])
-        print("JAX", logits_jax[i])
     np.testing.assert_allclose(logits_torch.numpy(), logits_jax, atol=1e-5, rtol=1e-5)
 
 def _convert_params_torch_to_jax(params_torch: dict[str, Any], params_jax: PyTree | None = None, config: xLSTMLMModelConfig_torch | None = None):
     params_jax_new = dict()
     for key, p_torch in params_torch.items():
         param = p_torch.data.numpy()
-        print("Key in", key)
         if key == 'token_embedding.weight':
             key = 'token_embedding.embedding'
         elif key.endswith('norm.weight'):
@@ -120,7 +111,6 @@ def _convert_params_torch_to_jax(params_torch: dict[str, Any], params_jax: PyTre
             else:
                 pass
                 # param = np.swapaxes(param, 1, 2)
-        print("Key out", key)
         _add_nested_param_to_dict(params_jax_new, key, param)
     if params_jax is not None:
         _check_equal_pytree_struct(params_jax_new, params_jax)
