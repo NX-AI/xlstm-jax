@@ -41,6 +41,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
         self.mlstm_cell.context_length = self.context_length
         self.mlstm_cell.embedding_dim = self._inner_embedding_dim
         self.mlstm_cell.num_heads = self.num_heads
+        self.mlstm_cell.dtype = self.dtype
 
 
 class mLSTMLayer(nn.Module):
@@ -49,25 +50,28 @@ class mLSTMLayer(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
         B, S, _ = x.shape
+        print("----- DTYPE -----", self.config.dtype)
 
         # up-projection
         x_inner = nn.Dense(
             features=2 * self.config._inner_embedding_dim,
             dtype=self.config.dtype,
+            use_bias=self.config.bias,
             name="proj_up",
         )(x)
         x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
-
+        
         # mlstm branch
         x_mlstm_conv = CausalConv1d(
             config=CausalConv1dConfig(
                 feature_dim=self.config._inner_embedding_dim,
                 kernel_size=self.config.conv1d_kernel_size,
+                dtype=self.config.dtype,
             ),
             name="conv1d",
         )(x_mlstm)
         x_mlstm_conv_act = nn.swish(x_mlstm_conv)
-
+        
         num_proj_heads = round(self.config._inner_embedding_dim // self.config.qkv_proj_blocksize)
         if self.config.vmap_qk:
             qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
@@ -75,6 +79,7 @@ class mLSTMLayer(nn.Module):
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
                     bias=self.config.bias,
+                    dtype=self.config.dtype,
                 ),
                 name="qk_proj",
             )(x_mlstm_conv_act)
@@ -85,26 +90,29 @@ class mLSTMLayer(nn.Module):
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
                     bias=self.config.bias,
+                    dtype=self.config.dtype,
                 ),
                 name="q_proj",
-            )(x_mlstm)
+            )(x_mlstm_conv_act)
             k = LinearHeadwiseExpand(
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
                     bias=self.config.bias,
+                    dtype=self.config.dtype,
                 ),
                 name="k_proj",
-            )(x_mlstm)
+            )(x_mlstm_conv_act)
         v = LinearHeadwiseExpand(
             config=LinearHeadwiseExpandConfig(
                 in_features=self.config._inner_embedding_dim,
                 num_heads=num_proj_heads,
                 bias=self.config.bias,
+                dtype=self.config.dtype,
             ),
             name="v_proj",
         )(x_mlstm)
-
+        
         h_tilde_state = mLSTMCell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
@@ -117,6 +125,7 @@ class mLSTMLayer(nn.Module):
         y = nn.Dense(
             features=self.config.embedding_dim,
             dtype=self.config.dtype,
+            use_bias=self.config.bias,
             name="proj_down",
         )(h_state)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)

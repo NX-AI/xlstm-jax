@@ -27,6 +27,7 @@ def mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> nn.Module:
         mlstm=config.mlstm,
         slstm=None,
         feedforward=None,
+        dtype=config.mlstm.dtype,
         _num_blocks=config._num_blocks,
         _block_idx=config._block_idx,
     ), *args, **kwargs)

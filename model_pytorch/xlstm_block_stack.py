@@ -116,9 +116,7 @@ class xLSTMBlockStack(nn.Module):
     def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
         for block in self.blocks:
             x = block(x, **kwargs)
-
         x = self.post_blocks_norm(x)
-
         return x
 
     def step(

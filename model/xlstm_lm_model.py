@@ -29,13 +29,17 @@ class xLSTMLMModel(nn.Module):
             dtype=self.config.dtype,
             name="token_embedding",
         )(idx)
+        print("JAX - Embedding", x[0, :2, :2])
         if self.config.add_embedding_dropout:
             x = nn.Dropout(rate=self.config.dropout)(x, deterministic=not train)
+        print("JAX - Embedding dropout", x[0, :2, :2])
         x = xLSTMBlockStack(config=self.config, name="xlstm_block_stack")(x, train=train)
+        print("JAX - LSTM Blocks", x[0, :2, :2])
         logits = nn.Dense(
             features=self.config.vocab_size,
             use_bias=False,
             dtype=jnp.float32,
             name="lm_head",
         )(x)
+        print("JAX - Logits", logits[0, :2, :2])
         return logits

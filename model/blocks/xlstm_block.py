@@ -57,6 +57,7 @@ class xLSTMBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
+        print("----- DTYPE xLSTM Block -----", self.config.dtype)
         xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm")
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
@@ -65,8 +66,12 @@ class xLSTMBlock(nn.Module):
             raise NotImplementedError("sLSTM not implemented in JAX yet.")
         else:
             raise ValueError("Either mlstm or slstm must be provided")
-        x = x + xlstm(xlstm_norm(x), **kwargs)
-
+        x_norm = xlstm_norm(x)
+        x_xlstm = xlstm(x_norm, **kwargs)
+        x = x + x_xlstm
+        print("JAX xLSTM Block - in norm", x_norm[0, :2, :2])
+        print("JAX xLSTM Block - layer", x_xlstm[0, :2, :2])
+        
         if self.config.feedforward is not None:
             ffn_norm = LayerNorm(
                 weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm"

@@ -2,6 +2,7 @@
 # Maximilian Beck, Korbininan Pöppel
 from dataclasses import dataclass
 from math import sqrt
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -26,6 +27,7 @@ class LinearHeadwiseExpandConfig:
     bias: bool = True
     trainable_weight: bool = True
     trainable_bias: bool = True
+    dtype: Any = jnp.float32
 
     def __post_init__(self):
         assert self.num_heads > 0, "num_heads must be set"
@@ -58,6 +60,7 @@ class LinearHeadwiseExpand(nn.Module):
         )
         if not self.config.trainable_weight:
             weight = jax.lax.stop_gradient(weight)
+        weight = weight.astype(self.config.dtype)
 
         x = x.reshape(*x.shape[:-1], self.config.num_heads, in_features_per_head)
         x = jnp.einsum("...hd,hod->...ho", x, weight)
@@ -68,6 +71,7 @@ class LinearHeadwiseExpand(nn.Module):
             )
             if not self.config.trainable_bias:
                 bias = jax.lax.stop_gradient(bias)
+            bias = bias.astype(self.config.dtype)
             bias = jnp.broadcast_to(bias, x.shape)
             x = x + bias
         return x

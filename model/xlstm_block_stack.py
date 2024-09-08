@@ -63,6 +63,7 @@ class xLSTMBlockStackConfig:
             self.mlstm_block.mlstm.bias = self.bias
             self.mlstm_block.mlstm.dropout = self.dropout
             self.mlstm_block.mlstm.context_length = self.context_length
+            self.mlstm_block.mlstm.dtype = self.dtype
 
             self.mlstm_block._num_blocks = self.num_blocks
             # call post init, for setting inner_embedding_dim
