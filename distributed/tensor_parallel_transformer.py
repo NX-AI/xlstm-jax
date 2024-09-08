@@ -17,7 +17,7 @@ import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import numpy as np
-from data_parallel import shard_module_params
+from .data_parallel import shard_module_params
 from ml_collections import ConfigDict
 from .pipeline_parallel import ModelParallelismWrapper
 from .tensor_parallel import MLPBlockInput, MLPBlockOutput
@@ -446,6 +446,8 @@ class TPInputEmbedding(nn.Module):
 
 def split_array_over_mesh(x: jax.Array, axis_name: str, split_axis: int) -> jax.Array:
     axis_size = jax.lax.psum(1, axis_name)
+    if axis_size == 1:
+        return x
     axis_index = jax.lax.axis_index(axis_name)
     slice_size = x.shape[split_axis] // axis_size
     x = jax.lax.dynamic_slice_in_dim(

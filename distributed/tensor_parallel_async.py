@@ -98,7 +98,7 @@ def async_gather_split(x: jax.Array, axis_name: str) -> list[jax.Array]:
     Returns:
         List of gathered inputs. Length is 2 * axis size - 1.
     """
-    x1, x2 = jax.tree_map(lambda x: jnp.split(x, 2, axis=-1), x)
+    x1, x2 = jax.tree.map(lambda x: jnp.split(x, 2, axis=-1), x)
     return async_gather(x1, axis_name, shift_up=True) + async_gather(
         x2, axis_name, shift_up=False
     )
@@ -128,7 +128,7 @@ def async_scatter(
     y = xs[0]
     for x in xs[1:]:
         y = jax.lax.ppermute(y, axis_name, perm=shift_perm)
-        y = jax.tree_map(jnp.add, y, x)
+        y = jax.tree.map(jnp.add, y, x)
     return y
 
 
@@ -145,8 +145,8 @@ def async_scatter_split(xs: Sequence[PyTree], axis_name: str) -> PyTree:
 
     def _split(x: PyTree) -> tuple[PyTree, PyTree]:
         return (
-            jax.tree_map(lambda x: x[..., : x.shape[-1] // 2], x),
-            jax.tree_map(lambda x: x[..., x.shape[-1] // 2 :], x),
+            jax.tree.map(lambda x: x[..., : x.shape[-1] // 2], x),
+            jax.tree.map(lambda x: x[..., x.shape[-1] // 2 :], x),
         )
 
     tp_size = jax.lax.psum(1, axis_name)
@@ -160,9 +160,9 @@ def async_scatter_split(xs: Sequence[PyTree], axis_name: str) -> PyTree:
         y_up = jax.lax.ppermute(y_up, axis_name, perm=shift_perm_up)
         y_down = jax.lax.ppermute(y_down, axis_name, perm=shift_perm_down)
         x_up, x_down = _split(x)
-        y_up = jax.tree_map(jnp.add, y_up, x_up)
-        y_down = jax.tree_map(jnp.add, y_down, x_down)
-    return jax.tree_map(lambda y1, y2: jnp.concatenate([y1, y2], axis=-1), y_up, y_down)
+        y_up = jax.tree.map(jnp.add, y_up, x_up)
+        y_down = jax.tree.map(jnp.add, y_down, x_down)
+    return jax.tree.map(lambda y1, y2: jnp.concatenate([y1, y2], axis=-1), y_up, y_down)
 
 
 class TPAsyncDense(nn.Module):
@@ -226,7 +226,7 @@ class TPAsyncDense(nn.Module):
                 for i, x in enumerate(xs)
             ]
             # Final sum of all outputs.
-            y = jax.tree_map(lambda *args: sum(args), *ys)
+            y = jax.tree.map(lambda *args: sum(args), *ys)
         elif tp_mode == "scatter":
             # Calculate all outputs per device.
             ys = [

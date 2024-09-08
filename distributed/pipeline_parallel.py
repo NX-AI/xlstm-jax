@@ -17,7 +17,7 @@ import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import optax
-from data_parallel import fold_rng_over_axis, sync_gradients
+from .data_parallel import fold_rng_over_axis, sync_gradients
 from flax.core.frozen_dict import FrozenDict
 from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh
@@ -63,7 +63,7 @@ def stack_params(
         names = names[:axis] + (axis_name,) + names[axis:]
         return nn.Partitioned(value, names=names)
 
-    return jax.tree_map(_stack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
+    return jax.tree.map(_stack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
 
 
 def unstack_params(params: PyTree, axis_name: str) -> PyTree:
@@ -94,7 +94,7 @@ def unstack_params(params: PyTree, axis_name: str) -> PyTree:
         else:
             return x
 
-    return jax.tree_map(
+    return jax.tree.map(
         _unstack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned)
     )
 
@@ -481,7 +481,7 @@ def train_step_pp(
     new_state = state.apply_gradients(grads=grads, rng=rng)
     # Sum metrics across replicas (both model and data axes).
     with jax.named_scope("sync_metrics"):
-        step_metrics = jax.tree_map(
+        step_metrics = jax.tree.map(
             lambda x: jax.lax.psum(
                 x, axis_name=(config.data_axis_name, config.model_axis_name)
             ),
@@ -490,7 +490,7 @@ def train_step_pp(
     if metrics is None:
         metrics = step_metrics
     else:
-        metrics = jax.tree_map(jnp.add, metrics, step_metrics)
+        metrics = jax.tree.map(jnp.add, metrics, step_metrics)
     return new_state, metrics
 
 
@@ -558,7 +558,7 @@ def train_pipeline_model(
         None,
         batch,
     )
-    metrics_pp = jax.tree_map(
+    metrics_pp = jax.tree.map(
         lambda x: jnp.zeros(x.shape, dtype=x.dtype), metric_shapes
     )
     for _ in range(num_steps):

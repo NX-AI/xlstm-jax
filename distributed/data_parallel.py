@@ -92,7 +92,7 @@ def shard_params(
             )
             return x
 
-    return jax.tree_util.tree_map(
+    return jax.tree.map(
         _split,
         params,
         is_leaf=lambda x: isinstance(
@@ -150,8 +150,7 @@ def gather_params(params: PyTree, axis_name: str) -> PyTree:
                 return value
         else:
             return p
-
-    return jax.tree_util.tree_map(
+    return jax.tree.map(
         _gather, params, is_leaf=lambda x: isinstance(x, nn.Partitioned)
     )
 
@@ -203,7 +202,7 @@ def sync_gradients(
             replication_axis_names = [
                 name
                 for name in axis_names
-                if name not in jax.tree_util.tree_leaves(g.names)
+                if name not in jax.tree.leaves(g.names)
             ]
             if len(replication_axis_names) == 0:
                 # Parameters partitioned over all axes.
@@ -217,6 +216,6 @@ def sync_gradients(
             # Parameters are replicated over all axes.
             return jax.lax.pmean(g, axis_name=axis_names)
 
-    return jax.tree_map(
+    return jax.tree.map(
         sync_grad, grads, is_leaf=lambda x: isinstance(x, nn.Partitioned)
     )

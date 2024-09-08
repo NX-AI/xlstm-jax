@@ -363,7 +363,7 @@ def train_step_tp(
     # Sum metrics across replicas. Alternatively, we could keep the metrics separate
     # and only synchronize them before logging. For simplicity, we sum them here.
     with jax.named_scope("sync_metrics"):
-        step_metrics = jax.tree_map(
+        step_metrics = jax.tree.map(
             lambda x: jax.lax.psum(
                 x, axis_name=(config.data_axis_name, config.model_axis_name)
             ),
@@ -372,5 +372,5 @@ def train_step_tp(
     if metrics is None:
         metrics = step_metrics
     else:
-        metrics = jax.tree_map(jnp.add, metrics, step_metrics)
+        metrics = jax.tree.map(jnp.add, metrics, step_metrics)
     return new_state, metrics

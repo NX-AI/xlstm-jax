@@ -65,7 +65,7 @@ def accumulate_gradients_loop(
             # Split the batch into minibatches.
             start = minibatch_idx * minibatch_size
             end = start + minibatch_size
-            minibatch = jax.tree_map(lambda x: x[start:end], batch)
+            minibatch = jax.tree.map(lambda x: x[start:end], batch)
             # Calculate gradients and metrics for the minibatch.
             (_, step_metrics), step_grads = grad_fn(
                 state.params, state.apply_fn, minibatch, rngs[minibatch_idx]
@@ -75,10 +75,10 @@ def accumulate_gradients_loop(
                 grads = step_grads
                 metrics = step_metrics
             else:
-                grads = jax.tree_map(jnp.add, grads, step_grads)
-                metrics = jax.tree_map(jnp.add, metrics, step_metrics)
+                grads = jax.tree.map(jnp.add, grads, step_grads)
+                metrics = jax.tree.map(jnp.add, metrics, step_metrics)
     # Average gradients over minibatches.
-    grads = jax.tree_map(lambda g: g / num_minibatches, grads)
+    grads = jax.tree.map(lambda g: g / num_minibatches, grads)
     return grads, metrics
 
 
@@ -110,7 +110,7 @@ def accumulate_gradients_scan(
 
     def _minibatch_step(minibatch_idx: jax.Array | int) -> tuple[PyTree, Metrics]:
         """Determine gradients and metrics for a single minibatch."""
-        minibatch = jax.tree_map(
+        minibatch = jax.tree.map(
             lambda x: jax.lax.dynamic_slice_in_dim(  # Slicing with variable index (jax.Array).
                 x,
                 start_index=minibatch_idx * minibatch_size,
@@ -129,13 +129,13 @@ def accumulate_gradients_scan(
     ) -> tuple[tuple[PyTree, Metrics], None]:
         """Scan step function for looping over minibatches."""
         step_grads, step_metrics = _minibatch_step(minibatch_idx)
-        carry = jax.tree_map(jnp.add, carry, (step_grads, step_metrics))
+        carry = jax.tree.map(jnp.add, carry, (step_grads, step_metrics))
         return carry, None
 
     # Determine initial shapes for gradients and metrics.
     grads_shapes, metrics_shape = jax.eval_shape(_minibatch_step, 0)
-    grads = jax.tree_map(lambda x: jnp.zeros(x.shape, x.dtype), grads_shapes)
-    metrics = jax.tree_map(lambda x: jnp.zeros(x.shape, x.dtype), metrics_shape)
+    grads = jax.tree.map(lambda x: jnp.zeros(x.shape, x.dtype), grads_shapes)
+    metrics = jax.tree.map(lambda x: jnp.zeros(x.shape, x.dtype), metrics_shape)
     # Loop over minibatches to determine gradients and metrics.
     (grads, metrics), _ = jax.lax.scan(
         _scan_step,
@@ -144,7 +144,7 @@ def accumulate_gradients_scan(
         length=num_minibatches,
     )
     # Average gradients over minibatches.
-    grads = jax.tree_map(lambda g: g / num_minibatches, grads)
+    grads = jax.tree.map(lambda g: g / num_minibatches, grads)
     return grads, metrics
 
 
@@ -202,4 +202,4 @@ def print_metrics(metrics: Metrics, title: str | None = None) -> None:
 
 def get_num_params(state: TrainState) -> int:
     """Calculate the number of parameters in the model."""
-    return sum(np.prod(x.shape) for x in jax.tree_util.tree_leaves(state.params))
+    return sum(np.prod(x.shape) for x in jax.tree.leaves(state.params))
