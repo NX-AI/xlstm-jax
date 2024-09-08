@@ -1,5 +1,7 @@
+import jax.test_util
 import pytest
 import jax
+from typing import Any
 import jax.numpy as jnp
 from model.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 from model.blocks.mlstm.block import mLSTMBlockConfig, mLSTMLayerConfig
@@ -45,9 +47,30 @@ def test_xLSTMLMModel():
     model = xLSTMLMModel(config=config)
     input_tensor = jax.random.randint(inp_rng, (2, 128), 0, 100)
     params = model.init(model_rng, input_tensor)
-    logits = model.apply(params, input_tensor)
+    logits, intermediates = model.apply(params, input_tensor, capture_intermediates=True)
     assert logits.shape == (2, 128, 100)
     assert logits.dtype == jnp.float32
+    intermediates = _pytree_get_dtype(intermediates)
+    assert all([all([v == jnp.bfloat16 for v in intermediates[key]]) or key in ['intermediates.lm_head.__call__', 'intermediates.__call__'] for key in intermediates])
+
+
+def _pytree_get_dtype(tree: Any) -> dict[str, Any]:
+    if isinstance(tree, dict):
+        new_dict = {}
+        for key in tree:
+            sub_dict = _pytree_get_dtype(
+                tree[key],
+            )
+            if isinstance(sub_dict, dict):
+                for sub_key in sub_dict:
+                    new_dict[key + "." + sub_key] = sub_dict[sub_key]
+            else:
+                new_dict[key] = sub_dict
+        return new_dict
+    elif isinstance(tree, tuple):
+        return tuple([t.dtype for t in tree])
+    else:
+        return tree.dtype
 
 
 def test_xLSTMBlockStack():
