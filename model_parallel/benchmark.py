@@ -77,6 +77,7 @@ def benchmark_model(
     for p in jax.tree.leaves(state.params):
         p.block_until_ready()
     iteration_times = []
+    print("Starting iteration...")
     for step_idx in tqdm(range(num_steps), desc="Running model"):
         if step_idx == log_skip_steps:
             jax.profiler.start_trace(log_dir)

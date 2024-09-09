@@ -1,6 +1,6 @@
 import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
-USE_CPU = False
+USE_CPU = True
 if USE_CPU:
     from distributed.utils import simulate_CPU_devices
     simulate_CPU_devices(8)
@@ -175,4 +175,4 @@ MODEL_CONFIGS = {
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["1.3B_tp"], num_steps=100, log_num_steps=2)
+    benchmark_model(**MODEL_CONFIGS["debug"], num_steps=100, log_num_steps=2)
