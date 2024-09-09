@@ -80,8 +80,12 @@ def benchmark_model(
     print("Starting iteration...")
     for step_idx in tqdm(range(num_steps), desc="Running model"):
         if step_idx == log_skip_steps:
+            for p in jax.tree.leaves(state.params):
+                p.block_until_ready()
             jax.profiler.start_trace(log_dir)
         if step_idx == log_skip_steps + log_num_steps:
+            for p in jax.tree.leaves(state.params):
+                p.block_until_ready()
             jax.profiler.stop_trace()
         start_time = time.time()
         with jax.profiler.StepTraceAnnotation("train_step", step_num=step_idx):

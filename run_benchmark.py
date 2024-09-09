@@ -1,6 +1,6 @@
 import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
-USE_CPU = True
+USE_CPU = False
 if USE_CPU:
     from distributed.utils import simulate_CPU_devices
     simulate_CPU_devices(8)
@@ -81,6 +81,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
             ),
+            scan_blocks=False,
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
@@ -88,7 +89,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 64, 
+        "batch_size": 128, 
         "gradient_accumulate_steps": 1
     },
     "1.3B": {
@@ -175,4 +176,4 @@ MODEL_CONFIGS = {
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["debug"], num_steps=100, log_num_steps=2)
+    benchmark_model(**MODEL_CONFIGS["120M"], num_steps=100, log_num_steps=3)
