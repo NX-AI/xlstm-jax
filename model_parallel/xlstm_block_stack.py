@@ -24,6 +24,7 @@ class xLSTMBlockStackConfig:
     add_post_blocks_norm: bool = True
     bias: bool = False
     dropout: float = 0.0
+    scan_blocks: bool = False
     dtype: Any = jnp.bfloat16
     parallel: ParallelConfig | None = None
 
@@ -89,8 +90,7 @@ class xLSTMBlockStack(nn.Module):
     def __call__(self, x: jnp.ndarray, **kwargs) -> jnp.ndarray:
         blocks = BlockStack(config=self.config, name='blocks')
         x = blocks(x, **kwargs)
-        # if self.config.add_post_blocks_norm:
-        #     x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
+        # Post-block norms integrated in LM Model
         return x
 
     
@@ -100,9 +100,27 @@ class BlockStack(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, *args, **kwargs) -> jax.Array:
-        blocks = self._create_blocks(config=self.config)
-        for block in blocks:
-            x = block(x, *args, **kwargs)
+        if not self.config.scan_blocks:
+            blocks = self._create_blocks(config=self.config)
+            for block in blocks:
+                x = block(x, *args, **kwargs)
+        else:
+            assert all([v == 0 for v in self.config.block_map]), "scan_blocks only supported for pure mLSTM blocks"
+            block_fn = prepare_module(
+                get_partial_mLSTMBlock(self.config.mlstm_block),
+                "mLSTMBlock",
+                self.config.parallel,
+            )
+            block = block_fn(name="block")
+            x, _ = nn.scan(
+                lambda module, carry, _: (module(carry), None),
+                variable_axes={"params": 0},
+                split_rngs={"params": True, "dropout": True},
+                length=self.config.num_blocks,
+                metadata_params={
+                    "partition_name": None,
+                }
+            )(block, x, ())
         return x
     
     def _create_blocks(self, config: xLSTMBlockStackConfig):

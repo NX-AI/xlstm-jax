@@ -76,19 +76,20 @@ class TPOutputLayer(nn.Module):
         # Gather outputs over feature dimension and split over sequence length.
         x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
         x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
-        # Shard parameters over model axis.
-        norm_fn = shard_module_params(
-            nn.LayerNorm,
-            axis_name=self.config.parallel.model_axis_name,
-            min_weight_size=self.config.parallel.fsdp_min_weight_size,
-        )
+        # Apply norm - Shard parameters over model axis.
+        if self.config.add_post_blocks_norm:
+            norm_fn = shard_module_params(
+                nn.LayerNorm,
+                axis_name=self.config.parallel.model_axis_name,
+                min_weight_size=self.config.parallel.fsdp_min_weight_size,
+            )
+            x = norm_fn(dtype=self.config.dtype, name="out_norm")(x)
+        # Apply output layer - Shard parameters over model axis.
         dense_fn = shard_module_params(
             nn.Dense,
             axis_name=self.config.parallel.model_axis_name,
             min_weight_size=self.config.parallel.fsdp_min_weight_size,
         )
-        # Apply normalization and output layer.
-        x = norm_fn(dtype=self.config.dtype, name="out_norm")(x)
         x = dense_fn(
             features=self.config.vocab_size,
             use_bias=False,

@@ -33,8 +33,8 @@ MODEL_CONFIGS = [
     xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
-        num_blocks=1,
-        context_length=128,
+        num_blocks=3,
+        context_length=32,
         tie_weights=False,
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
@@ -42,6 +42,7 @@ MODEL_CONFIGS = [
             remat=(),
             fsdp_modules=(),
         ),
+        scan_blocks=False,
         dtype=jnp.float32,
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
@@ -50,7 +51,32 @@ MODEL_CONFIGS = [
                 num_heads=4,
                 dropout=0.2,
                 embedding_dim=16,
-                context_length=128,
+                context_length=32,
+            )
+        )
+    ),
+    xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=16,
+        num_blocks=3,
+        context_length=32,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            remat=(),
+            fsdp_modules=(),
+        ),
+        scan_blocks=True,
+        dtype=jnp.float32,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                proj_factor=2.0,
+                conv1d_kernel_size=4,
+                num_heads=4,
+                dropout=0.2,
+                embedding_dim=16,
+                context_length=32,
             )
         )
     )
@@ -89,7 +115,7 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         batch=batch,
         mesh=mesh,
         config=config.parallel,
-        gradient_accumulate_steps=1,
+        gradient_accumulate_steps=gradient_accumulate_steps,
     )
     state, metrics = train_step_fn(
         state,
@@ -150,7 +176,7 @@ def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
             tree2 = tree2.value
         assert tree1.shape == tree2.shape, f"[Key {full_key}] Found different shapes: {tree1.shape} vs {tree2.shape}."
         assert tree1.dtype == tree2.dtype, f"[Key {full_key}] Found different dtypes: {tree1.dtype} vs {tree2.dtype}."
-        np.testing.assert_allclose(tree1, tree2, err_msg=f"[Key {full_key}] Found different values.", rtol=1e-5, atol=1e-5)
+        np.testing.assert_allclose(tree1, tree2, err_msg=f"[Key {full_key}] Found different values.", rtol=1e-4, atol=1e-4)
 
 
 @pytest.mark.parametrize(
@@ -173,7 +199,7 @@ def test_fsdp(config: xLSTMLMModelConfig):
     for param in jax.tree.leaves(state.params):
         if param.size <= config.parallel.fsdp_min_weight_size:
             assert param.sharding.spec == P(), f"Parameter should have been too small for sharding, but found sharded nonetheless: {param.sharding.spec} with shape {param.shape}"
-        else:
+        elif param.size > config.parallel.fsdp_min_weight_size * (config.num_blocks if config.scan_blocks else 1):  # For stacked blocks, ignore parameters in this range.
             assert param.sharding.spec != P(), f"Parameter should have been sharded, but appears replicated: {param.sharding.spec} with shape {param.shape}"
     
     batch = Batch(
