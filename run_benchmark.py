@@ -10,6 +10,7 @@ from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from model_parallel.benchmark import benchmark_model
 from model_parallel.utils import ParallelConfig
 import jax.numpy as jnp
+import optax
 
 MODEL_CONFIGS = {
     "debug": {
@@ -199,7 +200,66 @@ MODEL_CONFIGS = {
         "gradient_accumulate_steps": 1, 
         "model_axis_size": 4
     },
+    "7B_shallow": {
+        "config": xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=4096,
+            num_blocks=12,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=ParallelConfig(
+                data_axis_name="dp",
+                model_axis_name="tp",
+                pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_min_weight_size=2 ** 18,
+                remat=(),
+            ),
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                )
+            )
+        ), 
+        "batch_size": 16, 
+        "gradient_accumulate_steps": 1, 
+        "model_axis_size": 1
+    },
+    "7B": {
+        "config": xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=4096,
+            num_blocks=64,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            scan_blocks=True,
+            parallel=ParallelConfig(
+                data_axis_name="dp",
+                model_axis_name="tp",
+                pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_min_weight_size=2 ** 18,
+                remat=("mLSTMBlock"),
+                tp_async_dense=False,
+            ),
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                )
+            )
+        ), 
+        "batch_size": 32, 
+        "gradient_accumulate_steps": 1, 
+        "model_axis_size": 2,
+        "optimizer": optax.adamw(learning_rate=optax.schedules.warmup_exponential_decay_schedule(init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000), b1=0.9, b2=0.98, eps=1e-9)
+    },
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["120M"], num_steps=100, log_num_steps=3)
+    benchmark_model(**MODEL_CONFIGS["7B"], num_steps=30, log_num_steps=3)

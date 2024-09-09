@@ -38,6 +38,7 @@ class ParallelConfig:
     remat: list[str] | tuple[str] = ()
     fsdp_modules: list[str] | tuple[str] = ()
     fsdp_min_weight_size: int = 2 ** 18
+    tp_async_dense: bool = True
 
 
 def prepare_module(

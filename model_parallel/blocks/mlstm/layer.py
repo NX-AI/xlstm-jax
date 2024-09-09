@@ -13,6 +13,7 @@ from ...components.linear_headwise import (
 )
 from ...utils import UpProjConfigMixin, ParallelConfig, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
+from distributed.tensor_parallel import TPDense
 from distributed.tensor_parallel_async import TPAsyncDense
 from distributed.pipeline_parallel import ModelParallelismWrapper
 from functools import partial
@@ -61,9 +62,10 @@ class mLSTMLayer(nn.Module):
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
-        
+        tp_dense_fn = TPAsyncDense if self.config.parallel.tp_async_dense else TPDense
+
         # up-projection
-        x_inner = TPAsyncDense(
+        x_inner = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
                 dtype=self.config.dtype,
@@ -94,12 +96,12 @@ class mLSTMLayer(nn.Module):
             )(x_inner)
 
         # down-projection
-        y = TPAsyncDense(
+        y = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
                 dtype=self.config.dtype,
                 use_bias=self.config.bias,
-                features=self.config.embedding_dim // tp_size,
+                features=self.config.embedding_dim // tp_size if self.config.parallel.tp_async_dense else self.config.embedding_dim,
             ),
             model_axis_name=self.config.parallel.model_axis_name,
             tp_mode="scatter",
