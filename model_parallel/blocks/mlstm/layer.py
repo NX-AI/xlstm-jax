@@ -13,6 +13,10 @@ from ...components.linear_headwise import (
 )
 from ...utils import UpProjConfigMixin, ParallelConfig, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
+from distributed.tensor_parallel_async import TPAsyncDense
+from distributed.pipeline_parallel import ModelParallelismWrapper
+from functools import partial
+from copy import deepcopy
 
 
 @dataclass
@@ -51,14 +55,59 @@ class mLSTMLayer(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
         B, S, _ = x.shape
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
+        assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
         
         # up-projection
-        x_inner = nn.Dense(
-            features=2 * self.config._inner_embedding_dim,
-            dtype=self.config.dtype,
-            use_bias=self.config.bias,
+        x_inner = TPAsyncDense(
+            dense_fn=partial(
+                nn.Dense,
+                dtype=self.config.dtype,
+                use_bias=self.config.bias,
+                features=2 * self.config._inner_embedding_dim // tp_size,
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+            tp_mode="gather",
+            kernel_init_adjustment=tp_size**-0.5,
             name="proj_up",
         )(x)
+
+        # inner cell
+        inner_config = deepcopy(self.config)
+        inner_config.num_heads = self.config.num_heads // tp_size
+        inner_config.embedding_dim = self.config.embedding_dim // tp_size
+        inner_config.__post_init__()
+        h_state = ModelParallelismWrapper(
+            module_fn=partial(
+                mLSTMInnerLayer,
+                config=inner_config,
+                name="inner_layer",
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+        )(x_inner)
+
+        # down-projection
+        y = TPAsyncDense(
+            dense_fn=partial(
+                nn.Dense,
+                dtype=self.config.dtype,
+                use_bias=self.config.bias,
+                features=self.config.embedding_dim // tp_size,
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+            tp_mode="scatter",
+            kernel_init_adjustment=tp_size**-0.5,
+            name="proj_down",
+        )(h_state)
+        y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)
+        return y
+
+
+class mLSTMInnerLayer(nn.Module):
+    config: mLSTMLayerConfig
+
+    @nn.compact
+    def __call__(self, x_inner: jax.Array) -> jax.Array:
         x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
         
         # mlstm branch
@@ -120,13 +169,4 @@ class mLSTMLayer(nn.Module):
 
         # output / z branch
         h_state = h_tilde_state_skip * nn.swish(z)
-
-        # down-projection
-        y = nn.Dense(
-            features=self.config.embedding_dim,
-            dtype=self.config.dtype,
-            use_bias=self.config.bias,
-            name="proj_down",
-        )(h_state)
-        y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)
-        return y
+        return h_state

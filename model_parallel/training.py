@@ -210,14 +210,14 @@ def tabulate_params(state: TrainState) -> str:
     """
     params = state.params
     params = flatten_dict(params)
-    param_shape = jax.tree_map(lambda x: x.shape, params)
-    param_count = jax.tree_map(lambda x: int(np.prod(x.shape)), params)
-    param_dtype = jax.tree_map(lambda x: str(x.dtype), params)
-    param_sharding = jax.tree_map(lambda x: str(x.sharding), params)
-    # param_mean = jax.tree_map(lambda x: jnp.mean(x).item(), params)
-    # param_std = jax.tree_map(lambda x: jnp.std(x).item(), params)
-    # param_min = jax.tree_map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)
-    # param_max = jax.tree_map(lambda x: jnp.max(x).item() if x.size > 0 else 0, params)
+    param_shape = jax.tree.map(lambda x: x.shape, params)
+    param_count = jax.tree.map(lambda x: int(np.prod(x.shape)), params)
+    param_dtype = jax.tree.map(lambda x: str(x.dtype), params)
+    param_sharding = jax.tree.map(lambda x: str(x.sharding), params)
+    # param_mean = jax.tree.map(lambda x: jnp.mean(x).item(), params)
+    # param_std = jax.tree.map(lambda x: jnp.std(x).item(), params)
+    # param_min = jax.tree.map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)
+    # param_max = jax.tree.map(lambda x: jnp.max(x).item() if x.size > 0 else 0, params)
     summary = defaultdict(list)
     for key in sorted(list(params.keys())):
         summary["Name"].append(key)
