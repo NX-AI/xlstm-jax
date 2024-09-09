@@ -1,5 +1,6 @@
 import os
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["JAX_PLATFORMS"] = "cpu"
 from distributed.utils import simulate_CPU_devices
 NUM_DEVICES = 8
 simulate_CPU_devices(NUM_DEVICES)

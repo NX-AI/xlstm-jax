@@ -9,6 +9,9 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh
 from jax.sharding import PartitionSpec as P
 from .xlstm_lm_model import xLSTMLMModelConfig, xLSTMLMModel
+from collections import defaultdict
+from tabulate import tabulate as python_tabulate
+from flax.core.frozen_dict import FrozenDict
 
 from distributed.data_parallel import fold_rng_over_axis, shard_module_params, sync_gradients
 from distributed.pipeline_parallel import ModelParallelismWrapper, PipelineModule
@@ -186,6 +189,44 @@ def init_xlstm(
     )
     state_xlstm = init_model_fn(rng, input_array)
     print(f"Number of parameters: {get_num_params(state_xlstm):_}")
+    print(tabulate_params(state_xlstm))
     return state_xlstm
 
+def flatten_dict(d: dict) -> dict:
+    """Flattens a nested dictionary."""
+    flat_dict = {}
+    for k, v in d.items():
+        if isinstance(v, (dict, FrozenDict)):
+            flat_dict.update({f"{k}.{k2}": v2 for k2, v2 in flatten_dict(v).items()})
+        else:
+            flat_dict[k] = v
+    return flat_dict
 
+def tabulate_params(state: TrainState) -> str:
+    """Prints a summary of the parameters represented as table.
+
+    Args:
+        exmp_input: An input to the model with which the shapes are inferred.
+    """
+    params = state.params
+    params = flatten_dict(params)
+    param_shape = jax.tree_map(lambda x: x.shape, params)
+    param_count = jax.tree_map(lambda x: int(np.prod(x.shape)), params)
+    param_dtype = jax.tree_map(lambda x: str(x.dtype), params)
+    param_sharding = jax.tree_map(lambda x: str(x.sharding), params)
+    # param_mean = jax.tree_map(lambda x: jnp.mean(x).item(), params)
+    # param_std = jax.tree_map(lambda x: jnp.std(x).item(), params)
+    # param_min = jax.tree_map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)
+    # param_max = jax.tree_map(lambda x: jnp.max(x).item() if x.size > 0 else 0, params)
+    summary = defaultdict(list)
+    for key in sorted(list(params.keys())):
+        summary["Name"].append(key)
+        summary["Shape"].append(param_shape[key])
+        summary["Count"].append(param_count[key])
+        summary["Dtype"].append(param_dtype[key])
+        summary["Sharding"].append(param_sharding[key])
+        # summary["Mean"].append(param_mean[key])
+        # summary["Std"].append(param_std[key])
+        # summary["Min"].append(param_min[key])
+        # summary["Max"].append(param_max[key])
+    return python_tabulate(summary, headers="keys", intfmt="_", floatfmt=".3f")

@@ -1,3 +1,5 @@
+import os
+os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
 from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
@@ -5,9 +7,8 @@ from model_parallel.benchmark import benchmark_model
 from model_parallel.utils import ParallelConfig
 import jax.numpy as jnp
 
-
-if __name__ == "__main__":
-    config = xLSTMLMModelConfig(
+MODEL_CONFIGS = {
+    "debug": {"config": xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
         num_blocks=4,
@@ -16,9 +17,9 @@ if __name__ == "__main__":
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
         parallel=ParallelConfig(
-            data_axis_name="batch",
-            model_axis_name="model",
-            pipeline_axis_name="pipeline",
+            data_axis_name="dp",
+            model_axis_name="tp",
+            pipeline_axis_name="pp",
         ),
         dtype=jnp.float32,
         mlstm_block=mLSTMBlockConfig(
@@ -31,5 +32,74 @@ if __name__ == "__main__":
                 context_length=128,
             )
         )
-    )
-    benchmark_model(config, model_axis_size=1, pipeline_axis_size=1, num_steps=100)
+    ),},
+    "120M": {"config": xLSTMLMModelConfig(
+        vocab_size=50304,
+        embedding_dim=768,
+        num_blocks=12,
+        context_length=2048,
+        tie_weights=False,
+        add_embedding_dropout=False,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            data_axis_name="dp",
+            model_axis_name="tp",
+            pipeline_axis_name="pp",
+        ),
+        dtype=jnp.bfloat16,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                num_heads=4,
+            )
+        )
+    ), "batch_size": 64, "gradient_accumulate_steps": 1},
+    "1.3B": {"config": xLSTMLMModelConfig(
+        vocab_size=50304,
+        embedding_dim=2048,
+        num_blocks=48,
+        context_length=2048,
+        tie_weights=False,
+        add_embedding_dropout=False,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            data_axis_name="dp",
+            model_axis_name="tp",
+            pipeline_axis_name="pp",
+            fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+            fsdp_min_weight_size=2 ** 18,
+            remat=(),
+        ),
+        dtype=jnp.bfloat16,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                num_heads=4,
+            )
+        )
+    ), "batch_size": 32, "gradient_accumulate_steps": 2},
+    "1.3B_remat": {"config": xLSTMLMModelConfig(
+        vocab_size=50304,
+        embedding_dim=2048,
+        num_blocks=48,
+        context_length=2048,
+        tie_weights=False,
+        add_embedding_dropout=False,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            data_axis_name="dp",
+            model_axis_name="tp",
+            pipeline_axis_name="pp",
+            fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+            fsdp_min_weight_size=2 ** 18,
+            remat=("mLSTMBlock"),
+        ),
+        dtype=jnp.bfloat16,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                num_heads=4,
+            )
+        )
+    ), "batch_size": 64},
+}
+
+if __name__ == "__main__":
+    benchmark_model(**MODEL_CONFIGS["1.3B"], model_axis_size=1, pipeline_axis_size=1, num_steps=100, log_num_steps=2)

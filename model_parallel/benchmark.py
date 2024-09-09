@@ -83,9 +83,10 @@ def benchmark_model(
         if step_idx == log_skip_steps + log_num_steps:
             jax.profiler.stop_trace()
         start_time = time.time()
-        state, metrics = train_step_fn(
-            state, metrics, batch
-        )
+        with jax.profiler.StepTraceAnnotation("train_step", step_num=step_idx):
+            state, metrics = train_step_fn(
+                state, metrics, batch
+            )
         end_time = time.time()
         iteration_times.append(end_time - start_time)
     for p in jax.tree.leaves(state.params):
