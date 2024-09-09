@@ -73,3 +73,6 @@ coverage.xml
 
 # MacOS
 .DS_Store
+
+# Benchmarks
+logs/

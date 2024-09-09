@@ -124,6 +124,15 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
     params_multi_device = jax.device_get(state.params)
     params_single_device = jax.device_get(state_single_device.params)
     _assert_pytree_equal(params_single_device, params_multi_device)
+    metrics_single_device = jax.device_get(metrics_single_device)
+    for key in metrics:
+        np.testing.assert_allclose(
+            np.array(metrics[key]), 
+            np.array(metrics_single_device[key]),
+            err_msg=f"[Metrics Key {key}] Value mismatch",
+            atol=1e-2,  # Higher because values are >1000.
+            rtol=1e-5,
+        )
 
 def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
     if isinstance(tree1, dict):
