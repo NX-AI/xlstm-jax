@@ -61,7 +61,8 @@ class xLSTMBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
-        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm")
+        # TODO: For best performance in the synchronous case, this norm can be integrated within the TP (i.e. gather + norm before dense)
+        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm", axis_name=self.config.parallel.model_axis_name)
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
@@ -75,7 +76,7 @@ class xLSTMBlock(nn.Module):
         
         if self.config.feedforward is not None:
             ffn_norm = LayerNorm(
-                weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm"
+                weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm", axis_name=self.config.parallel.model_axis_name
             )
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)
