@@ -35,6 +35,10 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     dtype: jnp.dtype = jnp.bfloat16
     parallel: ParallelConfig | None = None
 
+    # For debugging purposes, we allow skipping the mLSTM cell
+    # and only have the up and down projection.
+    debug_cell: bool = False
+
     _num_blocks: int = 1
     _inner_embedding_dim: int = None
 
@@ -72,19 +76,22 @@ class mLSTMLayer(nn.Module):
             name="proj_up",
         )(x)
 
-        # inner cell
-        inner_config = deepcopy(self.config)
-        inner_config.num_heads = self.config.num_heads // tp_size
-        inner_config.embedding_dim = self.config.embedding_dim // tp_size
-        inner_config.__post_init__()
-        h_state = ModelParallelismWrapper(
-            module_fn=partial(
-                mLSTMInnerLayer,
-                config=inner_config,
-                name="inner_layer",
-            ),
-            model_axis_name=self.config.parallel.model_axis_name,
-        )(x_inner)
+        if self.config.debug_cell:
+            h_state = x_inner[..., :x_inner.shape[-1] // 2]
+        else:
+            # inner cell
+            inner_config = deepcopy(self.config)
+            inner_config.num_heads = self.config.num_heads // tp_size
+            inner_config.embedding_dim = self.config.embedding_dim // tp_size
+            inner_config.__post_init__()
+            h_state = ModelParallelismWrapper(
+                module_fn=partial(
+                    mLSTMInnerLayer,
+                    config=inner_config,
+                    name="inner_layer",
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+            )(x_inner)
 
         # down-projection
         y = TPAsyncDense(

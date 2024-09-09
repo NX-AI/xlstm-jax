@@ -81,6 +81,7 @@ def train_step(
     config: ParallelConfig,
     gradient_accumulate_steps: int = 1
 ) -> tuple[TrainState, Metrics]:
+    print("Compiling train step...")
     rng, step_rng = jax.random.split(state.rng)
     grads, step_metrics = accumulate_gradients(
         state,
