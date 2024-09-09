@@ -92,6 +92,32 @@ MODEL_CONFIGS = {
         "batch_size": 128, 
         "gradient_accumulate_steps": 1
     },
+    "120M_fsdp": {
+        "config": xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=768,
+            num_blocks=12,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=ParallelConfig(
+                data_axis_name="dp",
+                model_axis_name="tp",
+                pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+            ),
+            scan_blocks=False,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                )
+            )
+        ), 
+        "batch_size": 128, 
+        "gradient_accumulate_steps": 1
+    },
     "1.3B": {
         "config": xLSTMLMModelConfig(
             vocab_size=50304,
