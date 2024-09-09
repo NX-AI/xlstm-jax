@@ -67,7 +67,7 @@ def benchmark_model(
         batch=batch,
         mesh=mesh,
         config=config.parallel,
-        gradient_accumulate_steps=1,
+        gradient_accumulate_steps=gradient_accumulate_steps,
     )
     state, metrics = train_step_fn(
         state,
