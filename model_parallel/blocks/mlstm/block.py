@@ -31,6 +31,7 @@ def get_partial_mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> callabl
             slstm=None,
             feedforward=None,
             dtype=config.mlstm.dtype,
+            parallel=config.parallel,
             _num_blocks=config._num_blocks,
             _block_idx=config._block_idx,
         ),

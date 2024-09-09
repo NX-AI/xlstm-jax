@@ -145,6 +145,9 @@ def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
             _assert_pytree_equal(tree1[key], tree2[key], full_key=full_key + ("." if len(full_key) > 0 else "") + str(key))
     else:
         assert isinstance(tree2, type(tree1)), f"[Key {full_key}] Found tree-1 to be a {type(tree1)}, but tree-2 is a {type(tree2)}."
+        if isinstance(tree1, nn.Partitioned):
+            tree1 = tree1.value
+            tree2 = tree2.value
         assert tree1.shape == tree2.shape, f"[Key {full_key}] Found different shapes: {tree1.shape} vs {tree2.shape}."
         assert tree1.dtype == tree2.dtype, f"[Key {full_key}] Found different dtypes: {tree1.dtype} vs {tree2.dtype}."
         np.testing.assert_allclose(tree1, tree2, err_msg=f"[Key {full_key}] Found different values.", rtol=1e-5, atol=1e-5)

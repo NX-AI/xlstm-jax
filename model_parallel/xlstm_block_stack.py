@@ -89,8 +89,8 @@ class xLSTMBlockStack(nn.Module):
     def __call__(self, x: jnp.ndarray, **kwargs) -> jnp.ndarray:
         blocks = BlockStack(config=self.config, name='blocks')
         x = blocks(x, **kwargs)
-        if self.config.add_post_blocks_norm:
-            x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
+        # if self.config.add_post_blocks_norm:
+        #     x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
         return x
 
     
