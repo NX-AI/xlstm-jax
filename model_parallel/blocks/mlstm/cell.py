@@ -54,18 +54,22 @@ class mLSTMCell(nn.Module):
         k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
         v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
 
-        q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-        k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-        v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+        # q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+        # k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+        # v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
 
-        igate_preact = igate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
-        fgate_preact = fgate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
+        # igate_preact = igate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
+        # fgate_preact = fgate_preact.transpose(0, 2, 1)[..., None]  # (B, NH, S, 1)
+        igate_preact = igate_preact[..., None]
+        fgate_preact = fgate_preact[..., None]
 
         backend_fn = create_mlstm_backend(self.config)
+        backend_fn = jax.vmap(backend_fn, in_axes=(2, 2, 2, 2, 2), out_axes=2)
         h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
         h_state_norm = MultiHeadLayerNorm(
-            weight=True, bias=False, dtype=self.config.dtype, name="outnorm"
+            weight=True, bias=False, dtype=self.config.dtype, name="outnorm", axis=2
         )(h_state)
-        h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
+        # h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
+        h_state_norm = h_state_norm.reshape(B, S, -1)
         return h_state_norm

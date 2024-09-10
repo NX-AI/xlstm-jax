@@ -39,10 +39,10 @@ def parallel_stabilized_simple(
         jax.Array: (B, NH, S, DH), h_tilde_state
     """
 
-    B, NH, S, DH = queries.shape
+    B, S, DH = queries.shape
     _dtype = queries.dtype
     assert queries.shape == keys.shape == values.shape, f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
-    assert igate_preact.shape == fgate_preact.shape == (B, NH, S, 1), f"igate_preact and fgate_preact must have the shape (B, NH, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
+    assert igate_preact.shape == fgate_preact.shape == (B, S, 1), f"igate_preact and fgate_preact must have the shape (B, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
     if lower_triangular_matrix is not None:
         assert lower_triangular_matrix.shape == (S, S), f"lower_triangular_matrix must have shape (S, S), got {lower_triangular_matrix.shape}"
 
@@ -58,7 +58,7 @@ def parallel_stabilized_simple(
 
     log_fgates_cumsum = jnp.concat(
         [
-            jnp.zeros((B, NH, 1, 1), dtype=_dtype),
+            jnp.zeros((B, 1, 1), dtype=_dtype),
             jnp.cumsum(log_fgates, axis=-2),
         ],
         axis=-2,
@@ -75,7 +75,7 @@ def parallel_stabilized_simple(
     # Causal masking & selection of the correct submatrix, such that forgetgate at timestep t is not applied
     # to the input at timestep t
     log_fg_matrix = jnp.where(
-        ltr, _log_fg_matrix[:, :, 1:, 1:], -float("inf")
+        ltr, _log_fg_matrix[:, 1:, 1:], -float("inf")
     )  # (B, NH, S, S)
 
     # gate decay matrix D (combination of forget gate and input gate)
@@ -84,7 +84,7 @@ def parallel_stabilized_simple(
     if stabilize_rowwise:
         max_log_D = jnp.max(log_D_matrix, axis=-1, keepdims=True)  # (B, NH, S, 1)
     else:
-        max_log_D = jnp.max(log_D_matrix.reshape(B, NH, -1), axis=-1, keepdims=True)[..., None]
+        max_log_D = jnp.max(log_D_matrix.reshape(B, -1), axis=-1, keepdims=True)[..., None]
         # (B, NH, 1, 1)
     log_D_matrix_stabilized = log_D_matrix - max_log_D  # (B, NH, S, S)
     D_matrix = jnp.exp(log_D_matrix_stabilized)  # (B, NH, S, S)
