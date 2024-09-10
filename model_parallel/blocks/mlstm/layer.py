@@ -134,9 +134,14 @@ class mLSTMLayer(nn.Module):
             inner_config.num_heads = self.config.num_heads // tp_size
             inner_config.embedding_dim = self.config.embedding_dim // tp_size
             inner_config.__post_init__()
+            mlstm_inner_layer = prepare_module(
+                mLSTMInnerLayer,
+                "mLSTMInnerLayer",
+                self.config.parallel,
+            )
             h_state = ModelParallelismWrapper(
                 module_fn=partial(
-                    mLSTMInnerLayer,
+                    mlstm_inner_layer,
                     config=inner_config,
                     name="inner_layer",
                 ),
@@ -222,7 +227,12 @@ class mLSTMInnerLayer(nn.Module):
             name="v_proj",
         )(x_mlstm)
         
-        h_tilde_state = mLSTMCell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
+        mlstm_cell = prepare_module(
+            mLSTMCell,
+            "mLSTMCell",
+            self.config.parallel,
+        )
+        h_tilde_state = mlstm_cell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
         h_tilde_state_skip = h_tilde_state + (learnable_skip * x_mlstm_conv_act)
