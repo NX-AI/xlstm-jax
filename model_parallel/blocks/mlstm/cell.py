@@ -35,20 +35,21 @@ class mLSTMCell(nn.Module):
         qkv = jnp.concatenate([q, k, v], axis=-1)
 
         # compute input and forget gate pre-activations  - why taking all heads as input?
-        igate_preact = nn.Dense(
-            features=self.config.num_heads,
-            dtype=self.config.dtype,
-            bias_init=nn.initializers.normal(stddev=0.1),
-            kernel_init=nn.initializers.zeros,
-            name="igate",
-        )(qkv)
-        fgate_preact = nn.Dense(
-            features=self.config.num_heads,
-            dtype=self.config.dtype,
-            bias_init=bias_linspace_init_(3.0, 6.0),
-            kernel_init=nn.initializers.zeros,
-            name="fgate",
-        )(qkv)
+        with jax.named_scope("mlstm_gates"):
+            igate_preact = nn.Dense(
+                features=self.config.num_heads,
+                dtype=self.config.dtype,
+                bias_init=nn.initializers.normal(stddev=0.1),
+                kernel_init=nn.initializers.zeros,
+                name="igate",
+            )(qkv)
+            fgate_preact = nn.Dense(
+                features=self.config.num_heads,
+                dtype=self.config.dtype,
+                bias_init=bias_linspace_init_(3.0, 6.0),
+                kernel_init=nn.initializers.zeros,
+                name="fgate",
+            )(qkv)
 
         q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
         k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
@@ -65,7 +66,8 @@ class mLSTMCell(nn.Module):
 
         backend_fn = create_mlstm_backend(self.config)
         backend_fn = jax.vmap(backend_fn, in_axes=(2, 2, 2, 2, 2), out_axes=2)
-        h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
+        with jax.named_scope("mlstm_recurrent_step"):
+            h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
         h_state_norm = MultiHeadLayerNorm(
             weight=True, bias=False, dtype=self.config.dtype, name="outnorm", axis=2

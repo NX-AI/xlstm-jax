@@ -211,10 +211,10 @@ def tabulate_params(state: TrainState) -> str:
     """
     params = state.params
     params = flatten_dict(params)
-    param_shape = jax.tree.map(lambda x: x.shape, params)
-    param_count = jax.tree.map(lambda x: int(np.prod(x.shape)), params)
-    param_dtype = jax.tree.map(lambda x: str(x.dtype), params)
-    param_sharding = jax.tree.map(lambda x: str(x.sharding), params)
+    param_shape = jax.tree.map(lambda x: x.value.shape if isinstance(x, nn.Partitioned) else x.shape, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
+    param_count = jax.tree.map(lambda x: int(np.prod(x)), param_shape, is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]))
+    param_dtype = jax.tree.map(lambda x: str(x.value.dtype if isinstance(x, nn.Partitioned) else x.dtype), params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
+    param_sharding = jax.tree.map(lambda x: str(x.names if isinstance(x, nn.Partitioned) else "Replicated"), params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
     # param_mean = jax.tree.map(lambda x: jnp.mean(x).item(), params)
     # param_std = jax.tree.map(lambda x: jnp.std(x).item(), params)
     # param_min = jax.tree.map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)
