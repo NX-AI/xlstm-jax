@@ -62,7 +62,7 @@ class mLSTMLayer(nn.Module):
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
-        tp_dense_fn = TPAsyncDense if self.config.parallel.tp_async_dense else TPDense
+        tp_dense_fn = partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True) if self.config.parallel.tp_async_dense else TPDense
 
         # up-projection
         x_inner = tp_dense_fn(

@@ -168,7 +168,7 @@ MODEL_CONFIGS = {
             )
         ), 
         "batch_size": 32, 
-        "gradient_accumulate_steps": 2
+        "gradient_accumulate_steps": 1
     },
     "1.3B_remat": {
         "config": xLSTMLMModelConfig(
@@ -179,6 +179,7 @@ MODEL_CONFIGS = {
             tie_weights=False,
             add_embedding_dropout=False,
             add_post_blocks_norm=True,
+            scan_blocks=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
                 model_axis_name="tp",
@@ -194,7 +195,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 64
+        "batch_size": 256
     },
     "1.3B_tp": {
         "config": xLSTMLMModelConfig(
@@ -266,10 +267,11 @@ MODEL_CONFIGS = {
                 data_axis_name="dp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                # fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=(),  # Not needed if TP 4
                 fsdp_min_weight_size=2 ** 18,
                 remat=("mLSTMBlock"),
-                tp_async_dense=False,
+                tp_async_dense=True,
             ),
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
