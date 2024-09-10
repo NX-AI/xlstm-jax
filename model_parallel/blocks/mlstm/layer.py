@@ -13,6 +13,7 @@ from ...components.linear_headwise import (
 )
 from ...utils import UpProjConfigMixin, ParallelConfig, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
+from ...components.ln import LayerNorm
 from distributed.tensor_parallel import TPDense
 from distributed.tensor_parallel_async import TPAsyncDense
 from distributed.pipeline_parallel import ModelParallelismWrapper
@@ -62,24 +63,71 @@ class mLSTMLayer(nn.Module):
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
-        tp_dense_fn = partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True) if self.config.parallel.tp_async_dense else TPDense
 
+        tp_dense_fn = partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True) if self.config.parallel.tp_async_dense else TPDense
         # up-projection
-        x_inner = tp_dense_fn(
-            dense_fn=partial(
-                nn.Dense,
-                dtype=self.config.dtype,
-                use_bias=self.config.bias,
-                features=2 * self.config._inner_embedding_dim // tp_size,
-            ),
-            model_axis_name=self.config.parallel.model_axis_name,
-            tp_mode="gather",
-            kernel_init_adjustment=tp_size**-0.5,
-            name="proj_up",
-        )(x)
+        if self.config.parallel.tp_async_dense:
+            x_inner = tp_dense_fn(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config.dtype,
+                    use_bias=self.config.bias,
+                    features=2 * self.config._inner_embedding_dim // tp_size,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                kernel_init_adjustment=tp_size**-0.5,
+                name="proj_up",
+            )(x)
+        else:
+            # split projection up into two smaller matrices, as splitting large feature vector costs time.
+            x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
+            x_mlstm = TPDense(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config.dtype,
+                    use_bias=self.config.bias,
+                    features=self.config._inner_embedding_dim // tp_size,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                skip_communication=True,
+                kernel_init_adjustment=tp_size**-0.5,
+                name="proj_up_mlstm",
+            )(x)
+            z = TPDense(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config.dtype,
+                    use_bias=self.config.bias,
+                    features=self.config._inner_embedding_dim // tp_size,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                skip_communication=True,
+                kernel_init_adjustment=tp_size**-0.5,
+                name="proj_up_z",
+            )(x)
+            x_inner = (x_mlstm, z)
+            # x_inner = TPDense(
+            #     dense_fn=partial(
+            #         nn.Dense,
+            #         dtype=self.config.dtype,
+            #         use_bias=self.config.bias,
+            #         features=2 * self.config._inner_embedding_dim // tp_size,
+            #     ),
+            #     model_axis_name=self.config.parallel.model_axis_name,
+            #     tp_mode="gather",
+            #     skip_communication=False,
+            #     kernel_init_adjustment=tp_size**-0.5,
+            #     name="proj_up",
+            # )(x)
 
         if self.config.debug_cell:
-            h_state = x_inner[..., :x_inner.shape[-1] // 2]
+            if isinstance(x_inner, tuple):
+                h_state = x_inner[0]
+            else:
+                h_state = x_inner[..., :x_inner.shape[-1] // 2]
         else:
             # inner cell
             inner_config = deepcopy(self.config)
@@ -116,8 +164,11 @@ class mLSTMInnerLayer(nn.Module):
     config: mLSTMLayerConfig
 
     @nn.compact
-    def __call__(self, x_inner: jax.Array) -> jax.Array:
-        x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
+    def __call__(self, x_inner: jax.Array | tuple[jax.Array, jax.Array]) -> jax.Array:
+        if isinstance(x_inner, tuple):
+            x_mlstm, z = x_inner
+        else:
+            x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
         
         # mlstm branch
         x_mlstm_conv = CausalConv1d(

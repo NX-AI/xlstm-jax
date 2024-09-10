@@ -19,9 +19,9 @@ os.environ['XLA_FLAGS'] = (
     # '--xla_gpu_enable_pipelined_collectives=false '
     # '--xla_gpu_enable_pipelined_p2p=true '
     # '--xla_gpu_collective_permute_decomposer_threshold=1024 '
-    # '--xla_gpu_lhs_enable_gpu_async_tracker=true '
-    # '--xla_gpu_multi_streamed_windowed_einsum=true '
-    # '--xla_gpu_threshold_for_windowed_einsum_mib=0 '
+    '--xla_gpu_lhs_enable_gpu_async_tracker=true '
+    '--xla_gpu_multi_streamed_windowed_einsum=true '
+    '--xla_gpu_threshold_for_windowed_einsum_mib=0 '
     # '--xla_gpu_enable_nccl_user_buffers=true '
 )
 USE_CPU = False
@@ -271,7 +271,7 @@ MODEL_CONFIGS = {
                 fsdp_modules=(),  # Not needed if TP 4
                 fsdp_min_weight_size=2 ** 18,
                 remat=("mLSTMBlock"),
-                tp_async_dense=True,
+                tp_async_dense=False,
             ),
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(

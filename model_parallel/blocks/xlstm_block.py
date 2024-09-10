@@ -61,7 +61,7 @@ class xLSTMBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
-        # TODO: For best performance in the synchronous case, this norm can be integrated within the TP (i.e. gather + norm before dense)
+        # LayerNorm best to do over model axis, not sync beforehand due to costly embedding size.
         xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm", axis_name=self.config.parallel.model_axis_name)
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
