@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
 from dataclasses import dataclass
 
@@ -113,7 +111,7 @@ class mLSTMBackendTorch(mLSTMBackend):
 
     def forward(self, q, k, v, i, f):
         return parallel_stabilized_simple(q, k, v, i, f, lower_triangular_matrix=self.causal_mask)
-    
+
     def reset_parameters(self):
         pass
 

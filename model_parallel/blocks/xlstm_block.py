@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass
 
 import jax
@@ -8,8 +6,8 @@ from flax import linen as nn
 
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.ln import LayerNorm
-from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 from ..utils import ParallelConfig, prepare_module
+from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 
 
 @dataclass
@@ -26,17 +24,9 @@ class xLSTMBlockConfig:
     _block_idx: int = None
 
     def __post_init__(self):
-        assert (
-            self.mlstm is not None or self.slstm is not None
-        ), "Either mlstm or slstm must be provided"
-        assert (
-            self.mlstm is None or self.slstm is None
-        ), "Only one of mlstm or slstm can be provided"
-        embedding_dim = (
-            self.mlstm.embedding_dim
-            if self.mlstm is not None
-            else self.slstm.embedding_dim
-        )
+        assert self.mlstm is not None or self.slstm is not None, "Either mlstm or slstm must be provided"
+        assert self.mlstm is None or self.slstm is None, "Only one of mlstm or slstm can be provided"
+        embedding_dim = self.mlstm.embedding_dim if self.mlstm is not None else self.slstm.embedding_dim
         if self.mlstm:
             self.mlstm._num_blocks = self._num_blocks
             self.mlstm._block_idx = self._block_idx
@@ -62,7 +52,13 @@ class xLSTMBlock(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
         # LayerNorm best to do over model axis, not sync beforehand due to costly embedding size.
-        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm", axis_name=self.config.parallel.model_axis_name)
+        xlstm_norm = LayerNorm(
+            weight=True,
+            bias=False,
+            dtype=self.config.dtype,
+            name="xlstm_norm",
+            axis_name=self.config.parallel.model_axis_name,
+        )
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
@@ -73,10 +69,14 @@ class xLSTMBlock(nn.Module):
         x_norm = xlstm_norm(x)
         x_xlstm = xlstm(x_norm, **kwargs)
         x = x + x_xlstm
-        
+
         if self.config.feedforward is not None:
             ffn_norm = LayerNorm(
-                weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm", axis_name=self.config.parallel.model_axis_name
+                weight=True,
+                bias=False,
+                dtype=self.config.dtype,
+                name="ffn_norm",
+                axis_name=self.config.parallel.model_axis_name,
             )
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)

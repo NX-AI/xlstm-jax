@@ -1,13 +1,11 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass
 
-from flax import linen as nn
 import jax
 import jax.numpy as jnp
+from flax import linen as nn
 
-from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 from .blocks.mlstm.block import mLSTMBlockConfig, mLSTMLayerConfig
+from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
 
 @dataclass

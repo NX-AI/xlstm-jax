@@ -1,7 +1,4 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass
-from typing import Optional
 
 import torch
 from torch import nn

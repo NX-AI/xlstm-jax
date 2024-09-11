@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
 
 import torch
@@ -103,19 +101,19 @@ class mLSTMLayer(nn.Module):
         # up-projection
         x_inner = self.proj_up(x)
         x_mlstm, z = torch.split(x_inner, split_size_or_sections=self.config._inner_embedding_dim, dim=-1)
-        
+
         # mlstm branch
         x_mlstm_conv = self.conv1d(x_mlstm)
         x_mlstm_conv_act = self.conv_act_fn(x_mlstm_conv)
-        
+
         q = self.q_proj(x_mlstm_conv_act)
         k = self.k_proj(x_mlstm_conv_act)
         v = self.v_proj(x_mlstm)
-        
+
         h_tilde_state = self.mlstm_cell(q=q, k=k, v=v)
 
         h_tilde_state_skip = h_tilde_state + (self.learnable_skip * x_mlstm_conv_act)
-        
+
         # output / z branch
         h_state = h_tilde_state_skip * self.ogate_act_fn(z)
 

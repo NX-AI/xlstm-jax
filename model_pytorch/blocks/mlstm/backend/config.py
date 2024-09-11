@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck, Korbinian Poeppel
 from abc import abstractmethod
 from typing import Any
 

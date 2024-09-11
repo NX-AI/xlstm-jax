@@ -1,17 +1,6 @@
-from typing import Any
-from functools import partial
-import jax
-import jax.numpy as jnp
-import optax
-import numpy as np
-from flax import linen as nn
-from jax.experimental.shard_map import shard_map
-from jax.sharding import Mesh
-from jax.sharding import PartitionSpec as P
-from .xlstm_lm_model import xLSTMLMModelConfig, xLSTMLMModel
 from collections import defaultdict
-from tabulate import tabulate as python_tabulate
-from flax.core.frozen_dict import FrozenDict
+from functools import partial
+from typing import Any
 
 from distributed.data_parallel import fold_rng_over_axis, shard_module_params, sync_gradients
 from distributed.pipeline_parallel import ModelParallelismWrapper, PipelineModule
@@ -29,11 +18,24 @@ from distributed.tensor_parallel_transformer import (
     TransformerBackbone,
     split_array_over_mesh,
 )
+
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from flax import linen as nn
+from flax.core.frozen_dict import FrozenDict
+from jax.experimental.shard_map import shard_map
+from jax.sharding import Mesh, PartitionSpec as P
+from tabulate import tabulate as python_tabulate
+
 from .utils import ParallelConfig
+from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 PyTree = Any
 Parameter = jax.Array | nn.Partitioned
 Metrics = dict[str, tuple[jax.Array, ...]]
+
 
 def loss_fn(
     params: PyTree,
@@ -45,9 +47,7 @@ def loss_fn(
     # Since dropout masks vary across the batch dimension, we want each device to generate a
     # different mask. We can achieve this by folding the rng over the data axis, so that each
     # device gets a different rng and thus mask.
-    dropout_rng = fold_rng_over_axis(
-        rng, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name)
-    )
+    dropout_rng = fold_rng_over_axis(rng, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name))
     # Remaining computation is the same as before for single device.
     logits = apply_fn(
         {"params": params},
@@ -59,9 +59,7 @@ def loss_fn(
     labels = batch.labels
     labels = split_array_over_mesh(labels, axis_name=config.pipeline_axis_name, split_axis=1)
     labels = split_array_over_mesh(labels, axis_name=config.model_axis_name, split_axis=1)
-    assert (
-        logits.shape[:-1] == labels.shape
-    ), f"Logits and labels shapes do not match: {logits.shape} vs {labels.shape}"
+    assert logits.shape[:-1] == labels.shape, f"Logits and labels shapes do not match: {logits.shape} vs {labels.shape}"
     loss = optax.softmax_cross_entropy_with_integer_labels(logits, labels)
     correct_pred = jnp.equal(jnp.argmax(logits, axis=-1), labels)
     batch_size = np.prod(labels.shape)
@@ -75,11 +73,7 @@ def loss_fn(
 
 
 def train_step(
-    state: TrainState,
-    metrics: Metrics | None,
-    batch: Batch,
-    config: ParallelConfig,
-    gradient_accumulate_steps: int = 1
+    state: TrainState, metrics: Metrics | None, batch: Batch, config: ParallelConfig, gradient_accumulate_steps: int = 1
 ) -> tuple[TrainState, Metrics]:
     print("Compiling train step...")
     rng, step_rng = jax.random.split(state.rng)
@@ -92,9 +86,7 @@ def train_step(
     )
     # Update parameters. We need to sync the gradients across devices before updating.
     with jax.named_scope("sync_gradients"):
-        grads = sync_gradients(
-            grads, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name)
-        )
+        grads = sync_gradients(grads, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name))
     new_state = state.apply_gradients(grads=grads, rng=rng)
     # Sum metrics across replicas. Alternatively, we could keep the metrics separate
     # and only synchronize them before logging. For simplicity, we sum them here.
@@ -146,9 +138,9 @@ def get_train_step_fn(
 
 
 def init_xlstm(
-    config: xLSTMLMModelConfig, 
-    mesh: Mesh, 
-    rng: jax.Array, 
+    config: xLSTMLMModelConfig,
+    mesh: Mesh,
+    rng: jax.Array,
     input_array: jax.Array,
     optimizer: callable,
 ):
@@ -165,6 +157,7 @@ def init_xlstm(
             rng=init_rng,
         )
         return state
+
     init_model_fn = jax.jit(
         shard_map(
             _init_model,
@@ -174,9 +167,7 @@ def init_xlstm(
             check_rep=False,
         ),
     )
-    state_xlstm_shapes = jax.eval_shape(
-        init_model_fn, rng, input_array
-    )
+    state_xlstm_shapes = jax.eval_shape(init_model_fn, rng, input_array)
     state_xlstm_specs = nn.get_partition_spec(state_xlstm_shapes)
 
     init_model_fn = jax.jit(
@@ -194,6 +185,7 @@ def init_xlstm(
         print(tabulate_params(state_xlstm))
     return state_xlstm
 
+
 def flatten_dict(d: dict) -> dict:
     """Flattens a nested dictionary."""
     flat_dict = {}
@@ -204,6 +196,7 @@ def flatten_dict(d: dict) -> dict:
             flat_dict[k] = v
     return flat_dict
 
+
 def tabulate_params(state: TrainState) -> str:
     """Prints a summary of the parameters represented as table.
 
@@ -212,10 +205,26 @@ def tabulate_params(state: TrainState) -> str:
     """
     params = state.params
     params = flatten_dict(params)
-    param_shape = jax.tree.map(lambda x: x.value.shape if isinstance(x, nn.Partitioned) else x.shape, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
-    param_count = jax.tree.map(lambda x: int(np.prod(x)), param_shape, is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]))
-    param_dtype = jax.tree.map(lambda x: str(x.value.dtype if isinstance(x, nn.Partitioned) else x.dtype), params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
-    param_sharding = jax.tree.map(lambda x: str(x.names if isinstance(x, nn.Partitioned) else "Replicated"), params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
+    param_shape = jax.tree.map(
+        lambda x: x.value.shape if isinstance(x, nn.Partitioned) else x.shape,
+        params,
+        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+    )
+    param_count = jax.tree.map(
+        lambda x: int(np.prod(x)),
+        param_shape,
+        is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]),
+    )
+    param_dtype = jax.tree.map(
+        lambda x: str(x.value.dtype if isinstance(x, nn.Partitioned) else x.dtype),
+        params,
+        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+    )
+    param_sharding = jax.tree.map(
+        lambda x: str(x.names if isinstance(x, nn.Partitioned) else "Replicated"),
+        params,
+        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+    )
     # param_mean = jax.tree.map(lambda x: jnp.mean(x).item(), params)
     # param_std = jax.tree.map(lambda x: jnp.std(x).item(), params)
     # param_min = jax.tree.map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)

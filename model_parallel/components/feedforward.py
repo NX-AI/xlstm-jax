@@ -1,12 +1,10 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal
 
-from flax import linen as nn
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 from ..utils import UpProjConfigMixin
 
@@ -41,9 +39,7 @@ class FeedForwardConfig(UpProjConfigMixin):
 
     def __post_init__(self):
         self._set_proj_up_dim(embedding_dim=self.embedding_dim)
-        assert (
-            self.act_fn in _act_fn_registry
-        ), f"Unknown activation function {self.act_fn}"
+        assert self.act_fn in _act_fn_registry, f"Unknown activation function {self.act_fn}"
 
 
 class GatedFeedForward(nn.Module):

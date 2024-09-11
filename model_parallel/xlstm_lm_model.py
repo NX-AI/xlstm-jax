@@ -1,19 +1,18 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass
-
-from flax import linen as nn
-import jax
-import jax.numpy as jnp
 from functools import partial
 
-from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
+from distributed.data_parallel import shard_module_params
+from distributed.pipeline_parallel import ModelParallelismWrapper
+from distributed.tensor_parallel_transformer import split_array_over_mesh
+
+import jax
+import jax.numpy as jnp
+from flax import linen as nn
+
 from .blocks.mlstm.block import mLSTMBlockConfig, mLSTMLayerConfig
 from .utils import ParallelConfig, prepare_module
+from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
-from distributed.pipeline_parallel import ModelParallelismWrapper
-from distributed.data_parallel import shard_module_params
-from distributed.tensor_parallel_transformer import split_array_over_mesh
 
 @dataclass
 class xLSTMLMModelConfig(xLSTMBlockStackConfig):
@@ -43,26 +42,16 @@ class xLSTMLMModel(nn.Module):
             model_axis_name=self.config.parallel.model_axis_name,
             name="token_embedding",
         )
-        embed_fn = prepare_module(
-            embed_fn,
-            "Embed",
-            config=self.config.parallel
-        )
+        embed_fn = prepare_module(embed_fn, "Embed", config=self.config.parallel)
         x = embed_fn()(idx)
         if self.config.add_embedding_dropout:
             x = nn.Dropout(rate=self.config.dropout)(x, deterministic=not train)
         # BlockStack
-        stack_fn = prepare_module(
-            xLSTMBlockStack,
-            "BlockStack",
-            config=self.config.parallel
-        )
+        stack_fn = prepare_module(xLSTMBlockStack, "BlockStack", config=self.config.parallel)
         x = stack_fn(config=self.config, name="xlstm_block_stack")(x, train=train)
         # LMHead
         pred_fn = prepare_module(
-            partial(TPOutputLayer, config=self.config, name="lm_head"),
-            "LMHead",
-            config=self.config.parallel
+            partial(TPOutputLayer, config=self.config, name="lm_head"), "LMHead", config=self.config.parallel
         )
         logits = pred_fn()(x)
         return logits

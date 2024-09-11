@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2023
-# Korbinian Poeppel
 import logging
 import os
 from collections.abc import Callable, Sequence

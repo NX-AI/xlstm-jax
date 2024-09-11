@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Korbininan Pöppel
 from collections.abc import Callable
 
 import torch

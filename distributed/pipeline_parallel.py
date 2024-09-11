@@ -10,20 +10,19 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 import functools
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import optax
-from .data_parallel import fold_rng_over_axis, sync_gradients
 from flax.core.frozen_dict import FrozenDict
 from jax.experimental.shard_map import shard_map
-from jax.sharding import Mesh
-from jax.sharding import PartitionSpec as P
+from jax.sharding import Mesh, PartitionSpec as P
 from ml_collections import ConfigDict
 
+from .data_parallel import fold_rng_over_axis, sync_gradients
 from .single_gpu import Batch, TrainState, accumulate_gradients
 
 PyTree = Any
@@ -94,9 +93,7 @@ def unstack_params(params: PyTree, axis_name: str) -> PyTree:
         else:
             return x
 
-    return jax.tree.map(
-        _unstack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned)
-    )
+    return jax.tree.map(_unstack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
 
 
 def execute_pipeline_step(
@@ -180,9 +177,7 @@ def execute_pipeline(
     inputs = jnp.concatenate(  # Add zeros for unused computation blocks in first stage.
         [
             microbatches,
-            jnp.zeros(
-                (num_stages - 1, *microbatches.shape[1:]), dtype=microbatches.dtype
-            ),
+            jnp.zeros((num_stages - 1, *microbatches.shape[1:]), dtype=microbatches.dtype),
         ],
         axis=0,
     )
@@ -249,9 +244,7 @@ class ModelParallelismWrapper(nn.Module):
         if self.is_initializing() and self.split_rngs:
             # Initialize each module across the model axis with different parameters.
             self.scope.rngs["params"] = self.scope.rngs["params"].replace(
-                rng=fold_rng_over_axis(
-                    self.scope.rngs["params"].rng, self.model_axis_name
-                )
+                rng=fold_rng_over_axis(self.scope.rngs["params"].rng, self.model_axis_name)
             )
         # Wrap variables in nn.Partitioned objects to add sharding over the model axis.
         module = nn.map_variables(
@@ -260,9 +253,7 @@ class ModelParallelismWrapper(nn.Module):
                 name="sharded",
                 **self.module_kwargs,
             ),
-            trans_in_fn=functools.partial(
-                unstack_params, axis_name=self.model_axis_name
-            ),
+            trans_in_fn=functools.partial(unstack_params, axis_name=self.model_axis_name),
             trans_out_fn=functools.partial(
                 stack_params,
                 axis_name=self.model_axis_name,
@@ -299,9 +290,7 @@ class MLPBlock(nn.Module):
         )(x)
         x = nn.silu(x)
         x = nn.Dropout(rate=self.config.dropout_rate, deterministic=not self.train)(x)
-        x = nn.Dense(
-            features=input_features, dtype=self.config.dtype, name="output_dense"
-        )(x)
+        x = nn.Dense(features=input_features, dtype=self.config.dtype, name="output_dense")(x)
         return x + residual
 
 
@@ -346,9 +335,7 @@ class PPClassifier(nn.Module):
             name="input_dense",
         )(x)
         # Pipeline
-        stage_module_fn = functools.partial(
-            MLPLayers, config=self.config, train=train, name="mlp_layers"
-        )
+        stage_module_fn = functools.partial(MLPLayers, config=self.config, train=train, name="mlp_layers")
         pipeline_module_fn = functools.partial(
             self.pipeline_module_class,
             model_axis_name=self.config.model_axis_name,
@@ -372,9 +359,7 @@ class PPClassifier(nn.Module):
             name="output_norm",
         )(x)
         x = output_wrapper(
-            module_fn=functools.partial(
-                nn.Dense, features=self.config.num_classes, dtype=self.config.dtype
-            ),
+            module_fn=functools.partial(nn.Dense, features=self.config.num_classes, dtype=self.config.dtype),
             name="output_dense",
         )(x)
         x = x.astype(jnp.float32)
@@ -404,9 +389,7 @@ def get_default_pp_classifier_config() -> ConfigDict:
             num_microbatches=8,
         )
     )
-    model_config.num_layers //= (
-        model_config.model_axis_size
-    )  # Layers distributed over model axis.
+    model_config.num_layers //= model_config.model_axis_size  # Layers distributed over model axis.
     optimizer_config = ConfigDict(
         dict(
             learning_rate=1e-3,
@@ -433,9 +416,7 @@ def loss_fn_pp(
     # Since dropout masks vary across the batch dimension, we want each device to generate a
     # different mask. We can achieve this by folding the rng over the data axis, so that each
     # device gets a different rng and thus mask.
-    dropout_rng = fold_rng_over_axis(
-        rng, (config.data_axis_name, config.model_axis_name)
-    )
+    dropout_rng = fold_rng_over_axis(rng, (config.data_axis_name, config.model_axis_name))
     # Remaining computation is the same as before for single device.
     logits = apply_fn(
         {"params": params},
@@ -482,9 +463,7 @@ def train_step_pp(
     # Sum metrics across replicas (both model and data axes).
     with jax.named_scope("sync_metrics"):
         step_metrics = jax.tree.map(
-            lambda x: jax.lax.psum(
-                x, axis_name=(config.data_axis_name, config.model_axis_name)
-            ),
+            lambda x: jax.lax.psum(x, axis_name=(config.data_axis_name, config.model_axis_name)),
             step_metrics,
         )
     if metrics is None:
@@ -558,9 +537,7 @@ def train_pipeline_model(
         None,
         batch,
     )
-    metrics_pp = jax.tree.map(
-        lambda x: jnp.zeros(x.shape, dtype=x.dtype), metric_shapes
-    )
+    metrics_pp = jax.tree.map(lambda x: jnp.zeros(x.shape, dtype=x.dtype), metric_shapes)
     for _ in range(num_steps):
         state_pp, metrics_pp = train_step_pp_fn(state_pp, metrics_pp, batch)
     return state_pp

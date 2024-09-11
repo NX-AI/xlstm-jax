@@ -1,18 +1,19 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
-
 # TODO: To be implemented later.
 
 import jax
 import jax.numpy as jnp
 
+
 def bias_linspace_init_(start: float = 3.4, end: float = 6.0) -> jnp.array:
     """Linearly spaced bias init across dimensions."""
+
     def init_fn(key, shape, dtype=jnp.float32):
         n_dims = shape[0]
         init_vals = jnp.linspace(start, end, num=n_dims, dtype=dtype)
         return init_vals
+
     return init_fn
+
 
 # import torch
 # from torch.distributed._tensor import DTensor

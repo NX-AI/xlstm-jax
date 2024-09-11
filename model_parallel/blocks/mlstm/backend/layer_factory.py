@@ -1,5 +1,3 @@
-# Copyright JKU Linz 2023
-# Maximilian Beck
 import logging
 from typing import Any
 
@@ -97,9 +95,7 @@ def create_layer(
                     config=Config(strict=True, strict_unions_match=True),
                 )
             except dacite.exceptions.UnexpectedDataError as e:
-                LOGGER.error(
-                    f"Dacite error: class: {layer_config_class}, kwargs: {cfg_kwargs}"
-                )
+                LOGGER.error(f"Dacite error: class: {layer_config_class}, kwargs: {cfg_kwargs}")
                 raise e
             layer_config.assign_model_config_params(model_config=config)
         else:

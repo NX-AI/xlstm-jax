@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
 
 import jax
@@ -7,7 +5,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from ...components.init import bias_linspace_init_
-from ...components.ln import MultiHeadLayerNorm, LayerNorm
+from ...components.ln import LayerNorm, MultiHeadLayerNorm
 from .backend import (
     create_mlstm_backend,
     mLSTMBackendNameAndKwargs,
@@ -69,9 +67,9 @@ class mLSTMCell(nn.Module):
         with jax.named_scope("mlstm_recurrent_step"):
             h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
-        h_state_norm = MultiHeadLayerNorm(
-            weight=True, bias=False, dtype=self.config.dtype, name="outnorm", axis=2
-        )(h_state)
+        h_state_norm = MultiHeadLayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="outnorm", axis=2)(
+            h_state
+        )
         # h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
         h_state_norm = h_state_norm.reshape(B, S, -1)
         return h_state_norm

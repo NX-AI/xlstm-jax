@@ -1,12 +1,10 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Literal, Any
+from typing import Any, Literal
 
-from flax import linen as nn
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 from .blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from .components.ln import LayerNorm
@@ -43,9 +41,7 @@ class xLSTMBlockStackConfig:
         block_map = [0] * self.num_blocks
 
         for slstm_position_idx in self.slstm_at:
-            assert (
-                slstm_position_idx < self.num_blocks
-            ), f"Invalid slstm position {slstm_position_idx}"
+            assert slstm_position_idx < self.num_blocks, f"Invalid slstm position {slstm_position_idx}"
             block_map[slstm_position_idx] = 1
 
         block_map_str = ",".join(map(str, block_map))
@@ -83,7 +79,7 @@ class xLSTMBlockStack(nn.Module):
 
     @nn.compact
     def __call__(self, x: jnp.ndarray, **kwargs) -> jnp.ndarray:
-        blocks = BlockStack(config=self.config, name='blocks')
+        blocks = BlockStack(config=self.config, name="blocks")
         # for block in blocks:
         #     x = block(x, **kwargs)
         x = blocks(x, **kwargs)
@@ -91,7 +87,6 @@ class xLSTMBlockStack(nn.Module):
             x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
         return x
 
-    
 
 class BlockStack(nn.Module):
     config: xLSTMBlockStackConfig
@@ -102,7 +97,7 @@ class BlockStack(nn.Module):
         for block in blocks:
             x = block(x, *args, **kwargs)
         return x
-    
+
     def _create_blocks(self, config: xLSTMBlockStackConfig):
         blocks = []
         for block_idx, block_type_int in enumerate(config.block_map):

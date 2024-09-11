@@ -1,10 +1,11 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Any
-from flax import linen as nn
+from typing import Any
+
 from distributed.data_parallel import shard_module_params
+
+from flax import linen as nn
 
 
 @dataclass
@@ -25,9 +26,7 @@ class UpProjConfigMixin:
             else:
                 multiple_of_multiplier = math.floor(multiple_of_multiplier)
 
-            self._proj_up_dim = int(
-                multiple_of_multiplier * self.round_proj_up_to_multiple_of
-            )
+            self._proj_up_dim = int(multiple_of_multiplier * self.round_proj_up_to_multiple_of)
 
 
 @dataclass
@@ -37,7 +36,7 @@ class ParallelConfig:
     model_axis_name: str = "tp"
     remat: list[str] | tuple[str] = ()
     fsdp_modules: list[str] | tuple[str] = ()
-    fsdp_min_weight_size: int = 2 ** 18
+    fsdp_min_weight_size: int = 2**18
     tp_async_dense: bool = True
 
 

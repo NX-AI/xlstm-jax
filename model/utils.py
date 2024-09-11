@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
 from dataclasses import dataclass
 
@@ -22,6 +20,4 @@ class UpProjConfigMixin:
             else:
                 multiple_of_multiplier = math.floor(multiple_of_multiplier)
 
-            self._proj_up_dim = int(
-                multiple_of_multiplier * self.round_proj_up_to_multiple_of
-            )
+            self._proj_up_dim = int(multiple_of_multiplier * self.round_proj_up_to_multiple_of)

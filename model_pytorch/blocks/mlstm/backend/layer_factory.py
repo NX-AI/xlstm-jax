@@ -1,5 +1,3 @@
-# Copyright JKU Linz 2023
-# Maximilian Beck
 import logging
 from typing import Any, Type
 
@@ -14,7 +12,7 @@ LOGGER = logging.getLogger(__name__)
 # TODO what would be a typehint for a generic dataclass?
 def create_layer(
     config,
-    registry: dict[str, Type],
+    registry: dict[str, type],
     layer_cfg_key: str,
     nameandkwargs: NameAndKwargs = None,
     set_cfg_kwargs: bool = True,
@@ -44,7 +42,7 @@ def create_layer(
         LayerInterface: layer instance
     """
 
-    def get_layer(name: str) -> Type:
+    def get_layer(name: str) -> type:
         if name in registry:
             return registry[name]
         else:

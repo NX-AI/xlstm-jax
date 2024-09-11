@@ -1,0 +1,55 @@
+[project]
+name = "xlstm-jax"
+version = "0.0.1"
+authors = [
+  { name="NXAI", email="info@nx-ai.com" },
+]
+description = "xLSTM implementation in JAX"
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/NX-AI/xlstm-jax"
+Issues = "https://github.com/NX-AI/xlstm-jax/issues"
+
+[tool.ruff]
+exclude = [
+    ".eggs",
+    ".git",
+    ".ipynb_checkpoints",
+    ".pytest_cache",
+    ".ruff_cache",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "archive",
+]
+line-length = 120
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["I001"]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 18
+
+[tool.ruff.lint.isort]
+combine-as-imports = true
+section-order = ["future", "standard-library", "first-party", "third-party", "local-folder", "xlstm"]
+
+[tool.ruff.lint.isort.sections]
+"xlstm" = ["xlstm"]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.setuptools]
+packages = ["xlstm"]

@@ -10,8 +10,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 import functools
-from typing import Any
 from collections.abc import Callable, Sequence
+from typing import Any
 
 import flax.linen as nn
 import jax
@@ -42,9 +42,7 @@ def fold_rng_over_axis(rng: jax.random.PRNGKey, axis_name: str) -> jax.random.PR
 
 
 @jax.named_scope("shard_params")
-def shard_params(
-    params: PyTree, axis_name: str, min_weight_size: int = 2**18
-) -> PyTree:
+def shard_params(params: PyTree, axis_name: str, min_weight_size: int = 2**18) -> PyTree:
     """Shard parameters across the given mesh axis.
 
     Args:
@@ -65,9 +63,7 @@ def shard_params(
             value = x
             names = (None,) * value.ndim
         if axis_name in names:
-            logging.warning(
-                f"Parameter {value.shape} with names {names} already sharded on axis {axis_name}."
-            )
+            logging.warning(f"Parameter {value.shape} with names {names} already sharded on axis {axis_name}.")
             return x
         elif value.size <= min_weight_size:
             logging.info(
@@ -95,9 +91,7 @@ def shard_params(
     return jax.tree.map(
         _split,
         params,
-        is_leaf=lambda x: isinstance(
-            x, nn.Partitioned
-        ),  # Consider a nn.Partitioned object as a leaf.
+        is_leaf=lambda x: isinstance(x, nn.Partitioned),  # Consider a nn.Partitioned object as a leaf.
     )
 
 
@@ -110,10 +104,7 @@ def gather_array_with_mean_grads(x: jax.Array, axis: int, axis_name: str):
     def f(x):
         def grad_fn(g):
             # pmean_scatter
-            return (
-                jax.lax.psum_scatter(g, axis_name, scatter_dimension=axis, tiled=True)
-                / axis_size
-            )
+            return jax.lax.psum_scatter(g, axis_name, scatter_dimension=axis, tiled=True) / axis_size
 
         return jax.lax.all_gather(x, axis_name, axis=axis, tiled=True), grad_fn
 
@@ -136,23 +127,18 @@ def gather_params(params: PyTree, axis_name: str) -> PyTree:
         if isinstance(p, nn.Partitioned) and axis_name in p.names:
             param_shard = p.names
             shard_axis = param_shard.index(axis_name)
-            value = gather_array_with_mean_grads(
-                p.value, axis=shard_axis, axis_name=axis_name
-            )
+            value = gather_array_with_mean_grads(p.value, axis=shard_axis, axis_name=axis_name)
             # If there are any other axes that are sharded, we need to keep the partitioned structure.
             # Otherwise, we can return the value directly.
-            param_shard = (
-                param_shard[:shard_axis] + (None,) + param_shard[shard_axis + 1 :]
-            )
+            param_shard = param_shard[:shard_axis] + (None,) + param_shard[shard_axis + 1 :]
             if any([name is not None for name in param_shard]):
                 return nn.Partitioned(value, param_shard)
             else:
                 return value
         else:
             return p
-    return jax.tree.map(
-        _gather, params, is_leaf=lambda x: isinstance(x, nn.Partitioned)
-    )
+
+    return jax.tree.map(_gather, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
 
 
 def shard_module_params(
@@ -171,9 +157,7 @@ def shard_module_params(
     return nn.map_variables(
         target,
         trans_in_fn=functools.partial(gather_params, axis_name=axis_name),
-        trans_out_fn=functools.partial(
-            shard_params, axis_name=axis_name, min_weight_size=min_weight_size
-        ),
+        trans_out_fn=functools.partial(shard_params, axis_name=axis_name, min_weight_size=min_weight_size),
         mapped_collections="params",
         mutable=True,
     )
@@ -199,23 +183,15 @@ def sync_gradients(
 
     def sync_grad(g: Parameter) -> Parameter:
         if isinstance(g, nn.Partitioned):
-            replication_axis_names = [
-                name
-                for name in axis_names
-                if name not in jax.tree.leaves(g.names)
-            ]
+            replication_axis_names = [name for name in axis_names if name not in jax.tree.leaves(g.names)]
             if len(replication_axis_names) == 0:
                 # Parameters partitioned over all axes.
                 return g
             else:
                 # Average over remaining replicated axes.
-                return g.replace(
-                    value=jax.lax.pmean(g.value, axis_name=replication_axis_names)
-                )
+                return g.replace(value=jax.lax.pmean(g.value, axis_name=replication_axis_names))
         else:
             # Parameters are replicated over all axes.
             return jax.lax.pmean(g, axis_name=axis_names)
 
-    return jax.tree.map(
-        sync_grad, grads, is_leaf=lambda x: isinstance(x, nn.Partitioned)
-    )
+    return jax.tree.map(sync_grad, grads, is_leaf=lambda x: isinstance(x, nn.Partitioned))

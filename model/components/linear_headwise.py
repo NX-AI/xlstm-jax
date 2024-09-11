@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck, Korbininan Pöppel
 from dataclasses import dataclass
 from math import sqrt
 from typing import Any
@@ -32,9 +30,7 @@ class LinearHeadwiseExpandConfig:
     def __post_init__(self):
         assert self.num_heads > 0, "num_heads must be set"
         assert self.num_heads <= self.in_features, "num_heads must be <= in_features"
-        assert (
-            self.in_features % self.num_heads == 0
-        ), "in_features must be a multiple of num_heads"
+        assert self.in_features % self.num_heads == 0, "in_features must be a multiple of num_heads"
 
         if self._out_features < 0:
             self._out_features = round(self.expand_factor_up * self.in_features)
@@ -66,9 +62,7 @@ class LinearHeadwiseExpand(nn.Module):
         x = jnp.einsum("...hd,hod->...ho", x, weight)
         x = x.reshape(*x.shape[:-2], -1)
         if self.config.bias:
-            bias = self.param(
-                "bias", jax.nn.initializers.zeros, (self.config._out_features,)
-            )
+            bias = self.param("bias", jax.nn.initializers.zeros, (self.config._out_features,))
             if not self.config.trainable_bias:
                 bias = jax.lax.stop_gradient(bias)
             bias = bias.astype(self.config.dtype)
