@@ -1,10 +1,8 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
+from functools import partial
 
 import jax
 from flax import linen as nn
-from functools import partial
 
 from ..xlstm_block import xLSTMBlock, xLSTMBlockConfig
 from .layer import mLSTMLayerConfig
@@ -38,6 +36,7 @@ def get_partial_mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> callabl
         *args,
         **kwargs,
     )
+
 
 def mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> nn.Module:
     block_fn = get_partial_mLSTMBlock(config, *args, **kwargs)

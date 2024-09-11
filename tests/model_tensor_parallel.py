@@ -1,30 +1,31 @@
 import os
+
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["JAX_PLATFORMS"] = "cpu"
 from distributed.utils import simulate_CPU_devices
+
 NUM_DEVICES = 8
 simulate_CPU_devices(NUM_DEVICES)
 
-import jax
-import jax.numpy as jnp
-from jax.sharding import Mesh
-import optax
-import flax
-from flax import linen as nn
-import numpy as np
-import torch
-import pytest
 from typing import Any
-from model_parallel.xlstm_lm_model import xLSTMLMModel
-from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
+
+from distributed.single_gpu import Batch
+from distributed.tensor_parallel_transformer import split_array_over_mesh
 from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from model_parallel.training import init_xlstm, get_train_step_fn
+from model_parallel.training import get_train_step_fn, init_xlstm
 from model_parallel.utils import ParallelConfig
-from distributed.tensor_parallel_transformer import split_array_over_mesh
-from jax.sharding import PartitionSpec as P
-from jax.sharding import NamedSharding
-from distributed.single_gpu import Batch
+from model_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+
+import flax
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+import pytest
+import torch
+from flax import linen as nn
+from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
 
 PyTree = Any
 
@@ -52,38 +53,33 @@ MODEL_CONFIGS = [
                 embedding_dim=128,
                 context_length=128,
             )
-        )
+        ),
     )
 ]
+
 
 def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
     device_array = np.array(jax.devices()).reshape(-1, 1, model_axis_size)
     return Mesh(
-        device_array, (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name)
+        device_array,
+        (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name),
     )
 
-@pytest.mark.parametrize(
-    "config", MODEL_CONFIGS
-)
-@pytest.mark.parametrize(
-    "gradient_accumulate_steps", [1]
-)
-@pytest.mark.parametrize(
-    "model_axis_size", [1, 2, 4]
-)
+
+@pytest.mark.parametrize("config", MODEL_CONFIGS)
+@pytest.mark.parametrize("gradient_accumulate_steps", [1])
+@pytest.mark.parametrize("model_axis_size", [1, 2, 4])
 def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
     mesh = _create_mesh(config, model_axis_size=model_axis_size)
     rng = jax.random.PRNGKey(42)
     model_rng, data_rng = jax.random.split(rng)
-    input_array = jax.random.randint(
-        data_rng, shape=(32, config.context_length), minval=0, maxval=config.vocab_size
-    )
+    input_array = jax.random.randint(data_rng, shape=(32, config.context_length), minval=0, maxval=config.vocab_size)
     optimizer = optax.adamw(learning_rate=1e-3)
     config.__post_init__()
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
     # assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
-    
+
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),
         labels=input_array,
@@ -101,11 +97,15 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         batch,
     )
     # assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
-    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"
-    
+    assert all(
+        [m.sharding.spec == P() for m in jax.tree.leaves(metrics)]
+    ), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"
+
     metrics = jax.device_get(metrics)
     assert "loss" in metrics
     assert len(metrics["loss"]) == 2, f"Metrics must be a tuple."
-    assert metrics["loss"][1] == input_array.size, f"Second metric element must be counting the batch elements, but does not fit to actual batch size: {input_array.size} vs {metrics['loss'][1]}"
+    assert (
+        metrics["loss"][1] == input_array.size
+    ), f"Second metric element must be counting the batch elements, but does not fit to actual batch size: {input_array.size} vs {metrics['loss'][1]}"
     loss = metrics["loss"][0] / metrics["loss"][1]
     assert loss > 0, f"Loss must be greater zero, but is {loss}."

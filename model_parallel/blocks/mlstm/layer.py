@@ -1,6 +1,10 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
+from copy import deepcopy
 from dataclasses import dataclass, field
+from functools import partial
+
+from distributed.pipeline_parallel import ModelParallelismWrapper
+from distributed.tensor_parallel import TPDense
+from distributed.tensor_parallel_async import TPAsyncDense
 
 import jax
 import jax.numpy as jnp
@@ -11,14 +15,9 @@ from ...components.linear_headwise import (
     LinearHeadwiseExpand,
     LinearHeadwiseExpandConfig,
 )
-from ...utils import UpProjConfigMixin, ParallelConfig, prepare_module
-from .cell import mLSTMCell, mLSTMCellConfig
 from ...components.ln import LayerNorm
-from distributed.tensor_parallel import TPDense
-from distributed.tensor_parallel_async import TPAsyncDense
-from distributed.pipeline_parallel import ModelParallelismWrapper
-from functools import partial
-from copy import deepcopy
+from ...utils import ParallelConfig, UpProjConfigMixin, prepare_module
+from .cell import mLSTMCell, mLSTMCellConfig
 
 
 @dataclass
@@ -64,7 +63,11 @@ class mLSTMLayer(nn.Module):
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
 
-        tp_dense_fn = partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True) if self.config.parallel.tp_async_dense else TPDense
+        tp_dense_fn = (
+            partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
+            if self.config.parallel.tp_async_dense
+            else TPDense
+        )
         # up-projection
         if self.config.parallel.tp_async_dense:
             x_inner = tp_dense_fn(
@@ -127,7 +130,7 @@ class mLSTMLayer(nn.Module):
             if isinstance(x_inner, tuple):
                 h_state = x_inner[0]
             else:
-                h_state = x_inner[..., :x_inner.shape[-1] // 2]
+                h_state = x_inner[..., : x_inner.shape[-1] // 2]
         else:
             # inner cell
             inner_config = deepcopy(self.config)
@@ -154,7 +157,9 @@ class mLSTMLayer(nn.Module):
                 nn.Dense,
                 dtype=self.config.dtype,
                 use_bias=self.config.bias,
-                features=self.config.embedding_dim // tp_size if self.config.parallel.tp_async_dense else self.config.embedding_dim,
+                features=self.config.embedding_dim // tp_size
+                if self.config.parallel.tp_async_dense
+                else self.config.embedding_dim,
             ),
             model_axis_name=self.config.parallel.model_axis_name,
             tp_mode="scatter",
@@ -174,7 +179,7 @@ class mLSTMInnerLayer(nn.Module):
             x_mlstm, z = x_inner
         else:
             x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
-        
+
         # mlstm branch
         x_mlstm_conv = CausalConv1d(
             config=CausalConv1dConfig(
@@ -185,10 +190,17 @@ class mLSTMInnerLayer(nn.Module):
             name="conv1d",
         )(x_mlstm)
         x_mlstm_conv_act = nn.swish(x_mlstm_conv)
-        
+
         num_proj_heads = round(self.config._inner_embedding_dim // self.config.qkv_proj_blocksize)
         if self.config.vmap_qk:
-            qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
+            qk = nn.vmap(
+                LinearHeadwiseExpand,
+                variable_axes={"params": 0},
+                split_rngs={"params": True},
+                in_axes=None,
+                out_axes=0,
+                axis_size=2,
+            )(
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
@@ -226,7 +238,7 @@ class mLSTMInnerLayer(nn.Module):
             ),
             name="v_proj",
         )(x_mlstm)
-        
+
         mlstm_cell = prepare_module(
             mLSTMCell,
             "mLSTMCell",

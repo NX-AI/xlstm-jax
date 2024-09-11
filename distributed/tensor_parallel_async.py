@@ -10,8 +10,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 import functools
-from typing import Any, Literal
 from collections.abc import Callable, Sequence
+from typing import Any, Literal
 
 import flax.linen as nn
 import jax
@@ -52,9 +52,7 @@ def async_gather(x: PyTree, axis_name: str, shift_up: bool = True) -> list[PyTre
     return ps
 
 
-def async_gather_bidirectional(
-    x: jax.Array, axis_name: str, shift_up: bool = True
-) -> list[jax.Array]:
+def async_gather_bidirectional(x: jax.Array, axis_name: str, shift_up: bool = True) -> list[jax.Array]:
     """All gather using ring permutation with bidirectional communication.
 
     Args:
@@ -99,14 +97,10 @@ def async_gather_split(x: jax.Array, axis_name: str) -> list[jax.Array]:
         List of gathered inputs. Length is 2 * axis size - 1.
     """
     x1, x2 = jax.tree.map(lambda x: jnp.split(x, 2, axis=-1), x)
-    return async_gather(x1, axis_name, shift_up=True) + async_gather(
-        x2, axis_name, shift_up=False
-    )
+    return async_gather(x1, axis_name, shift_up=True) + async_gather(x2, axis_name, shift_up=False)
 
 
-def async_scatter(
-    xs: Sequence[PyTree], axis_name: str, shift_up: bool = True
-) -> PyTree:
+def async_scatter(xs: Sequence[PyTree], axis_name: str, shift_up: bool = True) -> PyTree:
     """Scatter sum using ring permutation.
 
     Args:
@@ -209,18 +203,12 @@ class TPAsyncDense(nn.Module):
             y = self.dense_fn(kernel_init=self.kernel_init, name="shard_0")(x)
         elif tp_mode == "gather":
             # Async gathering of all inputs.
-            async_op = (
-                async_gather_bidirectional
-                if self.use_bidirectional_gather
-                else async_gather
-            )
+            async_op = async_gather_bidirectional if self.use_bidirectional_gather else async_gather
             xs = async_op(x, axis_name=self.model_axis_name)
             # Compute output per input (scheduled as communication makes inputs available).
             ys = [
                 dense_fn(
-                    module_kwargs={
-                        "use_bias": (i == 0)
-                    },  # Only need a single per final output feature.
+                    module_kwargs={"use_bias": (i == 0)},  # Only need a single per final output feature.
                     name=f"shard_{i}",
                 )(x)
                 for i, x in enumerate(xs)
@@ -231,17 +219,13 @@ class TPAsyncDense(nn.Module):
             # Calculate all outputs per device.
             ys = [
                 dense_fn(
-                    module_kwargs={
-                        "use_bias": (i == 0)
-                    },  # Only need a single per final output feature.
+                    module_kwargs={"use_bias": (i == 0)},  # Only need a single per final output feature.
                     name=f"shard_{i}",
                 )(x)
                 for i in range(tp_size)
             ]
             # Async scatter sum of all outputs (communication already starts after first output is ready).
-            async_op = (
-                async_scatter_split if self.use_bidirectional_scatter else async_scatter
-            )
+            async_op = async_scatter_split if self.use_bidirectional_scatter else async_scatter
             y = async_op(ys, axis_name=self.model_axis_name)
         else:
             raise ValueError(f"Unknown Tensor Parallel mode: {tp_mode}")

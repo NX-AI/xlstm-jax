@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck, Korbininan Pöppel
 from dataclasses import dataclass
 from math import sqrt
 

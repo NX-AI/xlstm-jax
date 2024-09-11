@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
 
 import jax
@@ -50,7 +48,7 @@ class mLSTMLayer(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
         B, S, _ = x.shape
-        
+
         # up-projection
         x_inner = nn.Dense(
             features=2 * self.config._inner_embedding_dim,
@@ -59,7 +57,7 @@ class mLSTMLayer(nn.Module):
             name="proj_up",
         )(x)
         x_mlstm, z = jnp.split(x_inner, 2, axis=-1)
-        
+
         # mlstm branch
         x_mlstm_conv = CausalConv1d(
             config=CausalConv1dConfig(
@@ -70,10 +68,17 @@ class mLSTMLayer(nn.Module):
             name="conv1d",
         )(x_mlstm)
         x_mlstm_conv_act = nn.swish(x_mlstm_conv)
-        
+
         num_proj_heads = round(self.config._inner_embedding_dim // self.config.qkv_proj_blocksize)
         if self.config.vmap_qk:
-            qk = nn.vmap(LinearHeadwiseExpand, variable_axes={"params": 0}, split_rngs={"params": True}, in_axes=None, out_axes=0, axis_size=2)(
+            qk = nn.vmap(
+                LinearHeadwiseExpand,
+                variable_axes={"params": 0},
+                split_rngs={"params": True},
+                in_axes=None,
+                out_axes=0,
+                axis_size=2,
+            )(
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
@@ -111,7 +116,7 @@ class mLSTMLayer(nn.Module):
             ),
             name="v_proj",
         )(x_mlstm)
-        
+
         h_tilde_state = mLSTMCell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)

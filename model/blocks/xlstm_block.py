@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass
 
 import jax
@@ -24,17 +22,9 @@ class xLSTMBlockConfig:
     _block_idx: int = None
 
     def __post_init__(self):
-        assert (
-            self.mlstm is not None or self.slstm is not None
-        ), "Either mlstm or slstm must be provided"
-        assert (
-            self.mlstm is None or self.slstm is None
-        ), "Only one of mlstm or slstm can be provided"
-        embedding_dim = (
-            self.mlstm.embedding_dim
-            if self.mlstm is not None
-            else self.slstm.embedding_dim
-        )
+        assert self.mlstm is not None or self.slstm is not None, "Either mlstm or slstm must be provided"
+        assert self.mlstm is None or self.slstm is None, "Only one of mlstm or slstm can be provided"
+        embedding_dim = self.mlstm.embedding_dim if self.mlstm is not None else self.slstm.embedding_dim
         if self.mlstm:
             self.mlstm._num_blocks = self._num_blocks
             self.mlstm._block_idx = self._block_idx
@@ -68,11 +58,9 @@ class xLSTMBlock(nn.Module):
         x_norm = xlstm_norm(x)
         x_xlstm = xlstm(x_norm, **kwargs)
         x = x + x_xlstm
-        
+
         if self.config.feedforward is not None:
-            ffn_norm = LayerNorm(
-                weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm"
-            )
+            ffn_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm")
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)
         return x

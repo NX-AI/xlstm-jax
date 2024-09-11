@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Korbinian Pöppel
 import math
 from dataclasses import asdict, dataclass
 from functools import cache
@@ -36,7 +34,7 @@ def causal_forget_matrix(forget_gates):
 
 @dataclass
 class mLSTMfwbwConfig:
-    chunk_size: Optional[int] = 512  # to be tuned
+    chunk_size: int | None = 512  # to be tuned
     return_state: bool = False
     use_initial_state: bool = False
     keep_G: bool = False

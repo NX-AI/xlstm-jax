@@ -1,8 +1,9 @@
+import os
+
 import orbax
 import orbax.checkpoint as ocp
 from absl import logging
 from flax.training import orbax_utils
-import os
 
 
 def save_checkpoint(state, log_dir):
@@ -30,9 +31,7 @@ def save_checkpoint(state, log_dir):
         "metadata": ocp.args.JsonSave(metadata),
     }
     # save_items["optimizer"] = ocp.args.StandardSave(state.optimizer)
-    eval_metrics = {
-        'loss': 0.0
-    }
+    eval_metrics = {"loss": 0.0}
     save_items = ocp.args.Composite(**save_items)
     manager.save(0, args=save_items, metrics=eval_metrics)
     manager.wait_until_finished()

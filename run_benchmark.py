@@ -1,8 +1,9 @@
 import os
+
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
 # A lot of XLA flags, most of them have no impact on performance.
-os.environ['XLA_FLAGS'] = (
-    ''
+os.environ["XLA_FLAGS"] = (
+    ""
     # '--xla_gpu_enable_triton_softmax_fusion=true '
     # '--xla_gpu_triton_gemm_any=true '
     # '--xla_gpu_enable_latency_hiding_scheduler=true '
@@ -28,12 +29,14 @@ os.environ['XLA_FLAGS'] = (
 USE_CPU = False
 if USE_CPU:
     from distributed.utils import simulate_CPU_devices
+
     simulate_CPU_devices(8)
-from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
+from model_parallel.benchmark import benchmark_model
 from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from model_parallel.benchmark import benchmark_model
 from model_parallel.utils import ParallelConfig
+from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
+
 import jax.numpy as jnp
 import optax
 
@@ -62,7 +65,7 @@ MODEL_CONFIGS = {
                     embedding_dim=16,
                     context_length=128,
                 )
-            )
+            ),
         ),
     },
     "debug_tp": {
@@ -89,9 +92,9 @@ MODEL_CONFIGS = {
                     embedding_dim=128,
                     context_length=128,
                 )
-            )
-        ), 
-        "model_axis_size": 4
+            ),
+        ),
+        "model_axis_size": 4,
     },
     "120M": {
         "config": xLSTMLMModelConfig(
@@ -113,10 +116,10 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 128, 
-        "gradient_accumulate_steps": 1
+            ),
+        ),
+        "batch_size": 128,
+        "gradient_accumulate_steps": 1,
     },
     "120M_fsdp": {
         "config": xLSTMLMModelConfig(
@@ -139,10 +142,10 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 128, 
-        "gradient_accumulate_steps": 1
+            ),
+        ),
+        "batch_size": 128,
+        "gradient_accumulate_steps": 1,
     },
     "1.3B": {
         "config": xLSTMLMModelConfig(
@@ -158,7 +161,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-                fsdp_min_weight_size=2 ** 18,
+                fsdp_min_weight_size=2**18,
                 remat=(),
             ),
             dtype=jnp.bfloat16,
@@ -166,10 +169,10 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 32, 
-        "gradient_accumulate_steps": 1
+            ),
+        ),
+        "batch_size": 32,
+        "gradient_accumulate_steps": 1,
     },
     "1.3B_remat": {
         "config": xLSTMLMModelConfig(
@@ -186,7 +189,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-                fsdp_min_weight_size=2 ** 18,
+                fsdp_min_weight_size=2**18,
                 remat=("mLSTMBlock"),
             ),
             dtype=jnp.bfloat16,
@@ -194,9 +197,9 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 256
+            ),
+        ),
+        "batch_size": 256,
     },
     "1.3B_tp": {
         "config": xLSTMLMModelConfig(
@@ -212,7 +215,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-                fsdp_min_weight_size=2 ** 18,
+                fsdp_min_weight_size=2**18,
                 remat=(),
             ),
             dtype=jnp.bfloat16,
@@ -220,11 +223,11 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 16, 
-        "gradient_accumulate_steps": 1, 
-        "model_axis_size": 4
+            ),
+        ),
+        "batch_size": 16,
+        "gradient_accumulate_steps": 1,
+        "model_axis_size": 4,
     },
     "7B_shallow": {
         "config": xLSTMLMModelConfig(
@@ -240,7 +243,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-                fsdp_min_weight_size=2 ** 18,
+                fsdp_min_weight_size=2**18,
                 remat=(),
             ),
             dtype=jnp.bfloat16,
@@ -248,11 +251,11 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                 )
-            )
-        ), 
-        "batch_size": 16, 
-        "gradient_accumulate_steps": 1, 
-        "model_axis_size": 1
+            ),
+        ),
+        "batch_size": 16,
+        "gradient_accumulate_steps": 1,
+        "model_axis_size": 1,
     },
     "7B": {
         "config": xLSTMLMModelConfig(
@@ -270,7 +273,7 @@ MODEL_CONFIGS = {
                 pipeline_axis_name="pp",
                 # fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_modules=(),  # Not needed if TP 4
-                fsdp_min_weight_size=2 ** 18,
+                fsdp_min_weight_size=2**18,
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
@@ -280,12 +283,19 @@ MODEL_CONFIGS = {
                     num_heads=4,
                     vmap_qk=False,
                 )
-            )
-        ), 
-        "batch_size": 32, 
-        "gradient_accumulate_steps": 1, 
+            ),
+        ),
+        "batch_size": 32,
+        "gradient_accumulate_steps": 1,
         "model_axis_size": 4,
-        "optimizer": optax.adamw(learning_rate=optax.schedules.warmup_exponential_decay_schedule(init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000), b1=0.9, b2=0.98, eps=1e-9)
+        "optimizer": optax.adamw(
+            learning_rate=optax.schedules.warmup_exponential_decay_schedule(
+                init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000
+            ),
+            b1=0.9,
+            b2=0.98,
+            eps=1e-9,
+        ),
     },
 }
 

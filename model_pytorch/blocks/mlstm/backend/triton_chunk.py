@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Korbinian Pöppel
 #
 # Adapted from flash-linear-attention
 import math

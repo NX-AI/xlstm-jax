@@ -1,11 +1,9 @@
-# Copyright (c) NXAI GmbH and its affiliates 2023
-# Korbinian Poeppel
-
 import logging
 import os
 import random
 import time
-from typing import Sequence, Union
+from collections.abc import Sequence
+from typing import Union
 
 import torch
 from torch.utils.cpp_extension import load as _load

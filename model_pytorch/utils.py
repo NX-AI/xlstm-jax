@@ -1,9 +1,7 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
 from abc import ABC
+from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Sequence
 
 from torch import nn
 
@@ -87,7 +85,7 @@ class WeightDecayOptimGroupMixin(nn.Module, ABC):
             if param.requires_grad:
                 # TODO: this is a hack based on module naming. It fixes the issue with the previous heuristic using
                 #  parameter dim, which fails for FSDP because it flattens parameters so ndim is always 1.
-                if 'weight' in name and 'norm' not in name:
+                if "weight" in name and "norm" not in name:
                     decay.add(param)
                 else:
                     no_decay.add(param)

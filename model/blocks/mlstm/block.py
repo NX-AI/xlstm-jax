@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
 
 import jax
@@ -23,11 +21,15 @@ class mLSTMBlockConfig:
 
 
 def mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> nn.Module:
-    return xLSTMBlock(config=xLSTMBlockConfig(
-        mlstm=config.mlstm,
-        slstm=None,
-        feedforward=None,
-        dtype=config.mlstm.dtype,
-        _num_blocks=config._num_blocks,
-        _block_idx=config._block_idx,
-    ), *args, **kwargs)
+    return xLSTMBlock(
+        config=xLSTMBlockConfig(
+            mlstm=config.mlstm,
+            slstm=None,
+            feedforward=None,
+            dtype=config.mlstm.dtype,
+            _num_blocks=config._num_blocks,
+            _block_idx=config._block_idx,
+        ),
+        *args,
+        **kwargs,
+    )

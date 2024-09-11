@@ -10,15 +10,16 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 import functools
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import numpy as np
-from .data_parallel import shard_module_params
 from ml_collections import ConfigDict
+
+from .data_parallel import shard_module_params
 from .pipeline_parallel import ModelParallelismWrapper
 from .tensor_parallel import MLPBlockInput, MLPBlockOutput
 from .tensor_parallel_async import TPAsyncDense, TPAsyncMLPBlock, TPNorm
@@ -173,9 +174,7 @@ class TPMultiHeadAttn(nn.Module):
         return x
 
 
-def prepare_module(
-    layer: Callable[..., nn.Module], layer_name: str, config: ConfigDict
-) -> Callable[..., nn.Module]:
+def prepare_module(layer: Callable[..., nn.Module], layer_name: str, config: ConfigDict) -> Callable[..., nn.Module]:
     """Remats and shards layer if needed.
 
     This function wraps the layer function in a remat and/or sharding function if its layer name is present in the remat and fsdp configuration, respectively.
@@ -215,9 +214,7 @@ class TPTransformerBlock(nn.Module):
             mask=self.mask,
             name="attn",
         )(x)
-        attn_out = nn.Dropout(
-            rate=self.config.dropout_rate, deterministic=not self.train
-        )(attn_out)
+        attn_out = nn.Dropout(rate=self.config.dropout_rate, deterministic=not self.train)(attn_out)
         x = x + attn_out
         # MLP layer
         mlp_layer = prepare_module(TPAsyncMLPBlock, "MLP", self.config)
@@ -226,9 +223,7 @@ class TPTransformerBlock(nn.Module):
             train=self.train,
             name="mlp",
         )(x)
-        mlp_out = nn.Dropout(
-            rate=self.config.dropout_rate, deterministic=not self.train
-        )(mlp_out)
+        mlp_out = nn.Dropout(rate=self.config.dropout_rate, deterministic=not self.train)(mlp_out)
         x = x + mlp_out
         return x
 
@@ -242,9 +237,7 @@ class QKVMLPDense(nn.Module):
     use_bias: bool = False
 
     @nn.compact
-    def __call__(
-        self, x: jax.Array
-    ) -> tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
+    def __call__(self, x: jax.Array) -> tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
         h = MLPBlockInput(
             config=self.config,
             features=self.mlp_dim,
@@ -332,9 +325,7 @@ class TPTransformerParallelBlock(nn.Module):
             name="out",
         )((h, v))
         # Apply dropout and add residual.
-        block_out = nn.Dropout(
-            rate=self.config.dropout_rate, deterministic=not self.train
-        )(block_out)
+        block_out = nn.Dropout(rate=self.config.dropout_rate, deterministic=not self.train)(block_out)
         out = residual + block_out
         return out
 
@@ -353,18 +344,14 @@ class TransformerBackbone(nn.Module):
             self.config,
         )
         if self.config.get("scan_layers", True):
-            block = block_fn(
-                config=self.config, train=self.train, mask=self.mask, name="block"
-            )
+            block = block_fn(config=self.config, train=self.train, mask=self.mask, name="block")
             # Scan version
             x, _ = nn.scan(
                 lambda module, carry, _: (module(carry), None),
                 variable_axes={"params": 0},
                 split_rngs={"params": True, "dropout": True},
                 length=self.config.num_layers,
-                metadata_params={
-                    "partition_name": None
-                },  # We do not need to partition over the layer axis.
+                metadata_params={"partition_name": None},  # We do not need to partition over the layer axis.
             )(block, x, ())
         else:
             # Loop version
@@ -399,17 +386,11 @@ class PositionalEncoding(nn.Module):
                 jnp.arange(tp_index * num_feats, (tp_index + 1) * num_feats, 2)
                 * (-np.log(10000.0) / (tp_size * num_feats))
             )
-            pos_emb = jnp.stack(
-                [jnp.sin(position * div_term), jnp.cos(position * div_term)], axis=-1
-            )
+            pos_emb = jnp.stack([jnp.sin(position * div_term), jnp.cos(position * div_term)], axis=-1)
             pos_emb = jnp.reshape(pos_emb, (seq_len, num_feats))
         else:
-            raise ValueError(
-                f"Unknown positional encoding type: {self.config.positional_encoding_type}"
-            )
-        pos_emb = pos_emb.astype(
-            x.dtype
-        )  # Cast to the same dtype as the input, e.g. support bfloat16.
+            raise ValueError(f"Unknown positional encoding type: {self.config.positional_encoding_type}")
+        pos_emb = pos_emb.astype(x.dtype)  # Cast to the same dtype as the input, e.g. support bfloat16.
         pos_emb = jnp.expand_dims(pos_emb, axis=range(x.ndim - 2))
         x = x + pos_emb
         return x
@@ -465,12 +446,8 @@ class TPOutputLayer(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array) -> jax.Array:
         # Gather outputs over feature dimension and split over sequence length.
-        x = jax.lax.all_gather(
-            x, axis_name=self.config.model_axis_name, axis=-1, tiled=True
-        )
-        x = split_array_over_mesh(
-            x, axis_name=self.config.model_axis_name, split_axis=1
-        )
+        x = jax.lax.all_gather(x, axis_name=self.config.model_axis_name, axis=-1, tiled=True)
+        x = split_array_over_mesh(x, axis_name=self.config.model_axis_name, split_axis=1)
         # Shard parameters over model axis.
         norm_fn = shard_module_params(
             nn.RMSNorm,
@@ -497,9 +474,7 @@ class Transformer(nn.Module):
     block_fn: Any = TPTransformerBlock
 
     @nn.compact
-    def __call__(
-        self, x: jax.Array, train: bool, mask: jax.Array | None = None
-    ) -> jax.Array:
+    def __call__(self, x: jax.Array, train: bool, mask: jax.Array | None = None) -> jax.Array:
         if mask is None and self.config.causal_mask:
             mask = nn.make_causal_mask(x, dtype=jnp.bool_)
         x = TPInputEmbedding(

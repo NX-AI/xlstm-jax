@@ -1,10 +1,7 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
 
 import torch
-from torch.distributed._tensor import DTensor
-from torch.distributed._tensor import distribute_tensor
+from torch.distributed._tensor import DTensor, distribute_tensor
 
 
 def bias_linspace_init_(param: torch.Tensor | DTensor, start: float = 3.4, end: float = 6.0) -> torch.Tensor:

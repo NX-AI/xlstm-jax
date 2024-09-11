@@ -10,8 +10,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 """
 
 import functools
-from typing import Any, Literal
 from collections.abc import Callable
+from typing import Any, Literal
 
 import flax.linen as nn
 import jax
@@ -200,9 +200,7 @@ class TPMLPLayers(nn.Module):
             variable_axes={"params": 0},
             split_rngs={"params": True, "dropout": True},
             length=self.config.num_layers,
-            metadata_params={
-                "partition_name": None
-            },  # We do not need to partition the parameters over the layer axis.
+            metadata_params={"partition_name": None},  # We do not need to partition the parameters over the layer axis.
         )(module, x, ())
         return x
 
@@ -227,9 +225,7 @@ class TPClassifier(nn.Module):
             name="input_layer",
         )(x)
         # Backbone MLP blocks
-        x = TPMLPLayers(
-            config=self.config, train=train, name="mlp", block_class=self.block_class
-        )(x)
+        x = TPMLPLayers(config=self.config, train=train, name="mlp", block_class=self.block_class)(x)
         # Output layer
         x = TPDense(
             dense_fn=functools.partial(
@@ -289,9 +285,7 @@ def get_default_tp_classifier_config():
     return config
 
 
-def init_tp(
-    rng: jax.random.PRNGKey, x: jax.Array, model: nn.Module, optimizer: Callable
-) -> TrainState:
+def init_tp(rng: jax.random.PRNGKey, x: jax.Array, model: nn.Module, optimizer: Callable) -> TrainState:
     init_rng, rng = jax.random.split(rng)
     variables = model.init({"params": init_rng}, x, train=False)
     params = variables.pop("params")
@@ -314,9 +308,7 @@ def loss_fn_tp(
     # Since dropout masks vary across the batch dimension, we want each device to generate a
     # different mask. We can achieve this by folding the rng over the data axis, so that each
     # device gets a different rng and thus mask.
-    dropout_rng = fold_rng_over_axis(
-        rng, (config.data_axis_name, config.model_axis_name)
-    )
+    dropout_rng = fold_rng_over_axis(rng, (config.data_axis_name, config.model_axis_name))
     # Remaining computation is the same as before for single device.
     logits = apply_fn(
         {"params": params},
@@ -364,9 +356,7 @@ def train_step_tp(
     # and only synchronize them before logging. For simplicity, we sum them here.
     with jax.named_scope("sync_metrics"):
         step_metrics = jax.tree.map(
-            lambda x: jax.lax.psum(
-                x, axis_name=(config.data_axis_name, config.model_axis_name)
-            ),
+            lambda x: jax.lax.psum(x, axis_name=(config.data_axis_name, config.model_axis_name)),
             step_metrics,
         )
     if metrics is None:

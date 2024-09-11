@@ -1,10 +1,8 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 from dataclasses import dataclass, field
 
-from flax import linen as nn
-import jax.numpy as jnp
 import jax
+import jax.numpy as jnp
+from flax import linen as nn
 
 
 @dataclass
@@ -44,9 +42,7 @@ class CausalConv1d(nn.Module):
             groups = 1
         else:
             groups = x.shape[-1]
-        pad = (
-            self.config.kernel_size - 1
-        )  # padding of this size assures temporal causality.
+        pad = self.config.kernel_size - 1  # padding of this size assures temporal causality.
         x = nn.Conv(
             features=self.config.feature_dim,
             kernel_size=(self.config.kernel_size,),
@@ -58,4 +54,3 @@ class CausalConv1d(nn.Module):
             **self.config.conv1d_kwargs,
         )(x)
         return x
-

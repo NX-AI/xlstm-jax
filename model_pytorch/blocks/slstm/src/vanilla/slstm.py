@@ -1,6 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2023
-# Korbininan Pöppel
-
 import torch
 from torch.nn.functional import logsigmoid
 

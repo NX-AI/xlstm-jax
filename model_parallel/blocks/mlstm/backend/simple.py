@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck
 import math
 from dataclasses import dataclass
 
@@ -41,10 +39,17 @@ def parallel_stabilized_simple(
 
     B, S, DH = queries.shape
     _dtype = queries.dtype
-    assert queries.shape == keys.shape == values.shape, f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
-    assert igate_preact.shape == fgate_preact.shape == (B, S, 1), f"igate_preact and fgate_preact must have the shape (B, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
+    assert (
+        queries.shape == keys.shape == values.shape
+    ), f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
+    assert (
+        igate_preact.shape == fgate_preact.shape == (B, S, 1)
+    ), f"igate_preact and fgate_preact must have the shape (B, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
     if lower_triangular_matrix is not None:
-        assert lower_triangular_matrix.shape == (S, S), f"lower_triangular_matrix must have shape (S, S), got {lower_triangular_matrix.shape}"
+        assert lower_triangular_matrix.shape == (
+            S,
+            S,
+        ), f"lower_triangular_matrix must have shape (S, S), got {lower_triangular_matrix.shape}"
 
     # forget gate matrix
     log_fgates = jax.nn.log_sigmoid(fgate_preact)  # (B, NH, S, 1)
@@ -52,9 +57,7 @@ def parallel_stabilized_simple(
         ltr = jnp.tril(jnp.ones((S, S), dtype=jnp.bool_))
     else:
         ltr = lower_triangular_matrix
-    assert (
-        ltr.dtype == jnp.bool_
-    ), f"lower_triangular_matrix must be of dtype bool, got {ltr.dtype}"
+    assert ltr.dtype == jnp.bool_, f"lower_triangular_matrix must be of dtype bool, got {ltr.dtype}"
 
     log_fgates_cumsum = jnp.concat(
         [
@@ -66,17 +69,13 @@ def parallel_stabilized_simple(
     # for each batch/head this is a matrix of shape (S+1, S+1) containing the cumsum of the log forget gate values
     # in the second dimension (colum dimension). Each row has the same is a copy of the first row.
     # First entry of each row is zero.
-    rep_log_fgates_cumsum = log_fgates_cumsum.repeat(
-        repeats=S + 1, axis=-1
-    )  # (B, NH, S+1, S+1)
+    rep_log_fgates_cumsum = log_fgates_cumsum.repeat(repeats=S + 1, axis=-1)  # (B, NH, S+1, S+1)
     # Now in each row cut off / subtract the forgetgate values of the later timesteps
     # where col j > row i
     _log_fg_matrix = rep_log_fgates_cumsum - rep_log_fgates_cumsum.swapaxes(-2, -1)  # (B, NH, S+1, S+1)
     # Causal masking & selection of the correct submatrix, such that forgetgate at timestep t is not applied
     # to the input at timestep t
-    log_fg_matrix = jnp.where(
-        ltr, _log_fg_matrix[:, 1:, 1:], -float("inf")
-    )  # (B, NH, S, S)
+    log_fg_matrix = jnp.where(ltr, _log_fg_matrix[:, 1:, 1:], -float("inf"))  # (B, NH, S, S)
 
     # gate decay matrix D (combination of forget gate and input gate)
     log_D_matrix = log_fg_matrix + igate_preact.swapaxes(-2, -1)  # (B, NH, S, S)
@@ -94,9 +93,7 @@ def parallel_stabilized_simple(
     # combination matrix C
     qk_matrix = queries @ keys_scaled.swapaxes(-2, -1)  # (B, NH, S, S)
     C_matrix = qk_matrix * D_matrix  # (B, NH, S, S)
-    normalizer = jnp.maximum(
-        jnp.abs(C_matrix.sum(axis=-1, keepdims=True)), jnp.exp(-max_log_D)
-    )  # (B, NH, S, 1)
+    normalizer = jnp.maximum(jnp.abs(C_matrix.sum(axis=-1, keepdims=True)), jnp.exp(-max_log_D))  # (B, NH, S, 1)
     # (B, NH, S, S)
     C_matrix_normalized = C_matrix / (normalizer + eps)
 
@@ -170,9 +167,7 @@ def recurrent_step_stabilized_simple(
 
     k_scaled = k / math.sqrt(DH)
 
-    c_state_new = fg_act * c_state + ig_act * (
-        k_scaled @ v.swapaxes(-1, -2)
-    )  # (B, NH, DH, DH)
+    c_state_new = fg_act * c_state + ig_act * (k_scaled @ v.swapaxes(-1, -2))  # (B, NH, DH, DH)
     n_state_new = fg_act * n_state + ig_act * k_scaled  # (B, NH, DH, 1)
 
     h_num = q.swapaxes(-1, -2) @ c_state_new  # (B, NH, 1, DH)
@@ -183,4 +178,3 @@ def recurrent_step_stabilized_simple(
     h = h_num / h_denom  # (B, NH, 1, DH) / (B, NH, 1, 1) = (B, NH, 1, DH)
 
     return h, (c_state_new, n_state_new, m_state_new)
-

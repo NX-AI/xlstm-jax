@@ -1,5 +1,3 @@
-# Copyright (c) NXAI GmbH and its affiliates 2024
-# Maximilian Beck, Korbinian Pöppel
 import torch
 import torch.nn.functional as F
 from torch import nn

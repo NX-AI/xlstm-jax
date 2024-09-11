@@ -1,23 +1,27 @@
+from typing import Any
+
+from model.blocks.mlstm.backend.simple import parallel_stabilized_simple, recurrent_step_stabilized_simple
+from model.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
+from model.blocks.mlstm.cell import mLSTMCellConfig
+from model.blocks.mlstm.layer import mLSTMLayer, mLSTMLayerConfig
+from model.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
+from model.components.conv import CausalConv1d, CausalConv1dConfig
+from model.components.feedforward import FeedForwardConfig, create_feedforward
+from model.components.init import bias_linspace_init_
+from model.components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
+from model.components.ln import LayerNorm, MultiHeadLayerNorm
+from model.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
+from model.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+from model_pytorch.blocks.mlstm.backend.simple import (
+    parallel_stabilized_simple as parallel_stabilized_simple_torch,
+    recurrent_step_stabilized_simple as recurrent_step_stabilized_simple_torch,
+)
+
+import jax
+import jax.numpy as jnp
 import jax.test_util
 import pytest
-import jax
-from typing import Any
-import jax.numpy as jnp
-from model.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-from model.blocks.mlstm.block import mLSTMBlockConfig, mLSTMLayerConfig
-from model.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
-from model.components.ln import LayerNorm, MultiHeadLayerNorm
-from model.components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from model.components.init import bias_linspace_init_
-from model.components.feedforward import FeedForwardConfig, create_feedforward
-from model.components.conv import CausalConv1d, CausalConv1dConfig
-from model.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
-from model.blocks.mlstm.layer import mLSTMLayer, mLSTMLayerConfig
-from model.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
-from model.blocks.mlstm.cell import mLSTMCellConfig
-from model.blocks.mlstm.backend.simple import parallel_stabilized_simple, recurrent_step_stabilized_simple
-from model_pytorch.blocks.mlstm.backend.simple import parallel_stabilized_simple as parallel_stabilized_simple_torch
-from model_pytorch.blocks.mlstm.backend.simple import recurrent_step_stabilized_simple as recurrent_step_stabilized_simple_torch
+
 
 def test_xLSTMLMModel():
     config = xLSTMLMModelConfig(
@@ -38,9 +42,9 @@ def test_xLSTMLMModel():
                 embedding_dim=16,
                 context_length=128,
                 vmap_qk=True,
-                dtype=jnp.bfloat16
+                dtype=jnp.bfloat16,
             )
-        )
+        ),
     )
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng = jax.random.split(rng, 2)
@@ -51,7 +55,13 @@ def test_xLSTMLMModel():
     assert logits.shape == (2, 128, 100)
     assert logits.dtype == jnp.float32
     intermediates = _pytree_get_dtype(intermediates)
-    assert all([all([v == jnp.bfloat16 for v in intermediates[key]]) or key in ['intermediates.lm_head.__call__', 'intermediates.__call__'] for key in intermediates])
+    assert all(
+        [
+            all([v == jnp.bfloat16 for v in intermediates[key]])
+            or key in ["intermediates.lm_head.__call__", "intermediates.__call__"]
+            for key in intermediates
+        ]
+    )
 
 
 def _pytree_get_dtype(tree: Any) -> dict[str, Any]:
@@ -173,6 +183,7 @@ def test_bias_linear_init():
     assert jnp.allclose(init_vals_bfloat16, jnp.arange(0, 7), atol=1e-3), init_vals_bfloat16
     assert init_vals_bfloat16.dtype == jnp.bfloat16
 
+
 def test_feedforward():
     config = FeedForwardConfig(
         proj_factor=1.3,
@@ -208,22 +219,14 @@ def test_causal_conv1d():
     input_tensor = input_tensor.at[0, 2, 0].set(-1.0)
     output_tensor_new = model.apply(params, input_tensor)
     diff = (output_tensor_new - output_tensor) != 0
-    assert (
-        diff.any()
-    ), "Expected output to change after changing input, but it remained the same"
-    assert diff[
-        0, 2:, 0
-    ].all(), f"Expected output to change after changing input, but it remained the same: {diff}"
-    assert not diff[
-        :, :2, :
-    ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
+    assert diff.any(), "Expected output to change after changing input, but it remained the same"
+    assert diff[0, 2:, 0].all(), f"Expected output to change after changing input, but it remained the same: {diff}"
+    assert not diff[:, :2, :].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
     assert not diff[
         :, 2:, 1:
     ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    assert not diff[
-        1
-    ].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
-    
+    assert not diff[1].any(), f"Expected output to remain unchanged after changing input, but it changed: {diff}"
+
 
 def test_xLSTMBlock():
     config = xLSTMBlockConfig(
@@ -256,6 +259,7 @@ def test_xLSTMBlock():
     assert output_tensor.shape == input_tensor.shape, f"Expected shape {input_tensor.shape}, got {output_tensor.shape}"
     assert output_tensor.dtype == jnp.bfloat16, f"Expected dtype {jnp.bfloat16}, got {output_tensor.dtype}"
 
+
 @pytest.mark.parametrize("vmap_qk", [True, False])
 def test_mLSTMLayer(vmap_qk: bool):
     config = mLSTMLayerConfig(
@@ -278,7 +282,9 @@ def test_mLSTMLayer(vmap_qk: bool):
     model = mLSTMLayer(config)
     params = model.init(model_rng, input_tensor)
     output_tensor = model.apply(params, input_tensor)
-    assert output_tensor.shape == input_tensor.shape, f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
+    assert (
+        output_tensor.shape == input_tensor.shape
+    ), f"Expected output shape {input_tensor.shape}, but got {output_tensor.shape}"
 
 
 def test_mLSTMBlock():
@@ -306,9 +312,9 @@ def test_mLSTMBlock():
     assert output_tensor.shape == (2, 128, 16)
 
 
-
 def test_mLSTMBackend():
     import numpy as np
+
     rng = np.random.default_rng(42)
     B, NH, S, DH = 2, 3, 4, 5
     q = rng.standard_normal((B, NH, S, DH)).astype(jnp.float32)
@@ -325,7 +331,14 @@ def test_mLSTMBackend():
     m_state = rng.standard_normal((B, NH, 1, 1)).astype(jnp.float32)
 
     h, (c_state_new, n_state_new, m_state_new) = recurrent_step_stabilized_simple(
-        c_state, n_state, m_state, q[:, :, 0:1], k[:, :, 0:1], v[:, :, 0:1], igate_preact[:, :, 0:1], fgate_preact[:, :, 0:1]
+        c_state,
+        n_state,
+        m_state,
+        q[:, :, 0:1],
+        k[:, :, 0:1],
+        v[:, :, 0:1],
+        igate_preact[:, :, 0:1],
+        fgate_preact[:, :, 0:1],
     )
     assert h.shape == (B, NH, 1, DH)
     assert c_state_new.shape == (B, NH, DH, DH)
@@ -334,13 +347,16 @@ def test_mLSTMBackend():
 
     if parallel_stabilized_simple_torch is not None and recurrent_step_stabilized_simple_torch is not None:
         import torch
+
         q_torch = torch.from_numpy(q)
         k_torch = torch.from_numpy(k)
         v_torch = torch.from_numpy(v)
         igate_preact_torch = torch.from_numpy(igate_preact)
         fgate_preact_torch = torch.from_numpy(fgate_preact)
 
-        h_tilde_state_torch = parallel_stabilized_simple_torch(q_torch, k_torch, v_torch, igate_preact_torch, fgate_preact_torch)
+        h_tilde_state_torch = parallel_stabilized_simple_torch(
+            q_torch, k_torch, v_torch, igate_preact_torch, fgate_preact_torch
+        )
         assert jnp.allclose(h_tilde_state, h_tilde_state_torch.numpy(), atol=1e-3)
 
         c_state_torch = torch.from_numpy(c_state)
@@ -348,10 +364,16 @@ def test_mLSTMBackend():
         m_state_torch = torch.from_numpy(m_state)
 
         h_torch, (c_state_new_torch, n_state_new_torch, m_state_new_torch) = recurrent_step_stabilized_simple_torch(
-            c_state_torch, n_state_torch, m_state_torch, q_torch[:, :, 0:1], k_torch[:, :, 0:1], v_torch[:, :, 0:1], igate_preact_torch[:, :, 0:1], fgate_preact_torch[:, :, 0:1]
+            c_state_torch,
+            n_state_torch,
+            m_state_torch,
+            q_torch[:, :, 0:1],
+            k_torch[:, :, 0:1],
+            v_torch[:, :, 0:1],
+            igate_preact_torch[:, :, 0:1],
+            fgate_preact_torch[:, :, 0:1],
         )
         assert jnp.allclose(h, h_torch.numpy(), atol=1e-3)
         assert jnp.allclose(c_state_new, c_state_new_torch.numpy(), atol=1e-3)
         assert jnp.allclose(n_state_new, n_state_new_torch.numpy(), atol=1e-3)
         assert jnp.allclose(m_state_new, m_state_new_torch.numpy(), atol=1e-3)
-

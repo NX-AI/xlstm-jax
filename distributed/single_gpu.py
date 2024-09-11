@@ -9,8 +9,8 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 """
 
-from typing import Any
 from collections.abc import Callable
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -67,9 +67,7 @@ def accumulate_gradients_loop(
             end = start + minibatch_size
             minibatch = jax.tree.map(lambda x: x[start:end], batch)
             # Calculate gradients and metrics for the minibatch.
-            (_, step_metrics), step_grads = grad_fn(
-                state.params, state.apply_fn, minibatch, rngs[minibatch_idx]
-            )
+            (_, step_metrics), step_grads = grad_fn(state.params, state.apply_fn, minibatch, rngs[minibatch_idx])
             # Accumulate gradients and metrics across minibatches.
             if grads is None:
                 grads = step_grads
@@ -119,9 +117,7 @@ def accumulate_gradients_scan(
             ),
             batch,
         )
-        (_, step_metrics), step_grads = grad_fn(
-            state.params, state.apply_fn, minibatch, rngs[minibatch_idx]
-        )
+        (_, step_metrics), step_grads = grad_fn(state.params, state.apply_fn, minibatch, rngs[minibatch_idx])
         return step_grads, step_metrics
 
     def _scan_step(
