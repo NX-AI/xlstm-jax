@@ -1,13 +1,13 @@
 #!/bin/bash -l
 #SBATCH --job-name=xlstm-jax
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --partition=compute
 #SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
 #SBATCH --cpus-per-task=12  # Number of cores per socket on compute nodes 
 #SBATCH --ntasks-per-node=8
 #SBATCH --wait-all-nodes=1
-#SBATCH --time=0-00:10:00
+#SBATCH --time=0-00:20:00
 #SBATCH --chdir=/home/plippe/xlstm-jax
 #SBATCH --output=/nfs-gpu/xlstm/logs/plippe_test/outputs/xlstm-jax/%j.out
 #SBATCH --exclusive

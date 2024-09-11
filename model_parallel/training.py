@@ -189,8 +189,9 @@ def init_xlstm(
         ),
     )
     state_xlstm = init_model_fn(rng, input_array)
-    print(f"Number of parameters: {get_num_params(state_xlstm):_}")
-    print(tabulate_params(state_xlstm))
+    if jax.process_index() == 0:
+        print(f"Number of parameters: {get_num_params(state_xlstm):_}")
+        print(tabulate_params(state_xlstm))
     return state_xlstm
 
 def flatten_dict(d: dict) -> dict:

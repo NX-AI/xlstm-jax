@@ -2,12 +2,12 @@ import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
 # A lot of XLA flags, most of them have no impact on performance.
 os.environ['XLA_FLAGS'] = (
-    ''
+    '--xla_gpu_shard_autotuning=false '
     # '--xla_gpu_enable_triton_softmax_fusion=true '
-    # '--xla_gpu_triton_gemm_any=true '
+    '--xla_gpu_triton_gemm_any=true '
     # '--xla_gpu_enable_latency_hiding_scheduler=true '
     # '--xla_gpu_enable_async_collectives=true '
-    # '--xla_gpu_enable_highest_priority_async_stream=true '
+    '--xla_gpu_enable_highest_priority_async_stream=true '
     # '--xla_gpu_enable_while_loop_double_buffering=true '
     # '--xla_gpu_enable_pipelined_all_gather=true '
     # '--xla_gpu_enable_pipelined_reduce_scatter=true '
@@ -64,6 +64,7 @@ MODEL_CONFIGS = {
                 )
             )
         ),
+        "batch_size_per_device": 2, 
     },
     "debug_tp": {
         "config": xLSTMLMModelConfig(
@@ -91,6 +92,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
+        "batch_size_per_device": 2, 
         "model_axis_size": 4
     },
     "120M": {
@@ -115,7 +117,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 128, 
+        "batch_size_per_device": 16, 
         "gradient_accumulate_steps": 1
     },
     "120M_fsdp": {
@@ -141,7 +143,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 128, 
+        "batch_size_per_device": 16, 
         "gradient_accumulate_steps": 1
     },
     "1.3B": {
@@ -168,7 +170,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 32, 
+        "batch_size_per_device": 4, 
         "gradient_accumulate_steps": 1
     },
     "1.3B_remat": {
@@ -196,7 +198,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 256
+        "batch_size_per_device": 32, 
     },
     "1.3B_tp": {
         "config": xLSTMLMModelConfig(
@@ -222,7 +224,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 16, 
+        "batch_size_per_device": 4, 
         "gradient_accumulate_steps": 1, 
         "model_axis_size": 4
     },
@@ -250,7 +252,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 16, 
+        "batch_size_per_device": 4, 
         "gradient_accumulate_steps": 1, 
         "model_axis_size": 1
     },
@@ -282,7 +284,7 @@ MODEL_CONFIGS = {
                 )
             )
         ), 
-        "batch_size": 32, 
+        "batch_size_per_device": 4, 
         "gradient_accumulate_steps": 1, 
         "model_axis_size": 4,
         "optimizer": optax.adamw(learning_rate=optax.schedules.warmup_exponential_decay_schedule(init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000), b1=0.9, b2=0.98, eps=1e-9)
@@ -290,4 +292,4 @@ MODEL_CONFIGS = {
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["120M"], num_steps=30, log_num_steps=3)
+    benchmark_model(**MODEL_CONFIGS["7B"], num_steps=100, log_num_steps=3)
