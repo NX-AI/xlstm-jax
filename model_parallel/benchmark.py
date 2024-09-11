@@ -22,9 +22,31 @@ from distributed.single_gpu import Batch
 from tqdm.auto import tqdm
 from datetime import datetime
 from distributed.single_gpu import print_metrics
+from .checkpointing import save_checkpoint
 import time
 
 PyTree = Any
+
+def init_mesh(
+    model_axis_size: int = 1,
+    pipeline_axis_size: int = 1,
+    model_axis_name: str = "tp",
+    pipeline_axis_name: str = "pp",
+    data_axis_name: str = "dp",
+) -> Mesh:
+    if 'SLURM_STEP_NODELIST' in os.environ:
+        jax.distributed.initialize(
+            # coordinator_address=f"{os.environ['MASTER_ADDR']}:{os.environ['MASTER_PORT']}",
+            # local_device_ids={os.getenv("CUDA_VISIBLE_DEVICES")}
+        )
+    print("Device count:", jax.device_count(), "Local device count:", jax.local_device_count(), "Process index:", jax.process_index())
+    print("Devices:", jax.devices(), "Local devices:", jax.local_devices(), "Process Index:", jax.process_index())
+    
+    device_array = np.array(jax.devices()).reshape(-1, pipeline_axis_size, model_axis_size)
+    mesh = Mesh(
+        device_array, (data_axis_name, pipeline_axis_name, model_axis_name)
+    )
+    return mesh
 
 
 def benchmark_model(
@@ -43,9 +65,12 @@ def benchmark_model(
     if log_dir is None:
         log_dir = f"logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
-    device_array = np.array(jax.devices()).reshape(-1, pipeline_axis_size, model_axis_size)
-    mesh = Mesh(
-        device_array, (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name)
+    mesh = init_mesh(
+        model_axis_size=model_axis_size,
+        pipeline_axis_size=pipeline_axis_size,
+        model_axis_name=config.parallel.model_axis_name,
+        pipeline_axis_name=config.parallel.pipeline_axis_name,
+        data_axis_name=config.parallel.data_axis_name,
     )
     
     rng = jax.random.PRNGKey(seed)
@@ -57,6 +82,7 @@ def benchmark_model(
         optimizer = optax.adamw(learning_rate=1e-3)
     print("Initializing model")
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
+    # save_checkpoint(state, log_dir)
     
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),

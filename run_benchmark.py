@@ -2,11 +2,12 @@ import os
 os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
 # A lot of XLA flags, most of them have no impact on performance.
 os.environ['XLA_FLAGS'] = (
+    ''
     # '--xla_gpu_enable_triton_softmax_fusion=true '
-    '--xla_gpu_triton_gemm_any=true '
+    # '--xla_gpu_triton_gemm_any=true '
     # '--xla_gpu_enable_latency_hiding_scheduler=true '
     # '--xla_gpu_enable_async_collectives=true '
-    '--xla_gpu_enable_highest_priority_async_stream=true '
+    # '--xla_gpu_enable_highest_priority_async_stream=true '
     # '--xla_gpu_enable_while_loop_double_buffering=true '
     # '--xla_gpu_enable_pipelined_all_gather=true '
     # '--xla_gpu_enable_pipelined_reduce_scatter=true '
@@ -19,9 +20,9 @@ os.environ['XLA_FLAGS'] = (
     # '--xla_gpu_enable_pipelined_collectives=false '
     # '--xla_gpu_enable_pipelined_p2p=true '
     # '--xla_gpu_collective_permute_decomposer_threshold=1024 '
-    '--xla_gpu_lhs_enable_gpu_async_tracker=true '
-    '--xla_gpu_multi_streamed_windowed_einsum=true '
-    '--xla_gpu_threshold_for_windowed_einsum_mib=0 '
+    # '--xla_gpu_lhs_enable_gpu_async_tracker=true '
+    # '--xla_gpu_multi_streamed_windowed_einsum=true '
+    # '--xla_gpu_threshold_for_windowed_einsum_mib=0 '
     # '--xla_gpu_enable_nccl_user_buffers=true '
 )
 USE_CPU = False
@@ -289,4 +290,4 @@ MODEL_CONFIGS = {
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["7B"], num_steps=30, log_num_steps=3)
+    benchmark_model(**MODEL_CONFIGS["120M"], num_steps=30, log_num_steps=3)
