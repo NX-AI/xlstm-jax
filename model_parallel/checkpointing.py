@@ -1,9 +1,6 @@
 import os
 
-import orbax
 import orbax.checkpoint as ocp
-from absl import logging
-from flax.training import orbax_utils
 
 
 def save_checkpoint(state, log_dir):

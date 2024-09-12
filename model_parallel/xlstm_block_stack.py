@@ -6,8 +6,7 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlock, mLSTMBlockConfig
-from .components.ln import LayerNorm
+from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlockConfig
 from .utils import ParallelConfig, prepare_module
 
 

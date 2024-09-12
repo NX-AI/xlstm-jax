@@ -9,7 +9,6 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from .blocks.mlstm.block import mLSTMBlockConfig, mLSTMLayerConfig
 from .utils import ParallelConfig, prepare_module
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 

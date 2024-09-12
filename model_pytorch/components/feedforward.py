@@ -22,7 +22,7 @@ def get_act_fn(act_fn_name: str) -> Callable[[torch.Tensor], torch.Tensor]:
     if act_fn_name in _act_fn_registry:
         return _act_fn_registry[act_fn_name]
     else:
-        assert False, f'Unknown activation function name "{act_fn_name}". Available activation functions are: {str(_act_fn_cls_registry.keys())}'
+        assert False, f'Unknown activation function name "{act_fn_name}". Available activation functions are: {str(_act_fn_registry.keys())}'
 
 
 @dataclass

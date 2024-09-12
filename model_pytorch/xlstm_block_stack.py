@@ -1,6 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Literal, Optional, Union
+from typing import Literal
 
 import torch
 from torch import nn

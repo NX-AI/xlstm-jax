@@ -2,20 +2,14 @@ from collections import defaultdict
 from functools import partial
 from typing import Any
 
-from distributed.data_parallel import fold_rng_over_axis, shard_module_params, sync_gradients
-from distributed.pipeline_parallel import ModelParallelismWrapper, PipelineModule
+from distributed.data_parallel import fold_rng_over_axis, sync_gradients
 from distributed.single_gpu import (
     Batch,
     TrainState,
     accumulate_gradients,
     get_num_params,
-    print_metrics,
 )
 from distributed.tensor_parallel_transformer import (
-    TPInputEmbedding,
-    TPTransformerBlock,
-    TPTransformerParallelBlock,
-    TransformerBackbone,
     split_array_over_mesh,
 )
 

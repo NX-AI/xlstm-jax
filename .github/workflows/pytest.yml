@@ -1,0 +1,68 @@
+name: Run Pytest
+
+# Triggers the workflow on push and pull request events to specific branches
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    # The environment in which the workflow will run (Ubuntu in this case)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Remove unnecessary files
+        # see https://github.com/actions/runner-images/issues/2840#issuecomment-1284059930
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      # Check out the latest code from your repository
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Cache Conda environment
+      - name: Cache Conda environment
+        uses: actions/cache@v3
+        with:
+          path: ~/conda_pkgs_dir  # Cache the Conda package directory
+          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+          restore-keys: |
+            ${{ runner.os }}-conda-
+
+      # Set up Miniconda
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          activate-environment: jax0432_cpu
+          python-version: 3.11
+          environment-file: envs/environment_jax_0.4.32_cpu_python_3.11.yaml
+          auto-update-conda: true
+          mamba-version: "*"  # use mamba instead of conda, requires conda-forge channel
+
+      - name: Init Miniconda
+        shell: bash -el {0}
+        run: |
+          conda init
+
+      - name: Install dependencies
+        shell: bash -el {0}
+        run: |
+          conda activate jax0432_cpu
+          conda install pytest
+
+      - name: Version info
+        shell: bash -el {0}
+        run: |
+          conda info
+          conda list
+
+      # Run pytest
+      - name: Run Pytest
+        shell: bash -el {0}
+        run: |
+          py.test tests/*.py --disable-warnings

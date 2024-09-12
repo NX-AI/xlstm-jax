@@ -5,26 +5,17 @@ from typing import Any
 
 from distributed.data_parallel import fold_rng_over_axis
 from distributed.single_gpu import Batch, print_metrics
-from distributed.tensor_parallel_transformer import split_array_over_mesh
-from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from model_parallel.training import get_train_step_fn, init_xlstm
-from model_parallel.utils import ParallelConfig
-from model_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
-import flax
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
-import pytest
-import torch
-from flax import linen as nn
 from jax.experimental.shard_map import shard_map
-from jax.sharding import Mesh, NamedSharding, PartitionSpec as P
+from jax.sharding import Mesh, PartitionSpec as P
 from tqdm.auto import tqdm
 
-from .checkpointing import save_checkpoint
 
 PyTree = Any
 

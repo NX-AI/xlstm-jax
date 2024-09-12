@@ -1,7 +1,6 @@
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any
 
 from distributed.data_parallel import shard_module_params
 
