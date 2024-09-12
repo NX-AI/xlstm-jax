@@ -4,14 +4,17 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 from typing import Any
 
-from model.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_jax
-from model.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_jax
-from model.components.ln import LayerNorm as LayerNorm_jax
-from model.xlstm_lm_model import xLSTMLMModel as xLSTMLMModel_jax, xLSTMLMModelConfig as xLSTMLMModelConfig_jax
-from model_pytorch.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_torch
-from model_pytorch.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_torch
-from model_pytorch.components.ln import LayerNorm as LayerNorm_torch
-from model_pytorch.xlstm_lm_model import (
+from models.xlstm_clean.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_jax
+from models.xlstm_clean.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_jax
+from models.xlstm_clean.components.ln import LayerNorm as LayerNorm_jax
+from models.xlstm_clean.xlstm_lm_model import (
+    xLSTMLMModel as xLSTMLMModel_jax,
+    xLSTMLMModelConfig as xLSTMLMModelConfig_jax,
+)
+from models.xlstm_pytorch.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_torch
+from models.xlstm_pytorch.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_torch
+from models.xlstm_pytorch.components.ln import LayerNorm as LayerNorm_torch
+from models.xlstm_pytorch.xlstm_lm_model import (
     xLSTMLMModel as xLSTMLMModel_torch,
     xLSTMLMModelConfig as xLSTMLMModelConfig_torch,
 )

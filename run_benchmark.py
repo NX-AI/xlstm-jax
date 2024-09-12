@@ -5,12 +5,11 @@ if USE_CPU:
     simulate_CPU_devices(8)
 else:
     set_XLA_flags()
-
-from model_parallel.benchmark import benchmark_model
-from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from model_parallel.utils import ParallelConfig
-from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
+from models.xlstm_parallel.benchmark import benchmark_model
+from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from models.xlstm_parallel.utils import ParallelConfig
+from models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 import jax.numpy as jnp
 import optax

@@ -11,11 +11,11 @@ from typing import Any
 
 from distributed.array_utils import split_array_over_mesh
 from distributed.single_gpu import Batch
-from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from model_parallel.training import get_train_step_fn, init_xlstm
-from model_parallel.utils import ParallelConfig
-from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
+from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from models.xlstm_parallel.training import get_train_step_fn, init_xlstm
+from models.xlstm_parallel.utils import ParallelConfig
+from models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 import jax
 import jax.numpy as jnp

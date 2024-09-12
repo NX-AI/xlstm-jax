@@ -65,4 +65,4 @@ jobs:
       - name: Run Pytest
         shell: bash -el {0}
         run: |
-          py.test tests/*.py --disable-warnings
+          py.test tests/ --disable-warnings
