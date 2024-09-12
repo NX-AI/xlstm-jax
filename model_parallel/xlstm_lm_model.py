@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 from functools import partial
 
+from distributed.array_utils import split_array_over_mesh
 from distributed.data_parallel import shard_module_params
-from distributed.pipeline_parallel import ModelParallelismWrapper
-from distributed.tensor_parallel_transformer import split_array_over_mesh
+from distributed.tensor_parallel import ModelParallelismWrapper
 
 import jax
 import jax.numpy as jnp

@@ -2,16 +2,16 @@ from collections import defaultdict
 from functools import partial
 from typing import Any
 
-from distributed.data_parallel import fold_rng_over_axis, sync_gradients
+from distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
+from distributed.common_types import Metrics, Parameter, PyTree
+from distributed.data_parallel import shard_module_params, sync_gradients
+from distributed.pipeline_parallel import PipelineModule
 from distributed.single_gpu import (
     Batch,
     TrainState,
     accumulate_gradients,
-    get_num_params,
 )
-from distributed.tensor_parallel_transformer import (
-    split_array_over_mesh,
-)
+from distributed.tensor_parallel import ModelParallelismWrapper
 
 import jax
 import jax.numpy as jnp
@@ -26,9 +26,33 @@ from tabulate import tabulate as python_tabulate
 from .utils import ParallelConfig
 from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
-PyTree = Any
-Parameter = jax.Array | nn.Partitioned
-Metrics = dict[str, tuple[jax.Array, ...]]
+
+def print_metrics(metrics: Metrics, title: str | None = None) -> None:
+    """Prints metrics with an optional title.
+
+    Args:
+        metrics: A dictionary with metric names as keys and a tuple of (sum, count) as values.
+        title: An optional title for the metrics.
+    """
+    metrics = jax.device_get(metrics)
+    lines = [f"{k}: {v[0] / v[1]:.6f}" for k, v in metrics.items()]
+    if title:
+        title = f" {title} "
+        max_len = max(len(title), max(map(len, lines)))
+        lines = [title.center(max_len, "=")] + lines
+    print("\n".join(lines))
+
+
+def get_num_params(state: TrainState) -> int:
+    """Calculate the number of parameters in the model.
+
+    Args:
+        state: The current training state.
+
+    Returns:
+        The number of parameters in the model.
+    """
+    return sum(np.prod(x.shape) for x in jax.tree.leaves(state.params))
 
 
 def loss_fn(

@@ -3,9 +3,9 @@ import time
 from datetime import datetime
 from typing import Any
 
-from distributed.data_parallel import fold_rng_over_axis
-from distributed.single_gpu import Batch, print_metrics
-from model_parallel.training import get_train_step_fn, init_xlstm
+from distributed.array_utils import fold_rng_over_axis
+from distributed.common_types import Batch
+from model_parallel.training import get_train_step_fn, init_xlstm, print_metrics
 from model_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 import jax
@@ -16,8 +16,6 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tqdm.auto import tqdm
 
-
-PyTree = Any
 
 
 def init_mesh(

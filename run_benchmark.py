@@ -1,36 +1,11 @@
-import os
+from distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
 
-os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.90"
-# A lot of XLA flags, most of them have no impact on performance.
-os.environ["XLA_FLAGS"] = (
-    "--xla_gpu_shard_autotuning=false "
-    # '--xla_gpu_enable_triton_softmax_fusion=true '
-    "--xla_gpu_triton_gemm_any=true "
-    # '--xla_gpu_enable_latency_hiding_scheduler=true '
-    # '--xla_gpu_enable_async_collectives=true '
-    "--xla_gpu_enable_highest_priority_async_stream=true "
-    # '--xla_gpu_enable_while_loop_double_buffering=true '
-    # '--xla_gpu_enable_pipelined_all_gather=true '
-    # '--xla_gpu_enable_pipelined_reduce_scatter=true '
-    # '--xla_gpu_enable_pipelined_all_reduce=true '
-    # '--xla_gpu_enable_all_gather_combine_by_dim=false '
-    # '--xla_gpu_enable_reduce_scatter_combine_by_dim=false '
-    # '--xla_gpu_all_gather_combine_threshold_bytes=8589934592 '
-    # '--xla_gpu_reduce_scatter_combine_threshold_bytes=8589934592 '
-    # '--xla_gpu_all_reduce_combine_threshold_bytes=8589934592 '
-    # '--xla_gpu_enable_pipelined_collectives=false '
-    # '--xla_gpu_enable_pipelined_p2p=true '
-    # '--xla_gpu_collective_permute_decomposer_threshold=1024 '
-    # '--xla_gpu_lhs_enable_gpu_async_tracker=true '
-    # '--xla_gpu_multi_streamed_windowed_einsum=true '
-    # '--xla_gpu_threshold_for_windowed_einsum_mib=0 '
-    # '--xla_gpu_enable_nccl_user_buffers=true '
-)
 USE_CPU = False
 if USE_CPU:
-    from distributed.utils import simulate_CPU_devices
-
     simulate_CPU_devices(8)
+else:
+    set_XLA_flags()
+
 from model_parallel.benchmark import benchmark_model
 from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig

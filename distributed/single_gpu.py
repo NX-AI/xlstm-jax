@@ -1,36 +1,9 @@
-"""MIT License.
-
-Copyright (c) 2024 Phillip Lippe
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-
 from collections.abc import Callable
-from typing import Any
 
 import jax
 import jax.numpy as jnp
-import numpy as np
-from flax.struct import dataclass
-from flax.training import train_state
 
-# Type aliases
-PyTree = Any
-Metrics = dict[str, tuple[jax.Array, ...]]
-
-
-class TrainState(train_state.TrainState):
-    rng: jax.Array
-
-
-@dataclass
-class Batch:
-    inputs: jax.Array
-    labels: jax.Array
+from .common_types import Batch, Metrics, PyTree, TrainState
 
 
 def accumulate_gradients_loop(
@@ -183,19 +156,3 @@ def accumulate_gradients(
             num_minibatches=num_minibatches,
             loss_fn=loss_fn,
         )
-
-
-def print_metrics(metrics: Metrics, title: str | None = None) -> None:
-    """Prints metrics with an optional title."""
-    metrics = jax.device_get(metrics)
-    lines = [f"{k}: {v[0] / v[1]:.6f}" for k, v in metrics.items()]
-    if title:
-        title = f" {title} "
-        max_len = max(len(title), max(map(len, lines)))
-        lines = [title.center(max_len, "=")] + lines
-    print("\n".join(lines))
-
-
-def get_num_params(state: TrainState) -> int:
-    """Calculate the number of parameters in the model."""
-    return sum(np.prod(x.shape) for x in jax.tree.leaves(state.params))

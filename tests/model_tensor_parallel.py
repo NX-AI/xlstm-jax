@@ -2,13 +2,14 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["JAX_PLATFORMS"] = "cpu"
-from distributed.utils import simulate_CPU_devices
+from distributed.xla_utils import simulate_CPU_devices
 
 NUM_DEVICES = 8
 simulate_CPU_devices(NUM_DEVICES)
 
 from typing import Any
 
+from distributed.array_utils import split_array_over_mesh
 from distributed.single_gpu import Batch
 from model_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from model_parallel.blocks.mlstm.layer import mLSTMLayerConfig

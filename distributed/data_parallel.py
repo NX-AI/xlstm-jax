@@ -1,17 +1,5 @@
-"""MIT License.
-
-Copyright (c) 2024 Phillip Lippe
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-"""
-
 import functools
 from collections.abc import Callable, Sequence
-from typing import Any
 
 import flax.linen as nn
 import jax
@@ -19,26 +7,7 @@ import numpy as np
 from absl import logging
 from jax import lax
 
-PyTree = Any
-Metrics = dict[str, tuple[jax.Array, ...]]
-Parameter = jax.Array | nn.Partitioned
-
-
-def fold_rng_over_axis(rng: jax.random.PRNGKey, axis_name: str) -> jax.random.PRNGKey:
-    """Folds the random number generator over the given axis.
-
-    This is useful for generating a different random number for each device
-    across a certain axis (e.g. the model axis).
-
-    Args:
-        rng: The random number generator.
-        axis_name: The axis name to fold the random number generator over.
-
-    Returns:
-        A new random number generator, different for each device index along the axis.
-    """
-    axis_index = jax.lax.axis_index(axis_name)
-    return jax.random.fold_in(rng, axis_index)
+from .common_types import Parameter, PyTree
 
 
 @jax.named_scope("shard_params")
@@ -95,8 +64,17 @@ def shard_params(params: PyTree, axis_name: str, min_weight_size: int = 2**18) -
     )
 
 
-def gather_array_with_mean_grads(x: jax.Array, axis: int, axis_name: str):
-    """Gathering with averaging gradients across replicas."""
+def gather_array_with_mean_grads(x: jax.Array, axis: int, axis_name: str) -> jax.Array:
+    """Gathering with averaging gradients across replicas.
+
+    Args:
+        x: The array to gather.
+        axis: The axis of the array to gather across.
+        axis_name: The axis name of the mesh to gather across.
+
+    Returns:
+        The gathered array with a gradient function that averages across replicas.
+    """
     axis_size = jax.lax.psum(1, axis_name)
 
     # Define a custom gradient for the gather operation.

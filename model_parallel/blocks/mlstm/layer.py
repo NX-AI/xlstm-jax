@@ -2,9 +2,7 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import partial
 
-from distributed.pipeline_parallel import ModelParallelismWrapper
-from distributed.tensor_parallel import TPDense
-from distributed.tensor_parallel_async import TPAsyncDense
+from distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
 
 import jax
 import jax.numpy as jnp
