@@ -1,18 +1,21 @@
 from typing import Any
 
-from models.xlstm_clean.blocks.mlstm.backend.simple import parallel_stabilized_simple, recurrent_step_stabilized_simple
-from models.xlstm_clean.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
-from models.xlstm_clean.blocks.mlstm.cell import mLSTMCellConfig
-from models.xlstm_clean.blocks.mlstm.layer import mLSTMLayer, mLSTMLayerConfig
-from models.xlstm_clean.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
-from models.xlstm_clean.components.conv import CausalConv1d, CausalConv1dConfig
-from models.xlstm_clean.components.feedforward import FeedForwardConfig, create_feedforward
-from models.xlstm_clean.components.init import bias_linspace_init_
-from models.xlstm_clean.components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from models.xlstm_clean.components.ln import LayerNorm, MultiHeadLayerNorm
-from models.xlstm_clean.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
-from models.xlstm_clean.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-from models.xlstm_pytorch.blocks.mlstm.backend.simple import (
+from xlstm_jax.models.xlstm_clean.blocks.mlstm.backend.simple import (
+    parallel_stabilized_simple,
+    recurrent_step_stabilized_simple,
+)
+from xlstm_jax.models.xlstm_clean.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_clean.blocks.mlstm.cell import mLSTMCellConfig
+from xlstm_jax.models.xlstm_clean.blocks.mlstm.layer import mLSTMLayer, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_clean.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
+from xlstm_jax.models.xlstm_clean.components.conv import CausalConv1d, CausalConv1dConfig
+from xlstm_jax.models.xlstm_clean.components.feedforward import FeedForwardConfig, create_feedforward
+from xlstm_jax.models.xlstm_clean.components.init import bias_linspace_init_
+from xlstm_jax.models.xlstm_clean.components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
+from xlstm_jax.models.xlstm_clean.components.ln import LayerNorm, MultiHeadLayerNorm
+from xlstm_jax.models.xlstm_clean.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
+from xlstm_jax.models.xlstm_clean.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple as parallel_stabilized_simple_torch,
     recurrent_step_stabilized_simple as recurrent_step_stabilized_simple_torch,
 )

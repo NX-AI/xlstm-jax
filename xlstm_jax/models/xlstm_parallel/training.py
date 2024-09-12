@@ -2,16 +2,16 @@ from collections import defaultdict
 from functools import partial
 from typing import Any
 
-from distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
-from distributed.common_types import Metrics, Parameter, PyTree
-from distributed.data_parallel import shard_module_params, sync_gradients
-from distributed.pipeline_parallel import PipelineModule
-from distributed.single_gpu import (
+from xlstm_jax.distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
+from xlstm_jax.distributed.common_types import Metrics, Parameter, PyTree
+from xlstm_jax.distributed.data_parallel import shard_module_params, sync_gradients
+from xlstm_jax.distributed.pipeline_parallel import PipelineModule
+from xlstm_jax.distributed.single_gpu import (
     Batch,
     TrainState,
     accumulate_gradients,
 )
-from distributed.tensor_parallel import ModelParallelismWrapper
+from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
 
 import jax
 import jax.numpy as jnp

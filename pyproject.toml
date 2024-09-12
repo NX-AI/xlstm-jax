@@ -52,4 +52,4 @@ section-order = ["future", "standard-library", "first-party", "third-party", "lo
 quote-style = "double"
 
 [tool.setuptools]
-packages = ["xlstm"]
+packages = ["xlstm_jax"]

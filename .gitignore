@@ -7,6 +7,9 @@ local
 # PyCharm
 .idea
 
+# VS Code
+.vscode
+
 # Ruff cache
 .ruff_cache
 

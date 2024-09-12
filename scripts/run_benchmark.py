@@ -1,5 +1,6 @@
-from distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
 import subprocess
+
+from xlstm_jax.distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
 
 try:
     subprocess.check_output('nvidia-smi')
@@ -11,11 +12,11 @@ except Exception:
     simulate_CPU_devices(8)
     USE_CPU = True
 
-from models.xlstm_parallel.benchmark import benchmark_model
-from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from models.xlstm_parallel.utils import ParallelConfig
-from models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
+from xlstm_jax.models.xlstm_parallel.benchmark import benchmark_model
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 import jax.numpy as jnp
 import optax

@@ -2,20 +2,20 @@ import os
 
 os.environ["CUDA_VISIBLE_DEVICES"] = ""
 os.environ["JAX_PLATFORMS"] = "cpu"
-from distributed.xla_utils import simulate_CPU_devices
+from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
 
 NUM_DEVICES = 8
 simulate_CPU_devices(NUM_DEVICES)
 
 from typing import Any
 
-from distributed.array_utils import split_array_over_mesh
-from distributed.single_gpu import Batch
-from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from models.xlstm_parallel.training import get_train_step_fn, init_xlstm
-from models.xlstm_parallel.utils import ParallelConfig
-from models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+from xlstm_jax.distributed.array_utils import split_array_over_mesh
+from xlstm_jax.distributed.single_gpu import Batch
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
+from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 import jax
 import jax.numpy as jnp

@@ -2,7 +2,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from distributed.data_parallel import shard_module_params
+from xlstm_jax.distributed.data_parallel import shard_module_params
 
 from flax import linen as nn
 
