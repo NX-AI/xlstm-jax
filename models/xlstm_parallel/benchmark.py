@@ -5,11 +5,11 @@ from typing import Any
 
 from distributed.array_utils import fold_rng_over_axis
 from distributed.common_types import Batch
-from xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics
-from xlstm_parallel.utils import ParallelConfig
-from xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
+from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from models.xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics
+from models.xlstm_parallel.utils import ParallelConfig
+from models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 import jax
 import jax.numpy as jnp
 import numpy as np

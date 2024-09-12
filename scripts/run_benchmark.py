@@ -1,10 +1,16 @@
 from distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
+import subprocess
 
-USE_CPU = False
-if USE_CPU:
-    simulate_CPU_devices(8)
-else:
+try:
+    subprocess.check_output('nvidia-smi')
+    print("GPU found, setting XLA flags.")
     set_XLA_flags()
+    USE_CPU = False
+except Exception:
+    print("No GPU found, using CPU instead.")
+    simulate_CPU_devices(8)
+    USE_CPU = True
+
 from models.xlstm_parallel.benchmark import benchmark_model
 from models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
@@ -276,4 +282,10 @@ MODEL_CONFIGS = {
 }
 
 if __name__ == "__main__":
-    benchmark_model(**MODEL_CONFIGS["7B"], num_steps=100, log_num_steps=3)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="7B" if not USE_CPU else "debug")
+    parser.add_argument("--num_steps", type=int, default=100)
+    parser.add_argument("--log_num_steps", type=int, default=3)
+    args = parser.parse_args()
+    benchmark_model(**MODEL_CONFIGS[args.model], num_steps=args.num_steps, log_num_steps=args.log_num_steps)

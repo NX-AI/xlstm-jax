@@ -16,7 +16,7 @@
 # Below is from oracle examples. I used the container example, as it uses srun instead of mpirun
 export PMI_DEBUG=1
 
-MACHINEFILE="/nfs-gpu/xlstm/logs/plippe_test/outputs/maxtext/hostfile"
+MACHINEFILE="/nfs-gpu/xlstm/logs/plippe_test/outputs/xlstm-jax/hostfile"
 
 scontrol show hostnames $SLURM_JOB_NODELIST > $MACHINEFILE
 echo MACHINEFILE
@@ -61,6 +61,8 @@ export NCCL_CROSS_NIC=0 \
        IB_RX_QUEUE_LEN=8192 \
        OMPI_MCA_coll=^hcoll
     #    NCCL_TOPO_FILE=/nfs/cluster/H100-topology.xml \
+
+# Needed for CUDA compatibility with older drivers on H100
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/plippe/.conda/envs/jax0431_local/cuda-compat/
 
 
@@ -80,4 +82,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; python run_benchmark.py'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_benchmark.py --model="7B"'
