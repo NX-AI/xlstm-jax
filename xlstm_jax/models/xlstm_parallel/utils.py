@@ -31,6 +31,7 @@ class UpProjConfigMixin:
 @dataclass
 class ParallelConfig:
     data_axis_name: str = "dp"
+    fsdp_axis_name: str = "fsdp"
     pipeline_axis_name: str = "pipe"
     model_axis_name: str = "tp"
     remat: list[str] | tuple[str] = ()
@@ -60,7 +61,7 @@ def prepare_module(
     if config.fsdp_modules is not None and layer_name in config.fsdp_modules:
         layer = shard_module_params(
             layer,
-            axis_name=config.data_axis_name,
+            axis_name=config.fsdp_axis_name,
             min_weight_size=config.fsdp_min_weight_size,
         )
     if config.remat is not None and layer_name in config.remat:

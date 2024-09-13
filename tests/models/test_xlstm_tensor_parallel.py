@@ -56,17 +56,22 @@ MODEL_CONFIGS = [
 
 
 def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
-    device_array = np.array(jax.devices()).reshape(-1, 1, model_axis_size)
+    device_array = np.array(jax.devices()).reshape(-1, 1, 1, model_axis_size)
     return Mesh(
         device_array,
-        (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name),
+        (
+            config.parallel.data_axis_name,
+            config.parallel.fsdp_axis_name,
+            config.parallel.pipeline_axis_name,
+            config.parallel.model_axis_name,
+        ),
     )
 
 
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 @pytest.mark.parametrize("gradient_accumulate_steps", [1])
 @pytest.mark.parametrize("model_axis_size", [1, 2, 4])
-def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
+def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
     mesh = _create_mesh(config, model_axis_size=model_axis_size)
     rng = jax.random.PRNGKey(42)
     model_rng, data_rng = jax.random.split(rng)
@@ -75,7 +80,6 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
     config.__post_init__()
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    # assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
 
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),
@@ -86,14 +90,13 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         batch=batch,
         mesh=mesh,
         config=config.parallel,
-        gradient_accumulate_steps=1,
+        gradient_accumulate_steps=gradient_accumulate_steps,
     )
     state, metrics = train_step_fn(
         state,
         metrics,
         batch,
     )
-    # assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
     assert all(
         [m.sharding.spec == P() for m in jax.tree.leaves(metrics)]
     ), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"

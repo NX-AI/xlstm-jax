@@ -65,7 +65,9 @@ def loss_fn(
     # Since dropout masks vary across the batch dimension, we want each device to generate a
     # different mask. We can achieve this by folding the rng over the data axis, so that each
     # device gets a different rng and thus mask.
-    dropout_rng = fold_rng_over_axis(rng, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name))
+    dropout_rng = fold_rng_over_axis(
+        rng, (config.data_axis_name, config.fsdp_axis_name, config.pipeline_axis_name, config.model_axis_name)
+    )
     # Remaining computation is the same as before for single device.
     logits = apply_fn(
         {"params": params},
@@ -104,7 +106,9 @@ def train_step(
     )
     # Update parameters. We need to sync the gradients across devices before updating.
     with jax.named_scope("sync_gradients"):
-        grads = sync_gradients(grads, (config.data_axis_name, config.pipeline_axis_name, config.model_axis_name))
+        grads = sync_gradients(
+            grads, (config.data_axis_name, config.fsdp_axis_name, config.pipeline_axis_name, config.model_axis_name)
+        )
     new_state = state.apply_gradients(grads=grads, rng=rng)
     # Sum metrics across replicas. Alternatively, we could keep the metrics separate
     # and only synchronize them before logging. For simplicity, we sum them here.
@@ -114,6 +118,7 @@ def train_step(
                 x,
                 axis_name=(
                     config.data_axis_name,
+                    config.fsdp_axis_name,
                     config.pipeline_axis_name,
                     config.model_axis_name,
                 ),
@@ -139,7 +144,7 @@ def get_train_step_fn(
         shard_map(
             partial(train_step, config=config, gradient_accumulate_steps=gradient_accumulate_steps),
             mesh,
-            in_specs=(state_specs, P(), P(config.data_axis_name)),
+            in_specs=(state_specs, P(), P((config.data_axis_name, config.fsdp_axis_name))),
             out_specs=(state_specs, P()),
             check_rep=False,
         ),
@@ -180,7 +185,7 @@ def init_xlstm(
         shard_map(
             _init_model,
             mesh,
-            in_specs=(P(), P(config.parallel.data_axis_name)),
+            in_specs=(P(), P((config.parallel.data_axis_name, config.parallel.fsdp_axis_name))),
             out_specs=P(),
             check_rep=False,
         ),
@@ -192,7 +197,7 @@ def init_xlstm(
         shard_map(
             _init_model,
             mesh,
-            in_specs=(P(), P(config.parallel.data_axis_name)),
+            in_specs=(P(), P((config.parallel.data_axis_name, config.parallel.fsdp_axis_name))),
             out_specs=state_xlstm_specs,
             check_rep=False,
         ),
@@ -243,10 +248,6 @@ def tabulate_params(state: TrainState) -> str:
         params,
         is_leaf=lambda x: isinstance(x, nn.Partitioned),
     )
-    # param_mean = jax.tree.map(lambda x: jnp.mean(x).item(), params)
-    # param_std = jax.tree.map(lambda x: jnp.std(x).item(), params)
-    # param_min = jax.tree.map(lambda x: jnp.min(x).item() if x.size > 0 else 0, params)
-    # param_max = jax.tree.map(lambda x: jnp.max(x).item() if x.size > 0 else 0, params)
     summary = defaultdict(list)
     for key in sorted(list(params.keys())):
         summary["Name"].append(key)
@@ -254,8 +255,4 @@ def tabulate_params(state: TrainState) -> str:
         summary["Count"].append(param_count[key])
         summary["Dtype"].append(param_dtype[key])
         summary["Sharding"].append(param_sharding[key])
-        # summary["Mean"].append(param_mean[key])
-        # summary["Std"].append(param_std[key])
-        # summary["Min"].append(param_min[key])
-        # summary["Max"].append(param_max[key])
     return python_tabulate(summary, headers="keys", intfmt="_", floatfmt=".3f")

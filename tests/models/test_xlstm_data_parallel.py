@@ -82,11 +82,16 @@ MODEL_CONFIGS = [
 ]
 
 
-def _create_mesh(config: xLSTMLMModelConfig):
-    device_array = np.array(jax.devices()).reshape(-1, 1, 1)
+def _create_mesh(config: xLSTMLMModelConfig, fsdp_axis_size: int = 1) -> Mesh:
+    device_array = np.array(jax.devices()).reshape(-1, fsdp_axis_size, 1, 1)
     return Mesh(
         device_array,
-        (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name),
+        (
+            config.parallel.data_axis_name,
+            config.parallel.fsdp_axis_name,
+            config.parallel.pipeline_axis_name,
+            config.parallel.model_axis_name,
+        ),
     )
 
 
@@ -137,8 +142,13 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
     assert loss > 0, f"Loss must be greater zero, but is {loss}."
 
     mesh_single_device = Mesh(
-        np.array(jax.devices())[0:1, None, None],
-        (config.parallel.data_axis_name, config.parallel.pipeline_axis_name, config.parallel.model_axis_name),
+        np.array(jax.devices())[0:1, None, None, None],
+        (
+            config.parallel.data_axis_name,
+            config.parallel.fsdp_axis_name,
+            config.parallel.pipeline_axis_name,
+            config.parallel.model_axis_name,
+        ),
     )
     state_single_device = init_xlstm(
         config=config, mesh=mesh_single_device, rng=model_rng, input_array=input_array, optimizer=optimizer
@@ -199,7 +209,7 @@ def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
 
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 def test_fsdp(config: xLSTMLMModelConfig):
-    mesh = _create_mesh(config)
+    mesh = _create_mesh(config, fsdp_axis_size=NUM_DEVICES)
     config.parallel.fsdp_modules = ("Embed", "mLSTMBlock", "LMHead")
     config.parallel.fsdp_min_weight_size = 2**8  # Reduce for testing.
     config.remat = "mLSTMBlock"

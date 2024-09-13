@@ -3,7 +3,7 @@ import subprocess
 from xlstm_jax.distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
 
 try:
-    subprocess.check_output('nvidia-smi')
+    subprocess.check_output("nvidia-smi")
     print("GPU found, setting XLA flags.")
     set_XLA_flags()
     USE_CPU = False
@@ -33,8 +33,11 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_min_weight_size=2**8,
             ),
             dtype=jnp.float32,
             mlstm_block=mLSTMBlockConfig(
@@ -49,6 +52,7 @@ MODEL_CONFIGS = {
             ),
         ),
         "batch_size_per_device": 2,
+        "fsdp_axis_size": 2,
     },
     "debug_tp": {
         "config": xLSTMLMModelConfig(
@@ -61,6 +65,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
             ),
@@ -115,6 +120,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
@@ -129,6 +135,8 @@ MODEL_CONFIGS = {
         ),
         "batch_size_per_device": 16,
         "gradient_accumulate_steps": 1,
+        "data_axis_size": 1,
+        "fsdp_axis_size": -1,
     },
     "1.3B": {
         "config": xLSTMLMModelConfig(
@@ -141,6 +149,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
@@ -156,6 +165,8 @@ MODEL_CONFIGS = {
         ),
         "batch_size_per_device": 4,
         "gradient_accumulate_steps": 1,
+        "data_axis_size": 1,
+        "fsdp_axis_size": -1,
     },
     "1.3B_remat": {
         "config": xLSTMLMModelConfig(
@@ -169,6 +180,7 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
@@ -183,6 +195,8 @@ MODEL_CONFIGS = {
             ),
         ),
         "batch_size_per_device": 32,
+        "data_axis_size": 1,
+        "fsdp_axis_size": -1,
     },
     "1.3B_tp": {
         "config": xLSTMLMModelConfig(
@@ -195,6 +209,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
@@ -211,6 +226,8 @@ MODEL_CONFIGS = {
         "batch_size_per_device": 4,
         "gradient_accumulate_steps": 1,
         "model_axis_size": 4,
+        "data_axis_size": 1,
+        "fsdp_axis_size": -1,
     },
     "7B_shallow": {
         "config": xLSTMLMModelConfig(
@@ -223,6 +240,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
@@ -239,6 +257,8 @@ MODEL_CONFIGS = {
         "batch_size_per_device": 4,
         "gradient_accumulate_steps": 1,
         "model_axis_size": 1,
+        "data_axis_size": 1,
+        "fsdp_axis_size": -1,
     },
     "7B": {
         "config": xLSTMLMModelConfig(
@@ -252,10 +272,10 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             parallel=ParallelConfig(
                 data_axis_name="dp",
+                fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                # fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-                fsdp_modules=(),  # Not needed if TP 4
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_min_weight_size=2**18,
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
@@ -271,6 +291,7 @@ MODEL_CONFIGS = {
         "batch_size_per_device": 4,
         "gradient_accumulate_steps": 1,
         "model_axis_size": 4,
+        "fsdp_axis_size": 1,
         "optimizer": optax.adamw(
             learning_rate=optax.schedules.warmup_exponential_decay_schedule(
                 init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000
@@ -284,6 +305,7 @@ MODEL_CONFIGS = {
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="7B" if not USE_CPU else "debug")
     parser.add_argument("--num_steps", type=int, default=100)
