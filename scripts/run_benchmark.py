@@ -301,6 +301,88 @@ MODEL_CONFIGS = {
             eps=1e-9,
         ),
     },
+    "30B": {
+        "config": xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=8192,
+            num_blocks=72,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            scan_blocks=True,
+            parallel=ParallelConfig(
+                data_axis_name="dp",
+                fsdp_axis_name="fsdp",
+                model_axis_name="tp",
+                pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_min_weight_size=2**18,
+                remat=("mLSTMBlock"),
+                tp_async_dense=False,
+            ),
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                    vmap_qk=False,
+                )
+            ),
+        ),
+        "batch_size_per_device": 2,
+        "gradient_accumulate_steps": 1,
+        "model_axis_size": 4,
+        "fsdp_axis_size": 2,
+        "optimizer": optax.adamw(
+            learning_rate=optax.schedules.warmup_exponential_decay_schedule(
+                init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000
+            ),
+            b1=0.9,
+            b2=0.98,
+            eps=1e-9,
+        ),
+    },
+    "70B": {
+        "config": xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=12_288,
+            num_blocks=76,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            scan_blocks=True,
+            parallel=ParallelConfig(
+                data_axis_name="dp",
+                fsdp_axis_name="fsdp",
+                model_axis_name="tp",
+                pipeline_axis_name="pp",
+                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_min_weight_size=2**18,
+                remat=("mLSTMBlock"),
+                tp_async_dense=False,
+            ),
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                    vmap_qk=False,
+                )
+            ),
+        ),
+        "batch_size_per_device": 1,
+        "gradient_accumulate_steps": 1,
+        "model_axis_size": 4,
+        "fsdp_axis_size": 8,
+        "optimizer": optax.adamw(
+            learning_rate=optax.schedules.warmup_exponential_decay_schedule(
+                init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000
+            ),
+            b1=0.9,
+            b2=0.98,
+            eps=1e-9,
+        ),
+    },
 }
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
 #SBATCH --partition=compute
 #SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
-#SBATCH --cpus-per-task=12  # Number of cores per socket on compute nodes 
+#SBATCH --cpus-per-task=12  # Number of cores per socket on compute nodes
 #SBATCH --ntasks-per-node=8
 #SBATCH --wait-all-nodes=1
 #SBATCH --time=0-00:20:00
@@ -36,7 +36,7 @@ if [[ "$mpivars_path" == "" ]]; then
 
 source $mpivars_path
 
-# Had to remove a part from example sbatch that checks whether the node has H100 GPUs: 
+# Had to remove a part from example sbatch that checks whether the node has H100 GPUs:
 # https://github.com/oracle-quickstart/oci-hpc/blob/master/samples/gpu/nccl_run_allreduce_containers_H100.sbatch#L33-L39
 # It is not necessary (we know we have H100), not useful (does not raise error and stop, just echo), and breaks our code (head node returns VM.Standard.E4.Flex, not BM.GPU.H100.8)
 export NCCL_CROSS_NIC=0 \
@@ -82,4 +82,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_benchmark.py --model="7B"'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_benchmark.py --model="30B"'
