@@ -3,13 +3,13 @@ from collections.abc import Callable
 import jax
 import jax.numpy as jnp
 
-from .common_types import Batch, Metrics, PyTree, TrainState
+from .common_types import Batch, Metrics, PRNGKeyArray, PyTree, TrainState
 
 
 def accumulate_gradients_loop(
     state: TrainState,
     batch: Batch,
-    rng: jax.random.PRNGKey,
+    rng: PRNGKeyArray,
     num_minibatches: int,
     loss_fn: Callable,
 ) -> tuple[PyTree, Metrics]:
@@ -56,7 +56,7 @@ def accumulate_gradients_loop(
 def accumulate_gradients_scan(
     state: TrainState,
     batch: Batch,
-    rng: jax.random.PRNGKey,
+    rng: PRNGKeyArray,
     num_minibatches: int,
     loss_fn: Callable,
 ) -> tuple[PyTree, Metrics]:
@@ -120,7 +120,7 @@ def accumulate_gradients_scan(
 def accumulate_gradients(
     state: TrainState,
     batch: Batch,
-    rng: jax.random.PRNGKey,
+    rng: PRNGKeyArray,
     num_minibatches: int,
     loss_fn: Callable,
     use_scan: bool = False,

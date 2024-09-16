@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from functools import partial
 
+from xlstm_jax.models.configs import SubModelConfig
+
 import jax
 from flax import linen as nn
 
@@ -9,7 +11,7 @@ from .layer import mLSTMLayerConfig
 
 
 @dataclass
-class mLSTMBlockConfig:
+class mLSTMBlockConfig(SubModelConfig):
     mlstm: mLSTMLayerConfig = field(default_factory=mLSTMLayerConfig)
 
     # we initialize these with None to catch the case where they are not set

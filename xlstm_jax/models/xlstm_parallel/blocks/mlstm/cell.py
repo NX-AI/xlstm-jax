@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
 
+from xlstm_jax.models.configs import SubModelConfig
+
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
@@ -14,7 +16,7 @@ from .backend import (
 
 
 @dataclass
-class mLSTMCellConfig:
+class mLSTMCellConfig(SubModelConfig):
     context_length: int = -1
     embedding_dim: int = -1
     num_heads: int = -1

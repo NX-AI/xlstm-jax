@@ -7,14 +7,15 @@ from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
 NUM_DEVICES = 8
 simulate_CPU_devices(NUM_DEVICES)
 
+import dataclasses
 from typing import Any
 
 from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.single_gpu import Batch
+from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
-from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 import jax
@@ -210,9 +211,15 @@ def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 def test_fsdp(config: xLSTMLMModelConfig):
     mesh = _create_mesh(config, fsdp_axis_size=NUM_DEVICES)
-    config.parallel.fsdp_modules = ("Embed", "mLSTMBlock", "LMHead")
-    config.parallel.fsdp_min_weight_size = 2**8  # Reduce for testing.
-    config.remat = "mLSTMBlock"
+    config = dataclasses.replace(
+        config,
+        parallel=dataclasses.replace(
+            config.parallel,
+            fsdp_modules=("Embed", "mLSTMBlock", "LMHead"),
+            fsdp_min_weight_size=2**8,  # Reduce for testing.
+            remat=("mLSTMBlock"),
+        ),
+    )
     rng = jax.random.PRNGKey(123)
     model_rng, data_rng = jax.random.split(rng)
     input_array = jax.random.randint(data_rng, shape=(32, config.context_length), minval=0, maxval=config.vocab_size)

@@ -3,12 +3,13 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from xlstm_jax.distributed.data_parallel import shard_module_params
+from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 
 from flax import linen as nn
 
 
 @dataclass
-class UpProjConfigMixin:
+class UpProjConfigMixin(SubModelConfig):
     proj_factor: float = None  # will be overridden by subclasses
     round_proj_up_dim_up: bool = True
     round_proj_up_to_multiple_of: int = 64
@@ -26,18 +27,6 @@ class UpProjConfigMixin:
                 multiple_of_multiplier = math.floor(multiple_of_multiplier)
 
             self._proj_up_dim = int(multiple_of_multiplier * self.round_proj_up_to_multiple_of)
-
-
-@dataclass
-class ParallelConfig:
-    data_axis_name: str = "dp"
-    fsdp_axis_name: str = "fsdp"
-    pipeline_axis_name: str = "pipe"
-    model_axis_name: str = "tp"
-    remat: list[str] | tuple[str] = ()
-    fsdp_modules: list[str] | tuple[str] = ()
-    fsdp_min_weight_size: int = 2**18
-    tp_async_dense: bool = True
 
 
 def prepare_module(

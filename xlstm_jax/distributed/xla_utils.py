@@ -28,7 +28,7 @@ def set_XLA_flags():
         "--xla_gpu_shard_autotuning=false "
         # '--xla_gpu_enable_triton_softmax_fusion=true '
         "--xla_gpu_triton_gemm_any=true "
-        # '--xla_gpu_enable_latency_hiding_scheduler=true '
+        "--xla_gpu_enable_latency_hiding_scheduler=true "
         # '--xla_gpu_enable_async_collectives=true '
         "--xla_gpu_enable_highest_priority_async_stream=true "
         # '--xla_gpu_enable_while_loop_double_buffering=true '

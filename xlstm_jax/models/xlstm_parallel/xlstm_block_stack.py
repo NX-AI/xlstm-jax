@@ -6,12 +6,13 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
+from ..configs import SubModelConfig
 from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlockConfig
 from .utils import ParallelConfig, prepare_module
 
 
 @dataclass
-class xLSTMBlockStackConfig:
+class xLSTMBlockStackConfig(SubModelConfig):
     mlstm_block: mLSTMBlockConfig | None = None
     slstm_block: None = None
 
@@ -96,8 +97,9 @@ class BlockStack(nn.Module):
     def __call__(self, x: jax.Array, *args, **kwargs) -> jax.Array:
         if not self.config.scan_blocks:
             blocks = self._create_blocks(config=self.config)
+            # TODO: Add train etc. flags, but need to be static for remat.
             for block in blocks:
-                x = block(x, *args, **kwargs)
+                x = block(x)
         else:
             assert all([v == 0 for v in self.config.block_map]), "scan_blocks only supported for pure mLSTM blocks"
             block_fn = prepare_module(

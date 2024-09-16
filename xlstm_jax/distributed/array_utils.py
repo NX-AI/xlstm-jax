@@ -5,10 +5,10 @@ import jax.numpy as jnp
 import numpy as np
 from flax import linen as nn
 
-from .common_types import Metrics, Parameter, PyTree, TrainState
+from .common_types import Metrics, Parameter, PRNGKeyArray, PyTree, TrainState
 
 
-def fold_rng_over_axis(rng: jax.random.PRNGKey, axis_name: str) -> jax.random.PRNGKey:
+def fold_rng_over_axis(rng: PRNGKeyArray, axis_name: str) -> PRNGKeyArray:
     """Folds the random number generator over the given axis.
 
     This is useful for generating a different random number for each device

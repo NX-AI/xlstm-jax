@@ -3,7 +3,7 @@ from functools import partial
 from typing import Any
 
 from xlstm_jax.distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
-from xlstm_jax.distributed.common_types import Metrics, Parameter, PyTree
+from xlstm_jax.distributed.common_types import Metrics, Parameter, PRNGKeyArray, PyTree
 from xlstm_jax.distributed.data_parallel import shard_module_params, sync_gradients
 from xlstm_jax.distributed.pipeline_parallel import PipelineModule
 from xlstm_jax.distributed.single_gpu import (
@@ -169,7 +169,7 @@ def init_xlstm(
 ):
     model = xLSTMLMModel(config)
 
-    def _init_model(init_rng: jax.random.PRNGKey, x: jax.Array) -> TrainState:
+    def _init_model(init_rng: PRNGKeyArray, x: jax.Array) -> TrainState:
         param_rng, init_rng = jax.random.split(init_rng)
         variables = model.init({"params": param_rng}, x, train=False)
         params = variables.pop("params")

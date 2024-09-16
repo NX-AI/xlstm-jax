@@ -1,9 +1,11 @@
 from dataclasses import dataclass, field
 from typing import Any
 
+from xlstm_jax.models.configs import SubModelConfig
+
 
 @dataclass
-class NameAndKwargs:
+class NameAndKwargs(SubModelConfig):
     name: str = ""
     kwargs: dict[str, Any] | None = field(default_factory=dict)
     _registry: dict[str, type] | None = field(default_factory=dict)

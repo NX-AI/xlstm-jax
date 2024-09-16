@@ -21,17 +21,21 @@ from tqdm.auto import tqdm
 
 
 def init_mesh(
-    model_axis_size: int = 1,
+    data_axis_size: int = -1,
+    fsdp_axis_size: int = 1,
     pipeline_axis_size: int = 1,
-    model_axis_name: str = "tp",
-    pipeline_axis_name: str = "pp",
+    model_axis_size: int = 1,
     data_axis_name: str = "dp",
+    fsdp_axis_name: str = "fsdp",
+    pipeline_axis_name: str = "pp",
+    model_axis_name: str = "tp",
 ) -> Mesh:
     if "SLURM_STEP_NODELIST" in os.environ:
         jax.distributed.initialize()
 
-    device_array = np.array(jax.devices()).reshape(-1, pipeline_axis_size, model_axis_size)
-    mesh = Mesh(device_array, (data_axis_name, pipeline_axis_name, model_axis_name))
+    device_array = np.array(jax.devices()).reshape(data_axis_size, fsdp_axis_size, pipeline_axis_size, model_axis_size)
+    mesh = Mesh(device_array, (data_axis_name, fsdp_axis_name, pipeline_axis_name, model_axis_name))
+    print("Mesh", mesh)
     return mesh
 
 
@@ -41,10 +45,13 @@ def create_batch(
     vocab_size: int,
     rng: jax.Array,
     mesh: Mesh,
+    config: ParallelConfig,
 ):
+    data_axis_name = (config.parallel.data_axis_name, config.parallel.fsdp_axis_name)
+
     def _data_gen(rng: jax.Array):
-        rng = fold_rng_over_axis(rng, axis_name="dp")
-        dp_size = jax.lax.psum(1, axis_name="dp")
+        rng = fold_rng_over_axis(rng, axis_name=data_axis_name)
+        dp_size = jax.lax.psum(1, axis_name=data_axis_name)
         tokens = jax.random.randint(rng, shape=(batch_size // dp_size, context_length), minval=0, maxval=vocab_size)
         batch = Batch(
             inputs=jnp.pad(tokens[:, :-1], ((0, 0), (1, 0)), constant_values=0),
@@ -56,7 +63,7 @@ def create_batch(
         _data_gen,
         mesh,
         in_specs=P(),
-        out_specs=P("dp"),
+        out_specs=P(data_axis_name),
         check_rep=False,
     )
     return data_gen(rng)
@@ -64,8 +71,10 @@ def create_batch(
 
 def benchmark_model(
     config: xLSTMLMModelConfig,
-    model_axis_size: int = 1,
+    data_axis_size: int = -1,
+    fsdp_axis_size: int = 1,
     pipeline_axis_size: int = 1,
+    model_axis_size: int = 1,
     seed: int = 42,
     gradient_accumulate_steps: int = 1,
     batch_size_per_device: int = 32,
@@ -79,11 +88,14 @@ def benchmark_model(
         log_dir = f"logs/{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}"
     os.makedirs(log_dir, exist_ok=True)
     mesh = init_mesh(
-        model_axis_size=model_axis_size,
+        data_axis_size=data_axis_size,
+        fsdp_axis_size=fsdp_axis_size,
         pipeline_axis_size=pipeline_axis_size,
-        model_axis_name=config.parallel.model_axis_name,
-        pipeline_axis_name=config.parallel.pipeline_axis_name,
+        model_axis_size=model_axis_size,
         data_axis_name=config.parallel.data_axis_name,
+        fsdp_axis_name=config.parallel.fsdp_axis_name,
+        pipeline_axis_name=config.parallel.pipeline_axis_name,
+        model_axis_name=config.parallel.model_axis_name,
     )
 
     rng = jax.random.PRNGKey(seed)
@@ -95,6 +107,7 @@ def benchmark_model(
         config.vocab_size,
         data_rng,
         mesh,
+        config,
     )
     if optimizer is None:
         optimizer = optax.adamw(learning_rate=1e-3)
