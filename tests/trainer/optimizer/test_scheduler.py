@@ -1,7 +1,7 @@
-from xlstm_jax.trainer.optimizer.scheduler import SchedulerConfig, build_lr_scheduler
-
 import numpy as np
 import pytest
+
+from xlstm_jax.trainer.optimizer.scheduler import SchedulerConfig, build_lr_scheduler
 
 
 def _check_warmup(lr: float, warmup_steps: int, warmup_lr: float):

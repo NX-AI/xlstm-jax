@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 from functools import partial
 
-from xlstm_jax.models.configs import SubModelConfig
-
 import jax
 from flax import linen as nn
+
+from xlstm_jax.models.configs import SubModelConfig
 
 from ..xlstm_block import xLSTMBlock, xLSTMBlockConfig
 from .layer import mLSTMLayerConfig

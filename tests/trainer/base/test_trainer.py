@@ -8,15 +8,15 @@ if os.environ["JAX_PLATFORMS"] == "cpu":
 else:
     NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
 
+import jax
+import jax.numpy as jnp
+import pytest
+
 from xlstm_jax.distributed.single_gpu import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
-
-import jax
-import jax.numpy as jnp
-import pytest
 
 from ..helpers.mse_trainer import MSETrainer, ToyModel
 

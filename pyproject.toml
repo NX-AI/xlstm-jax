@@ -43,7 +43,7 @@ max-complexity = 18
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-section-order = ["future", "standard-library", "first-party", "third-party", "local-folder", "xlstm_jax"]
+section-order = ["future", "standard-library", "first-party", "third-party", "xlstm_jax", "local-folder"]
 
 [tool.ruff.lint.isort.sections]
 "xlstm_jax" = ["xlstm_jax"]

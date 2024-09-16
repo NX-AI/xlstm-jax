@@ -1,6 +1,12 @@
 from functools import partial
 from typing import Any
 
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from flax import linen as nn
+
 from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.single_gpu import Batch
@@ -8,12 +14,6 @@ from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPDen
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.base.trainer import TrainerModule
 from xlstm_jax.trainer.metrics import Metrics
-
-import jax
-import jax.numpy as jnp
-import numpy as np
-import optax
-from flax import linen as nn
 
 
 class ToyModel(nn.Module):

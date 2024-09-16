@@ -2,11 +2,11 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import partial
 
-from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
-
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
+
+from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
 
 from ...components.conv import CausalConv1d, CausalConv1dConfig
 from ...components.linear_headwise import (

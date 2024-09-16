@@ -3,14 +3,6 @@ import time
 from datetime import datetime
 from typing import Any
 
-from xlstm_jax.distributed.array_utils import fold_rng_over_axis
-from xlstm_jax.distributed.common_types import Batch
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics
-from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
-from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -18,6 +10,14 @@ import optax
 from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tqdm.auto import tqdm
+
+from xlstm_jax.distributed.array_utils import fold_rng_over_axis
+from xlstm_jax.distributed.common_types import Batch
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics
+from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 
 def init_mesh(

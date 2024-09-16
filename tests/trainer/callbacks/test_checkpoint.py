@@ -9,6 +9,11 @@ else:
     NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
 
 
+import jax
+import jax.numpy as jnp
+import pytest
+from flax import linen as nn
+
 from xlstm_jax.distributed.single_gpu import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
@@ -17,11 +22,6 @@ from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
-
-import jax
-import jax.numpy as jnp
-import pytest
-from flax import linen as nn
 
 from ..helpers.mse_trainer import MSETrainer, ToyModel
 

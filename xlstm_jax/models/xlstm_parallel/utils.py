@@ -2,10 +2,10 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
+from flax import linen as nn
+
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
-
-from flax import linen as nn
 
 
 @dataclass

@@ -1,10 +1,10 @@
 from dataclasses import dataclass, field
 
-from xlstm_jax.models.configs import SubModelConfig
-
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
+
+from xlstm_jax.models.configs import SubModelConfig
 
 from ...components.init import bias_linspace_init_
 from ...components.ln import LayerNorm, MultiHeadLayerNorm

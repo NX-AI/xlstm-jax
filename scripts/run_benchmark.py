@@ -12,14 +12,14 @@ except Exception:
     simulate_CPU_devices(8)
     USE_CPU = True
 
+import jax.numpy as jnp
+import optax
+
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.benchmark import benchmark_model
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
-
-import jax.numpy as jnp
-import optax
 
 MODEL_CONFIGS = {
     "debug": {

@@ -1,5 +1,10 @@
 from typing import Any
 
+import jax
+import jax.numpy as jnp
+import jax.test_util
+import pytest
+
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple,
     recurrent_step_stabilized_simple,
@@ -19,11 +24,6 @@ from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple as parallel_stabilized_simple_torch,
     recurrent_step_stabilized_simple as recurrent_step_stabilized_simple_torch,
 )
-
-import jax
-import jax.numpy as jnp
-import jax.test_util
-import pytest
 
 
 def test_xLSTMLMModel():

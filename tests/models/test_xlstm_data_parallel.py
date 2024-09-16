@@ -10,14 +10,6 @@ simulate_CPU_devices(NUM_DEVICES)
 import dataclasses
 from typing import Any
 
-from xlstm_jax.distributed.array_utils import split_array_over_mesh
-from xlstm_jax.distributed.single_gpu import Batch
-from xlstm_jax.models.configs import ParallelConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
-from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -25,6 +17,14 @@ import optax
 import pytest
 from flax import linen as nn
 from jax.sharding import Mesh, PartitionSpec as P
+
+from xlstm_jax.distributed.array_utils import split_array_over_mesh
+from xlstm_jax.distributed.single_gpu import Batch
+from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
+from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 PyTree = Any
 

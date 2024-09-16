@@ -2,9 +2,6 @@ import operator
 import re
 from functools import partial
 
-from xlstm_jax.trainer.base.param_utils import flatten_dict
-from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_optimizer
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -12,6 +9,9 @@ import optax
 import pytest
 from flax import linen as nn
 from flax.training.train_state import TrainState
+
+from xlstm_jax.trainer.base.param_utils import flatten_dict
+from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_optimizer
 
 SCHEDULERS = [
     SchedulerConfig(name="constant", lr=0.1),

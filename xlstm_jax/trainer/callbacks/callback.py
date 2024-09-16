@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Any, Optional
 
+import jax
+
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.trainer.metrics import Metrics
-
-import jax
 
 
 @dataclass(kw_only=True, frozen=True)

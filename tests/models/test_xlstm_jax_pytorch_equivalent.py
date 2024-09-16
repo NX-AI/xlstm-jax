@@ -4,6 +4,13 @@ os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 from typing import Any
 
+import flax
+import jax
+import jax.numpy as jnp
+import numpy as np
+import pytest
+import torch
+
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_jax
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_jax
 from xlstm_jax.models.xlstm_clean.components.ln import LayerNorm as LayerNorm_jax
@@ -18,13 +25,6 @@ from xlstm_jax.models.xlstm_pytorch.xlstm_lm_model import (
     xLSTMLMModel as xLSTMLMModel_torch,
     xLSTMLMModelConfig as xLSTMLMModelConfig_torch,
 )
-
-import flax
-import jax
-import jax.numpy as jnp
-import numpy as np
-import pytest
-import torch
 
 PyTree = Any
 

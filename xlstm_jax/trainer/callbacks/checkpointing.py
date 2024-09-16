@@ -2,13 +2,13 @@ import os
 from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-from xlstm_jax.import_utils import class_to_name
-from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
-
 import jax
 import orbax.checkpoint as ocp
 from absl import logging
 from flax.training import orbax_utils
+
+from xlstm_jax.import_utils import class_to_name
+from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 
 
 @dataclass(kw_only=True, frozen=True)

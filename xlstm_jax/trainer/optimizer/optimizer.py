@@ -5,10 +5,10 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal
 
-from xlstm_jax.configs import ConfigDict
-
 import jax
 import optax
+
+from xlstm_jax.configs import ConfigDict
 
 from .scheduler import SchedulerConfig, build_lr_scheduler
 

@@ -1,9 +1,9 @@
 from typing import Any
 
-from xlstm_jax.distributed.common_types import PRNGKeyArray
-
 import jax
 from flax.training import train_state
+
+from xlstm_jax.distributed.common_types import PRNGKeyArray
 
 
 class TrainState(train_state.TrainState):

@@ -1,15 +1,15 @@
 from typing import Any, Tuple
 
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+
 from xlstm_jax.distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
 from xlstm_jax.distributed.single_gpu import Batch
 from xlstm_jax.trainer.base.train_state import TrainState
 from xlstm_jax.trainer.base.trainer import TrainerModule
 from xlstm_jax.trainer.metrics import Metrics
-
-import jax
-import jax.numpy as jnp
-import numpy as np
-import optax
 
 
 class LLMTrainer(TrainerModule):

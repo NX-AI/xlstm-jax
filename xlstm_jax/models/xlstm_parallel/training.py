@@ -2,6 +2,16 @@ from collections import defaultdict
 from functools import partial
 from typing import Any
 
+import jax
+import jax.numpy as jnp
+import numpy as np
+import optax
+from flax import linen as nn
+from flax.core.frozen_dict import FrozenDict
+from jax.experimental.shard_map import shard_map
+from jax.sharding import Mesh, PartitionSpec as P
+from tabulate import tabulate as python_tabulate
+
 from xlstm_jax.distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
 from xlstm_jax.distributed.common_types import Metrics, Parameter, PRNGKeyArray, PyTree
 from xlstm_jax.distributed.data_parallel import shard_module_params, sync_gradients
@@ -12,16 +22,6 @@ from xlstm_jax.distributed.single_gpu import (
     accumulate_gradients,
 )
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
-
-import jax
-import jax.numpy as jnp
-import numpy as np
-import optax
-from flax import linen as nn
-from flax.core.frozen_dict import FrozenDict
-from jax.experimental.shard_map import shard_map
-from jax.sharding import Mesh, PartitionSpec as P
-from tabulate import tabulate as python_tabulate
 
 from .utils import ParallelConfig
 from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig

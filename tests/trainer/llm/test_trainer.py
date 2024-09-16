@@ -11,6 +11,11 @@ else:
 from functools import partial
 from pathlib import Path
 
+import jax
+import jax.numpy as jnp
+import pytest
+from flax import linen as nn
+
 from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.single_gpu import Batch
@@ -25,11 +30,6 @@ from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
-
-import jax
-import jax.numpy as jnp
-import pytest
-from flax import linen as nn
 
 
 class LLMToyModel(nn.Module):

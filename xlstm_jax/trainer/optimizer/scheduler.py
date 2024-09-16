@@ -4,10 +4,10 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal
 
+import optax
+
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.import_utils import resolve_import_from_string
-
-import optax
 
 
 @dataclass(kw_only=True, frozen=True)

@@ -20,20 +20,6 @@ from typing import (
     Union,
 )
 
-# ML collections for config
-from xlstm_jax.configs import ConfigDict
-from xlstm_jax.dataset import Batch
-from xlstm_jax.distributed.common_types import PRNGKeyArray
-from xlstm_jax.distributed.data_parallel import sync_gradients
-from xlstm_jax.distributed.single_gpu import accumulate_gradients
-from xlstm_jax.import_utils import resolve_import
-from xlstm_jax.models import ModelConfig
-from xlstm_jax.trainer import callbacks
-from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint
-from xlstm_jax.trainer.logger import Logger, LoggerConfig
-from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, get_metrics, update_metrics
-from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
-
 import flax
 
 # JAX/Flax libraries
@@ -51,6 +37,20 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tabulate import tabulate as python_tabulate
 from tqdm.auto import tqdm
+
+# ML collections for config
+from xlstm_jax.configs import ConfigDict
+from xlstm_jax.dataset import Batch
+from xlstm_jax.distributed.common_types import PRNGKeyArray
+from xlstm_jax.distributed.data_parallel import sync_gradients
+from xlstm_jax.distributed.single_gpu import accumulate_gradients
+from xlstm_jax.import_utils import resolve_import
+from xlstm_jax.models import ModelConfig
+from xlstm_jax.trainer import callbacks
+from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint
+from xlstm_jax.trainer.logger import Logger, LoggerConfig
+from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, get_metrics, update_metrics
+from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
 
 from .param_utils import tabulate_params
 from .train_state import TrainState
