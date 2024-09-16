@@ -1,5 +1,4 @@
 import functools
-from typing import Optional
 
 import torch
 import triton

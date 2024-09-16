@@ -1,6 +1,6 @@
 import os
 
-from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
+from xlstm_jax.distributed import simulate_CPU_devices
 
 if os.environ["JAX_PLATFORMS"] == "cpu":
     NUM_DEVICES = 8
@@ -16,10 +16,8 @@ import jax.numpy as jnp
 import pytest
 from flax import linen as nn
 
-from xlstm_jax.distributed.array_utils import split_array_over_mesh
-from xlstm_jax.distributed.data_parallel import shard_module_params
-from xlstm_jax.distributed.single_gpu import Batch
-from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPDense
+from xlstm_jax.dataset import Batch
+from xlstm_jax.distributed import ModelParallelismWrapper, TPDense, shard_module_params, split_array_over_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
@@ -115,12 +113,13 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",
-                    save_top_k=4,
+                    max_to_keep=4,
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
                 ),
             ),
-            logger=LoggerConfig(log_dir=tmp_path.as_posix()),
+            logger=LoggerConfig(log_path=tmp_path),
+            check_val_every_n_epoch=1,
         ),
         ModelConfig(
             model_class=LLMToyModel,
@@ -157,33 +156,33 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
         num_epochs=5,
     )
     assert final_metrics is not None
-    assert all(f"val_{i}" in final_metrics for i in range(1, 6))
-    assert "perplexity" in final_metrics["val_1"]
+    assert all(f"val_epoch_{i}" in final_metrics for i in range(1, 6))
+    assert "perplexity" in final_metrics["val_epoch_1"]
     assert (
-        final_metrics["val_5"]["perplexity"] < final_metrics["val_4"]["perplexity"]
+        final_metrics["val_epoch_5"]["perplexity"] < final_metrics["val_epoch_4"]["perplexity"]
     ), "Validation perplexity should decrease over epochs."
     # Check that checkpoints have been created.
     assert os.path.exists(tmp_path)
     assert os.path.exists(tmp_path / "checkpoints")
     assert len(os.listdir(tmp_path / "checkpoints/")) == 4
     # Check that validation performance can be reproduced with checkpoint.
-    trainer.load_model(epoch_idx=2)
+    trainer.load_model(step_idx=200)
     new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=2)
     assert "perplexity" in new_metrics
     assert "loss" in new_metrics
     assert (
-        new_metrics["perplexity"] == final_metrics["val_2"]["perplexity"]
-    ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_2']}"
-    assert new_metrics["loss"] == final_metrics["val_2"]["loss"], "Loss should match the loaded model."
+        new_metrics["perplexity"] == final_metrics["val_epoch_2"]["perplexity"]
+    ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_epoch_2']}"
+    assert new_metrics["loss"] == final_metrics["val_epoch_2"]["loss"], "Loss should match the loaded model."
     # Check that we can continue training from this checkpoint as before.
     new_final_metrics = trainer.train_model(
         train_loader,
         val_loader,
-        num_epochs=3,
+        num_epochs=5,
     )
     assert new_final_metrics is not None
     assert (
-        new_final_metrics["val_3"]["perplexity"] == final_metrics["val_5"]["perplexity"]
+        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
     ), "Perplexity should match the loaded model."
 
 
@@ -236,12 +235,12 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",
-                    save_top_k=4,
+                    max_to_keep=4,
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
                 ),
             ),
-            logger=LoggerConfig(log_dir=tmp_path.as_posix()),
+            logger=LoggerConfig(log_path=tmp_path),
         ),
         ModelConfig(
             model_class=xLSTMLMModel,
@@ -277,31 +276,31 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
     )
     # Check that metrics are present as expected.
     assert final_metrics is not None
-    assert all(f"val_{i}" in final_metrics for i in range(1, 6))
-    assert "perplexity" in final_metrics["val_1"]
+    assert all(f"val_epoch_{i}" in final_metrics for i in range(1, 6))
+    assert "perplexity" in final_metrics["val_epoch_1"]
     assert (
-        final_metrics["val_5"]["perplexity"] < final_metrics["val_4"]["perplexity"]
+        final_metrics["val_epoch_5"]["perplexity"] < final_metrics["val_epoch_4"]["perplexity"]
     ), "Validation perplexity should decrease over epochs."
     # Check that checkpoints have been created.
     assert os.path.exists(tmp_path)
     assert os.path.exists(tmp_path / "checkpoints")
     assert len(os.listdir(tmp_path / "checkpoints/")) == 4
     # Check that validation performance can be reproduced with checkpoint.
-    trainer.load_model(epoch_idx=3)
+    trainer.load_model(step_idx=150)
     new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=3)
     assert "perplexity" in new_metrics
     assert "loss" in new_metrics
     assert (
-        new_metrics["perplexity"] == final_metrics["val_3"]["perplexity"]
-    ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_3']}"
-    assert new_metrics["loss"] == final_metrics["val_3"]["loss"], "Loss should match the loaded model."
+        new_metrics["perplexity"] == final_metrics["val_epoch_3"]["perplexity"]
+    ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_epoch_3']}"
+    assert new_metrics["loss"] == final_metrics["val_epoch_3"]["loss"], "Loss should match the loaded model."
     # Check that we can continue training from this checkpoint as before.
     new_final_metrics = trainer.train_model(
         train_loader,
         val_loader,
-        num_epochs=2,
+        num_epochs=5,
     )
     assert new_final_metrics is not None
     assert (
-        new_final_metrics["val_2"]["perplexity"] == final_metrics["val_5"]["perplexity"]
+        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
     ), "Perplexity should match the loaded model."

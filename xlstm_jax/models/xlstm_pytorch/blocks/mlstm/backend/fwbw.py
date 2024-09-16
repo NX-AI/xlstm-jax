@@ -1,7 +1,5 @@
 import math
 from dataclasses import asdict, dataclass
-from functools import cache
-from typing import Optional
 
 import torch
 

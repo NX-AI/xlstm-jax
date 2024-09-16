@@ -1,6 +1,4 @@
-import importlib
 import re
-import sys
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from typing import Any, Literal
@@ -155,13 +153,9 @@ def _get_param_mask_fn(
     def is_param_included(path, _):
         param_name = _key_path_to_str(path)
         if exclude is not None:
-            if any(re.search(excl, param_name) for excl in exclude):
-                return False
-            return True
+            return not any(re.search(excl, param_name) for excl in exclude)
         elif include is not None:
-            if any(re.search(incl, param_name) for incl in include):
-                return True
-            return False
+            return any(re.search(incl, param_name) for incl in include)
         else:
             return True
 
@@ -192,15 +186,19 @@ def build_gradient_transformations(
     Returns:
         Tuple[List[optax.GradientTransformation], List[optax.GradientTransformation]]: Tuple of pre-optimizer and post-optimizer gradient transformations.
     """
-    # Gradient transformation
     optimizer_name = optimizer_config.name
     optimizer_name = optimizer_name.lower()
     pre_trans, post_trans = [], []
 
+    # Gradient clipping by norm.
     if optimizer_config.grad_clip_norm is not None:
         pre_trans.append(optax.clip_by_global_norm(optimizer_config.grad_clip_norm))
+
+    # Gradient clipping by value.
     if optimizer_config.grad_clip_value is not None:
         pre_trans.append(optax.clip(optimizer_config.grad_clip_value))
+
+    # Weight decay.
     if optimizer_config.weight_decay > 0.0 and optimizer_name not in ["adamw"]:
         post_trans.append(
             optax.add_decayed_weights(

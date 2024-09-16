@@ -1,21 +1,35 @@
 import os
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from pathlib import Path
+from typing import Any, Literal
 
 import jax
 import orbax.checkpoint as ocp
 from absl import logging
-from flax.training import orbax_utils
 
 from xlstm_jax.import_utils import class_to_name
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
+from xlstm_jax.trainer.metrics import Metrics
 
 
 @dataclass(kw_only=True, frozen=True)
 class ModelCheckpointConfig(CallbackConfig):
-    monitor: str
-    save_top_k: int = 1
-    mode: str = "min"
+    """Configuration for the ModelCheckpoint callback.
+
+    By default, the checkpoint saves the model parameters, training step, random number generator state, and metadata to the logging directory. The metadata includes the trainer, model, and optimizer configurations.
+
+    Attributes:
+        max_to_keep: Number of checkpoints to keep. If None, keeps all checkpoints. Otherwise, keeps the most recent `max_to_keep` checkpoints. If `monitor` is set, keeps the best `max_to_keep` checkpoints instead of the most recent.
+        monitor: Metric to monitor for saving the model. Should be a key of the evaluation metrics. If None, checkpoints are sorted by recency.
+        mode: One of {"min", "max"}. If "min", saves the model with the smallest value of the monitored metric. If "max", saves the model with the largest value of the monitored metric.
+        save_optimizer_state: Whether to save the optimizer state.
+        enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more information.
+        class_name: Name of the checkpoint class. Should be "ModelCheckpoint", except you are implementing a custom checkpoint class that inherits from this config.
+    """
+
+    max_to_keep: int | None = 1
+    monitor: str | None = None
+    mode: Literal["min", "max"] = "min"
     save_optimizer_state: bool = True
     enable_async_checkpointing: bool = True
     class_name: str = "ModelCheckpoint"
@@ -26,11 +40,12 @@ class ModelCheckpoint(Callback):
 
     def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: Any | None = None):
         super().__init__(config, trainer, data_module)
-        self.log_dir = self.trainer.log_dir
+        assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
+        self.log_path: Path = self.trainer.log_path
 
         options = ocp.CheckpointManagerOptions(
-            max_to_keep=self.config.save_top_k,
-            best_fn=lambda m: m[self.config.monitor],
+            max_to_keep=self.config.max_to_keep,
+            best_fn=lambda m: m[self.config.monitor] if self.config.monitor is not None else None,
             best_mode=self.config.mode,
             step_prefix="checkpoint",
             cleanup_tmp_directories=True,
@@ -54,26 +69,27 @@ class ModelCheckpoint(Callback):
         if self.config.save_optimizer_state:
             item_handlers["opt_state"] = ocp.StandardCheckpointHandler()
         self.manager = ocp.CheckpointManager(
-            directory=os.path.abspath(os.path.join(self.log_dir, "checkpoints/")),
+            directory=(self.log_path / "checkpoints").absolute().as_posix(),
             item_names=tuple(item_handlers.keys()),
             item_handlers=item_handlers,
             options=options,
         )
 
-    def on_filtered_validation_epoch_end(self, eval_metrics, epoch_idx):
-        self.save_model(eval_metrics, epoch_idx)
+    def on_filtered_validation_epoch_end(self, eval_metrics, epoch_idx: int, step_idx: int):
+        self.save_model(eval_metrics, step_idx)
 
-    def save_model(self, eval_metrics, epoch_idx):
-        """Saves model parameters and batch statistics to the logging directory.
+    def save_model(self, eval_metrics: Metrics, step_idx: int):
+        """Saves model state dict to the logging directory.
 
         Args:
             eval_metrics: Dictionary of evaluation metrics.
             epoch_idx: Index of the current epoch.
         """
-        logging.info(f"Saving model at epoch {epoch_idx} with eval metrics {eval_metrics}.")
-        assert (
-            self.config.monitor in eval_metrics
-        ), f"Metric '{self.config.monitor}' not found in available eval metrics: {', '.join(eval_metrics)}"
+        logging.info(f"Saving model at step {step_idx} with eval metrics {eval_metrics}.")
+        if self.config.monitor is not None:
+            assert (
+                self.config.monitor in eval_metrics
+            ), f"Metric '{self.config.monitor}' not found in available eval metrics: {', '.join(eval_metrics)}"
         save_items = {
             "step": ocp.args.ArraySave(self.trainer.state.step),
             "params": ocp.args.StandardSave(self.trainer.state.params),
@@ -88,20 +104,25 @@ class ModelCheckpoint(Callback):
             k: eval_metrics[k] for k in eval_metrics if isinstance(eval_metrics[k], (int, float, str, bool))
         }
         save_items = ocp.args.Composite(**save_items)
-        self.manager.save(epoch_idx, args=save_items, metrics=eval_metrics)
+        self.manager.save(step_idx, args=save_items, metrics=eval_metrics)
 
-    def load_model(self, epoch_idx=-1):
+    def load_model(self, step_idx: int = -1, load_best: bool = False):
         """Loads model parameters and variables from the logging directory.
 
         Args:
-            epoch_idx: Index of the epoch to load. If -1, loads the best epoch.
+            step_idx: Index of the step to load. If -1, loads the latest step by default.
+            load_best: If True and step_idx is -1, loads the best checkpoint
+                based on the monitored metric instead of the latest checkpoint.
 
         Returns:
             Dictionary of loaded model parameters and additional variables.
         """
-        logging.info(f"Loading model at epoch {epoch_idx}.")
-        if epoch_idx == -1:
-            epoch_idx = self.manager.best_step()
+        logging.info(f"Loading model at step {step_idx}.")
+        if step_idx == -1:
+            if load_best:
+                step_idx = self.manager.best_step()
+            else:
+                step_idx = self.manager.latest_step()
         args = {
             "step": ocp.args.ArrayRestore(self.trainer.state.step),
             "params": ocp.args.StandardRestore(self.trainer.state.params),
@@ -113,7 +134,7 @@ class ModelCheckpoint(Callback):
         if self.config.save_optimizer_state:
             args["opt_state"] = ocp.args.StandardRestore(self.trainer.state.opt_state)
         state_dict = self.manager.restore(
-            epoch_idx,
+            step_idx,
             args=ocp.args.Composite(**args),
         )
         state_dict = {k: v for k, v in state_dict.items() if v is not None}

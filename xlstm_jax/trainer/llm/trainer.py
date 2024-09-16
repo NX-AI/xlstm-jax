@@ -1,13 +1,12 @@
-from typing import Any, Tuple
+from typing import Any
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
 
-from xlstm_jax.distributed.array_utils import fold_rng_over_axis, split_array_over_mesh
-from xlstm_jax.distributed.single_gpu import Batch
-from xlstm_jax.trainer.base.train_state import TrainState
+from xlstm_jax.dataset import Batch
+from xlstm_jax.distributed import fold_rng_over_axis, split_array_over_mesh
 from xlstm_jax.trainer.base.trainer import TrainerModule
 from xlstm_jax.trainer.metrics import Metrics
 

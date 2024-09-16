@@ -1,6 +1,6 @@
 import os
 
-from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
+from xlstm_jax.distributed import simulate_CPU_devices
 
 if os.environ["JAX_PLATFORMS"] == "cpu":
     NUM_DEVICES = 8
@@ -12,7 +12,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from xlstm_jax.distributed.single_gpu import Batch
+from xlstm_jax.dataset import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.trainer import TrainerConfig
@@ -25,7 +25,10 @@ from ..helpers.mse_trainer import MSETrainer, ToyModel
 def test_mse_trainer(tp_size: int, fsdp_size: int):
     """Tests training a simple model with MSE loss under different mesh configs."""
     trainer = MSETrainer(
-        TrainerConfig(),
+        TrainerConfig(
+            check_val_every_n_epoch=1,
+            check_val_every_n_steps=100,
+        ),
         ModelConfig(
             model_class=ToyModel,
             parallel=ParallelConfig(
@@ -61,16 +64,31 @@ def test_mse_trainer(tp_size: int, fsdp_size: int):
         num_epochs=2,
     )
     assert final_metrics is not None
-    assert "val_1" in final_metrics and "val_2" in final_metrics
-    assert set(final_metrics["val_1"].keys()) == {"loss", "l1_dist", "epoch_time"} and set(
-        final_metrics["val_2"].keys()
-    ) == set(final_metrics["val_1"].keys())
-    assert final_metrics["val_1"]["loss"] < 0.1, "Validation loss should be less than 0.1."
-    assert final_metrics["val_2"]["loss"] < 0.1, "Validation loss should be less than 0.1."
+    epoch_keys = [f"val_epoch_{i}" for i in range(1, 3)]
+    step_keys = [f"val_step_{i}" for i in range(100, 501, 100)]
+    assert all(
+        k in final_metrics for k in epoch_keys
+    ), f"Validation metrics should be logged at the end of each epoch, instead got keys: {final_metrics.keys()}."
+    assert all(
+        k in final_metrics for k in step_keys
+    ), f"Validation metrics should be logged at the end of each step, instead got keys: {final_metrics.keys()}."
+    assert set(final_metrics[epoch_keys[0]].keys()) == {
+        "loss",
+        "l1_dist",
+        "epoch_time",
+    }, f"Keys should be the same as specified in the loss function, but got {final_metrics[epoch_keys[0]].keys()}."
+    assert set(final_metrics[epoch_keys[0]].keys()) == set(
+        final_metrics[epoch_keys[1]].keys()
+    ), f"Keys should be the same for all validation metrics, but got {final_metrics[epoch_keys[1]].keys()}."
+    assert set(final_metrics[epoch_keys[0]].keys()) == set(
+        final_metrics[step_keys[1]].keys()
+    ), f"Keys should be the same for all validation metrics, but got {final_metrics[step_keys[1]].keys()}."
+    assert final_metrics[epoch_keys[0]]["loss"] < 0.1, "Validation loss should be less than 0.1."
+    assert final_metrics[epoch_keys[1]]["loss"] < 0.1, "Validation loss should be less than 0.1."
     assert (
-        final_metrics["val_2"]["loss"] < final_metrics["val_1"]["loss"]
+        final_metrics[epoch_keys[1]]["loss"] < final_metrics[epoch_keys[0]]["loss"]
     ), "Validation loss should decrease over epochs."
-    new_metrics = trainer.eval_model(val_loader, "eval", epoch_idx=3)
+    new_metrics = trainer.eval_model(val_loader, "eval", epoch_idx=2)
     assert new_metrics is not None
-    assert new_metrics["loss"] == final_metrics["val_2"]["loss"], "Loss should be the same."
-    assert new_metrics["l1_dist"] == final_metrics["val_2"]["l1_dist"], "L1 distance should be the same."
+    assert new_metrics["loss"] == final_metrics[epoch_keys[1]]["loss"], "Loss should be the same."
+    assert new_metrics["l1_dist"] == final_metrics[epoch_keys[1]]["l1_dist"], "L1 distance should be the same."

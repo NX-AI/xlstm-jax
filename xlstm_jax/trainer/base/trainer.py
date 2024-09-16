@@ -1,49 +1,31 @@
 # Standard libraries
-import importlib
 import json
 import os
-import pickle
-import sys
 import time
-from collections import defaultdict
 from collections.abc import Callable, Iterator, Sequence
-from copy import copy
 from dataclasses import dataclass
 from functools import partial
-from glob import glob
+from pathlib import Path
 from typing import (
     Any,
-    Dict,
-    NamedTuple,
-    Optional,
-    Tuple,
-    Union,
 )
-
-import flax
 
 # JAX/Flax libraries
 import jax
 import jax.numpy as jnp
 import numpy as np
-import optax
-import yaml
-from absl import flags, logging
+from absl import logging
 from flax import linen as nn
-from flax.core import FrozenDict, freeze, unfreeze
-from flax.training import train_state
+from flax.core import FrozenDict, freeze
 from jax import random
 from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
-from tabulate import tabulate as python_tabulate
 from tqdm.auto import tqdm
 
-# ML collections for config
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.dataset import Batch
+from xlstm_jax.distributed import accumulate_gradients, sync_gradients
 from xlstm_jax.distributed.common_types import PRNGKeyArray
-from xlstm_jax.distributed.data_parallel import sync_gradients
-from xlstm_jax.distributed.single_gpu import accumulate_gradients
 from xlstm_jax.import_utils import resolve_import
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer import callbacks
@@ -58,12 +40,45 @@ from .train_state import TrainState
 
 @dataclass(kw_only=True, frozen=True)
 class TrainerConfig(ConfigDict):
+    """Configuration for the Trainer module.
+
+    Attributes:
+        seed: Random seed for reproducibility. To be used in the model init and
+            training step.
+        debug: Whether to run in debug mode. This disables jitting of the
+            training and evaluation functions, which will slow down the training
+            significantly but makes debugging easier.
+        donate_train_state: Whether to donate the train state in the training
+            step. This can reduce memory usage as the parameters and optimizer
+            states are in-place updated in the training step. However, this
+            prevents using the previous train state after calling the training
+            step (not used in Trainer, but keep in mind for custom training
+            loops and callbacks).
+        enable_progress_bar: Whether to enable the progress bar. For
+            multi-process training, only the main process will show the progress
+            bar.
+        gradient_accumulate_steps: Number of steps to accumulate gradients
+            before updating the parameters.
+        check_val_every_n_epoch: Check validation every N training epochs. If
+            -1, no validation is performed after an epoch. Note that this is not
+            mutually exclusive with check_val_every_n_steps, and both can be used.
+        check_val_every_n_steps: Check validation every N training steps. If -1,
+            no validation is performed on a per-step basis. Note that this is not
+            mutually exclusive with check_val_every_n_epoch, and both can be used.
+        logger: Configuration for the logger.
+        callbacks: List of callbacks to apply.
+        seed_eval: Random seed for evaluation, if the model uses randomness
+            during evaluation. This is useful to ensure reproducibility of
+            evaluation metrics.
+    """
+
     seed: int = 0
     debug: bool = False
     donate_train_state: bool = True
     enable_progress_bar: bool = True
     gradient_accumulate_steps: int = 1
     check_val_every_n_epoch: int = 1
+    check_val_every_n_steps: int = -1
     logger: LoggerConfig = LoggerConfig()
     callbacks: Sequence[CallbackConfig] = ()
     seed_eval: int = 0
@@ -84,7 +99,9 @@ class TrainerModule:
             trainer_config: A dictionary containing the trainer configuration.
             model_config: A dictionary containing the model configuration.
             optimizer_config: A dictionary containing the optimizer configuration.
-            batch: An input to the model with which the shapes are inferred.
+            batch: An input to the model with which the shapes are
+                inferred. Can be a :class:`jax.ShapeDtypeStruct` instead of actual
+                full arrays for efficiency.
         """
         super().__init__()
         self.trainer_config = trainer_config
@@ -101,6 +118,8 @@ class TrainerModule:
         self.create_jitted_functions()
         self.init_logger(self.trainer_config.logger)
         self.init_callbacks(self.trainer_config.callbacks)
+        # Set first step to True to log compilation time of the first step.
+        self.first_step = True
 
     def batch_to_input(self, batch: Batch) -> Any:
         """Convert a batch to the input format expected by the model.
@@ -158,7 +177,7 @@ class TrainerModule:
         Args:
             model_config: A dictionary containing the model configuration.
         """
-        self.model = model_config.model_class(
+        self.model: nn.Module = model_config.model_class(
             model_config if model_config.model_config is None else model_config.model_config
         )
 
@@ -168,8 +187,8 @@ class TrainerModule:
         Args:
             logger_params: A dictionary containing the specification of the logger.
         """
-        self.logger = Logger(logger_config)
-        self.log_dir = self.logger.log_dir
+        self.logger: Logger = Logger(logger_config)
+        self.log_path = self.logger.log_path
 
     def init_callbacks(self, callback_configs: Sequence[CallbackConfig]):
         """Initialize the callbacks defined in the trainer config."""
@@ -204,13 +223,10 @@ class TrainerModule:
 
         def _init_model(init_rng: PRNGKeyArray, batch: Batch) -> TrainState:
             param_rng, init_rng = jax.random.split(init_rng)
+            # Initialize parameters.
             variables = self.run_model_init(batch, param_rng)
-            params = variables.pop("params")
-            if isinstance(variables, FrozenDict):
-                mutable_variables, params = variables.pop("params")
-            else:
-                params = variables.pop("params")
-                mutable_variables = variables
+            assert isinstance(variables, FrozenDict), "Model init must return a FrozenDict."
+            mutable_variables, params = variables.pop("params")
             if len(mutable_variables) == 0:
                 mutable_variables = None
             # Create train state.
@@ -317,7 +333,7 @@ class TrainerModule:
         param_rng, dropout_rng = random.split(rng)
         return {"params": param_rng, "dropout": dropout_rng}
 
-    def run_model_init(self, exmp_input: Batch, init_rng: jax.Array) -> dict:
+    def run_model_init(self, exmp_input: Batch, init_rng: jax.Array) -> FrozenDict:
         """The model initialization call.
 
         Args:
@@ -401,6 +417,7 @@ class TrainerModule:
             state: TrainState, batch: Batch, metrics: ImmutableMetrics | None
         ) -> tuple[TrainState, ImmutableMetrics]:
             next_rng, step_rng = jax.random.split(state.rng)
+            # Forward and backward with gradient accumulation.
             grads, step_metrics = accumulate_gradients(
                 state,
                 batch,
@@ -414,8 +431,7 @@ class TrainerModule:
                     grads, (self.data_axis_name, self.fsdp_axis_name, self.pipeline_axis_name, self.model_axis_name)
                 )
             new_state = state.apply_gradients(grads=grads, rng=next_rng)
-            # Sum metrics across replicas. Alternatively, we could keep the metrics separate
-            # and only synchronize them before logging. For simplicity, we sum them here.
+            # Sum metrics across replicas. Communication negligible and can be do async to backward.
             with jax.named_scope("sync_metrics"):
                 step_metrics = jax.tree.map(
                     lambda x: jax.lax.psum(
@@ -429,9 +445,11 @@ class TrainerModule:
                     ),
                     step_metrics,
                 )
+            # Update global training metrics.
             metrics = update_metrics(metrics, step_metrics, train=True)
             return new_state, metrics
 
+        # Shard the training function.
         state_specs = nn.get_partition_spec(self.state)
         train_step_fn = shard_map(
             train_step,
@@ -475,6 +493,7 @@ class TrainerModule:
             metrics = update_metrics(metrics, step_metrics, train=False)
             return metrics
 
+        # Shard the evaluation function.
         state_specs = nn.get_partition_spec(self.state)
         eval_step_fn = shard_map(
             eval_step,
@@ -490,53 +509,137 @@ class TrainerModule:
         train_loader: Iterator,
         val_loader: Iterator,
         test_loader: Iterator | None = None,
-        num_epochs: int = 500,
+        num_epochs: int | None = None,
+        num_train_steps: int | None = None,
+        steps_per_epoch: int | None = None,
     ) -> dict[str, Any]:
         """Start a training loop for the given number of epochs.
+
+        Inside the training loop, we use an epoch index and a global step index. Both indices
+        are starting to count at 1 (i.e. first epoch is "epoch 1", not "epoch 0").
 
         Args:
             train_loader: Data loader of the training set.
             val_loader: Data loader of the validation set.
             test_loader: If given, best model will be evaluated on the test set.
-            num_epochs: Number of epochs for which to train the model.
+            num_epochs: Number of epochs for which to train the model. If None,
+                will use num_train_steps.
+            num_train_steps: Number of training steps for which to train the
+                model. If None, will use num_epochs.
+            steps_per_epoch: Number of steps per epoch. If None, will use the
+                length of the train_loader.
 
         Returns:
             A dictionary of the train, validation and evt. test metrics for the
             best model on the validation set.
         """
+        # Verify input arguments.
         self.global_step = jax.device_get(self.state.step).item()
-        # Prepare training loop
+        if num_epochs is not None and num_train_steps is not None:
+            raise ValueError("Only one of num_epochs and num_train_steps can be set.")
+        if num_epochs is None and num_train_steps is None:
+            raise ValueError("Either num_epochs or num_train_steps must be set.")
+        if steps_per_epoch is None and hasattr(train_loader, "__len__"):
+            steps_per_epoch = len(train_loader)
+        if num_epochs is not None:
+            assert (
+                steps_per_epoch is not None
+            ), "train_loader must have a __len__ method or specify the steps_per_epoch if num_epochs is set."
+            num_train_steps = steps_per_epoch * num_epochs
+
+        # Prepare training loop.
         self.on_training_start()
         self.test_eval_function(val_loader)
         all_eval_metrics = {}
         train_metrics = None
-        for epoch_idx in self.tracker(range(1, num_epochs + 1), desc="Epochs"):
+        epoch_idx = 0
+
+        # Main training loop.
+        while self.global_step < num_train_steps:
+            if steps_per_epoch:
+                epoch_idx = self.global_step // steps_per_epoch + 1
+            else:
+                logging.warning(
+                    "Steps per epoch could not be inferred by the training loader. Epoch index will be inferred by breaks of iterator, but likely incorrect if you loaded a pre-trained model."
+                )
+                epoch_idx = epoch_idx + 1
             self.on_training_epoch_start(epoch_idx)
-            train_metrics, epoch_metrics = self.train_epoch(
-                train_loader, epoch_idx=epoch_idx, train_metrics=train_metrics
-            )
+            self.logger.start_epoch(epoch=epoch_idx, step=self.global_step, mode="train")
+
+            # Train epoch loop.
+            for batch in self.tracker(train_loader, desc="Training", leave=False):
+                self.global_step += 1
+                if train_metrics is None:
+                    train_metrics = self.init_train_metrics(batch)
+
+                if self.first_step:
+                    # Log compilation and execution time of the first batch.
+                    logging.info("Compiling train_step...")
+                    start_time = time.time()
+                    self.state, train_metrics = self.train_step(self.state, batch, train_metrics)
+                    logging.info(
+                        f"Successfully completed train_step compilation in {time.time() - start_time:.2f} seconds."
+                    )
+                    self.first_step = False
+                else:
+                    # Annotated with step number for TensorBoard profiling.
+                    with jax.profiler.StepTraceAnnotation(f"train_step_{self.global_step}"):
+                        self.state, train_metrics = self.train_step(self.state, batch, train_metrics)
+
+                # Callbacks and logging.
+                for callback in self.callbacks:
+                    callback.on_training_step(train_metrics, epoch_idx, self.global_step)
+                train_metrics = self.logger.log_step(train_metrics)
+
+                # Validation every N steps.
+                if (
+                    self.trainer_config.check_val_every_n_steps > 0
+                    and self.global_step % self.trainer_config.check_val_every_n_steps == 0
+                ):
+                    self.on_validation_epoch_start(epoch_idx, self.global_step)
+                    eval_metrics = self.eval_model(val_loader, mode="val", epoch_idx=epoch_idx)
+                    _, all_eval_metrics[f"val_step_{self.global_step}"] = get_metrics(eval_metrics, reset_metrics=False)
+                    self.on_validation_epoch_end(eval_metrics, epoch_idx, self.global_step)
+
+                if self.global_step >= num_train_steps:
+                    break
+
+            # Finalize epoch.
+            train_metrics, epoch_metrics = self.logger.end_epoch(train_metrics)
             self.on_training_epoch_end(epoch_metrics, epoch_idx)
-            # Validation every N epochs
+
+            # Validation every N epochs.
             if (
                 self.trainer_config.check_val_every_n_epoch > 0
                 and epoch_idx % self.trainer_config.check_val_every_n_epoch == 0
             ):
-                self.on_validation_epoch_start(epoch_idx)
-                eval_metrics = self.eval_model(val_loader, mode="val", epoch_idx=epoch_idx)
-                _, all_eval_metrics[f"val_{epoch_idx}"] = get_metrics(eval_metrics, reset_metrics=False)
-                self.on_validation_epoch_end(eval_metrics, epoch_idx)
+                if f"val_step_{self.global_step}" in all_eval_metrics:
+                    logging.warning(
+                        f"Skipping validation at epoch {epoch_idx} since already validated at step {self.global_step}."
+                    )
+                    all_eval_metrics[f"val_epoch_{epoch_idx}"] = all_eval_metrics[f"val_step_{self.global_step}"]
+                else:
+                    self.on_validation_epoch_start(epoch_idx, self.global_step)
+                    eval_metrics = self.eval_model(val_loader, mode="val", epoch_idx=epoch_idx)
+                    _, all_eval_metrics[f"val_epoch_{epoch_idx}"] = get_metrics(eval_metrics, reset_metrics=False)
+                    self.on_validation_epoch_end(eval_metrics, epoch_idx, self.global_step)
+
+        # Finalize training.
         self.on_training_end()
-        # Test best model if possible
+
+        # Test evaluation.
         if test_loader is not None:
             self.load_model(raise_if_not_found=False)
             self.on_test_epoch_start(epoch_idx)
             test_metrics = self.eval_model(test_loader, mode="test", epoch_idx=epoch_idx)
             _, all_eval_metrics["test"] = get_metrics(test_metrics, reset_metrics=False)
             self.on_test_epoch_end(test_metrics, epoch_idx)
+
         # Close logger
         self.logger.finalize("success")
         for callback in self.callbacks:
             callback.finalize("success")
+
         return all_eval_metrics
 
     def test_model(self, test_loader: Iterator, apply_callbacks: bool = False, epoch_idx: int = 0) -> dict[str, Any]:
@@ -575,43 +678,6 @@ class TrainerModule:
         _ = self.eval_step(self.state, val_batch, eval_metrics)
         logging.info(f"Successfully completed in {time.time() - start_time:.2f} seconds.")
 
-    def train_epoch(
-        self, train_loader: Iterator, epoch_idx: int, train_metrics: ImmutableMetrics | None
-    ) -> tuple[ImmutableMetrics, HostMetrics]:
-        """Train a model for one epoch.
-
-        Args:
-            train_loader: Data loader of the training set.
-            epoch_idx: Current epoch index.
-
-        Returns:
-            A dictionary of the average training metrics over all batches
-            for logging.
-        """
-        # Train model for one epoch, and log avg loss and accuracy
-        self.logger.start_epoch(epoch_idx, mode="train")
-        for batch in self.tracker(train_loader, desc="Training", leave=False):
-            if train_metrics is None:
-                train_metrics = self.init_train_metrics(batch)
-            if self.global_step == 0:
-                # Log compilation and execution time of the first batch.
-                logging.info("Compiling train_step...")
-                start_time = time.time()
-                self.state, train_metrics = self.train_step(self.state, batch, train_metrics)
-                logging.info(
-                    f"Successfully completed train_step compilation in {time.time() - start_time:.2f} seconds."
-                )
-            else:
-                # Annotated with step number for TensorBoard profiling.
-                with jax.profiler.StepTraceAnnotation(f"train_step_{self.global_step}"):
-                    self.state, train_metrics = self.train_step(self.state, batch, train_metrics)
-            for callback in self.callbacks:
-                callback.on_training_step(train_metrics, epoch_idx, self.global_step)
-            train_metrics = self.logger.log_step(train_metrics)
-            self.global_step += 1
-        train_metrics, epoch_metrics = self.logger.end_epoch(train_metrics)
-        return train_metrics, epoch_metrics
-
     def eval_model(self, data_loader: Iterator, mode: str, epoch_idx: int) -> HostMetrics:
         """Evaluate the model on a dataset.
 
@@ -624,8 +690,8 @@ class TrainerModule:
             A dictionary of the evaluation metrics, averaged over data points
             in the dataset.
         """
-        # Test model on all images of a data loader and return avg loss
-        self.logger.start_epoch(epoch_idx, mode=mode)
+        # Test model on all batches of a data loader and return avg loss
+        self.logger.start_epoch(epoch=epoch_idx, step=self.global_step, mode=mode)
         eval_metrics = self.init_eval_metrics()
         step_count = 0
         for batch in self.tracker(data_loader, desc=mode.capitalize(), leave=False):
@@ -692,31 +758,31 @@ class TrainerModule:
         for callback in self.callbacks:
             callback.on_training_epoch_end(train_metrics, epoch_idx)
 
-    def on_validation_epoch_start(self, epoch_idx: int):
+    def on_validation_epoch_start(self, epoch_idx: int, step_idx: int):
         """Method called at the start of each validation epoch. Can be used for additional logging
         or similar.
 
         Args:
             epoch_idx: Index of the training epoch at which validation was started.
+            step_idx: Index of the training step at which validation was started.
         """
-        logging.info(f"Starting validation epoch {epoch_idx}")
+        logging.info(f"Starting validation at epoch {epoch_idx} and step {step_idx}")
         for callback in self.callbacks:
-            callback.on_validation_epoch_start(epoch_idx)
+            callback.on_validation_epoch_start(epoch_idx=epoch_idx, step_idx=step_idx)
 
-    def on_validation_epoch_end(self, eval_metrics: dict[str, Any], epoch_idx: int):
+    def on_validation_epoch_end(self, eval_metrics: dict[str, Any], epoch_idx: int, step_idx: int):
         """Method called at the end of each validation epoch. Can be used for additional logging
         and evaluation.
 
         Args:
-            epoch_idx: Index of the training epoch at which validation was performed.
             eval_metrics: A dictionary of the validation metrics. New metrics added to
                 this dictionary will be logged as well.
-            val_loader: Data loader of the validation set, to support additional
-                evaluation.
+            epoch_idx: Index of the training epoch at which validation was performed.
+            step_idx: Index of the training step at which validation was performed.
         """
         logging.info(f"Finished validation epoch {epoch_idx}")
         for callback in self.callbacks:
-            callback.on_validation_epoch_end(eval_metrics, epoch_idx)
+            callback.on_validation_epoch_end(eval_metrics, epoch_idx=epoch_idx, step_idx=step_idx)
 
     def on_test_epoch_start(self, epoch_idx: int):
         """Method called at the start of each test epoch. Can be used for additional logging or
@@ -744,14 +810,24 @@ class TrainerModule:
         for callback in self.callbacks:
             callback.on_test_epoch_end(test_metrics, epoch_idx)
 
-    def load_model(self, epoch_idx: int = -1, raise_if_not_found: bool = True):
-        """Load model parameters and batch statistics from the logging directory."""
-        logging.info(f"Loading model from epoch {epoch_idx}")
+    def load_model(self, step_idx: int = -1, raise_if_not_found: bool = True):
+        """Load model parameters and batch statistics from the logging directory.
+
+        Args:
+            step_idx: Step index to load the model from. If -1, the latest model is loaded.
+            raise_if_not_found: If True, raises an error if no model is found. If False, logs a
+                warning instead.
+        """
+        logging.info(f"Loading model from step {step_idx}")
         state_dict = None
+
+        # Find model checkpoint callback.
         for callback in self.callbacks:
             if isinstance(callback, ModelCheckpoint):
-                state_dict = callback.load_model(epoch_idx)
+                state_dict = callback.load_model(step_idx)
                 break
+
+        # Restore model from state dict if found.
         if state_dict is None:
             if raise_if_not_found:
                 raise ValueError("No model checkpoint callback found in callbacks.")
@@ -760,18 +836,19 @@ class TrainerModule:
         else:
             self.restore(state_dict)
 
-    def restore(self, state_dict: dict[str, Any]):
+    def restore(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
         """Restore the state of the trainer from a state dictionary.
 
         Args:
-            state_dict: State dictionary to restore from.
+            state_dict: State dictionary to restore from. Must contain the key "params" with the
+                model parameters. Optional keys that overwrite the trainer state are "step",
+                "opt_state", "mutable_variables", "rng".
         """
         logging.info("Restoring trainer state with keys " + str(state_dict.keys()))
-        if "metrics" in state_dict:
-            state_dict.pop("metrics")
-        if "metadata" in state_dict:
-            state_dict.pop("metadata")
+        assert "params" in state_dict, "State dictionary must contain the key 'params'."
         state_dict = freeze(state_dict)
+
+        # Transfer state dict into train state.
         self.state = TrainState(
             step=state_dict.get("step", 0),
             apply_fn=self.model.apply,
@@ -781,13 +858,13 @@ class TrainerModule:
             mutable_variables=state_dict.get("mutable_variables", None),
             rng=state_dict.get("rng", self.state.rng),
         )
+        self.global_step = jax.device_get(self.state.step).item()
 
     @classmethod
     def load_from_checkpoint(
         cls,
         checkpoint: str,
         exmp_input: Batch = None,
-        exmp_input_file: str = None,
         batch_size: int = -1,
     ) -> Any:
         """Create a Trainer object with same hyperparameters and loaded model from a checkpoint
@@ -796,34 +873,37 @@ class TrainerModule:
         Args:
             checkpoint: Folder in which the checkpoint and hyperparameter file is stored.
             exmp_input: An input to the model for shape inference.
+            batch_size: Batch size to use for shape inference. If -1, the full exmp_input is used.
 
         Returns:
             A Trainer object with model loaded from the checkpoint folder.
         """
-        # Load config
+        # Load config.
         metadata_file = os.path.join(checkpoint, "metadata/metadata")
         assert os.path.isfile(metadata_file), "Could not find metadata file"
         with open(metadata_file, "rb") as f:
             config = ConfigDict(json.load(f))
-        # Adjust log dir to where its loaded from
+
+        # Adjust log dir to where its loaded from.
         adjusted_checkpoint = checkpoint.split("/")
         if adjusted_checkpoint[-1] == "":
             adjusted_checkpoint = adjusted_checkpoint[:-1]
         if len(adjusted_checkpoint) < 2:
             raise ValueError("Checkpoint path must be at least two levels deep")
-        config.trainer.logger.log_dir = os.path.join(*adjusted_checkpoint[:-2])
-        # Load example input
+        config.trainer.logger.log_path = Path(os.path.join(*adjusted_checkpoint[:-2]))
+
+        # Load example input.
         # TODO: We may want to load the example input from the checkpoint folder.
         assert exmp_input is not None, "Example input must be provided"
         if batch_size > 0:
             exmp_input = exmp_input[:batch_size]
-        # Create trainer
+
+        # Create trainer and load model.
         trainer = cls(
             exmp_input=exmp_input,
             trainer_config=config.trainer,
             model_config=config.model,
             optimizer_config=config.optimizer,
         )
-        # Load model
         trainer.load_model()
         return trainer

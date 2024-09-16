@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass
-from typing import Tuple
+from pathlib import Path
 
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.trainer.metrics import HostMetrics, Metrics, get_metrics
@@ -9,7 +9,11 @@ from xlstm_jax.trainer.metrics import HostMetrics, Metrics, get_metrics
 @dataclass(kw_only=True, frozen=True)
 class LoggerConfig(ConfigDict):
     log_every_n_steps: int = 1
-    log_dir: str | None = None
+    log_path: Path | None = None
+
+    @property
+    def log_dir(self) -> str:
+        return self.log_path.as_posix()
 
 
 class Logger:
@@ -23,13 +27,14 @@ class Logger:
         """
         self.config = config
         self.epoch_start_time = 0.0
-        self.log_dir = config.log_dir
+        self.log_path = config.log_path
 
-    def start_epoch(self, epoch: int, mode: str = "train"):
+    def start_epoch(self, epoch: int, step: int, mode: str = "train"):
         """Starts a new epoch.
 
         Args:
             epoch (int): The index of the epoch.
+            step (int): The index of the global training step.
             mode (str, optional): The logging mode. Should be in ["train", "val", "test"]. Defaults to "train".
         """
         self.epoch_start_time = time.time()
@@ -71,4 +76,3 @@ class Logger:
         Args:
             status (str): The status of the training run (e.g. success, failure).
         """
-        pass

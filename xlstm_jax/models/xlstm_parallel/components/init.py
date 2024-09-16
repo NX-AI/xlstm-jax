@@ -1,6 +1,5 @@
 # TODO: To be implemented later.
 
-import jax
 import jax.numpy as jnp
 
 

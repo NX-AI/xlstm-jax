@@ -5,12 +5,8 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from ...components.init import bias_linspace_init_
-from ...components.ln import LayerNorm, MultiHeadLayerNorm
-from .backend import (
-    create_mlstm_backend,
-    mLSTMBackendNameAndKwargs,
-    recurrent_step_stabilized_simple,
-)
+from ...components.ln import MultiHeadLayerNorm
+from .backend import create_mlstm_backend, mLSTMBackendNameAndKwargs
 
 
 @dataclass

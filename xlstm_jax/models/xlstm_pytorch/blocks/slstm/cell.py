@@ -1,17 +1,17 @@
 import logging
 import os
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import asdict, dataclass, field
 from math import sqrt
 from pathlib import Path
-from typing import Literal, Optional, Union
+from typing import Literal
 
 import torch
 import torch.nn as nn
 from torch.autograd.function import once_differentiable
 
 from ...components.init import bias_linspace_init_
-from ...components.util import ParameterProxy, conditional_decorator, round_to_multiple
+from ...components.util import ParameterProxy, conditional_decorator
 from .src.cuda_init import load
 from .src.vanilla import (
     slstm_forward,

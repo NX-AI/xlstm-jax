@@ -1,6 +1,6 @@
 import subprocess
 
-from xlstm_jax.distributed.xla_utils import set_XLA_flags, simulate_CPU_devices
+from xlstm_jax.distributed import set_XLA_flags, simulate_CPU_devices
 
 try:
     subprocess.check_output("nvidia-smi")

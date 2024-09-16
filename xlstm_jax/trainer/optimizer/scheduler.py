@@ -1,13 +1,9 @@
-import importlib
-import sys
-from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Literal
 
 import optax
 
 from xlstm_jax.configs import ConfigDict
-from xlstm_jax.import_utils import resolve_import_from_string
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -53,6 +49,7 @@ def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:
     warmup_steps = scheduler_config.warmup_steps
     cooldown_steps = scheduler_config.cooldown_steps
     cooldown_lr = scheduler_config.cooldown_lr
+
     # Verify dependencies between config attributes.
     main_scheduler_steps = decay_steps - warmup_steps - cooldown_steps
     assert (
@@ -72,6 +69,7 @@ def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:
     if end_lr is None and end_lr_factor is None:
         end_lr = 0.0
         end_lr_factor = 0.0
+
     # Build main learning rate schedule.
     lr_schedule = None
     if scheduler_name is None or scheduler_name == "constant":
@@ -98,6 +96,7 @@ def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:
         )
     else:
         raise ValueError(f"Unknown learning rate schedule {scheduler_name}.")
+
     # Add warmup and cooldown.
     schedules = [lr_schedule]
     boundaries = []

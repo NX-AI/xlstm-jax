@@ -11,8 +11,8 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tqdm.auto import tqdm
 
-from xlstm_jax.distributed.array_utils import fold_rng_over_axis
-from xlstm_jax.distributed.common_types import Batch
+from xlstm_jax.dataset import Batch
+from xlstm_jax.distributed import fold_rng_over_axis
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics

@@ -1,7 +1,5 @@
 #
 # Adapted from flash-linear-attention
-import math
-from typing import Tuple
 
 import torch
 import triton

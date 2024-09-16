@@ -1,11 +1,12 @@
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-os.environ["JAX_PLATFORMS"] = "cpu"
-from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
+from xlstm_jax.distributed import simulate_CPU_devices
 
-NUM_DEVICES = 8
-simulate_CPU_devices(NUM_DEVICES)
+if os.environ["JAX_PLATFORMS"] == "cpu":
+    NUM_DEVICES = 8
+    simulate_CPU_devices(NUM_DEVICES)
+else:
+    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
 
 from typing import Any
 
@@ -16,8 +17,7 @@ import optax
 import pytest
 from jax.sharding import Mesh, PartitionSpec as P
 
-from xlstm_jax.distributed.array_utils import split_array_over_mesh
-from xlstm_jax.distributed.single_gpu import Batch
+from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig

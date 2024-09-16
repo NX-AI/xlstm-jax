@@ -1,11 +1,8 @@
-import os
-
 import jax
 import jax.numpy as jnp
-import numpy as np
 from flax import linen as nn
 
-from .common_types import Metrics, Parameter, PRNGKeyArray, PyTree, TrainState
+from .common_types import Parameter, PRNGKeyArray, PyTree
 
 
 def fold_rng_over_axis(rng: PRNGKeyArray, axis_name: str) -> PRNGKeyArray:

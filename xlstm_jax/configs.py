@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -17,6 +18,8 @@ class ConfigDict:
                 d[k] = v.to_dict()
             elif isinstance(v, (tuple, list)):
                 d[k] = tuple([x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v])
+            elif isinstance(v, Path):
+                d[k] = v.as_posix()
             else:
                 d[k] = v
         return d

@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 
-import jax
 from flax import linen as nn
 
 from ..xlstm_block import xLSTMBlock, xLSTMBlockConfig
