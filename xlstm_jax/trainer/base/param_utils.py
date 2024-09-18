@@ -1,4 +1,5 @@
 from collections import defaultdict
+from typing import Any
 
 import jax
 import numpy as np
@@ -25,13 +26,16 @@ def flatten_dict(d: dict) -> dict:
     return flat_dict
 
 
-def tabulate_params(state: TrainState) -> str:
+def tabulate_params(state: TrainState | dict[str, Any]) -> str:
     """Prints a summary of the parameters represented as table.
 
     Args:
         exmp_input: An input to the model with which the shapes are inferred.
     """
-    params = state.params
+    if isinstance(state, TrainState):
+        params = state.params
+    else:
+        params = state
     params = flatten_dict(params)
     param_shape = jax.tree.map(
         lambda x: x.value.shape if isinstance(x, nn.Partitioned) else x.shape,

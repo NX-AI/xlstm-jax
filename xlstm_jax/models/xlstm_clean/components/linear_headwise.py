@@ -6,6 +6,8 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
+from .init import small_init
+
 
 @dataclass
 class LinearHeadwiseExpandConfig:
@@ -42,6 +44,8 @@ class LinearHeadwiseExpand(nn.Module):
     """
 
     config: LinearHeadwiseExpandConfig
+    kernel_init: Any = None
+    bias_init: callable = jax.nn.initializers.zeros
 
     @nn.compact
     def __call__(self, x: jax.Array) -> jax.Array:
@@ -49,9 +53,16 @@ class LinearHeadwiseExpand(nn.Module):
         in_features_per_head = in_features // self.config.num_heads
         out_features_per_head = self.config._out_features // self.config.num_heads
 
+        if self.kernel_init is None:
+            # Adjusted default init function from PyTorch code.
+            kernel_init = small_init(in_features_per_head)
+        else:
+            # In general, all initializers will be overwritten.
+            kernel_init = self.kernel_init
+
         weight = self.param(
             "kernel",
-            jax.nn.initializers.normal(stddev=sqrt(2 / 5 / in_features_per_head)),
+            kernel_init,
             (self.config.num_heads, out_features_per_head, in_features_per_head),
         )
         if not self.config.trainable_weight:
@@ -62,7 +73,7 @@ class LinearHeadwiseExpand(nn.Module):
         x = jnp.einsum("...hd,hod->...ho", x, weight)
         x = x.reshape(*x.shape[:-2], -1)
         if self.config.bias:
-            bias = self.param("bias", jax.nn.initializers.zeros, (self.config._out_features,))
+            bias = self.param("bias", self.bias_init, (self.config._out_features,))
             if not self.config.trainable_bias:
                 bias = jax.lax.stop_gradient(bias)
             bias = bias.astype(self.config.dtype)

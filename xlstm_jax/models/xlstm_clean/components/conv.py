@@ -1,7 +1,10 @@
 from dataclasses import dataclass, field
 
+import jax
 import jax.numpy as jnp
 from flax import linen as nn
+
+from .init import uniform_init
 
 
 @dataclass
@@ -42,9 +45,12 @@ class CausalConv1d(nn.Module):
         else:
             groups = x.shape[-1]
         pad = self.config.kernel_size - 1  # padding of this size assures temporal causality.
+        fan_in = self.config.kernel_size * (x.shape[-1] // groups)
         x = nn.Conv(
             features=self.config.feature_dim,
             kernel_size=(self.config.kernel_size,),
+            kernel_init=jax.nn.initializers.variance_scaling(2.0 / (1 + 5), "fan_in", "uniform"),  # PyTorch default
+            bias_init=uniform_init(min_val=-1.0 / jnp.sqrt(fan_in), max_val=1.0 / jnp.sqrt(fan_in)),
             feature_group_count=groups,
             padding=[(pad, 0)],
             use_bias=self.config.causal_conv_bias,

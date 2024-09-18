@@ -4,6 +4,7 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
+from .components.init import small_init
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
 
@@ -23,6 +24,7 @@ class xLSTMLMModel(nn.Module):
         x = nn.Embed(
             num_embeddings=self.config.vocab_size,
             features=self.config.embedding_dim,
+            embedding_init=small_init(self.config.embedding_dim),
             dtype=self.config.dtype,
             name="token_embedding",
         )(idx)
@@ -31,6 +33,7 @@ class xLSTMLMModel(nn.Module):
         x = xLSTMBlockStack(config=self.config, name="xlstm_block_stack")(x, train=train)
         logits = nn.Dense(
             features=self.config.vocab_size,
+            kernel_init=small_init(self.config.embedding_dim),
             use_bias=False,
             dtype=jnp.float32,
             name="lm_head",

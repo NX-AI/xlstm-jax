@@ -10,6 +10,7 @@ from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
 
+from .components.init import small_init
 from .utils import ParallelConfig, prepare_module
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
@@ -36,6 +37,7 @@ class xLSTMLMModel(nn.Module):
                 nn.Embed,
                 num_embeddings=self.config.vocab_size,
                 features=self.config.embedding_dim // tp_size,
+                embedding_init=small_init(self.config.embedding_dim),
                 dtype=self.config.dtype,
                 name="embed",
             ),
@@ -72,7 +74,7 @@ class TPOutputLayer(nn.Module):
                 axis_name=self.config.parallel.model_axis_name,
                 min_weight_size=self.config.parallel.fsdp_min_weight_size,
             )
-            x = norm_fn(dtype=self.config.dtype, name="out_norm")(x)
+            x = norm_fn(use_bias=False, dtype=self.config.dtype, name="out_norm")(x)
         # Apply output layer - Shard parameters over model axis.
         dense_fn = shard_module_params(
             nn.Dense,
@@ -81,8 +83,9 @@ class TPOutputLayer(nn.Module):
         )
         x = dense_fn(
             features=self.config.vocab_size,
+            kernel_init=small_init(self.config.embedding_dim),
             use_bias=False,
             dtype=jnp.float32,
-            name="output_layer",
+            name="out_dense",
         )(x)
         return x

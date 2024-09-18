@@ -81,7 +81,7 @@ def parallel_stabilized_simple(
     log_D_matrix = log_fg_matrix + igate_preact.swapaxes(-2, -1)  # (B, NH, S, S)
     # D matrix stabilization
     if stabilize_rowwise:
-        max_log_D, _ = jnp.max(log_D_matrix, axis=-1, keepdims=True)  # (B, NH, S, 1)
+        max_log_D = jnp.max(log_D_matrix, axis=-1, keepdims=True)  # (B, NH, S, 1)
     else:
         max_log_D = jnp.max(log_D_matrix.reshape(B, NH, -1), axis=-1, keepdims=True)[0][..., None]
         # (B, NH, 1, 1)

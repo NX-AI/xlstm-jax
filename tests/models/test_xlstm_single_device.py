@@ -15,7 +15,7 @@ from xlstm_jax.models.xlstm_clean.blocks.mlstm.layer import mLSTMLayer, mLSTMLay
 from xlstm_jax.models.xlstm_clean.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
 from xlstm_jax.models.xlstm_clean.components.conv import CausalConv1d, CausalConv1dConfig
 from xlstm_jax.models.xlstm_clean.components.feedforward import FeedForwardConfig, create_feedforward
-from xlstm_jax.models.xlstm_clean.components.init import bias_linspace_init_
+from xlstm_jax.models.xlstm_clean.components.init import bias_linspace_init
 from xlstm_jax.models.xlstm_clean.components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from xlstm_jax.models.xlstm_clean.components.ln import LayerNorm, MultiHeadLayerNorm
 from xlstm_jax.models.xlstm_clean.xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
@@ -167,7 +167,7 @@ def test_linear_headwise():
 
 
 def test_bias_linear_init():
-    init_fn = bias_linspace_init_(start=0.0, end=6.0)
+    init_fn = bias_linspace_init(start=0.0, end=6.0)
     key = jax.random.PRNGKey(0)
     shape = (7,)
     dtype = jnp.float32

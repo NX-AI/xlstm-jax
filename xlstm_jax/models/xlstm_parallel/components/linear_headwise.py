@@ -6,6 +6,8 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
+from .init import small_init
+
 
 @dataclass
 class LinearHeadwiseExpandConfig:
@@ -42,6 +44,8 @@ class LinearHeadwiseExpand(nn.Module):
     """
 
     config: LinearHeadwiseExpandConfig
+    kernel_init: Any = None
+    bias_init: callable = jax.nn.initializers.zeros
 
     @nn.compact
     def __call__(self, x: jax.Array) -> jax.Array:
@@ -49,9 +53,16 @@ class LinearHeadwiseExpand(nn.Module):
         in_features_per_head = in_features // self.config.num_heads
         out_features_per_head = self.config._out_features // self.config.num_heads
 
+        if self.kernel_init is None:
+            # From PyTorch code.
+            kernel_init = small_init(in_features_per_head)
+        else:
+            # In general, all initializers will be overwritten.
+            kernel_init = self.kernel_init
+
         weight = self.param(
             "kernel",
-            jax.nn.initializers.normal(stddev=sqrt(2 / 5 / in_features_per_head)),
+            kernel_init,
             (self.config.num_heads, out_features_per_head, in_features_per_head),
         )
         if not self.config.trainable_weight:

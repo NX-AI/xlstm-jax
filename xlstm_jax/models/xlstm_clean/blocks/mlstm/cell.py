@@ -4,7 +4,7 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from ...components.init import bias_linspace_init_
+from ...components.init import bias_linspace_init
 from ...components.ln import MultiHeadLayerNorm
 from .backend import create_mlstm_backend, mLSTMBackendNameAndKwargs
 
@@ -39,7 +39,7 @@ class mLSTMCell(nn.Module):
         fgate_preact = nn.Dense(
             features=self.config.num_heads,
             dtype=self.config.dtype,
-            bias_init=bias_linspace_init_(3.0, 6.0),
+            bias_init=bias_linspace_init(3.0, 6.0),
             kernel_init=nn.initializers.zeros,
             name="fgate",
         )(qkv)

@@ -5,6 +5,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from ...components.conv import CausalConv1d, CausalConv1dConfig
+from ...components.init import small_init, wang_init
 from ...components.linear_headwise import (
     LinearHeadwiseExpand,
     LinearHeadwiseExpandConfig,
@@ -47,12 +48,14 @@ class mLSTMLayer(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
+        print("Single Embedding Dim", self.config.embedding_dim)
         B, S, _ = x.shape
 
         # up-projection
         x_inner = nn.Dense(
             features=2 * self.config._inner_embedding_dim,
             dtype=self.config.dtype,
+            kernel_init=small_init(x.shape[-1]),
             use_bias=self.config.bias,
             name="proj_up",
         )(x)
@@ -85,6 +88,7 @@ class mLSTMLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim),
                 name="qk_proj",
             )(x_mlstm_conv_act)
             q, k = qk[0], qk[1]
@@ -96,6 +100,7 @@ class mLSTMLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim),
                 name="q_proj",
             )(x_mlstm_conv_act)
             k = LinearHeadwiseExpand(
@@ -105,6 +110,7 @@ class mLSTMLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim),
                 name="k_proj",
             )(x_mlstm_conv_act)
         v = LinearHeadwiseExpand(
@@ -114,6 +120,7 @@ class mLSTMLayer(nn.Module):
                 bias=self.config.bias,
                 dtype=self.config.dtype,
             ),
+            kernel_init=small_init(self.config.embedding_dim),
             name="v_proj",
         )(x_mlstm)
 
@@ -129,6 +136,7 @@ class mLSTMLayer(nn.Module):
         y = nn.Dense(
             features=self.config.embedding_dim,
             dtype=self.config.dtype,
+            kernel_init=wang_init(x.shape[-1], num_blocks=self.config._num_blocks),
             use_bias=self.config.bias,
             name="proj_down",
         )(h_state)

@@ -10,10 +10,8 @@ from xlstm_jax.distributed import ModelParallelismWrapper, TPAsyncDense, TPDense
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
 
 from ...components.conv import CausalConv1d, CausalConv1dConfig
-from ...components.linear_headwise import (
-    LinearHeadwiseExpand,
-    LinearHeadwiseExpandConfig,
-)
+from ...components.init import small_init, wang_init
+from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...utils import ParallelConfig, UpProjConfigMixin, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
 
@@ -60,6 +58,7 @@ class mLSTMLayer(nn.Module):
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
+        embedding_dim = x.shape[-1] * tp_size
 
         tp_dense_fn = (
             partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
@@ -77,7 +76,7 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
-                kernel_init_adjustment=tp_size**-0.5,
+                kernel_init=small_init(embedding_dim),
                 name="proj_up",
             )(x)
         else:
@@ -92,8 +91,8 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
+                kernel_init=small_init(embedding_dim),
                 skip_communication=True,
-                kernel_init_adjustment=tp_size**-0.5,
                 name="proj_up_mlstm",
             )(x)
             z = TPDense(
@@ -105,8 +104,8 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
+                kernel_init=small_init(embedding_dim),
                 skip_communication=True,
-                kernel_init_adjustment=tp_size**-0.5,
                 name="proj_up_z",
             )(x)
             x_inner = (x_mlstm, z)
@@ -144,9 +143,9 @@ class mLSTMLayer(nn.Module):
                 module_fn=partial(
                     mlstm_inner_layer,
                     config=inner_config,
-                    name="inner_layer",
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
+                name="inner_layer",
             )(x_inner)
 
         # down-projection
@@ -161,7 +160,7 @@ class mLSTMLayer(nn.Module):
             ),
             model_axis_name=self.config.parallel.model_axis_name,
             tp_mode="scatter",
-            kernel_init_adjustment=tp_size**-0.5,
+            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
             name="proj_down",
         )(h_state)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)
@@ -173,6 +172,7 @@ class mLSTMInnerLayer(nn.Module):
 
     @nn.compact
     def __call__(self, x_inner: jax.Array | tuple[jax.Array, jax.Array]) -> jax.Array:
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         if isinstance(x_inner, tuple):
             x_mlstm, z = x_inner
         else:
@@ -205,6 +205,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim),
                 name="qk_proj",
             )(x_mlstm_conv_act)
             q, k = qk[0], qk[1]
@@ -216,6 +217,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim * tp_size),
                 name="q_proj",
             )(x_mlstm_conv_act)
             k = LinearHeadwiseExpand(
@@ -225,6 +227,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
+                kernel_init=small_init(self.config.embedding_dim * tp_size),
                 name="k_proj",
             )(x_mlstm_conv_act)
         v = LinearHeadwiseExpand(
@@ -234,6 +237,7 @@ class mLSTMInnerLayer(nn.Module):
                 bias=self.config.bias,
                 dtype=self.config.dtype,
             ),
+            kernel_init=small_init(self.config.embedding_dim * tp_size),
             name="v_proj",
         )(x_mlstm)
 

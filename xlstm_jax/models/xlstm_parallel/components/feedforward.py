@@ -7,6 +7,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from ..utils import UpProjConfigMixin
+from .init import small_init, wang_init
 
 _act_fn_registry = {
     "gelu": nn.gelu,
@@ -49,6 +50,7 @@ class GatedFeedForward(nn.Module):
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
         up_out = nn.Dense(
             features=2 * self.config._proj_up_dim,
+            kernel_init=small_init(x.shape[-1]),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up",
@@ -57,6 +59,7 @@ class GatedFeedForward(nn.Module):
         gate_act = get_act_fn(self.config.act_fn)(gate_preact)
         out = nn.Dense(
             features=self.config.embedding_dim,
+            kernel_init=wang_init(x.shape[-1], num_blocks=self.config._num_blocks),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_down",
