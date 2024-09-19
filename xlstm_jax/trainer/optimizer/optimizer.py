@@ -4,7 +4,9 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 import jax
+import jax.numpy as jnp
 import optax
+from flax import linen as nn
 
 from xlstm_jax.configs import ConfigDict
 
@@ -18,15 +20,28 @@ class OptimizerConfig(ConfigDict):
     """Configuration for optimizer.
 
     Attributes:
-        name (str): Name of the optimizer. The supported optimizers are "adam", "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamax", and "lamb".
+        name (str): Name of the optimizer. The supported optimizers are "adam",
+            "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamax", and
+            "lamb".
         scheduler (SchedulerConfig): Configuration for learning rate scheduler.
-        beta1 (float): Exponential decay rate for the first moment estimates. This includes momentum in SGD.
+        beta1 (float): Exponential decay rate for the first moment estimates.
+            This includes momentum in SGD.
         beta2 (float): Exponential decay rate for the second moment estimates.
         eps (float): Epsilon value for numerical stability in Adam-like optimizers.
         weight_decay (float): Weight decay coefficient.
-        weight_decay_exclude (Sequence[re.Pattern] | None): List of regex patterns to exclude from weight decay. Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_include.
-        weight_decay_include (Sequence[re.Pattern] | None): List of regex patterns to include in weight decay. Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_exclude. If neither exclude nor include is set, all parameters are included.
-        grad_clip_norm (float | None): Global norm to clip gradients. Warning: if parameters are explicitly sharded (i.e. with shard_map), the global norm is computed only across parameters on the device. If sharded via logical constraints and pjit, the global norm is computed across all parameters, but may introduce communication overhead.
+        weight_decay_exclude (Sequence[re.Pattern] | None): List of regex
+            patterns to exclude from weight decay. Parameter names are flattened and
+            joined with ".". Mutually exclusive with weight_decay_include.
+        weight_decay_include (Sequence[re.Pattern] | None): List of regex
+            patterns to include in weight decay. Parameter names are flattened and
+            joined with ".". Mutually exclusive with weight_decay_exclude. If
+            neither exclude nor include is set, all parameters are included.
+        grad_clip_norm (float | None): Global norm to clip gradients.
+        use_sharded_clip_norm (bool): Whether to calculate the global norm for
+            clipping over all shards of the parameter (True), or only calculate the
+            grad norm for local shards (False). If True, may introduce a small
+            communication overhead, but reproduces the behavior of the original
+            implementation for sharded parameters.
         grad_clip_value (float | None): Value to clip gradients element-wise.
         nesterov (bool): Whether to use Nesterov momentum in SGD.
     """
@@ -40,15 +55,16 @@ class OptimizerConfig(ConfigDict):
     weight_decay_exclude: Sequence[re.Pattern] | None = None
     weight_decay_include: Sequence[re.Pattern] | None = None
     grad_clip_norm: float | None = None
+    use_sharded_clip_norm: bool = True
     grad_clip_value: float | None = None
     nesterov: bool = False
 
 
-def build_optimizer(optimizer_config: ConfigDict) -> tuple[optax.GradientTransformation, optax.Schedule]:
+def build_optimizer(optimizer_config: OptimizerConfig) -> tuple[optax.GradientTransformation, optax.Schedule]:
     """Build optimizer from config.
 
     Args:
-        optimizer_config (ConfigDict): ConfigDict for optimizer.
+        optimizer_config (OptimizerConfig): ConfigDict for optimizer.
 
     Returns:
         optax.GradientTransformation: Optimizer.
@@ -63,7 +79,7 @@ def build_optimizer(optimizer_config: ConfigDict) -> tuple[optax.GradientTransfo
 
 
 def build_optimizer_function(
-    optimizer_config: ConfigDict, learning_rate: float | optax.Schedule
+    optimizer_config: OptimizerConfig, learning_rate: float | optax.Schedule
 ) -> optax.GradientTransformation:
     """Build optimizer class function from config.
 
@@ -71,7 +87,7 @@ def build_optimizer_function(
     function build_extra_optimizer_function.
 
     Args:
-        optimizer_config (ConfigDict): ConfigDict for optimizer.
+        optimizer_config (OptimizerConfig): ConfigDict for optimizer.
         learning_rate (float | optax.Schedule): Learning rate schedule.
 
     Returns:
@@ -171,7 +187,7 @@ def _get_param_mask_fn(
 
 
 def build_gradient_transformations(
-    optimizer_config: ConfigDict,
+    optimizer_config: OptimizerConfig,
 ) -> tuple[list[optax.GradientTransformation], list[optax.GradientTransformation]]:
     """Build gradient transformations from config.
 
@@ -192,7 +208,10 @@ def build_gradient_transformations(
 
     # Gradient clipping by norm.
     if optimizer_config.grad_clip_norm is not None:
-        pre_trans.append(optax.clip_by_global_norm(optimizer_config.grad_clip_norm))
+        if optimizer_config.use_sharded_clip_norm:
+            pre_trans.append(clip_by_global_norm_sharded(optimizer_config.grad_clip_norm))
+        else:
+            pre_trans.append(optax.clip_by_global_norm(optimizer_config.grad_clip_norm))
 
     # Gradient clipping by value.
     if optimizer_config.grad_clip_value is not None:
@@ -210,3 +229,51 @@ def build_gradient_transformations(
         )
 
     return pre_trans, post_trans
+
+
+def clip_by_global_norm_sharded(max_norm: float) -> optax.GradientTransformation:
+    """Clip gradients by global norm.
+
+    This extends optax.clip_by_global_norm to work with sharded gradients.
+
+    Args:
+        max_norm (float): Maximum norm.
+        parallel (ParallelConfig): Parallel configuration.
+
+    Returns:
+        optax.GradientTransformation: Gradient transformation.
+    """
+
+    def _sharded_norm_logits(update: jax.Array | nn.Partitioned):
+        if isinstance(update, nn.Partitioned):
+            # For partitioned parameters, we first calculate the norm per device parameter.
+            # Then, we sum the norm logit over every axes the parameter has been sharded over.
+            # This gives the norm logit for the whole parameter.
+            norm_logit = (update.value**2).sum()
+            sharded_axes = [name for name in jax.tree.leaves(update.names) if name is not None]
+            return jax.lax.psum(norm_logit, axis_name=sharded_axes)
+        else:
+            # For replicated parameters, we calculate the norm logit directly.
+            return (update**2).sum()
+
+    def _sharded_global_norm(updates: PyTree):
+        # Calculate the global norm over sharded parameters.
+        # General norm: sqrt(sum(x**2))
+        norm_logits_per_param = jax.tree.map(
+            lambda x: _sharded_norm_logits(x), updates, is_leaf=lambda x: isinstance(x, nn.Partitioned)
+        )
+        norm_sq = jax.tree_util.tree_reduce(jnp.add, norm_logits_per_param)
+        return jnp.sqrt(norm_sq)
+
+    def update_fn(updates, state, params=None):
+        # Clip gradients by global norm.
+        # - updates: gradients
+        # - state: optimizer state of transformation (empty in this case)
+        # - params: (optional) model params, unused here
+        del params
+        g_norm = _sharded_global_norm(updates)
+        g_norm = jnp.maximum(max_norm, g_norm)
+        updates = jax.tree_util.tree_map(lambda x: x * (max_norm / g_norm), updates)
+        return updates, state
+
+    return optax.GradientTransformation(lambda _: optax.EmptyState(), update_fn)

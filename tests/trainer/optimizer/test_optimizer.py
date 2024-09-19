@@ -1,6 +1,17 @@
+import os
+
+from xlstm_jax.distributed import simulate_CPU_devices
+
+if os.environ["JAX_PLATFORMS"] == "cpu":
+    NUM_DEVICES = 8
+    simulate_CPU_devices(NUM_DEVICES)
+else:
+    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
+
 import operator
 import re
 from functools import partial
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -10,8 +21,13 @@ import pytest
 from flax import linen as nn
 from flax.training.train_state import TrainState
 
+from xlstm_jax.dataset import Batch
+from xlstm_jax.models.configs import ModelConfig, ParallelConfig
+from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_optimizer
+
+from ..helpers.mse_trainer import MSETrainer, ToyModel as MSEToyModel
 
 SCHEDULERS = [
     SchedulerConfig(name="constant", lr=0.1),
@@ -225,10 +241,16 @@ def test_adamw_weight_decay(weight_decay: float):
 
 
 @pytest.mark.parametrize("grad_clip_norm", [10.0, 1.0, 0.1, 0.01])
-def test_grad_clip_norm(grad_clip_norm: float):
+@pytest.mark.parametrize("use_sharded_clip_norm", [False, True])
+def test_grad_clip_norm(grad_clip_norm: float, use_sharded_clip_norm: bool):
     """Tests that the gradient norm is clipped and stays below the threshold."""
     scheduler_config = SchedulerConfig(name="constant", lr=1.0)
-    optimizer_config = OptimizerConfig(name="sgd", scheduler=scheduler_config, grad_clip_norm=grad_clip_norm)
+    optimizer_config = OptimizerConfig(
+        name="sgd",
+        scheduler=scheduler_config,
+        grad_clip_norm=grad_clip_norm,
+        use_sharded_clip_norm=use_sharded_clip_norm,
+    )
     optimizer, _ = build_optimizer(optimizer_config)
     state = _init_model(optimizer)
 
@@ -336,3 +358,119 @@ def test_weight_decay(weight_decay: float, optimizer_name: str, exclude: list[st
                     params_wo_decay[key],
                     err_msg=f"Parameters not included should not be affected by weight decay, but happened for {key}.",
                 )
+
+
+@pytest.mark.parametrize("grad_clip_norm", [1.0, 0.01])
+@pytest.mark.parametrize("fsdp_size", [4, 8])
+@pytest.mark.parametrize("use_sharded_clip_norm", [False, True])
+def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_sharded_clip_norm: bool):
+    """Tests that the sharded grad norm is correctly calculated in FSDP and clipped."""
+    scheduler_config = SchedulerConfig(name="constant", lr=1.0)
+    optimizer_config_single_device = OptimizerConfig(
+        name="sgd", scheduler=scheduler_config, grad_clip_norm=grad_clip_norm, use_sharded_clip_norm=False
+    )
+    optimizer_config_multi_device = OptimizerConfig(
+        name="sgd",
+        scheduler=scheduler_config,
+        grad_clip_norm=grad_clip_norm,
+        use_sharded_clip_norm=use_sharded_clip_norm,
+    )
+
+    # Set up trainers for single and multi-device training.
+    rng = jax.random.PRNGKey(0)
+    batch = Batch(
+        inputs=jax.random.normal(rng, (8, 32)),
+        labels=jax.random.normal(rng, (8, 1)) * 100.0,
+    )
+    trainer_sd = _get_trainer(optimizer_config_single_device, batch, 1, 1)
+    trainer_md = _get_trainer(optimizer_config_multi_device, batch, 1, fsdp_size)
+    _assert_pytree_equal(trainer_sd.state.params, trainer_md.state.params)
+
+    # Single train step invokes the gradient computation and clipping.
+    metrics_sd = trainer_sd.init_train_metrics(batch)
+    trainer_sd.state, metrics_sd = trainer_sd.train_step(trainer_sd.state, batch, metrics_sd)
+    metrics_md = trainer_md.init_train_metrics(batch)
+    trainer_md.state, metrics_md = trainer_md.train_step(trainer_md.state, batch, metrics_md)
+
+    # Verify that the metrics are the same.
+    _assert_pytree_equal(metrics_sd, metrics_md)
+    if use_sharded_clip_norm:
+        # If we use the sharded clip norm, the parameters should be the same.
+        _assert_pytree_equal(trainer_sd.state.params, trainer_md.state.params)
+    else:
+        # If we use the per-device clip norm, the parameters should be different.
+        with pytest.raises(AssertionError):
+            _assert_pytree_equal(trainer_sd.state.params, trainer_md.state.params)
+
+
+@pytest.mark.parametrize("grad_clip_norm", [1.0, 0.01])
+@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
+def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_size: int):
+    """Tests that the sharded grad norm is correctly calculated in TP+FSDP and clipped."""
+    scheduler_config = SchedulerConfig(name="constant", lr=1.0)
+    optimizer_config_multi_device = OptimizerConfig(
+        name="sgd",
+        scheduler=scheduler_config,
+        grad_clip_norm=grad_clip_norm,
+        use_sharded_clip_norm=True,
+    )
+
+    # Set up trainers for single and multi-device training.
+    rng = jax.random.PRNGKey(0)
+    batch = Batch(
+        inputs=jax.random.normal(rng, (8, 32)),
+        labels=jax.random.normal(rng, (8, 1)) * 100.0,
+    )
+    trainer_md = _get_trainer(optimizer_config_multi_device, batch, tp_size, fsdp_size)
+    orig_params = jax.device_get(flatten_dict(trainer_md.state.params))
+    orig_params = {
+        key: value.value if isinstance(value, nn.Partitioned) else value for key, value in orig_params.items()
+    }
+
+    # Single train step invokes the gradient computation and clipping.
+    metrics_md = trainer_md.init_train_metrics(batch)
+    trainer_md.state, metrics_md = trainer_md.train_step(trainer_md.state, batch, metrics_md)
+    new_params = jax.device_get(flatten_dict(trainer_md.state.params))
+    new_params = {key: value.value if isinstance(value, nn.Partitioned) else value for key, value in new_params.items()}
+
+    norm_diff = optax.global_norm({key: new_params[key] - orig_params[key] for key in orig_params})
+    np.testing.assert_allclose(
+        norm_diff, grad_clip_norm, rtol=1e-5, atol=1e-6, err_msg="Gradient clipping did not work as expected."
+    )
+
+
+def _get_trainer(optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, fsdp_size: int) -> MSETrainer:
+    trainer = MSETrainer(
+        TrainerConfig(),
+        ModelConfig(
+            model_class=MSEToyModel,
+            parallel=ParallelConfig(
+                data_axis_size=-1,
+                model_axis_size=tp_size,
+                fsdp_axis_size=fsdp_size,
+                fsdp_min_weight_size=NUM_DEVICES,
+            ),
+        ),
+        optimizer_config,
+        batch=batch,
+    )
+    return trainer
+
+
+def _assert_pytree_equal(tree1: dict[str, Any], tree2: dict[str, Any]):
+    tree1 = jax.device_get(flatten_dict(tree1))
+    tree2 = jax.device_get(flatten_dict(tree2))
+    assert tree1.keys() == tree2.keys(), f"Array keys are not the same: {tree1.keys()} vs {tree2.keys()}"
+    for key in tree1:
+        p1, p2 = tree1[key], tree2[key]
+        if isinstance(p1, nn.Partitioned):
+            p1 = p1.value
+            assert isinstance(p2, nn.Partitioned), f"Array {key} is not a Partitioned in the second set."
+            p2 = p2.value
+        assert p1.shape == p2.shape, f"Array shapes are not the same for key {key}: {p1.shape} vs {p2.shape}"
+        np.testing.assert_allclose(
+            p1,
+            p2,
+            atol=1e-7,
+            err_msg=f"Array are not the same for key {key}.",
+        )
