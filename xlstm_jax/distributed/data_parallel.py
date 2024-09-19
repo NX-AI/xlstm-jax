@@ -3,6 +3,7 @@ from collections.abc import Callable, Sequence
 
 import flax.linen as nn
 import jax
+import jax.numpy as jnp
 import numpy as np
 from absl import logging
 from jax import lax
@@ -64,38 +65,58 @@ def shard_params(params: PyTree, axis_name: str, min_weight_size: int = 2**18) -
     )
 
 
-def gather_array_with_mean_grads(x: jax.Array, axis: int, axis_name: str) -> jax.Array:
+def gather_array_with_mean_grads(
+    x: jax.Array,
+    axis: int,
+    axis_name: str,
+    gather_dtype: jnp.dtype | None = None,
+    grad_scatter_dtype: jnp.dtype | None = None,
+) -> jax.Array:
     """Gathering with averaging gradients across replicas.
 
     Args:
         x: The array to gather.
         axis: The axis of the array to gather across.
         axis_name: The axis name of the mesh to gather across.
+        gather_dtype: The dtype to cast the array to before gathering. If None, no casting is performed.
+        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of x is used.
 
     Returns:
         The gathered array with a gradient function that averages across replicas.
     """
     axis_size = jax.lax.psum(1, axis_name)
+    param_dtype = x.dtype
+    if grad_scatter_dtype is None:
+        grad_scatter_dtype = param_dtype
 
     # Define a custom gradient for the gather operation.
     @jax.custom_gradient
     def f(x):
         def grad_fn(g):
             # pmean_scatter
-            return jax.lax.psum_scatter(g, axis_name, scatter_dimension=axis, tiled=True) / axis_size
+            g = g.astype(grad_scatter_dtype)
+            g = jax.lax.psum_scatter(g, axis_name, scatter_dimension=axis, tiled=True) / axis_size
+            g = g.astype(param_dtype)
+            return g
 
+        if gather_dtype is not None:
+            x = x.astype(gather_dtype)
         return jax.lax.all_gather(x, axis_name, axis=axis, tiled=True), grad_fn
 
     return f(x)
 
 
 @jax.named_scope("gather_params")
-def gather_params(params: PyTree, axis_name: str) -> PyTree:
+def gather_params(
+    params: PyTree, axis_name: str, gather_dtype: jnp.dtype | None = None, grad_scatter_dtype: jnp.dtype | None = None
+) -> PyTree:
     """Gather parameters from all replicas across the given axis.
 
     Args:
         params: The parameters to gather.
         axis_name: The axis to gather parameters across.
+        gather_dtype: The dtype to cast the parameters to before gathering. If None, no casting is performed.
+        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters is used.
 
     Returns:
         PyTree of same structure as params, but with leaves gathered if they were a nn.Partitioned object.
@@ -105,7 +126,13 @@ def gather_params(params: PyTree, axis_name: str) -> PyTree:
         if isinstance(p, nn.Partitioned) and axis_name in p.names:
             param_shard = p.names
             shard_axis = param_shard.index(axis_name)
-            value = gather_array_with_mean_grads(p.value, axis=shard_axis, axis_name=axis_name)
+            value = gather_array_with_mean_grads(
+                p.value,
+                axis=shard_axis,
+                axis_name=axis_name,
+                gather_dtype=gather_dtype,
+                grad_scatter_dtype=grad_scatter_dtype,
+            )
             # If there are any other axes that are sharded, we need to keep the partitioned structure.
             # Otherwise, we can return the value directly.
             param_shard = param_shard[:shard_axis] + (None,) + param_shard[shard_axis + 1 :]
@@ -120,7 +147,11 @@ def gather_params(params: PyTree, axis_name: str) -> PyTree:
 
 
 def shard_module_params(
-    target: nn.Module | Callable, axis_name: str, min_weight_size: int = 2**18
+    target: nn.Module | Callable,
+    axis_name: str,
+    min_weight_size: int = 2**18,
+    gather_dtype: jnp.dtype | None = None,
+    grad_scatter_dtype: jnp.dtype | None = None,
 ) -> nn.Module | Callable:
     """Shard parameters of a module across replicas.
 
@@ -128,13 +159,17 @@ def shard_module_params(
         target: The module to shard.
         axis_name: The axis name to shard parameters across.
         min_weight_size: The minimum size of a parameter to shard. Parameters with fewer values will not be sharded.
+        gather_dtype: The dtype to cast the parameters to before gathering. If None, no casting is performed.
+        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters is used.
 
     Returns:
         The module with sharded parameters.
     """
     return nn.map_variables(
         target,
-        trans_in_fn=functools.partial(gather_params, axis_name=axis_name),
+        trans_in_fn=functools.partial(
+            gather_params, axis_name=axis_name, gather_dtype=gather_dtype, grad_scatter_dtype=grad_scatter_dtype
+        ),
         trans_out_fn=functools.partial(shard_params, axis_name=axis_name, min_weight_size=min_weight_size),
         mapped_collections="params",
         mutable=True,

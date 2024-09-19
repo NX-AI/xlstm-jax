@@ -52,6 +52,8 @@ def prepare_module(
             layer,
             axis_name=config.fsdp_axis_name,
             min_weight_size=config.fsdp_min_weight_size,
+            gather_dtype=config.fsdp_gather_dtype,
+            grad_scatter_dtype=config.fsdp_grad_scatter_dtype,
         )
     if config.remat is not None and layer_name in config.remat:
         layer = nn.remat(layer, prevent_cse=False)

@@ -277,6 +277,7 @@ MODEL_CONFIGS = {
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_min_weight_size=2**18,
+                fsdp_gather_dtype="bfloat16",
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
@@ -290,8 +291,8 @@ MODEL_CONFIGS = {
         ),
         "batch_size_per_device": 4,
         "gradient_accumulate_steps": 1,
-        "model_axis_size": 4,
-        "fsdp_axis_size": 1,
+        "model_axis_size": 1,
+        "fsdp_axis_size": 8,
         "optimizer": optax.adamw(
             learning_rate=optax.schedules.warmup_exponential_decay_schedule(
                 init_value=0.0, peak_value=5e-4, warmup_steps=100, decay_rate=0.99, transition_steps=1000
@@ -318,6 +319,7 @@ MODEL_CONFIGS = {
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_min_weight_size=2**18,
+                fsdp_gather_dtype="bfloat16",
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
@@ -359,6 +361,7 @@ MODEL_CONFIGS = {
                 pipeline_axis_name="pp",
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_min_weight_size=2**18,
+                fsdp_gather_dtype="bfloat16",
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
