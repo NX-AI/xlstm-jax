@@ -1,22 +1,14 @@
 import os
-
-from xlstm_jax.distributed import simulate_CPU_devices
-
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 from functools import partial
 from pathlib import Path
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 from flax import linen as nn
 
-from xlstm_jax.dataset import Batch
+from xlstm_jax.dataset import LLMBatch
 from xlstm_jax.distributed import ModelParallelismWrapper, TPDense, shard_module_params, split_array_over_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
@@ -66,7 +58,7 @@ class LLMToyModel(nn.Module):
             dense_fn = shard_module_params(
                 dense_fn,
                 axis_name=self.config.parallel.fsdp_axis_name,
-                min_weight_size=NUM_DEVICES,
+                min_weight_size=pytest.num_devices,
             )
             x = dense_fn(name=f"block_{block_idx}_in")(x)
             x = nn.Dropout(rate=0.1)(x, deterministic=not train)
@@ -81,7 +73,7 @@ class LLMToyModel(nn.Module):
             dense_fn = shard_module_params(
                 dense_fn,
                 axis_name=self.config.parallel.fsdp_axis_name,
-                min_weight_size=NUM_DEVICES,
+                min_weight_size=pytest.num_devices,
             )
             x = dense_fn(name=f"block_{block_idx}_out")(x)
         x = ModelParallelismWrapper(
@@ -96,7 +88,7 @@ class LLMToyModel(nn.Module):
         x = shard_module_params(
             partial(nn.Dense, features=self.vocab_size),
             self.config.parallel.fsdp_axis_name,
-            min_weight_size=NUM_DEVICES,
+            min_weight_size=pytest.num_devices,
         )(name="out")(x)
         return x
 
@@ -108,6 +100,8 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
     Also reproduces the checkpointing test from the checkpointing test file for
     this new trainer.
     """
+    batch_size = 8
+    context_length = 32
     trainer = LLMTrainer(
         TrainerConfig(
             callbacks=(
@@ -127,7 +121,7 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
                 data_axis_size=-1,
                 model_axis_size=tp_size,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         OptimizerConfig(
@@ -137,16 +131,13 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
                 lr=1e-4,
             ),
         ),
-        batch=Batch(
-            inputs=jax.ShapeDtypeStruct((8, 20), jnp.int32),
-            labels=jax.ShapeDtypeStruct((8, 20), jnp.int32),
-        ),
+        batch=LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length),
     )
 
-    def data_gen_fn(idx: int) -> Batch:
-        inputs = jax.random.randint(jax.random.PRNGKey(idx), (8, 20), minval=0, maxval=50)
-        labels = jnp.mod(inputs + 1, 50)
-        return Batch(inputs=inputs, labels=labels)
+    def data_gen_fn(idx: int) -> LLMBatch:
+        inputs = jax.random.randint(jax.random.PRNGKey(idx), (batch_size, context_length), minval=0, maxval=50)
+        targets = jnp.mod(inputs + 1, 50)
+        return LLMBatch.from_inputs(inputs=inputs, targets=targets)
 
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
@@ -184,6 +175,81 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
     assert (
         new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
     ), "Perplexity should match the loaded model."
+
+
+def test_llm_padding(tmp_path: Path):
+    """Tests whether the padding works correctly in the LLM Trainer."""
+    batch_size = 8
+    context_length = 32
+    trainer = LLMTrainer(
+        TrainerConfig(
+            callbacks=(
+                ModelCheckpointConfig(
+                    monitor="perplexity",
+                    max_to_keep=4,
+                    save_optimizer_state=True,
+                    enable_async_checkpointing=True,
+                ),
+            ),
+            logger=LoggerConfig(log_path=tmp_path),
+            check_val_every_n_epoch=1,
+        ),
+        ModelConfig(
+            model_class=LLMToyModel,
+            parallel=ParallelConfig(
+                data_axis_size=-1,
+                model_axis_size=1,
+                fsdp_axis_size=1,
+                fsdp_min_weight_size=pytest.num_devices,
+            ),
+        ),
+        OptimizerConfig(
+            name="adam",
+            scheduler=SchedulerConfig(
+                name="constant",
+                lr=1e-4,
+            ),
+        ),
+        batch=LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length),
+    )
+
+    def data_gen_fn(idx: int) -> LLMBatch:
+        inputs = jax.random.randint(jax.random.PRNGKey(idx), (batch_size, context_length), minval=0, maxval=50)
+        targets = jnp.mod(inputs + 1, 50)
+        return LLMBatch.from_inputs(inputs=inputs, targets=targets)
+
+    def pad_batch(batch: LLMBatch) -> LLMBatch:
+        return jax.tree.map(
+            lambda x: jnp.pad(
+                x, ((0, batch_size - x.shape[0]), (0, context_length - x.shape[1])), mode="constant", constant_values=0
+            ),
+            batch,
+        )
+
+    train_loader = [data_gen_fn(idx) for idx in range(100)]
+    val_loader = train_loader[:20]
+    val_metrics = trainer.eval_model(val_loader, "val", epoch_idx=0)
+    batch_padded_val_loader = []
+    for batch in val_loader:
+        # Divide by 3 for non-uniform split.
+        batch_padded_val_loader.append(pad_batch(batch[: batch_size // 3]))
+        batch_padded_val_loader.append(pad_batch(batch[batch_size // 3 :]))
+    batch_pad_val_metrics = trainer.eval_model(batch_padded_val_loader, "val", epoch_idx=0)
+    # We do not check the perplexity as it is calculated per batch and thus can differ.
+    np.testing.assert_allclose(
+        val_metrics["loss"],
+        batch_pad_val_metrics["loss"],
+        rtol=1e-5,
+        atol=1e-5,
+        err_msg="Loss should match for batch-padded and non-padded batches.",
+    )
+    np.testing.assert_allclose(
+        val_metrics["accuracy"],
+        batch_pad_val_metrics["accuracy"],
+        rtol=1e-5,
+        atol=1e-5,
+        err_msg="Loss should match for batch-padded and non-padded batches.",
+    )
 
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (1, 8), (2, 2), (4, 1)])
@@ -254,18 +320,15 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
                 lr=1e-4,
             ),
         ),
-        batch=Batch(
-            inputs=jax.ShapeDtypeStruct((batch_size, xlstm_config.context_length), jnp.int32),
-            labels=jax.ShapeDtypeStruct((batch_size, xlstm_config.context_length), jnp.int32),
-        ),
+        batch=LLMBatch.get_dtype_struct(batch_size, xlstm_config.context_length),
     )
 
-    def data_gen_fn(idx: int) -> Batch:
+    def data_gen_fn(idx: int) -> LLMBatch:
         inputs = jax.random.randint(
             jax.random.PRNGKey(idx), (batch_size, xlstm_config.context_length), minval=0, maxval=xlstm_config.vocab_size
         )
-        labels = jnp.mod(inputs + 1, xlstm_config.vocab_size)
-        return Batch(inputs=inputs, labels=labels)
+        targets = jnp.mod(inputs + 1, xlstm_config.vocab_size)
+        return LLMBatch.from_inputs(inputs=inputs, targets=targets)
 
     train_loader = [data_gen_fn(idx) for idx in range(50)]
     val_loader = train_loader[:10]

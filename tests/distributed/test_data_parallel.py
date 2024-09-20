@@ -1,18 +1,9 @@
-import os
-
-from xlstm_jax.distributed import simulate_CPU_devices
-
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 from functools import partial
 
 import jax
 import jax.numpy as jnp
 import numpy as np
+import pytest
 from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 
@@ -46,7 +37,7 @@ def test_gather_array_with_mean_grads_scatter_dtype():
     directly in bfloat16 and only casting the gradients up.
     Additionally, check that gradients are different when scattering them in different dtypes.
     """
-    mesh = _create_mesh(fsdp_axis_size=NUM_DEVICES, fsdp_axis_name="fsdp")
+    mesh = _create_mesh(fsdp_axis_size=pytest.num_devices, fsdp_axis_name="fsdp")
     batch_size = 256
     hidden_dim_per_device = 128
     output_dim = 64
@@ -54,7 +45,7 @@ def test_gather_array_with_mean_grads_scatter_dtype():
     def _test_fn(rng: jax.Array, gather_dtype: str, grad_scatter_dtype: str):
         rng = fold_rng_over_axis(rng, "fsdp")
         inp_rng, target_rng, weight_rng = jax.random.split(rng, 3)
-        inp = jax.random.normal(inp_rng, (batch_size, hidden_dim_per_device * NUM_DEVICES), dtype=jnp.float32)
+        inp = jax.random.normal(inp_rng, (batch_size, hidden_dim_per_device * pytest.num_devices), dtype=jnp.float32)
         targets = jax.random.normal(target_rng, (batch_size, output_dim), dtype=jnp.float32)
         weight = jax.random.normal(weight_rng, (hidden_dim_per_device, output_dim), dtype=jnp.float32)
 

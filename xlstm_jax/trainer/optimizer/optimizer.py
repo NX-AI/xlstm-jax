@@ -180,7 +180,6 @@ def _get_param_mask_fn(
             is_param_included,
             params,
         )
-        print(mask_tree)
         return mask_tree
 
     return mask_fn

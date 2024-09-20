@@ -73,7 +73,7 @@ def loss_fn(
         rngs={"dropout": dropout_rng},
     )
     # Select the labels per device.
-    labels = batch.labels
+    labels = batch.targets
     labels = split_array_over_mesh(labels, axis_name=config.pipeline_axis_name, split_axis=1)
     labels = split_array_over_mesh(labels, axis_name=config.model_axis_name, split_axis=1)
     assert logits.shape[:-1] == labels.shape, f"Logits and labels shapes do not match: {logits.shape} vs {labels.shape}"

@@ -1,13 +1,3 @@
-import os
-
-from xlstm_jax.distributed import simulate_CPU_devices
-
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 from typing import Any
 
 import jax
@@ -140,7 +130,7 @@ def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_
 
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),
-        labels=input_array,
+        targets=input_array,
     )
     train_step_fn, metrics = get_train_step_fn(
         state,

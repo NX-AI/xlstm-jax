@@ -55,7 +55,7 @@ def create_batch(
         tokens = jax.random.randint(rng, shape=(batch_size // dp_size, context_length), minval=0, maxval=vocab_size)
         batch = Batch(
             inputs=jnp.pad(tokens[:, :-1], ((0, 0), (1, 0)), constant_values=0),
-            labels=tokens,
+            targets=tokens,
         )
         return batch
 

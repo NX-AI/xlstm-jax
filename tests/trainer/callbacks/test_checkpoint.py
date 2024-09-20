@@ -1,13 +1,3 @@
-import os
-
-from xlstm_jax.distributed import simulate_CPU_devices
-
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 import itertools
 from pathlib import Path
 
@@ -56,7 +46,7 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
                 data_axis_size=-1,
                 model_axis_size=tp_size,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         OptimizerConfig(
@@ -72,14 +62,14 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
         ),
         batch=Batch(
             inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
-            labels=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
         ),
     )
 
     def data_gen_fn(idx: int) -> Batch:
         inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
         labels = inputs[:, 0:1]
-        return Batch(inputs=inputs, labels=labels)
+        return Batch(inputs=inputs, targets=labels)
 
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
@@ -146,7 +136,7 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
                 data_axis_size=-1,
                 model_axis_size=tp_size,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         OptimizerConfig(
@@ -162,14 +152,14 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
         ),
         batch=Batch(
             inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
-            labels=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
         ),
     )
 
     def data_gen_fn(idx: int) -> Batch:
         inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
         labels = inputs[:, 0:1]
-        return Batch(inputs=inputs, labels=labels)
+        return Batch(inputs=inputs, targets=labels)
 
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
@@ -239,7 +229,7 @@ def test_checkpointing_per_epoch_and_step(tmp_path: Path):
                 data_axis_size=-1,
                 model_axis_size=tp_size,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         OptimizerConfig(
@@ -255,14 +245,14 @@ def test_checkpointing_per_epoch_and_step(tmp_path: Path):
         ),
         batch=Batch(
             inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
-            labels=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
         ),
     )
 
     def data_gen_fn(idx: int) -> Batch:
         inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
         labels = inputs[:, 0:1]
-        return Batch(inputs=inputs, labels=labels)
+        return Batch(inputs=inputs, targets=labels)
 
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
@@ -323,7 +313,7 @@ def test_loading_to_new_topology(tmp_path: Path):
                 data_axis_size=-1,
                 model_axis_size=1,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         OptimizerConfig(
@@ -339,7 +329,7 @@ def test_loading_to_new_topology(tmp_path: Path):
         ),
         batch=Batch(
             inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
-            labels=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
         ),
     )
     trainer = get_trainer(8)
@@ -347,7 +337,7 @@ def test_loading_to_new_topology(tmp_path: Path):
     def data_gen_fn(idx: int) -> Batch:
         inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
         labels = inputs[:, 0:1]
-        return Batch(inputs=inputs, labels=labels)
+        return Batch(inputs=inputs, targets=labels)
 
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]

@@ -82,7 +82,7 @@ class MSETrainer(TrainerModule):
         )
         # Select the labels per device. This is only needed if we want to split the output over the mesh.
         # Otherwise, the TP and PP devices may share the same outputs.
-        labels = batch.labels
+        labels = batch.targets
         labels = split_array_over_mesh(labels, axis_name=self.pipeline_axis_name, split_axis=0)
         labels = split_array_over_mesh(labels, axis_name=self.model_axis_name, split_axis=0)
         assert (

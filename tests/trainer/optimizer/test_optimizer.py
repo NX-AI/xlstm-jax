@@ -1,13 +1,3 @@
-import os
-
-from xlstm_jax.distributed import simulate_CPU_devices
-
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 import operator
 import re
 from functools import partial
@@ -380,7 +370,7 @@ def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_
     rng = jax.random.PRNGKey(0)
     batch = Batch(
         inputs=jax.random.normal(rng, (8, 32)),
-        labels=jax.random.normal(rng, (8, 1)) * 100.0,
+        targets=jax.random.normal(rng, (8, 1)) * 100.0,
     )
     trainer_sd = _get_trainer(optimizer_config_single_device, batch, 1, 1)
     trainer_md = _get_trainer(optimizer_config_multi_device, batch, 1, fsdp_size)
@@ -419,7 +409,7 @@ def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_siz
     rng = jax.random.PRNGKey(0)
     batch = Batch(
         inputs=jax.random.normal(rng, (8, 32)),
-        labels=jax.random.normal(rng, (8, 1)) * 100.0,
+        targets=jax.random.normal(rng, (8, 1)) * 100.0,
     )
     trainer_md = _get_trainer(optimizer_config_multi_device, batch, tp_size, fsdp_size)
     orig_params = jax.device_get(flatten_dict(trainer_md.state.params))
@@ -448,7 +438,7 @@ def _get_trainer(optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, 
                 data_axis_size=-1,
                 model_axis_size=tp_size,
                 fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=NUM_DEVICES,
+                fsdp_min_weight_size=pytest.num_devices,
             ),
         ),
         optimizer_config,

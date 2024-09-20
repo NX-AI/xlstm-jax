@@ -26,6 +26,7 @@ from xlstm_jax.configs import ConfigDict
 from xlstm_jax.dataset import Batch
 from xlstm_jax.distributed import accumulate_gradients, sync_gradients
 from xlstm_jax.distributed.common_types import PRNGKeyArray
+from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.import_utils import resolve_import
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer import callbacks
@@ -91,6 +92,7 @@ class TrainerModule:
         model_config: ModelConfig,
         optimizer_config: OptimizerConfig,
         batch: Batch,
+        mesh: Mesh | None = None,
     ):
         """A basic Trainer module summarizing most common training functionalities like logging,
         model initialization, training loop, etc.
@@ -102,6 +104,7 @@ class TrainerModule:
             batch: An input to the model with which the shapes are
                 inferred. Can be a :class:`jax.ShapeDtypeStruct` instead of actual
                 full arrays for efficiency.
+            mesh: A mesh object to use for parallel training. If None, a new mesh will be created.
         """
         super().__init__()
         self.trainer_config = trainer_config
@@ -109,7 +112,7 @@ class TrainerModule:
         self.optimizer_config = optimizer_config
         self.exmp_batch = batch
         # Setup parallel mesh
-        self.init_mesh(model_config)
+        self.init_mesh(model_config, mesh)
         # Create empty model. Note: no parameters yet
         self.build_model(model_config)
         # Init trainer parts
@@ -120,6 +123,7 @@ class TrainerModule:
         self.init_callbacks(self.trainer_config.callbacks)
         # Set first step to True to log compilation time of the first step.
         self.first_step = True
+        self.global_step = 0
 
     def batch_to_input(self, batch: Batch) -> Any:
         """Convert a batch to the input format expected by the model.
@@ -135,41 +139,26 @@ class TrainerModule:
         """
         return batch.inputs
 
-    def init_mesh(self, model_config: ConfigDict):
-        """Initialize the mesh for parallel training.
+    def init_mesh(self, model_config: ConfigDict, mesh: Mesh | None = None):
+        """Initialize the mesh for parallel training if no mesh is supplied.
 
         Args:
             model_config: A dictionary containing the model configuration, including the parallelization parameters.
+            mesh: A mesh object to use for parallel training. If None, a new mesh is created.
         """
-        if "SLURM_STEP_NODELIST" in os.environ:
-            # Initializes one process per device, using the SLURM environment variables.
-            # TODO: We may need to do this already before data loading, so very early in the run script.
-            # To be checked once the framework is more mature.
-            jax.distributed.initialize()
+        if mesh is None:
+            self.mesh = initialize_mesh(parallel_config=model_config.parallel)
+        else:
+            self.mesh = mesh
+
         # Save axis names to trainer for easier usage.
         self.data_axis_name = model_config.parallel.data_axis_name
         self.fsdp_axis_name = model_config.parallel.fsdp_axis_name
         self.pipeline_axis_name = model_config.parallel.pipeline_axis_name
         self.model_axis_name = model_config.parallel.model_axis_name
-        # Setup device structure.
-        device_array = np.array(jax.devices()).reshape(
-            model_config.parallel.data_axis_size,
-            model_config.parallel.fsdp_axis_size,
-            model_config.parallel.pipeline_axis_size,
-            model_config.parallel.model_axis_size,
-        )
-        # Initialize mesh.
-        self.mesh = Mesh(
-            device_array,
-            (
-                self.data_axis_name,
-                self.fsdp_axis_name,
-                self.pipeline_axis_name,
-                self.model_axis_name,
-            ),
-        )
-        if jax.process_index() == 0:
-            logging.info(f"Initialized mesh with {self.mesh}.")
+
+        # Create batch specs for sharding.
+        self.batch_partition_specs = P(self.mesh.axis_names)
 
     def build_model(self, model_config: ConfigDict):
         """Create the model class from the model_config.
@@ -247,20 +236,20 @@ class TrainerModule:
             shard_map(
                 _init_model,
                 self.mesh,
-                in_specs=(P(), P((self.data_axis_name, self.fsdp_axis_name))),
+                in_specs=(P(), self.batch_partition_specs),
                 out_specs=P(),
                 check_rep=False,
             ),
         )
         state_shapes = jax.eval_shape(init_model_fn, init_rng, exmp_input)
-        state_specs = nn.get_partition_spec(state_shapes)
+        state_partition_specs = nn.get_partition_spec(state_shapes)
         # Run init model function again with correct output specs.
         init_model_fn = jax.jit(
             shard_map(
                 _init_model,
                 self.mesh,
-                in_specs=(P(), P((self.data_axis_name, self.fsdp_axis_name))),
-                out_specs=state_specs,
+                in_specs=(P(), self.batch_partition_specs),
+                out_specs=state_partition_specs,
                 check_rep=False,
             ),
         )
@@ -416,6 +405,12 @@ class TrainerModule:
         def train_step(
             state: TrainState, batch: Batch, metrics: ImmutableMetrics | None
         ) -> tuple[TrainState, ImmutableMetrics]:
+            # In our multi-host setup, each local device will have a different batch.
+            # So we first gather the batch across model and pipeline axes.
+            batch = jax.lax.all_gather(
+                batch, axis_name=(self.model_axis_name, self.pipeline_axis_name), axis=0, tiled=True
+            )
+            # Split the random key for the current step.
             next_rng, step_rng = jax.random.split(state.rng)
             # Forward and backward with gradient accumulation.
             grads, step_metrics = accumulate_gradients(
@@ -450,12 +445,12 @@ class TrainerModule:
             return new_state, metrics
 
         # Shard the training function.
-        state_specs = nn.get_partition_spec(self.state)
+        state_partition_specs = nn.get_partition_spec(self.state)
         train_step_fn = shard_map(
             train_step,
             self.mesh,
-            in_specs=(state_specs, P((self.data_axis_name, self.fsdp_axis_name)), P()),
-            out_specs=(state_specs, P()),
+            in_specs=(state_partition_specs, self.batch_partition_specs, P()),
+            out_specs=(state_partition_specs, P()),
             check_rep=False,
         )
         return train_step_fn
@@ -470,6 +465,12 @@ class TrainerModule:
         """
 
         def eval_step(state: TrainState, batch: Batch, metrics: ImmutableMetrics | None) -> ImmutableMetrics:
+            # In our multi-host setup, each local device will have a different batch.
+            # So we first gather the batch across model and pipeline axes.
+            batch = jax.lax.all_gather(
+                batch, axis_name=(self.model_axis_name, self.pipeline_axis_name), axis=0, tiled=True
+            )
+            # Forward pass and compute metrics.
             _, step_metrics = self.loss_function(
                 state.params,
                 state.apply_fn,
@@ -494,11 +495,11 @@ class TrainerModule:
             return metrics
 
         # Shard the evaluation function.
-        state_specs = nn.get_partition_spec(self.state)
+        state_partition_specs = nn.get_partition_spec(self.state)
         eval_step_fn = shard_map(
             eval_step,
             self.mesh,
-            in_specs=(state_specs, P((self.data_axis_name, self.fsdp_axis_name)), P()),
+            in_specs=(state_partition_specs, self.batch_partition_specs, P()),
             out_specs=P(),
             check_rep=False,
         )
