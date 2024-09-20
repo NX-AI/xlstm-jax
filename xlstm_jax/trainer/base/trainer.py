@@ -1,4 +1,3 @@
-# Standard libraries
 import json
 import os
 import time
@@ -6,14 +5,10 @@ from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from functools import partial
 from pathlib import Path
-from typing import (
-    Any,
-)
+from typing import Any
 
-# JAX/Flax libraries
 import jax
 import jax.numpy as jnp
-import numpy as np
 from absl import logging
 from flax import linen as nn
 from flax.core import FrozenDict, freeze
@@ -41,36 +36,28 @@ from .train_state import TrainState
 
 @dataclass(kw_only=True, frozen=True)
 class TrainerConfig(ConfigDict):
-    """Configuration for the Trainer module.
+    """
+    Configuration for the Trainer module.
 
     Attributes:
-        seed: Random seed for reproducibility. To be used in the model init and
-            training step.
-        debug: Whether to run in debug mode. This disables jitting of the
-            training and evaluation functions, which will slow down the training
-            significantly but makes debugging easier.
-        donate_train_state: Whether to donate the train state in the training
-            step. This can reduce memory usage as the parameters and optimizer
-            states are in-place updated in the training step. However, this
-            prevents using the previous train state after calling the training
-            step (not used in Trainer, but keep in mind for custom training
-            loops and callbacks).
-        enable_progress_bar: Whether to enable the progress bar. For
-            multi-process training, only the main process will show the progress
-            bar.
-        gradient_accumulate_steps: Number of steps to accumulate gradients
-            before updating the parameters.
-        check_val_every_n_epoch: Check validation every N training epochs. If
-            -1, no validation is performed after an epoch. Note that this is not
-            mutually exclusive with check_val_every_n_steps, and both can be used.
-        check_val_every_n_steps: Check validation every N training steps. If -1,
-            no validation is performed on a per-step basis. Note that this is not
-            mutually exclusive with check_val_every_n_epoch, and both can be used.
+        seed: Random seed for reproducibility. To be used in the model init and training step.
+        debug: Whether to run in debug mode. This disables jitting of the training and evaluation functions, which will
+            slow down the training significantly but makes debugging easier.
+        donate_train_state: Whether to donate the train state in the training step. This can reduce memory usage as the
+            parameters and optimizer states are in-place updated in the training step. However, this prevents using the
+            previous train state after calling the training step (not used in Trainer, but keep in mind for custom
+            training loops and callbacks).
+        enable_progress_bar: Whether to enable the progress bar. For multi-process training, only the main process will
+            show the progress bar.
+        gradient_accumulate_steps: Number of steps to accumulate gradients before updating the parameters.
+        check_val_every_n_epoch: Check validation every N training epochs. If -1, no validation is performed after an
+            epoch. Note that this is not mutually exclusive with check_val_every_n_steps, and both can be used.
+        check_val_every_n_steps: Check validation every N training steps. If -1, no validation is performed on a
+            per-step basis. Note that this is not mutually exclusive with check_val_every_n_epoch, and both can be used.
         logger: Configuration for the logger.
         callbacks: List of callbacks to apply.
-        seed_eval: Random seed for evaluation, if the model uses randomness
-            during evaluation. This is useful to ensure reproducibility of
-            evaluation metrics.
+        seed_eval: Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
+            reproducibility of evaluation metrics.
     """
 
     seed: int = 0
@@ -94,16 +81,16 @@ class TrainerModule:
         batch: Batch,
         mesh: Mesh | None = None,
     ):
-        """A basic Trainer module summarizing most common training functionalities like logging,
-        model initialization, training loop, etc.
+        """
+        A basic Trainer module summarizing most common training functionalities like logging, model initialization,
+        training loop, etc..
 
         Args:
             trainer_config: A dictionary containing the trainer configuration.
             model_config: A dictionary containing the model configuration.
             optimizer_config: A dictionary containing the optimizer configuration.
-            batch: An input to the model with which the shapes are
-                inferred. Can be a :class:`jax.ShapeDtypeStruct` instead of actual
-                full arrays for efficiency.
+            batch: An input to the model with which the shapes are inferred. Can be a :class:`jax.ShapeDtypeStruct`
+                instead of actual full arrays for efficiency.
             mesh: A mesh object to use for parallel training. If None, a new mesh will be created.
         """
         super().__init__()
@@ -126,7 +113,8 @@ class TrainerModule:
         self.global_step = 0
 
     def batch_to_input(self, batch: Batch) -> Any:
-        """Convert a batch to the input format expected by the model.
+        """
+        Convert a batch to the input format expected by the model.
 
         Needs to be implemented by the subclass if batch.inputs is not
         sufficient.
@@ -140,7 +128,8 @@ class TrainerModule:
         return batch.inputs
 
     def init_mesh(self, model_config: ConfigDict, mesh: Mesh | None = None):
-        """Initialize the mesh for parallel training if no mesh is supplied.
+        """
+        Initialize the mesh for parallel training if no mesh is supplied.
 
         Args:
             model_config: A dictionary containing the model configuration, including the parallelization parameters.
@@ -161,7 +150,8 @@ class TrainerModule:
         self.batch_partition_specs = P(self.mesh.axis_names)
 
     def build_model(self, model_config: ConfigDict):
-        """Create the model class from the model_config.
+        """
+        Create the model class from the model_config.
 
         Args:
             model_config: A dictionary containing the model configuration.
@@ -171,7 +161,8 @@ class TrainerModule:
         )
 
     def init_logger(self, logger_config: ConfigDict):
-        """Initialize a logger and creates a logging directory.
+        """
+        Initialize a logger and creates a logging directory.
 
         Args:
             logger_params: A dictionary containing the specification of the logger.
@@ -192,7 +183,8 @@ class TrainerModule:
             self.callbacks.append(callback)
 
     def init_optimizer(self, optimizer_config: ConfigDict):
-        """Initialize the optimizer.
+        """
+        Initialize the optimizer.
 
         Args:
             optimizer_config: A dictionary containing the optimizer configuration.
@@ -200,11 +192,11 @@ class TrainerModule:
         self.optimizer, self.lr_scheduler = build_optimizer(optimizer_config)
 
     def init_model(self, exmp_input: Batch):
-        """Create an initial training state with newly generated network parameters.
+        """
+        Create an initial training state with newly generated network parameters.
 
-        This init function is parallelized over the mesh to initialize the per-device
-        parameters. It also initializes the optimizer parameters. As a result, it sets
-        the training state of the trainer with the initialized parameters.
+        This function is parallelized over the mesh to initialize the per-device parameters. It also initializes the
+        optimizer parameters. As a result, it sets the training state of the trainer with the initialized parameters.
 
         Args:
             exmp_input: An input to the model with which the shapes are inferred.
@@ -256,15 +248,15 @@ class TrainerModule:
         self.state = init_model_fn(init_rng, exmp_input)
 
     def init_train_metrics(self, batch: Batch | None = None) -> FrozenDict:
-        """Initialize the training metrics with zeros.
+        """
+        Initialize the training metrics with zeros.
 
-        We infer the training metric shape from the train_step function. This is done to
-        prevent a double-compilation of the train_step function, where the first step has
-        to be done with metrics None, and the next one with the metrics shape.
+        We infer the training metric shape from the train_step function. This is done to prevent a double-compilation of
+        the train_step function, where the first step has to be done with metrics None, and the next one with the
+        metrics shape.
 
         Args:
-            batch: An input to the model with which the shapes are inferred. If None,
-            the exmp_input is used.
+            batch: An input to the model with which the shapes are inferred. If None, the ``exmp_batch`` is used.
 
         Returns:
             A dictionary of metrics with the same shape as the train metrics.
@@ -278,13 +270,13 @@ class TrainerModule:
         return jax.tree.map(lambda x: jnp.zeros_like(x), self.train_metric_shapes)
 
     def init_eval_metrics(self, batch: Batch | None = None) -> FrozenDict:
-        """Initialize the evaluation metrics with zeros.
+        """
+        Initialize the evaluation metrics with zeros.
 
         See init_train_metrics for more details.
 
         Args:
-            batch: An input to the model with which the shapes are inferred. If None,
-            the exmp_input is used.
+            batch: An input to the model with which the shapes are inferred. If None, the ``exmp_batch`` is used.
 
         Returns:
             A dictionary of metrics with the same shape as the eval metrics.
@@ -298,7 +290,8 @@ class TrainerModule:
         return jax.tree.map(lambda x: jnp.zeros_like(x), self.eval_metric_shapes)
 
     def set_dataset(self, dataset: Any):
-        """Set the dataset for the trainer and the callbacks.
+        """
+        Set the dataset for the trainer and the callbacks.
 
         Args:
             dataset: The dataset to set.
@@ -308,10 +301,11 @@ class TrainerModule:
         self.dataset = dataset
 
     def get_model_rng(self, rng: jax.Array) -> dict[str, random.PRNGKey]:
-        """Return a dictionary of PRNGKey for init and tabulate.
+        """
+        Return a dictionary of PRNGKey for init and tabulate.
 
-        By default, adds a key for the parameters and one for dropout. If
-        more keys are needed, this function should be overwritten.
+        By default, adds a key for the parameters and one for dropout. If more keys are needed, this function should be
+        overwritten.
 
         Args:
             rng: The current PRNGKey.
@@ -323,7 +317,8 @@ class TrainerModule:
         return {"params": param_rng, "dropout": dropout_rng}
 
     def run_model_init(self, exmp_input: Batch, init_rng: jax.Array) -> FrozenDict:
-        """The model initialization call.
+        """
+        The model initialization call.
 
         Args:
             exmp_input: An input to the model with which the shapes are inferred.
@@ -341,7 +336,8 @@ class TrainerModule:
         return variables
 
     def tabulate_params(self) -> str:
-        """Return a string summary of the parameters represented as table.
+        """
+        Return a string summary of the parameters represented as table.
 
         Returns:
             A string representation of the parameters.
@@ -349,7 +345,8 @@ class TrainerModule:
         return tabulate_params(self.state)
 
     def create_jitted_functions(self):
-        """Create jitted versions of the training and evaluation functions.
+        """
+        Create jitted versions of the training and evaluation functions.
 
         If self.trainer_config.debug is True, not jitting is applied.
         """
@@ -375,7 +372,8 @@ class TrainerModule:
     def loss_function(
         self, params: Any, apply_fn: Any, batch: Batch, rng: jax.Array, train: bool = True
     ) -> tuple[jax.Array, Metrics]:
-        """The loss function that is used for training.
+        """
+        The loss function that is used for training.
 
         This function needs to be overwritten by a subclass.
 
@@ -396,10 +394,11 @@ class TrainerModule:
     def create_training_step_function(
         self,
     ) -> Callable[[TrainState, Batch, ImmutableMetrics | None], tuple[TrainState, ImmutableMetrics]]:
-        """Create and return a function for the training step.
+        """
+        Create and return a function for the training step.
 
-        The function takes as input the training state and a batch from the train loader. The
-        function is expected to return a dictionary of logging metrics, and a new train state.
+        The function takes as input the training state and a batch from the train loader. The function is expected to
+        return a dictionary of logging metrics, and a new train state.
         """
 
         def train_step(
@@ -426,7 +425,7 @@ class TrainerModule:
                     grads, (self.data_axis_name, self.fsdp_axis_name, self.pipeline_axis_name, self.model_axis_name)
                 )
             new_state = state.apply_gradients(grads=grads, rng=next_rng)
-            # Sum metrics across replicas. Communication negligible and can be do async to backward.
+            # Sum metrics across replicas. Communication negligible and can be done async to backward.
             with jax.named_scope("sync_metrics"):
                 step_metrics = jax.tree.map(
                     lambda x: jax.lax.psum(
@@ -458,10 +457,11 @@ class TrainerModule:
     def create_evaluation_step_function(
         self,
     ) -> Callable[[TrainState, Batch, ImmutableMetrics | None], ImmutableMetrics]:
-        """Create and return a function for the evaluation step.
+        """
+        Create and return a function for the evaluation step.
 
-        The function takes as input the training state and a batch from the val/test loader. The
-        function is expected to return a dictionary of logging metrics, and a new train state.
+        The function takes as input the training state and a batch from the val/test loader. The function is expected to
+        return a dictionary of logging metrics, and a new train state.
         """
 
         def eval_step(state: TrainState, batch: Batch, metrics: ImmutableMetrics | None) -> ImmutableMetrics:
@@ -514,21 +514,19 @@ class TrainerModule:
         num_train_steps: int | None = None,
         steps_per_epoch: int | None = None,
     ) -> dict[str, Any]:
-        """Start a training loop for the given number of epochs.
+        """
+        Start a training loop for the given number of epochs.
 
-        Inside the training loop, we use an epoch index and a global step index. Both indices
-        are starting to count at 1 (i.e. first epoch is "epoch 1", not "epoch 0").
+        Inside the training loop, we use an epoch index and a global step index. Both indices are starting to count at 1
+        (i.e. first epoch is "epoch 1", not "epoch 0").
 
         Args:
             train_loader: Data loader of the training set.
             val_loader: Data loader of the validation set.
             test_loader: If given, best model will be evaluated on the test set.
-            num_epochs: Number of epochs for which to train the model. If None,
-                will use num_train_steps.
-            num_train_steps: Number of training steps for which to train the
-                model. If None, will use num_epochs.
-            steps_per_epoch: Number of steps per epoch. If None, will use the
-                length of the train_loader.
+            num_epochs: Number of epochs for which to train the model. If None, will use num_train_steps.
+            num_train_steps: Number of training steps for which to train the model. If None, will use num_epochs.
+            steps_per_epoch: Number of steps per epoch. If None, will use the length of the train_loader.
 
         Returns:
             A dictionary of the train, validation and evt. test metrics for the
@@ -561,7 +559,8 @@ class TrainerModule:
                 epoch_idx = self.global_step // steps_per_epoch + 1
             else:
                 logging.warning(
-                    "Steps per epoch could not be inferred by the training loader. Epoch index will be inferred by breaks of iterator, but likely incorrect if you loaded a pre-trained model."
+                    "Steps per epoch could not be inferred by the training loader. Epoch index will be inferred by "
+                    "breaks of iterator, but likely incorrect if you loaded a pre-trained model."
                 )
                 epoch_idx = epoch_idx + 1
             self.on_training_epoch_start(epoch_idx)
@@ -644,7 +643,8 @@ class TrainerModule:
         return all_eval_metrics
 
     def test_model(self, test_loader: Iterator, apply_callbacks: bool = False, epoch_idx: int = 0) -> dict[str, Any]:
-        """Tests the model on the given test set.
+        """
+        Tests the model on the given test set.
 
         Args:
             test_loader: Data loader of the test set.
@@ -657,16 +657,16 @@ class TrainerModule:
         return test_metrics
 
     def test_eval_function(self, val_loader: Iterator) -> None:
-        """Test the evaluation function on a single batch.
+        """
+        Test the evaluation function on a single batch.
 
-        This is useful to check if the functions have the correct signature and return the correct
-        values. This prevents annoying errors that occur at the first evaluation step.
+        This is useful to check if the functions have the correct signature and return the correct values. This prevents
+        annoying errors that occur at the first evaluation step.
 
-        This function does not test the training function anymore. This is because the training
-        function is already executed in the first epoch and we change its jit signature to donate
-        the train state and metrics. Thus, executing a training step requires updating the train
-        state, which we would not want to do here. The compilation time is logged during the very
-        first training step.
+        This function does not test the training function anymore. This is because the training function is already
+        executed in the first epoch, and we change its jit signature to donate the train state and metrics. Thus,
+        executing a training step requires updating the train state, which we would not want to do here. The compilation
+        time is logged during the very first training step.
 
         Args:
             val_loader: Data loader of the validation set.
@@ -680,7 +680,8 @@ class TrainerModule:
         logging.info(f"Successfully completed in {time.time() - start_time:.2f} seconds.")
 
     def eval_model(self, data_loader: Iterator, mode: str, epoch_idx: int) -> HostMetrics:
-        """Evaluate the model on a dataset.
+        """
+        Evaluate the model on a dataset.
 
         Args:
             data_loader: Data loader of the dataset to evaluate on.
@@ -688,8 +689,7 @@ class TrainerModule:
             epoch_idx: Current epoch index.
 
         Returns:
-            A dictionary of the evaluation metrics, averaged over data points
-            in the dataset.
+            A dictionary of the evaluation metrics, averaged over data points in the dataset.
         """
         # Test model on all batches of a data loader and return avg loss
         self.logger.start_epoch(epoch=epoch_idx, step=self.global_step, mode=mode)
@@ -704,15 +704,15 @@ class TrainerModule:
         return metrics
 
     def tracker(self, iterator: Iterator, **kwargs) -> Iterator:
-        """Wrap an iterator in a progress bar tracker (tqdm) if the progress bar is enabled.
+        """
+        Wrap an iterator in a progress bar tracker (tqdm) if the progress bar is enabled.
 
         Args:
             iterator: Iterator to wrap in tqdm.
             kwargs: Additional arguments to tqdm.
 
         Returns:
-            Wrapped iterator if progress bar is enabled, otherwise same iterator
-            as input.
+            Wrapped iterator if progress bar is enabled, otherwise same iterator as input.
         """
         if self.trainer_config.enable_progress_bar and jax.process_index() == 0:
             return tqdm(iterator, **kwargs)
@@ -720,7 +720,8 @@ class TrainerModule:
             return iterator
 
     def on_training_start(self):
-        """Method called before training is started.
+        """
+        Method called before training is started.
 
         Can be used for additional initialization operations etc.
         """
@@ -729,7 +730,8 @@ class TrainerModule:
             callback.on_training_start()
 
     def on_training_end(self):
-        """Method called after training has finished.
+        """
+        Method called after training has finished.
 
         Can be used for additional logging or similar.
         """
@@ -738,8 +740,8 @@ class TrainerModule:
             callback.on_training_end()
 
     def on_training_epoch_start(self, epoch_idx: int):
-        """Method called at the start of each training epoch. Can be used for additional logging or
-        similar.
+        """
+        Method called at the start of each training epoch. Can be used for additional logging or similar.
 
         Args:
             epoch_idx: Index of the training epoch that has started.
@@ -749,8 +751,8 @@ class TrainerModule:
             callback.on_training_epoch_start(epoch_idx)
 
     def on_training_epoch_end(self, train_metrics: dict[str, Any], epoch_idx: int):
-        """Method called at the end of each training epoch. Can be used for additional logging or
-        similar.
+        """
+        Method called at the end of each training epoch. Can be used for additional logging or similar.
 
         Args:
             epoch_idx: Index of the training epoch that has finished.
@@ -760,8 +762,8 @@ class TrainerModule:
             callback.on_training_epoch_end(train_metrics, epoch_idx)
 
     def on_validation_epoch_start(self, epoch_idx: int, step_idx: int):
-        """Method called at the start of each validation epoch. Can be used for additional logging
-        or similar.
+        """
+        Method called at the start of each validation epoch. Can be used for additional logging or similar.
 
         Args:
             epoch_idx: Index of the training epoch at which validation was started.
@@ -772,12 +774,12 @@ class TrainerModule:
             callback.on_validation_epoch_start(epoch_idx=epoch_idx, step_idx=step_idx)
 
     def on_validation_epoch_end(self, eval_metrics: dict[str, Any], epoch_idx: int, step_idx: int):
-        """Method called at the end of each validation epoch. Can be used for additional logging
-        and evaluation.
+        """
+        Method called at the end of each validation epoch. Can be used for additional logging and evaluation.
 
         Args:
-            eval_metrics: A dictionary of the validation metrics. New metrics added to
-                this dictionary will be logged as well.
+            eval_metrics: A dictionary of the validation metrics. New metrics added to this dictionary will be logged as
+                well.
             epoch_idx: Index of the training epoch at which validation was performed.
             step_idx: Index of the training step at which validation was performed.
         """
@@ -786,8 +788,8 @@ class TrainerModule:
             callback.on_validation_epoch_end(eval_metrics, epoch_idx=epoch_idx, step_idx=step_idx)
 
     def on_test_epoch_start(self, epoch_idx: int):
-        """Method called at the start of each test epoch. Can be used for additional logging or
-        similar.
+        """
+        Method called at the start of each test epoch. Can be used for additional logging or similar.
 
         Args:
             epoch_idx: Index of the training epoch at which testing was started.
@@ -797,27 +799,24 @@ class TrainerModule:
             callback.on_test_epoch_start(epoch_idx)
 
     def on_test_epoch_end(self, test_metrics: dict[str, Any], epoch_idx: int):
-        """Method called at the end of each test epoch. Can be used for additional logging and
-        evaluation.
+        """
+        Method called at the end of each test epoch. Can be used for additional logging and evaluation.
 
         Args:
             epoch_idx: Index of the training epoch at which testing was performed.
-            test_metrics: A dictionary of the test metrics. New metrics added to
-                this dictionary will be logged as well.
-            test_loader: Data loader of the test set, to support additional
-                evaluation.
+            test_metrics: A dictionary of the test metrics. New metrics added to this dictionary will be logged as well.
         """
         logging.info(f"Finished test epoch {epoch_idx}")
         for callback in self.callbacks:
             callback.on_test_epoch_end(test_metrics, epoch_idx)
 
     def load_model(self, step_idx: int = -1, raise_if_not_found: bool = True):
-        """Load model parameters and batch statistics from the logging directory.
+        """
+        Load model parameters and batch statistics from the logging directory.
 
         Args:
             step_idx: Step index to load the model from. If -1, the latest model is loaded.
-            raise_if_not_found: If True, raises an error if no model is found. If False, logs a
-                warning instead.
+            raise_if_not_found: If True, raises an error if no model is found. If False, logs a warning instead.
         """
         logging.info(f"Loading model from step {step_idx}")
         state_dict = None
@@ -838,12 +837,12 @@ class TrainerModule:
             self.restore(state_dict)
 
     def restore(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
-        """Restore the state of the trainer from a state dictionary.
+        """
+        Restore the state of the trainer from a state dictionary.
 
         Args:
-            state_dict: State dictionary to restore from. Must contain the key "params" with the
-                model parameters. Optional keys that overwrite the trainer state are "step",
-                "opt_state", "mutable_variables", "rng".
+            state_dict: State dictionary to restore from. Must contain the key "params" with the model parameters.
+                Optional keys that overwrite the trainer state are "step", "opt_state", "mutable_variables", "rng".
         """
         logging.info("Restoring trainer state with keys " + str(state_dict.keys()))
         assert "params" in state_dict, "State dictionary must contain the key 'params'."
@@ -868,8 +867,8 @@ class TrainerModule:
         exmp_input: Batch = None,
         batch_size: int = -1,
     ) -> Any:
-        """Create a Trainer object with same hyperparameters and loaded model from a checkpoint
-        directory.
+        """
+        Create a Trainer object with same hyperparameters and loaded model from a checkpoint directory.
 
         Args:
             checkpoint: Folder in which the checkpoint and hyperparameter file is stored.

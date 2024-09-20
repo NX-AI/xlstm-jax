@@ -14,7 +14,8 @@ def execute_pipeline_step(
     model_axis_name: str,
     **kwargs,
 ) -> tuple[jax.Array, jax.Array]:
-    """Single micro-batch pipeline step.
+    """
+    Single micro-batch pipeline step.
 
     Args:
         module: Flax module representing the stage to execute.
@@ -59,7 +60,8 @@ def execute_pipeline(
     model_axis_name: str,
     **kwargs,
 ) -> jax.Array:
-    """Execute a pipeline of stages on a batch of data.
+    """
+    Execute a pipeline of stages on a batch of data.
 
     Uses the principle of GPipe in splitting the batch into micro-batches
     and running the pipeline stages in parallel.
@@ -113,7 +115,8 @@ def execute_pipeline(
 
 
 class PipelineModule(nn.Module):
-    """Module wrapper for executing a pipeline of stages.
+    """
+    Module wrapper for executing a pipeline of stages.
 
     This module is used to wrap a stage of a pipeline to execute in pipeline parallelism.
 

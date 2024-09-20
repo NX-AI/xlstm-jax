@@ -17,7 +17,9 @@ def parallel_stabilized_simple(
     eps: float = 1e-6,
     **kwargs,
 ) -> torch.Tensor:
-    """This is the mLSTM cell in parallel form.
+    """
+    This is the mLSTM cell in parallel form.
+
     This version is stabilized. We control the range of exp() arguments by
     ensuring that they are always smaller than 0.0 by subtracting the maximum.
 
@@ -128,7 +130,8 @@ def recurrent_step_stabilized_simple(
     eps: float = 1e-6,
     **kwargs,
 ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
-    """This is a single step of the mLSTM operation in recurrent form.
+    """
+    This is a single step of the mLSTM operation in recurrent form.
 
     Args:
         c_state (torch.Tensor): (B, NH, DH, DH)
@@ -142,7 +145,8 @@ def recurrent_step_stabilized_simple(
 
     Returns:
         tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
-            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new [B, NH, 1, 1]))
+            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new
+            [B, NH, 1, 1]))
     """
     B, NH, S, DH = q.shape
     # projections

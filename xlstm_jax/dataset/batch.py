@@ -48,7 +48,8 @@ class LLMBatch(Batch):
 
         Args:
             inputs (jax.Array): The input data.
-            targets (jax.Array, optional): The target data. If not provided, the inputs are used as targets and the inputs are shifted right by one.
+            targets (jax.Array, optional): The target data. If not provided, the inputs are used as targets and the
+                inputs are shifted right by one.
         """
         if targets is None:
             targets = inputs

@@ -18,13 +18,14 @@ def create_layer(
     set_cfg_kwargs: bool = True,
     **kwargs,
 ) -> Any:
-    """Create a layer from a config dataclass object, a layer class registry and a layer config key.
+    """
+    Create a layer from a config dataclass object, a layer class registry and a layer config key.
+
     The layer config key is the name of the attribute in the config object that contains the layer config.
 
     This function assumes that the config object is a hierarchical dataclass object, i.e. it contains configurable
-    layers of type `NameAndKwargs` (which is a dataclass with keys `name` and `kwargs`).
-    The `name` attribute is used to get the layer class from the registry and the `kwargs` attribute is used to
-    instantiate the layer class.
+    layers of type `NameAndKwargs` (which is a dataclass with keys `name` and `kwargs`). The `name` attribute is used
+    to get the layer class from the registry and the `kwargs` attribute is used to instantiate the layer class.
 
     If `nameandkwargs` is not None, it is used instead of the `NameAndKwargs` attribute in the config object.
 
@@ -36,7 +37,7 @@ def create_layer(
         layer_cfg_key (str): layer config key
         nameandkwargs (NameAndKwargs, optional): layer name and kwargs. Defaults to None.
         set_cfg_kwargs (bool, optional): whether to set the kwargs attribute to the instantiated config dataclass object
-                                         in the config object. Defaults to True.
+            in the config object. Defaults to True.
 
     Returns:
         LayerInterface: layer instance

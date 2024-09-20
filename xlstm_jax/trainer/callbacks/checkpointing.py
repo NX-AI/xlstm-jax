@@ -1,4 +1,3 @@
-import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
@@ -14,17 +13,25 @@ from xlstm_jax.trainer.metrics import Metrics
 
 @dataclass(kw_only=True, frozen=True)
 class ModelCheckpointConfig(CallbackConfig):
-    """Configuration for the ModelCheckpoint callback.
+    """
+    Configuration for the ModelCheckpoint callback.
 
-    By default, the checkpoint saves the model parameters, training step, random number generator state, and metadata to the logging directory. The metadata includes the trainer, model, and optimizer configurations.
+    By default, the checkpoint saves the model parameters, training step, random number generator state, and metadata
+    to the logging directory. The metadata includes the trainer, model, and optimizer configurations.
 
     Attributes:
-        max_to_keep: Number of checkpoints to keep. If None, keeps all checkpoints. Otherwise, keeps the most recent `max_to_keep` checkpoints. If `monitor` is set, keeps the best `max_to_keep` checkpoints instead of the most recent.
-        monitor: Metric to monitor for saving the model. Should be a key of the evaluation metrics. If None, checkpoints are sorted by recency.
-        mode: One of {"min", "max"}. If "min", saves the model with the smallest value of the monitored metric. If "max", saves the model with the largest value of the monitored metric.
+        max_to_keep: Number of checkpoints to keep. If None, keeps all checkpoints. Otherwise, keeps the most recent
+            `max_to_keep` checkpoints. If `monitor` is set, keeps the best `max_to_keep` checkpoints instead of the
+            most recent.
+        monitor: Metric to monitor for saving the model. Should be a key of the evaluation metrics. If None, checkpoints
+            are sorted by recency.
+        mode: One of {"min", "max"}. If "min", saves the model with the smallest value of the monitored metric. If
+            "max", saves the model with the largest value of the monitored metric.
         save_optimizer_state: Whether to save the optimizer state.
-        enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more information.
-        class_name: Name of the checkpoint class. Should be "ModelCheckpoint", except you are implementing a custom checkpoint class that inherits from this config.
+        enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more
+            information.
+        class_name: Name of the checkpoint class. Should be "ModelCheckpoint", except you are implementing a custom
+            checkpoint class that inherits from this config.
     """
 
     max_to_keep: int | None = 1
@@ -79,7 +86,8 @@ class ModelCheckpoint(Callback):
         self.save_model(eval_metrics, step_idx)
 
     def save_model(self, eval_metrics: Metrics, step_idx: int):
-        """Saves model state dict to the logging directory.
+        """
+        Saves model state dict to the logging directory.
 
         Args:
             eval_metrics: Dictionary of evaluation metrics.
@@ -107,7 +115,8 @@ class ModelCheckpoint(Callback):
         self.manager.save(step_idx, args=save_items, metrics=eval_metrics)
 
     def load_model(self, step_idx: int = -1, load_best: bool = False):
-        """Loads model parameters and variables from the logging directory.
+        """
+        Loads model parameters and variables from the logging directory.
 
         Args:
             step_idx: Index of the step to load. If -1, loads the latest step by default.

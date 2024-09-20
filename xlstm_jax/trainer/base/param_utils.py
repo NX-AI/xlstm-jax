@@ -27,11 +27,7 @@ def flatten_dict(d: dict) -> dict:
 
 
 def tabulate_params(state: TrainState | dict[str, Any]) -> str:
-    """Prints a summary of the parameters represented as table.
-
-    Args:
-        exmp_input: An input to the model with which the shapes are inferred.
-    """
+    """Prints a summary of the parameters represented as table."""
     if isinstance(state, TrainState):
         params = state.params
     else:

@@ -22,8 +22,10 @@ _act_fn_registry = {
 def get_act_fn(act_fn_name: str) -> Callable[[jax.Array], jax.Array]:
     if act_fn_name in _act_fn_registry:
         return _act_fn_registry[act_fn_name]
-    else:
-        assert False, f'Unknown activation function name "{act_fn_name}". Available activation functions are: {str(_act_fn_registry.keys())}'
+    raise ValueError(
+        f"Unknown activation function {act_fn_name}. "
+        f"Available activation functions are: {str(_act_fn_registry.keys())}"
+    )
 
 
 @dataclass

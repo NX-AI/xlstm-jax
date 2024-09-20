@@ -1,22 +1,12 @@
-import os
-
-from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
-
-os.environ["JAX_PLATFORMS"] = "cpu"  # or "gpu"
-if os.environ["JAX_PLATFORMS"] == "cpu":
-    NUM_DEVICES = 8
-    simulate_CPU_devices(NUM_DEVICES)
-else:
-    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
-
 import argparse
+import os
 from pathlib import Path
 
-import jax
 import jax.numpy as jnp
 
 from xlstm_jax.dataset import LLMBatch, SyntheticDataConfig, create_data_iterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
+from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
@@ -27,6 +17,13 @@ from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
+
+os.environ["JAX_PLATFORMS"] = "cpu"  # or "gpu"
+if os.environ["JAX_PLATFORMS"] == "cpu":
+    NUM_DEVICES = 8
+    simulate_CPU_devices(NUM_DEVICES)
+else:
+    NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
 
 
 def main_train(args: argparse.Namespace):
@@ -47,7 +44,6 @@ def main_train(args: argparse.Namespace):
     # General hyperparameters.
     batch_size = 8
     context_length = 32
-    num_epochs = 2
     log_path = Path(args.log_dir)
 
     # Create data iterator.

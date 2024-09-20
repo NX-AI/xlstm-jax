@@ -78,24 +78,27 @@ def test_grain_dataloader_process_split(
         # Check that each host has loaded the same number of batches.
         num_batches = len(all_batches[0])
         # NOTE: This is not guaranteed if one host has no remainder, but the other does (e.g. 5 elements, batch size 2).
-        # Thus, for multi-host dataloaders, we should always drop the remainder or pad the dataset from the beginning on.
+        # Thus, we should always drop the remainder or pad the dataset from the beginning on for multi-host dataloaders.
         if 0 < (num_elements % global_batch_size) * 1.0 / dataloading_host_count < 1:
             # Some hosts have a remainder, some don't.
             for host_index in range(dataloading_host_count):
                 if host_index < num_elements % dataloading_host_count:
-                    assert (
-                        len(all_batches[host_index]) == num_batches
-                    ), f"Host index {host_index} did not load the expected number of batches {num_batches}, but instead {len(all_batches[host_index])}."
+                    assert len(all_batches[host_index]) == num_batches, (
+                        f"Host index {host_index} did not load the expected number of batches {num_batches}, "
+                        f"but instead {len(all_batches[host_index])}."
+                    )
                 else:
-                    assert (
-                        len(all_batches[host_index]) == num_batches - 1
-                    ), f"Host index {host_index} did not load the expected number of batches {num_batches - 1}, but instead {len(all_batches[host_index])}."
+                    assert len(all_batches[host_index]) == num_batches - 1, (
+                        f"Host index {host_index} did not load the expected number of batches {num_batches - 1}, "
+                        f"but instead {len(all_batches[host_index])}."
+                    )
         else:
             # Each host is supposed to have a remainder.
             for host_index in range(dataloading_host_count):
-                assert (
-                    len(all_batches[host_index]) == num_batches
-                ), f"Host index {host_index} did not load the expected number of batches {num_batches}, but instead {len(all_batches[host_index])}."
+                assert len(all_batches[host_index]) == num_batches, (
+                    f"Host index {host_index} did not load the expected number of batches {num_batches}, "
+                    f"but instead {len(all_batches[host_index])}."
+                )
 
 
 @pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")

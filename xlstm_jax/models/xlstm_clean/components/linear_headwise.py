@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from math import sqrt
 from typing import Any
 
 import jax
@@ -39,7 +38,9 @@ class LinearHeadwiseExpandConfig:
 
 
 class LinearHeadwiseExpand(nn.Module):
-    """This is a structured projection layer that projects the input to a higher dimension.
+    """
+    This is a structured projection layer that projects the input to a higher dimension.
+
     It only allows integer up-projection factors, i.e. the output dimension is a multiple of the input dimension.
     """
 

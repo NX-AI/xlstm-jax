@@ -2,7 +2,8 @@ import os
 
 
 def simulate_CPU_devices(device_count: int = 8):
-    """Simulate a CPU with a given number of devices.
+    """
+    Simulate a CPU with a given number of devices.
 
     Args:
         device_count: The number of devices to simulate.
@@ -16,7 +17,8 @@ def simulate_CPU_devices(device_count: int = 8):
 
 
 def set_XLA_flags():
-    """Set XLA flags for better performance.
+    """
+    Set XLA flags for better performance.
 
     For performance flags, see https://jax.readthedocs.io/en/latest/gpu_performance_tips.html and
     https://github.com/NVIDIA/JAX-Toolbox/blob/main/rosetta/docs/GPU_performance.md.

@@ -289,6 +289,7 @@ def make_hf_iterator(
         add_bos=config.add_bos,
         add_eos=config.add_eos,
         drop_remainder=True,
-    )  # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
+    )
+    # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
 
     return train_iter, eval_iter

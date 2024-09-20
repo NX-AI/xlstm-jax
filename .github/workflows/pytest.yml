@@ -1,6 +1,5 @@
-name: Run Pytest
+name: Pytest
 
-# Triggers the workflow on push and pull request events to specific branches
 on:
   push:
     branches:
@@ -9,11 +8,15 @@ on:
     branches:
       - main
 
-jobs:
-  test:
-    # The environment in which the workflow will run (Ubuntu in this case)
-    runs-on: ubuntu-latest
+env:
+  ENV_NAME: jax0432_cpu
+  ENV_PATH: /usr/share/miniconda3/envs/jax0432_cpu
+  ENV_FILE: envs/environment_jax_0.4.32_cpu_python_3.11.yaml
+  CACHE_NUMBER: 0  # increase to reset cache manually
 
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
     steps:
       - name: Remove unnecessary files
         # see https://github.com/actions/runner-images/issues/2840#issuecomment-1284059930
@@ -21,48 +24,34 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      # Check out the latest code from your repository
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Cache Conda environment
-      - name: Cache Conda environment
-        uses: actions/cache@v3
+      - name: Set up Mamba
+        uses: mamba-org/setup-micromamba@v1
         with:
-          path: ~/conda_pkgs_dir  # Cache the Conda package directory
-          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
-          restore-keys: |
-            ${{ runner.os }}-conda-
-
-      # Set up Miniconda
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v3
-        with:
-          activate-environment: jax0432_cpu
-          python-version: 3.11
-          environment-file: envs/environment_jax_0.4.32_cpu_python_3.11.yaml
-          auto-update-conda: true
-          mamba-version: "*"  # use mamba instead of conda, requires conda-forge channel
-
-      - name: Init Miniconda
-        shell: bash -el {0}
-        run: |
-          conda init
+          environment-file: ${{ env.ENV_FILE }}
+          environment-name: ${{ env.ENV_NAME }}
+          micromamba-version: latest
+          init-shell: bash
+          generate-run-shell: true
+          cache-downloads: true
+          cache-downloads-key: ${{ runner.os }}-micromamba-${{ hashFiles(env.ENV_FILE) }}
+          cache-environment: true
+          cache-environment-key: ${{ runner.os }}-micromamba-${{ env.CACHE_NUMBER }}-${{ hashFiles(env.ENV_FILE) }}
 
       - name: Install dependencies
         shell: bash -el {0}
         run: |
-          conda activate jax0432_cpu
-          conda install pytest
+          micromamba install pytest pytest-xdist
 
       - name: Version info
         shell: bash -el {0}
         run: |
-          conda info
-          conda list
+          micromamba info
+          micromamba list
 
-      # Run pytest
       - name: Run Pytest
         shell: bash -el {0}
         run: |
-          py.test tests/ --disable-warnings
+          pytest -n 2 tests

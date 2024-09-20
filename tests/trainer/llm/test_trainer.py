@@ -23,7 +23,8 @@ from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
 
 class LLMToyModel(nn.Module):
-    """LLM toy model for testing purposes.
+    """
+    LLM toy model for testing purposes.
 
     Contains one TP, one FSDP+TP, and one pure FSDP layer.
     """
@@ -43,8 +44,8 @@ class LLMToyModel(nn.Module):
         )(x)
         x = nn.Dropout(rate=0.1)(x, deterministic=not train)
         for block_idx in range(self.num_blocks):
-            x_skip = x
-            # Example LayerNorm with model parallelism. Uses the model axis for parameter sharding and reduction of statistics.
+            # Example LayerNorm with model parallelism. Uses the model axis for parameter sharding and reduction of
+            # statistics.
             x = ModelParallelismWrapper(
                 module_fn=partial(nn.LayerNorm, axis_name=self.config.parallel.model_axis_name),
                 model_axis_name=self.config.parallel.model_axis_name,
@@ -63,7 +64,8 @@ class LLMToyModel(nn.Module):
             x = dense_fn(name=f"block_{block_idx}_in")(x)
             x = nn.Dropout(rate=0.1)(x, deterministic=not train)
             x = nn.swish(x)
-            # Intermediate layer with FSDP+TP. Each device has a different input and need to gather first, and the output is split over the TP axis.
+            # Intermediate layer with FSDP+TP. Each device has a different input and need to gather first, and the
+            # output is split over the TP axis.
             dense_fn = partial(
                 TPDense,
                 dense_fn=partial(nn.Dense, features=32),
@@ -80,8 +82,8 @@ class LLMToyModel(nn.Module):
             module_fn=partial(nn.LayerNorm, axis_name=self.config.parallel.model_axis_name),
             model_axis_name=self.config.parallel.model_axis_name,
         )(x)
-        # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline axis over the batch dimension.
-        # Then, we apply the layer and calculate the outputs.
+        # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline
+        # axis over the batch dimension. Then, we apply the layer and calculate the outputs.
         x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
         x = split_array_over_mesh(x, axis_name=self.config.parallel.pipeline_axis_name, split_axis=1)
         x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
@@ -95,10 +97,10 @@ class LLMToyModel(nn.Module):
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
 def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
-    """Tests training a simple model with LLM loss under different mesh configs.
+    """
+    Tests training a simple model with LLM loss under different mesh configs.
 
-    Also reproduces the checkpointing test from the checkpointing test file for
-    this new trainer.
+    Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
     """
     batch_size = 8
     context_length = 32
@@ -254,10 +256,10 @@ def test_llm_padding(tmp_path: Path):
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (1, 8), (2, 2), (4, 1)])
 def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
-    """Tests training a xLSTM model with debug configuration.
+    """
+    Tests training a xLSTM model with debug configuration.
 
-    Also reproduces the checkpointing test from the checkpointing test file for
-    this new trainer.
+    Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
     """
     # General hyperparameters.
     batch_size = 8
@@ -325,7 +327,10 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
 
     def data_gen_fn(idx: int) -> LLMBatch:
         inputs = jax.random.randint(
-            jax.random.PRNGKey(idx), (batch_size, xlstm_config.context_length), minval=0, maxval=xlstm_config.vocab_size
+            jax.random.PRNGKey(idx),
+            (batch_size, xlstm_config.context_length),
+            minval=0,
+            maxval=xlstm_config.vocab_size,
         )
         targets = jnp.mod(inputs + 1, xlstm_config.vocab_size)
         return LLMBatch.from_inputs(inputs=inputs, targets=targets)

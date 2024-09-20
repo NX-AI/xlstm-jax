@@ -5,7 +5,8 @@ from typing import Any
 
 
 def resolve_import(import_path: str | Any) -> Any:
-    """Resolves an import from a string or returns the input.
+    """
+    Resolves an import from a string or returns the input.
 
     Args:
         import_path (str | Any): The import path or the object itself.
@@ -19,7 +20,8 @@ def resolve_import(import_path: str | Any) -> Any:
 
 
 def resolve_import_from_string(import_string: str) -> Any:
-    """Resolves an import from a string.
+    """
+    Resolves an import from a string.
 
     Args:
         import_string (str): The import string.
@@ -37,7 +39,8 @@ def resolve_import_from_string(import_string: str) -> Any:
 
 
 def class_to_name(x: Any) -> str | Any:
-    """Converts a class to a string representation.
+    """
+    Converts a class to a string representation.
 
     Useful for logging/saving the class name.
 

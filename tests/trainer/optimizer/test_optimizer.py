@@ -331,7 +331,8 @@ def test_weight_decay(weight_decay: float, optimizer_name: str, exclude: list[st
                     operator.__ne__,
                     params[key],
                     params_wo_decay[key],
-                    err_msg=f"Parameters not excluded should be affected by weight decay, but did not happen for {key}.",
+                    err_msg="Parameters not excluded should be affected by weight decay, but did not happen for "
+                    f"{key}.",
                 )
     if include is not None:
         for key in params:

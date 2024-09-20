@@ -18,8 +18,11 @@ def create_layer(
     set_cfg_kwargs: bool = True,
     **kwargs,
 ) -> Any:
-    """Create a layer from a config dataclass object, a layer class registry and a layer config key.
-    The layer config key is the name of the attribute in the config object that contains the layer config.
+    """
+    Create a layer from a config dataclass object, a layer class registry and a layer config key.
+
+    The layer config
+    key is the name of the attribute in the config object that contains the layer config.
 
     This function assumes that the config object is a hierarchical dataclass object, i.e. it contains configurable
     layers of type `NameAndKwargs` (which is a dataclass with keys `name` and `kwargs`).

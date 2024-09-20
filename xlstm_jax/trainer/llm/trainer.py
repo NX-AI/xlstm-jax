@@ -2,7 +2,6 @@ from typing import Any
 
 import jax
 import jax.numpy as jnp
-import numpy as np
 import optax
 
 from xlstm_jax.dataset import LLMBatch
@@ -15,7 +14,8 @@ class LLMTrainer(TrainerModule):
     def loss_function(
         self, params: Any, apply_fn: Any, batch: LLMBatch, rng: jax.Array, train: bool = True
     ) -> tuple[jax.Array, Metrics]:
-        """Calculate the loss function for the model.
+        """
+        Calculate the loss function for the model.
 
         Args:
             params (Any): The model parameters.

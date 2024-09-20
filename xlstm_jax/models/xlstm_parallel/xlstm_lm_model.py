@@ -5,7 +5,6 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.distributed import ModelParallelismWrapper, shard_module_params, split_array_over_mesh
 from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper

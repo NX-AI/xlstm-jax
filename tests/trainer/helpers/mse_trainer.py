@@ -15,10 +15,10 @@ from xlstm_jax.trainer.metrics import Metrics
 
 
 class ToyModel(nn.Module):
-    """Toy model for testing purposes.
+    """
+    Toy model for testing purposes.
 
-    Contains one TP, one FSDP+TP, and one pure FSDP layer.
-    Has no real use case and solely for testing purposes.
+    Contains one TP, one FSDP+TP, and one pure FSDP layer. Has no real use case and solely for testing purposes.
     """
 
     config: ModelConfig
@@ -36,13 +36,15 @@ class ToyModel(nn.Module):
             skip_communication=True,
             name="in",
         )(x)
-        # Example LayerNorm with model parallelism. Uses the model axis for parameter sharding and reduction of statistics.
+        # Example LayerNorm with model parallelism. Uses the model axis for parameter sharding and reduction of
+        # statistics.
         x = ModelParallelismWrapper(
             module_fn=partial(nn.LayerNorm, axis_name=self.config.parallel.model_axis_name),
             model_axis_name=self.config.parallel.model_axis_name,
         )(x)
         x = nn.swish(x)
-        # Intermediate layer with FSDP+TP. Each device has a different input and need to gather first, and the output is split over the TP axis.
+        # Intermediate layer with FSDP+TP. Each device has a different input and need to gather first, and the output
+        # is split over the TP axis.
         dense_fn = partial(
             TPDense,
             dense_fn=partial(nn.Dense, features=64 // tp_size),
@@ -57,8 +59,8 @@ class ToyModel(nn.Module):
         )
         x = dense_fn(name="middle")(x)
         x = nn.swish(x)
-        # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline axis over the batch dimension.
-        # Then, we apply the layer and calculate the outputs.
+        # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline
+        # axis over the batch dimension. Then, we apply the layer and calculate the outputs.
         x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
         x = split_array_over_mesh(x, axis_name=self.config.parallel.pipeline_axis_name, split_axis=0)
         x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=0)

@@ -37,7 +37,8 @@ class xLSTMBlockConfig:
 
 
 class xLSTMBlock(nn.Module):
-    """An xLSTM block can be either an sLSTM Block or an mLSTM Block.
+    """
+    An xLSTM block can be either an sLSTM Block or an mLSTM Block.
 
     It contains the pre-LayerNorms and the skip connections.
     """

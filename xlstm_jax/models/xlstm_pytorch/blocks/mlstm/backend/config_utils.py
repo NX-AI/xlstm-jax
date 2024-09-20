@@ -13,7 +13,8 @@ class NameAndKwargs:
             return self._registry[self.name].config_class
         else:
             raise ValueError(
-                f"Unknown {self.__class__} name: {self.name}. Available {self.__class__} are: {list(self._registry.keys())}"
+                f"Unknown {self.__class__} name: {self.name}. "
+                f"Available {self.__class__} are: {list(self._registry.keys())}"
             )
 
     def get_class_for_name(self) -> type:
@@ -21,7 +22,8 @@ class NameAndKwargs:
             return self._registry[self.name]
         else:
             raise ValueError(
-                f"Unknown {self.__class__} name: {self.name}. Available {self.__class__} are: {list(self._registry.keys())}"
+                f"Unknown {self.__class__} name: {self.name}. "
+                f"Available {self.__class__} are: {list(self._registry.keys())}"
             )
 
     def create_name_instance(self) -> Any:

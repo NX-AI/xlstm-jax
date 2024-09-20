@@ -8,14 +8,17 @@ from xlstm_jax.configs import ConfigDict
 
 @dataclass(kw_only=True, frozen=True)
 class SchedulerConfig(ConfigDict):
-    """Configuration for learning rate scheduler.
+    """
+    Configuration for learning rate scheduler.
 
     Attributes:
         lr (float): Initial/peak learning rate of the main scheduler.
-        name (Literal): Name of the learning rate schedule. The supported schedules are "constant", "cosine_decay", "exponential_decay", and "linear".
+        name (Literal): Name of the learning rate schedule. The supported schedules are "constant", "cosine_decay",
+            "exponential_decay", and "linear".
         decay_steps (int): Number of steps for the learning rate schedule, including warmup and cooldown.
         end_lr (float | None): Final learning rate before the cooldown. This is mutually exclusive with end_lr_factor.
-        end_lr_factor (float | None): Factor to multiply initial learning rate to get final learning rate before the cooldown. This is mutually exclusive with end_lr.
+        end_lr_factor (float | None): Factor to multiply initial learning rate to get final learning rate before the
+            cooldown. This is mutually exclusive with end_lr.
         cooldown_steps (int): Number of steps for cooldown.
         warmup_steps (int): Number of steps for warmup.
         cooldown_lr (float): Final learning rate for cooldown.
@@ -32,7 +35,8 @@ class SchedulerConfig(ConfigDict):
 
 
 def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:
-    """Build learning rate schedule from config.
+    """
+    Build learning rate schedule from config.
 
     By default, it supports constant, linear, cosine decay, and exponential decay,
     all with warmup and cooldown.
@@ -52,18 +56,20 @@ def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:
 
     # Verify dependencies between config attributes.
     main_scheduler_steps = decay_steps - warmup_steps - cooldown_steps
-    assert (
-        main_scheduler_steps >= 0
-    ), f"Decay steps includes warmup and cooldown steps, and must be at least of this size. Instead got {decay_steps} decay steps, {warmup_steps} warmup steps, and {cooldown_steps} cooldown steps."
+    assert main_scheduler_steps >= 0, (
+        f"Decay steps includes warmup and cooldown steps, and must be at least of this size. Instead got {decay_steps} "
+        f"decay steps, {warmup_steps} warmup steps, and {cooldown_steps} cooldown steps."
+    )
     end_lr, end_lr_factor = None, None
     if scheduler_config.end_lr is not None:
         end_lr = scheduler_config.end_lr
         end_lr_factor = end_lr / lr
     if scheduler_config.end_lr_factor is not None:
         if end_lr_factor is not None:
-            assert (
-                end_lr_factor == scheduler_config.end_lr_factor
-            ), f"end_lr and end_lr_factor are mutually exclusive and must be consistent. Instead got end_lr={end_lr} and end_lr_factor={scheduler_config.end_lr_factor} with learning rate {lr}."
+            assert end_lr_factor == scheduler_config.end_lr_factor, (
+                f"end_lr and end_lr_factor are mutually exclusive and must be consistent. Instead got end_lr={end_lr} "
+                f"and end_lr_factor={scheduler_config.end_lr_factor} with learning rate {lr}."
+            )
         end_lr = scheduler_config.end_lr_factor * lr
         end_lr_factor = scheduler_config.end_lr_factor
     if end_lr is None and end_lr_factor is None:

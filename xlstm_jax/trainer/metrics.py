@@ -29,7 +29,8 @@ def update_metrics(
     step_metrics: StepMetrics,
     train: bool = True,
 ) -> ImmutableMetrics:
-    """Update metrics with new values.
+    """
+    Update metrics with new values.
 
     Args:
         global_metrics: Global metrics to update. If None, a new dictionary is created.
@@ -69,7 +70,8 @@ def _update_single_metric(
     count: Any,
     train: bool,
 ) -> MutableMetrics:
-    """Update a single metric.
+    """
+    Update a single metric.
 
     For training, we create a key both for tracking the mean over N steps and the last of N steps.
     This helps identify instabilities better while having a smoother curve. For evaluation, we only
@@ -106,7 +108,8 @@ def get_metrics(
     global_metrics: Metrics,
     reset_metrics: bool = True,
 ) -> tuple[ImmutableMetrics, HostMetrics]:
-    """Calculates metrics to log from global metrics.
+    """
+    Calculates metrics to log from global metrics.
 
     Supports resetting the global metrics after logging. For example, if the global metrics
     are logged every epoch, the global metrics can be reset after obtaining the metrics to log

@@ -212,8 +212,6 @@ def mLSTMTorchFunction(config: mLSTMfwbwConfig):
             use_chunkwise = _cfg["chunk_size"] is not None or _cfg["return_state"] or _cfg["use_initial_state"]
             _ = dn_last, dm_last
             # get stored tensors
-            offset = 0
-            # q, k, v, i, f, log_fgates, M_norm = ctx.saved_tensors[offset : offset + 7]
             (
                 q,
                 k,

@@ -19,9 +19,11 @@ def parallel_stabilized_simple(
     eps: float = 1e-6,
     **kwargs,
 ) -> jax.Array:
-    """This is the mLSTM cell in parallel form.
-    This version is stabilized. We control the range of exp() arguments by
-    ensuring that they are always smaller than 0.0 by subtracting the maximum.
+    """
+    This is the mLSTM cell in parallel form.
+
+    This version is stabilized. We control the range of exp() arguments by ensuring that they are always smaller than
+    0.0 by subtracting the maximum.
 
     Args:
         queries (jax.Array): (B, NH, S, DH)
@@ -30,8 +32,8 @@ def parallel_stabilized_simple(
         igate_preact (jax.Array): (B, NH, S, 1)
         fgate_preact (jax.Array): (B, NH, S, 1)
         lower_triangular_matrix (jax.Array, optional): (S,S). Defaults to None.
-        stabilize_rowwise (bool, optional): Wether to stabilize the combination matrix C rowwise (take maximum per row).
-            Alternative: Subtract the maximum over all rows. Defaults to True.
+        stabilize_rowwise (bool, optional): Whether to stabilize the combination matrix C row-wise (take maximum per
+            row). Alternative: Subtract the maximum over all rows. Defaults to True.
 
     Returns:
         jax.Array: (B, NH, S, DH), h_tilde_state
@@ -42,9 +44,10 @@ def parallel_stabilized_simple(
     assert (
         queries.shape == keys.shape == values.shape
     ), f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
-    assert (
-        igate_preact.shape == fgate_preact.shape == (B, NH, S, 1)
-    ), f"igate_preact and fgate_preact must have the shape (B, NH, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
+    assert igate_preact.shape == fgate_preact.shape == (B, NH, S, 1), (
+        "igate_preact and fgate_preact must have the shape (B, NH, S, 1), "
+        f"got {igate_preact.shape}, {fgate_preact.shape}"
+    )
     if lower_triangular_matrix is not None:
         assert lower_triangular_matrix.shape == (
             S,
@@ -116,8 +119,8 @@ class mLSTMBackendJax(mLSTMBackend):
 
     @nn.compact
     def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array, f: jax.Array):
-        causal_mask = jnp.tril(jnp.ones((self.config.context_length, self.config.context_length), dtype=jnp.bool_))
-        return parallel_stabilized_simple(q, k, v, i, f, lower_triangular_matrix=causal_mask)
+        mask = jnp.tril(jnp.ones((self.config.context_length, self.config.context_length), dtype=jnp.bool_))
+        return parallel_stabilized_simple(q, k, v, i, f, lower_triangular_matrix=mask)
 
 
 def recurrent_step_stabilized_simple(
@@ -132,7 +135,8 @@ def recurrent_step_stabilized_simple(
     eps: float = 1e-6,
     **kwargs,
 ) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
-    """This is a single step of the mLSTM operation in recurrent form.
+    """
+    This is a single step of the mLSTM operation in recurrent form.
 
     Args:
         c_state (jax.Array): (B, NH, DH, DH)
@@ -146,7 +150,8 @@ def recurrent_step_stabilized_simple(
 
     Returns:
         tuple[jax.Array, tuple[jax.Array, jax.Array]]:
-            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new [B, NH, 1, 1]))
+            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new
+            [B, NH, 1, 1]))
     """
     B, NH, S, DH = q.shape
     # projections

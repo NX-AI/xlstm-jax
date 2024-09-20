@@ -13,7 +13,8 @@ from .common_types import Parameter, PyTree
 
 @jax.named_scope("shard_params")
 def shard_params(params: PyTree, axis_name: str, min_weight_size: int = 2**18) -> PyTree:
-    """Shard parameters across the given mesh axis.
+    """
+    Shard parameters across the given mesh axis.
 
     Args:
         params: The parameters to shard.
@@ -72,7 +73,8 @@ def gather_array_with_mean_grads(
     gather_dtype: jnp.dtype | None = None,
     grad_scatter_dtype: jnp.dtype | None = None,
 ) -> jax.Array:
-    """Gathering with averaging gradients across replicas.
+    """
+    Gathering with averaging gradients across replicas.
 
     Args:
         x: The array to gather.
@@ -110,13 +112,15 @@ def gather_array_with_mean_grads(
 def gather_params(
     params: PyTree, axis_name: str, gather_dtype: jnp.dtype | None = None, grad_scatter_dtype: jnp.dtype | None = None
 ) -> PyTree:
-    """Gather parameters from all replicas across the given axis.
+    """
+    Gather parameters from all replicas across the given axis.
 
     Args:
         params: The parameters to gather.
         axis_name: The axis to gather parameters across.
         gather_dtype: The dtype to cast the parameters to before gathering. If None, no casting is performed.
-        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters is used.
+        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters
+            is used.
 
     Returns:
         PyTree of same structure as params, but with leaves gathered if they were a nn.Partitioned object.
@@ -153,14 +157,16 @@ def shard_module_params(
     gather_dtype: jnp.dtype | None = None,
     grad_scatter_dtype: jnp.dtype | None = None,
 ) -> nn.Module | Callable:
-    """Shard parameters of a module across replicas.
+    """
+    Shard parameters of a module across replicas.
 
     Args:
         target: The module to shard.
         axis_name: The axis name to shard parameters across.
         min_weight_size: The minimum size of a parameter to shard. Parameters with fewer values will not be sharded.
         gather_dtype: The dtype to cast the parameters to before gathering. If None, no casting is performed.
-        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters is used.
+        grad_scatter_dtype: The dtype to cast the gradients to before scattering. If None, the dtype of the parameters
+            is used.
 
     Returns:
         The module with sharded parameters.
@@ -180,7 +186,8 @@ def sync_gradients(
     grads: PyTree,
     axis_names: Sequence[str],
 ) -> PyTree:
-    """Synchronize gradients across devices.
+    """
+    Synchronize gradients across devices.
 
     Gradients for parameters that are replicated over a given axis are averaged across devices.
     Parameters that are partitioned over a given axis are considered to already have a mean of

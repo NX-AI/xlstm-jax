@@ -15,8 +15,10 @@ def bias_linspace_init(start: float, end: float) -> callable:
 
 
 def small_init(dim: int) -> callable:
-    """Return initializer that creates a Tensor with values according to the method described in Transformers without Tears: Improving
-    the Normalization of Self-Attention - Nguyen, T. & Salazar, J. (2019), using a normal distribution.
+    """
+    Return initializer that creates a tensor with values according to the method described in:
+    "Transformers without Tears: Improving the Normalization of Self-Attention", Nguyen, T. & Salazar, J. (2019).
+
     Adopted from https://github.com/EleutherAI/gpt-neox/blob/main/megatron/model/init_functions.py.
     """
     return jax.nn.initializers.normal(stddev=jnp.sqrt(2 / (5 * dim)))

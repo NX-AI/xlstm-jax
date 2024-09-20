@@ -17,31 +17,26 @@ PyTree = Any
 
 @dataclass(kw_only=True, frozen=True)
 class OptimizerConfig(ConfigDict):
-    """Configuration for optimizer.
+    """
+    Configuration for optimizer.
 
     Attributes:
-        name (str): Name of the optimizer. The supported optimizers are "adam",
-            "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamax", and
-            "lamb".
+        name (str): Name of the optimizer. The supported optimizers are "adam", "adamw", "sgd", "nadam", "adamax",
+            "radam", "nadamw", "adamax", and "lamb".
         scheduler (SchedulerConfig): Configuration for learning rate scheduler.
-        beta1 (float): Exponential decay rate for the first moment estimates.
-            This includes momentum in SGD.
+        beta1 (float): Exponential decay rate for the first moment estimates. This includes momentum in SGD.
         beta2 (float): Exponential decay rate for the second moment estimates.
         eps (float): Epsilon value for numerical stability in Adam-like optimizers.
         weight_decay (float): Weight decay coefficient.
-        weight_decay_exclude (Sequence[re.Pattern] | None): List of regex
-            patterns to exclude from weight decay. Parameter names are flattened and
-            joined with ".". Mutually exclusive with weight_decay_include.
-        weight_decay_include (Sequence[re.Pattern] | None): List of regex
-            patterns to include in weight decay. Parameter names are flattened and
-            joined with ".". Mutually exclusive with weight_decay_exclude. If
-            neither exclude nor include is set, all parameters are included.
+        weight_decay_exclude (Sequence[re.Pattern] | None): List of regex patterns to exclude from weight decay.
+            Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_include.
+        weight_decay_include (Sequence[re.Pattern] | None): List of regex patterns to include in weight decay.
+            Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_exclude.
+            If neither exclude nor include is set, all parameters are included.
         grad_clip_norm (float | None): Global norm to clip gradients.
-        use_sharded_clip_norm (bool): Whether to calculate the global norm for
-            clipping over all shards of the parameter (True), or only calculate the
-            grad norm for local shards (False). If True, may introduce a small
-            communication overhead, but reproduces the behavior of the original
-            implementation for sharded parameters.
+        use_sharded_clip_norm (bool): Whether to calculate the global norm for clipping over all shards of the
+            parameter (True), or only calculate the grad norm for local shards (False). If True, may introduce a small
+            communication overhead, but reproduces the behavior of the original implementation for sharded parameters.
         grad_clip_value (float | None): Value to clip gradients element-wise.
         nesterov (bool): Whether to use Nesterov momentum in SGD.
     """
@@ -61,7 +56,8 @@ class OptimizerConfig(ConfigDict):
 
 
 def build_optimizer(optimizer_config: OptimizerConfig) -> tuple[optax.GradientTransformation, optax.Schedule]:
-    """Build optimizer from config.
+    """
+    Build optimizer from config.
 
     Args:
         optimizer_config (OptimizerConfig): ConfigDict for optimizer.
@@ -81,7 +77,8 @@ def build_optimizer(optimizer_config: OptimizerConfig) -> tuple[optax.GradientTr
 def build_optimizer_function(
     optimizer_config: OptimizerConfig, learning_rate: float | optax.Schedule
 ) -> optax.GradientTransformation:
-    """Build optimizer class function from config.
+    """
+    Build optimizer class function from config.
 
     By default, it supports Adam, AdamW, and SGD. To add custom optimizers, overwrite the
     function build_extra_optimizer_function.
@@ -128,7 +125,8 @@ def build_optimizer_function(
 
 
 def _key_path_to_str(path: jax.tree_util.KeyPath) -> str:
-    """Converts a path to a string.
+    """
+    Converts a path to a string.
 
     An adjusted version of jax.tree_util.keystr to be more intuitive
     and fitting to our flatten_dict method.
@@ -155,11 +153,12 @@ def _key_path_to_str(path: jax.tree_util.KeyPath) -> str:
 def _get_param_mask_fn(
     exclude: Sequence[str] | None, include: Sequence[str] | None = None
 ) -> Callable[[PyTree], PyTree]:
-    """Returns a function that generates a mask, which can for instance be used for weight decay.
+    """
+    Returns a function that generates a mask, which can for instance be used for weight decay.
 
     Args:
         exclude (Sequence[str]): List of strings to exclude.
-        include (Sequence[str]): List of strings to include. If None, all parameters except those in exclude are included.
+        include (Sequence[str]): List of strings to include. If None, all parameters except those in exclude are used.
 
     Returns:
         Callable[[PyTree], PyTree]: Function that generates a mask.
@@ -188,7 +187,8 @@ def _get_param_mask_fn(
 def build_gradient_transformations(
     optimizer_config: OptimizerConfig,
 ) -> tuple[list[optax.GradientTransformation], list[optax.GradientTransformation]]:
-    """Build gradient transformations from config.
+    """
+    Build gradient transformations from config.
 
     By default, it supports gradient clipping by norm and value, and weight decay. We distinguish
     between pre- and post-optimizer gradient transformations. Pre-optimizer
@@ -199,7 +199,8 @@ def build_gradient_transformations(
         optimizer_config (ConfigDict): ConfigDict for optimizer
 
     Returns:
-        Tuple[List[optax.GradientTransformation], List[optax.GradientTransformation]]: Tuple of pre-optimizer and post-optimizer gradient transformations.
+        Tuple[List[optax.GradientTransformation], List[optax.GradientTransformation]]: Tuple of pre-optimizer and
+            post-optimizer gradient transformations.
     """
     optimizer_name = optimizer_config.name
     optimizer_name = optimizer_name.lower()
@@ -231,7 +232,8 @@ def build_gradient_transformations(
 
 
 def clip_by_global_norm_sharded(max_norm: float) -> optax.GradientTransformation:
-    """Clip gradients by global norm.
+    """
+    Clip gradients by global norm.
 
     This extends optax.clip_by_global_norm to work with sharded gradients.
 

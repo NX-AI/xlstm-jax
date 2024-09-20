@@ -7,7 +7,8 @@ from xlstm_jax.configs import ConfigDict
 
 @dataclass(kw_only=True, frozen=True)
 class ParallelConfig(ConfigDict):
-    """Configuration for parallelism.
+    """
+    Configuration for parallelism.
 
     Attributes:
         data_axis_size: Size of the data axis. If -1, it will be inferred by the
@@ -61,16 +62,17 @@ class ModelConfig(ConfigDict):
 
 @dataclass
 class SubModelConfig:
-    """Sub-model configuration.
+    """
+    Sub-model configuration.
 
-    This class is currently a quick fix to allow for post-init style model configs,
-    like the xlstm-clean we ported from the original xlstm codebase. Once the config
-    system is more mature, we should remove this and all becomes a subclass of
-    ModelConfig.
+    This class is currently a quick fix to allow for post-init style model configs, like the xlstm-clean we ported from
+    the original xlstm codebase. Once the config system is more mature, we should remove this and all becomes a subclass
+    of ModelConfig.
     """
 
     def to_dict(self):
-        """Converts the config to a dictionary.
+        """
+        Converts the config to a dictionary.
 
         Helpful for saving to disk or logging.
         """

@@ -16,6 +16,56 @@ classifiers = [
 Homepage = "https://github.com/NX-AI/xlstm-jax"
 Issues = "https://github.com/NX-AI/xlstm-jax/issues"
 
+# docformatter
+[tool.docformatter]
+diff = true
+docstring-length = [90, 120]
+in-place = true
+pre-summary-newline = true
+recursive = true
+wrap-summaries = 120
+wrap-descriptions = 120
+
+# flake8
+[tool.flake8]
+count = true
+extend-ignore = "E203"
+exclude = [
+    ".git",  # No need to traverse our git directory
+    "__pycache__",  # There's no value in checking cache directories
+]
+#max-complexity = 15
+max-doc-length = 120
+max-line-length = 120
+per-file-ignores = """
+    */__init__.py: F401
+"""
+
+# interrogate
+[tool.interrogate]
+ignore-init-method = false
+ignore-init-module = true
+ignore-magic = true
+ignore-semiprivate = false
+ignore-private = true
+ignore-property-decorators = false
+ignore-module = true
+ignore-nested-functions = true
+ignore-nested-classes = true
+ignore-setters = true
+ignore-overloaded-functions = false
+fail-under = 40
+exclude = []
+ignore-regex = []
+ext = []
+style = "google"
+verbose = 1  # possible values: 0 (minimal output), 1 (-v), 2 (-vv)
+quiet = false
+whitelist-regex = []
+color = true
+omit-covered-files = false
+
+# ruff
 [tool.ruff]
 exclude = [
     ".eggs",
@@ -51,5 +101,6 @@ section-order = ["future", "standard-library", "first-party", "third-party", "xl
 [tool.ruff.format]
 quote-style = "double"
 
+# setuptools
 [tool.setuptools]
 packages = ["xlstm_jax"]

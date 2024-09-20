@@ -8,7 +8,8 @@ class ConfigDict:
         return getattr(self, key, default)
 
     def to_dict(self):
-        """Converts the config to a dictionary.
+        """
+        Converts the config to a dictionary.
 
         Helpful for saving to disk or logging.
         """

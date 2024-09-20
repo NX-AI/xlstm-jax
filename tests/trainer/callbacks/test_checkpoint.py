@@ -20,11 +20,11 @@ from ..helpers.mse_trainer import MSETrainer, ToyModel
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
 def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
-    """Tests checkpointing with ModelCheckpoint callback with per-epoch eval.
+    """
+    Tests checkpointing with ModelCheckpoint callback with per-epoch eval.
 
-    The test trains a simple model with MSE loss under different mesh configs.
-    We then check whether the checkpoints have been created as expected, load
-    an older model, and reproduce the training and validation metrics.
+    The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
+    have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
     log_path = tmp_path / "test_checkpointing_per_epoch" / f"tp_{tp_size}_fsdp_{fsdp_size}"
     trainer = MSETrainer(
@@ -110,11 +110,11 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
 def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
-    """Tests checkpointing with ModelCheckpoint callback with per-step eval.
+    """
+    Tests checkpointing with ModelCheckpoint callback with per-step eval.
 
-    The test trains a simple model with MSE loss under different mesh configs.
-    We then check whether the checkpoints have been created as expected, load
-    an older model, and reproduce the training and validation metrics.
+    The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
+    have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
     log_path = tmp_path / "test_checkpointing_per_step" / f"tp_{tp_size}_fsdp_{fsdp_size}"
     trainer = MSETrainer(
@@ -201,11 +201,11 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
 
 
 def test_checkpointing_per_epoch_and_step(tmp_path: Path):
-    """Tests checkpointing with ModelCheckpoint callback with both per-epoch and per-step eval.
+    """
+    Tests checkpointing with ModelCheckpoint callback with both per-epoch and per-step eval.
 
-    The test trains a simple model with MSE loss under different mesh configs.
-    We then check whether the checkpoints have been created as expected, load
-    an older model, and reproduce the training and validation metrics.
+    The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
+    have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
     tp_size = 1
     fsdp_size = 1
@@ -287,15 +287,16 @@ def test_checkpointing_per_epoch_and_step(tmp_path: Path):
 
 
 def test_loading_to_new_topology(tmp_path: Path):
-    """Tests checkpointing and loading to new topology.
-
-    We hereby consider a scenario where we train a model with FSDP, and want to
-    load it to a new topology with no FSDP. We check that the model can be loaded
-    and achieves the same validation performance.
     """
-    log_path = tmp_path / "test_checkpointing" / f"fsdp_to_dp"
-    get_trainer = lambda fsdp_size: MSETrainer(
-        TrainerConfig(
+    Tests checkpointing and loading to new topology.
+
+    We hereby consider a scenario where we train a model with FSDP, and want to load it to a new topology with no FSDP.
+    We check that the model can be loaded and achieves the same validation performance.
+    """
+    log_path = tmp_path / "test_checkpointing" / "fsdp_to_dp"
+
+    def get_trainer(fsdp_size: int):
+        trainer_config = TrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="loss",
@@ -306,8 +307,8 @@ def test_loading_to_new_topology(tmp_path: Path):
             ),
             logger=LoggerConfig(log_path=log_path),
             check_val_every_n_epoch=1,
-        ),
-        ModelConfig(
+        )
+        model_config = ModelConfig(
             model_class=ToyModel,
             parallel=ParallelConfig(
                 data_axis_size=-1,
@@ -315,8 +316,8 @@ def test_loading_to_new_topology(tmp_path: Path):
                 fsdp_axis_size=fsdp_size,
                 fsdp_min_weight_size=pytest.num_devices,
             ),
-        ),
-        OptimizerConfig(
+        )
+        optimizer_config = OptimizerConfig(
             name="adam",
             scheduler=SchedulerConfig(
                 name="exponential_decay",
@@ -326,26 +327,22 @@ def test_loading_to_new_topology(tmp_path: Path):
                 cooldown_steps=50,
                 end_lr_factor=0.1,
             ),
-        ),
-        batch=Batch(
+        )
+        batch = Batch(
             inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
             targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
-        ),
-    )
-    trainer = get_trainer(8)
+        )
+        return MSETrainer(trainer_config, model_config, optimizer_config, batch)
 
     def data_gen_fn(idx: int) -> Batch:
         inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
         labels = inputs[:, 0:1]
         return Batch(inputs=inputs, targets=labels)
 
+    trainer = get_trainer(8)
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
-    final_metrics = trainer.train_model(
-        train_loader,
-        val_loader,
-        num_epochs=4,
-    )
+    final_metrics = trainer.train_model(train_loader, val_loader, num_epochs=4)
     assert final_metrics is not None
     # Check that checkpoints have been created.
     assert log_path.exists()

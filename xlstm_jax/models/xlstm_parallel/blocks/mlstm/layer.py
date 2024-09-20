@@ -6,7 +6,6 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.distributed import ModelParallelismWrapper, TPAsyncDense, TPDense
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
 
 from ...components.conv import CausalConv1d, CausalConv1dConfig

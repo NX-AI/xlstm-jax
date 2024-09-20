@@ -12,10 +12,11 @@ from .common_types import PyTree
 
 
 class ModelParallelismWrapper(nn.Module):
-    """Wrapper for adding model parallelism to a module.
+    """
+    Wrapper for adding model parallelism to a module.
 
-    This wrapper adds sharding over the model axis to the parameters of the module
-    and initializes the module with different parameters across the model axis.
+    This wrapper adds sharding over the model axis to the parameters of the module and initializes the module with
+    different parameters across the model axis.
 
     Args:
         model_axis_name: Name of the model axis to shard over.
@@ -61,7 +62,8 @@ class ModelParallelismWrapper(nn.Module):
 
 
 def scale_init(init_fn: Callable, scale_factor: float = 1.0):
-    """Scales the output of the given init function by the given factor.
+    """
+    Scales the output of the given init function by the given factor.
 
     Args:
         init_fn: The init function to scale.
@@ -78,7 +80,8 @@ def scale_init(init_fn: Callable, scale_factor: float = 1.0):
 
 
 class TPDense(nn.Module):
-    """Dense layer with Tensor Parallelism support.
+    """
+    Dense layer with Tensor Parallelism support.
 
     This layer can be used to perform a dense layer with Tensor Parallelism support.
 
@@ -86,7 +89,8 @@ class TPDense(nn.Module):
         dense_fn: Constructor function of the dense layer to use. Needs to support the keyword argument `kernel_init`.
         model_axis_name: The name of the model axis.
         tp_mode: The Tensor Parallelism mode to use. Can be "scatter", "gather", or "none".
-        skip_communication: Whether to skip communication in the Tensor Parallelism strategy. Useful for layers with custom communication or where input has been already gathered beforehand.
+        skip_communication: Whether to skip communication in the Tensor Parallelism strategy. Useful for layers with
+            custom communication or where input has been already gathered beforehand.
         kernel_init: The initializer to use for the kernel of the dense layer.
         kernel_init_adjustment: The adjustment factor to use for the kernel initializer.
         dense_name: The name of the dense layer module.
@@ -139,7 +143,8 @@ class TPDense(nn.Module):
 
 
 def async_gather(x: PyTree, axis_name: str, shift_up: bool = True) -> list[PyTree]:
-    """All gather using ring permutation.
+    """
+    All gather using ring permutation.
 
     Args:
         x: The input to gather.
@@ -165,12 +170,14 @@ def async_gather(x: PyTree, axis_name: str, shift_up: bool = True) -> list[PyTre
 
 
 def async_gather_bidirectional(x: jax.Array, axis_name: str, shift_up: bool = True) -> list[jax.Array]:
-    """All gather using ring permutation with bidirectional communication.
+    """
+    All gather using ring permutation with bidirectional communication.
 
     Args:
         x: The input to gather.
         axis_name: The axis name to gather along.
-        shift_up: Whether to return the order of tensors that complies with the unidrectional version of shift up (device 0 send to device 1) or down (device 1 send to device 0).
+        shift_up: Whether to return the order of tensors that complies with the unidirectional version of shift up
+            (device 0 send to device 1) or down (device 1 send to device 0).
 
     Returns:
         List of gathered inputs.
@@ -199,7 +206,8 @@ def async_gather_bidirectional(x: jax.Array, axis_name: str, shift_up: bool = Tr
 
 
 def async_gather_split(x: jax.Array, axis_name: str) -> list[jax.Array]:
-    """All gather using ring permutation with features split for bidirectional communication.
+    """
+    All gather using ring permutation with features split for bidirectional communication.
 
     Args:
         x: The input to gather.
@@ -213,7 +221,8 @@ def async_gather_split(x: jax.Array, axis_name: str) -> list[jax.Array]:
 
 
 def async_scatter(xs: Sequence[PyTree], axis_name: str, shift_up: bool = True) -> PyTree:
-    """Scatter sum using ring permutation.
+    """
+    Scatter sum using ring permutation.
 
     Args:
         xs: The inputs to scatter sum. The length of the list should match the size of the axis.
@@ -239,7 +248,8 @@ def async_scatter(xs: Sequence[PyTree], axis_name: str, shift_up: bool = True) -
 
 
 def async_scatter_split(xs: Sequence[PyTree], axis_name: str) -> PyTree:
-    """Scatter sum using ring permutation with features split for bidirectional communication.
+    """
+    Scatter sum using ring permutation with features split for bidirectional communication.
 
     Args:
         xs: The inputs to scatter sum. The length of the list should match the size of the axis.
@@ -272,9 +282,11 @@ def async_scatter_split(xs: Sequence[PyTree], axis_name: str) -> PyTree:
 
 
 class TPAsyncDense(nn.Module):
-    """Tensor-Parallel Dense Layer with Asynchronous Communication.
+    """
+    Tensor-Parallel Dense Layer with Asynchronous Communication.
 
-    This layer can be used to perform a dense layer with Tensor Parallelism support, and overlaps communication with computation whenever possible.
+    This layer can be used to perform a dense layer with Tensor Parallelism support, and overlaps communication with
+    computation whenever possible.
 
     Attributes:
         dense_fn: Constructor function of the dense layer to use. Needs to support the keyword argument `kernel_init`.
@@ -283,8 +295,10 @@ class TPAsyncDense(nn.Module):
         kernel_init: The initializer to use for the kernel of the dense layer.
         kernel_init_adjustment: The adjustment factor to use for the kernel initializer.
         dense_name: The name of the dense layer module.
-        use_bidirectional_gather: Whether to use bidirectional or unidirectional gather over the device ring for communication.
-        use_bidirectional_scatter: Whether to use bidirectional or unidirectional scatter over the device ring for communication.
+        use_bidirectional_gather: Whether to use bidirectional or unidirectional gather over the device ring for
+            communication.
+        use_bidirectional_scatter: Whether to use bidirectional or unidirectional scatter over the device ring for
+            communication.
     """
 
     dense_fn: Any

@@ -8,7 +8,7 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 
 from xlstm_jax.distributed import fold_rng_over_axis
-from xlstm_jax.distributed.data_parallel import gather_array_with_mean_grads, shard_module_params
+from xlstm_jax.distributed.data_parallel import gather_array_with_mean_grads
 
 
 def _create_mesh(
@@ -31,11 +31,12 @@ def _create_mesh(
 
 
 def test_gather_array_with_mean_grads_scatter_dtype():
-    """Test gather_dtype and grad_scatter_dtype in gather_array_with_mean_grads.
+    """
+    Test gather_dtype and grad_scatter_dtype in gather_array_with_mean_grads.
 
     Check that gathering arrays in float32 and then casting them to bfloat16 gives the same result as gathering them
-    directly in bfloat16 and only casting the gradients up.
-    Additionally, check that gradients are different when scattering them in different dtypes.
+    directly in bfloat16 and only casting the gradients up. Additionally, check that gradients are different when
+    scattering them in different dtypes.
     """
     mesh = _create_mesh(fsdp_axis_size=pytest.num_devices, fsdp_axis_name="fsdp")
     batch_size = 256
@@ -78,16 +79,20 @@ def test_gather_array_with_mean_grads_scatter_dtype():
     np.testing.assert_allclose(
         all_grads[("float32", "float32")],
         all_grads[("bfloat16", "float32")],
-        err_msg="Gathering the array in float32 and then casting it to bfloat16 should give the same result as gathering it directly in bfloat16 and only casting the gradients up.",
+        err_msg="Gathering the array in float32 and then casting it to bfloat16 should give the same result as "
+        "gathering it directly in bfloat16 and only casting the gradients up.",
     )
     np.testing.assert_allclose(
         all_grads[("float32", "bfloat16")],
         all_grads[("bfloat16", "bfloat16")],
-        err_msg="Gathering the array in float32 and then casting it to bfloat16 should give the same result as gathering it directly in bfloat16 and only casting the gradients up.",
+        err_msg="Gathering the array in float32 and then casting it to bfloat16 should give the same result as "
+        "gathering it directly in bfloat16 and only casting the gradients up.",
     )
-    assert not np.all(
-        all_grads[("float32", "float32")] == all_grads[("float32", "bfloat16")]
-    ), "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 and bfloat16."
-    assert not np.all(
-        all_grads[("float32", "float32")] == all_grads[("float32", "float16")]
-    ), "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 and float16."
+    assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "bfloat16")]), (
+        "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 "
+        "and bfloat16."
+    )
+    assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "float16")]), (
+        "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 "
+        "and float16."
+    )

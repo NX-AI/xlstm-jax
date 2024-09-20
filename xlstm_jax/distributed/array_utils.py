@@ -6,7 +6,8 @@ from .common_types import Parameter, PRNGKeyArray, PyTree
 
 
 def fold_rng_over_axis(rng: PRNGKeyArray, axis_name: str) -> PRNGKeyArray:
-    """Folds the random number generator over the given axis.
+    """
+    Folds the random number generator over the given axis.
 
     This is useful for generating a different random number for each device
     across a certain axis (e.g. the model axis).
@@ -23,7 +24,8 @@ def fold_rng_over_axis(rng: PRNGKeyArray, axis_name: str) -> PRNGKeyArray:
 
 
 def split_array_over_mesh(x: jax.Array, axis_name: str, split_axis: int) -> jax.Array:
-    """Split an array over the given mesh axis.
+    """
+    Split an array over the given mesh axis.
 
     Args:
         x: The array to split.
@@ -53,7 +55,8 @@ def stack_params(
     axis: int = 0,
     mask_except: jax.Array | int | None = None,
 ) -> PyTree:
-    """Stacks sharded parameters along a given axis name.
+    """
+    Stacks sharded parameters along a given axis name.
 
     Args:
         params: PyTree of parameters.
@@ -83,7 +86,8 @@ def stack_params(
 
 
 def unstack_params(params: PyTree, axis_name: str) -> PyTree:
-    """Unstacks parameters along a given axis name.
+    """
+    Unstacks parameters along a given axis name.
 
     Inverse operation to `stack_params`.
 

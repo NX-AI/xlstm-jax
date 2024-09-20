@@ -32,9 +32,11 @@ class UpProjConfigMixin(SubModelConfig):
 def prepare_module(
     layer: Callable[..., nn.Module], layer_name: str, config: ParallelConfig | None
 ) -> Callable[..., nn.Module]:
-    """Remats and shards layer if needed.
+    """
+    Remats and shards layer if needed.
 
-    This function wraps the layer function in a remat and/or sharding function if its layer name is present in the remat and fsdp configuration, respectively.
+    This function wraps the layer function in a remat and/or sharding function if its layer name is present in the
+    remat and fsdp configuration, respectively.
 
     Args:
         layer: The layer to prepare.
@@ -46,7 +48,8 @@ def prepare_module(
     """
     if config is None:
         return layer
-    # Shard parameters over model axis. Performed before remat, such that the gathered parameters would not be kept under remat.
+    # Shard parameters over model axis.
+    #  Performed before remat, such that the gathered parameters would not be kept under remat.
     if config.fsdp_modules is not None and layer_name in config.fsdp_modules:
         layer = shard_module_params(
             layer,

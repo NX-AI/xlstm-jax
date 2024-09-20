@@ -25,7 +25,8 @@ from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 
 def print_metrics(metrics: Metrics, title: str | None = None) -> None:
-    """Prints metrics with an optional title.
+    """
+    Prints metrics with an optional title.
 
     Args:
         metrics: A dictionary with metric names as keys and a tuple of (sum, count) as values.
@@ -41,7 +42,8 @@ def print_metrics(metrics: Metrics, title: str | None = None) -> None:
 
 
 def get_num_params(state: TrainState) -> int:
-    """Calculate the number of parameters in the model.
+    """
+    Calculate the number of parameters in the model.
 
     Args:
         state: The current training state.
@@ -218,7 +220,8 @@ def flatten_dict(d: dict) -> dict:
 
 
 def tabulate_params(state: TrainState) -> str:
-    """Prints a summary of the parameters represented as table.
+    """
+    Prints a summary of the parameters represented as table.
 
     Args:
         exmp_input: An input to the model with which the shapes are inferred.

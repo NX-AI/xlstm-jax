@@ -16,7 +16,7 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict, tabulate_params
+from xlstm_jax.trainer.base.param_utils import flatten_dict
 
 PyTree = Any
 
@@ -152,9 +152,10 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
     optimizer = optax.adamw(learning_rate=1e-3)
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    assert all(
-        [p.sharding.spec == P() for p in jax.tree.leaves(state.params)]
-    ), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
+    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+        "Parameters should be replicated over axes, but found different sharding: "
+        f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
+    )
 
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),
@@ -172,19 +173,22 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         metrics,
         batch,
     )
-    assert all(
-        [p.sharding.spec == P() for p in jax.tree.leaves(state.params)]
-    ), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
-    assert all(
-        [m.sharding.spec == P() for m in jax.tree.leaves(metrics)]
-    ), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"
+    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+        "Parameters should be replicated over axes, but found different sharding: "
+        f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
+    )
+    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+        "Metrics should be replicated over axes, but found different sharding: "
+        f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
+    )
 
     metrics = jax.device_get(metrics)
     assert "loss" in metrics
-    assert len(metrics["loss"]) == 2, f"Metrics must be a tuple."
-    assert (
-        metrics["loss"][1] == input_array.size
-    ), f"Second metric element must be counting the batch elements, but does not fit to actual batch size: {input_array.size} vs {metrics['loss'][1]}"
+    assert len(metrics["loss"]) == 2, "Metrics must be a tuple."
+    assert metrics["loss"][1] == input_array.size, (
+        "Second metric element must be counting the batch elements, but does not fit to actual batch size: "
+        f"{input_array.size} vs {metrics['loss'][1]}"
+    )
     loss = metrics["loss"][0] / metrics["loss"][1]
     assert loss > 0, f"Loss must be greater zero, but is {loss}."
 
@@ -275,15 +279,17 @@ def test_fsdp(config: xLSTMLMModelConfig):
     param_spec_tree = nn.get_partition_spec(state.params)
     for param in jax.tree.leaves(state.params):
         if param.size <= config.parallel.fsdp_min_weight_size:
-            assert (
-                param.sharding.spec == P()
-            ), f"Parameter should have been too small for sharding, but found sharded nonetheless: {param.sharding.spec} with shape {param.shape}"
+            assert param.sharding.spec == P(), (
+                f"Parameter should have been too small for sharding, but found sharded nonetheless: "
+                f"{param.sharding.spec} with shape {param.shape}"
+            )
         elif param.size > config.parallel.fsdp_min_weight_size * (
             config.num_blocks if config.scan_blocks else 1
         ):  # For stacked blocks, ignore parameters in this range.
-            assert (
-                param.sharding.spec != P()
-            ), f"Parameter should have been sharded, but appears replicated: {param.sharding.spec} with shape {param.shape}"
+            assert param.sharding.spec != P(), (
+                "Parameter should have been sharded, but appears replicated: "
+                f"{param.sharding.spec} with shape {param.shape}"
+            )
 
     batch = Batch(
         inputs=jnp.pad(input_array[:, :-1], ((0, 0), (1, 0)), constant_values=0),
@@ -303,16 +309,18 @@ def test_fsdp(config: xLSTMLMModelConfig):
     )
     new_param_spec_tree = nn.get_partition_spec(state.params)
     assert new_param_spec_tree == param_spec_tree, f"Specs differ: {new_param_spec_tree} vs {param_spec_tree}"
-    assert all(
-        [m.sharding.spec == P() for m in jax.tree.leaves(metrics)]
-    ), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"
+    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+        "Metrics should be replicated over axes, but found different sharding: "
+        f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
+    )
 
     metrics = jax.device_get(metrics)
     assert "loss" in metrics
-    assert len(metrics["loss"]) == 2, f"Metrics must be a tuple."
-    assert (
-        metrics["loss"][1] == input_array.size
-    ), f"Second metric element must be counting the batch elements, but does not fit to actual batch size: {input_array.size} vs {metrics['loss'][1]}"
+    assert len(metrics["loss"]) == 2, "Metrics must be a tuple."
+    assert metrics["loss"][1] == input_array.size, (
+        "Second metric element must be counting the batch elements, but does not fit to actual batch size: "
+        f"{input_array.size} vs {metrics['loss'][1]}"
+    )
     loss = metrics["loss"][0] / metrics["loss"][1]
     assert loss > 0, f"Loss must be greater zero, but is {loss}."
 
@@ -327,9 +335,10 @@ def test_data_parallel_initialization(config: xLSTMLMModelConfig):
     optimizer = optax.adamw(learning_rate=1e-3)
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    assert all(
-        [p.sharding.spec == P() for p in jax.tree.leaves(state.params)]
-    ), f"Parameters should be replicated over axes, but found different sharding: {[p.sharding for p in jax.tree.leaves(state.params)]}"
+    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+        "Parameters should be replicated over axes, but found different sharding: "
+        f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
+    )
     params = jax.device_get(state.params)
     params = flatten_dict(params)
 

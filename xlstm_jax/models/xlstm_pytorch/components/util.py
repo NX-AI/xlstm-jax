@@ -24,10 +24,11 @@ def conditional_decorator(condition, decorator):
 
 class ParameterProxy:
     """
-    This class helps keeping parameters in a specialized internal structure to be optimal for
-    computation speed, while having a proxied version to be called externally that is backend-agnostic.
-    It takes a module and a parameter name of a parameter in that module it represents.
-    Via __setitem__ and __getitem__ the "external"
+    This class helps keeping parameters in a specialized internal structure to be optimal for computation speed, while
+    having a proxied version to be called externally that is backend-agnostic.
+
+    It takes a module and a parameter name of a parameter in that module it represents. Via __setitem__ and __getitem__
+    the "external"
     """
 
     def __init__(

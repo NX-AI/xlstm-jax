@@ -76,7 +76,8 @@ def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataItera
             raise NotImplementedError(f"Data loading for dataset type {type(config)} not implemented yet.")
     else:
         raise NotImplementedError(
-            "Processes loading fake data not implemented yet. You are likely attempting per-device batch sizes of <1, which are not supported yet."
+            "Processes loading fake data not implemented yet. You are likely attempting per-device batch sizes of <1, "
+            "which are not supported yet."
         )
 
 

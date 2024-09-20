@@ -144,16 +144,18 @@ def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_
         metrics,
         batch,
     )
-    assert all(
-        [m.sharding.spec == P() for m in jax.tree.leaves(metrics)]
-    ), f"Metrics should be replicated over axes, but found different sharding: {[m.sharding for m in jax.tree.leaves(metrics)]}"
+    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+        "Metrics should be replicated over axes, but found different sharding: "
+        f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
+    )
 
     metrics = jax.device_get(metrics)
     assert "loss" in metrics
-    assert len(metrics["loss"]) == 2, f"Metrics must be a tuple."
-    assert (
-        metrics["loss"][1] == input_array.size
-    ), f"Second metric element must be counting the batch elements, but does not fit to actual batch size: {input_array.size} vs {metrics['loss'][1]}"
+    assert len(metrics["loss"]) == 2, "Metrics must be a tuple."
+    assert metrics["loss"][1] == input_array.size, (
+        "Second metric element must be counting the batch elements, but does not fit to actual batch size: "
+        f"{input_array.size} vs {metrics['loss'][1]}"
+    )
     loss = metrics["loss"][0] / metrics["loss"][1]
     assert loss > 0, f"Loss must be greater zero, but is {loss}."
 
@@ -185,7 +187,8 @@ def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_s
         assert key in tp_params, f"Key {key} not found in tensor parallel params."
         p_dp, p_tp = base_params[key], tp_params[key]
         # TODO: Shapes may differ due to TP bug. To be solved in another open PR.
-        # assert np.prod(p_dp.shape) == np.prod(p_tp.shape), f"Shape mismatch for key {key}: {p_dp.shape} vs {p_tp.shape}"
+        # assert np.prod(p_dp.shape) == np.prod(p_tp.shape), \
+        #     f"Shape mismatch for key {key}: {p_dp.shape} vs {p_tp.shape}"
         # TODO: Fgate and Igate not correct for TP due to same bug mentioned above. To be solved in another open PR.
         if ".fgate." in key or ".igate." in key:
             continue

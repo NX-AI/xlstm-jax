@@ -16,7 +16,7 @@ else:
     NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
 
 try:
-    import grain
+    import grain  # noqa: F401
 
     GRAIN_AVAILABLE = True
 except ImportError:

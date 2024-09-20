@@ -20,7 +20,8 @@ class Logger:
     """Logger class to log metrics, images, etc."""
 
     def __init__(self, config: LoggerConfig):
-        """Base Logger Class.
+        """
+        Base Logger Class.
 
         Args:
             config (ConfigDict): The logger config.
@@ -30,7 +31,8 @@ class Logger:
         self.log_path = config.log_path
 
     def start_epoch(self, epoch: int, step: int, mode: str = "train"):
-        """Starts a new epoch.
+        """
+        Starts a new epoch.
 
         Args:
             epoch (int): The index of the epoch.
@@ -40,7 +42,8 @@ class Logger:
         self.epoch_start_time = time.time()
 
     def log_step(self, metrics: Metrics) -> Metrics:
-        """Log metrics for a single step.
+        """
+        Log metrics for a single step.
 
         Args:
             metrics: The metrics to log. Should follow the structure of the metrics in the metrics.py file.
@@ -56,7 +59,8 @@ class Logger:
         self,
         metrics: Metrics,
     ) -> tuple[Metrics, HostMetrics]:
-        """Ends the current epoch and logs the epoch metrics.
+        """
+        Ends the current epoch and logs the epoch metrics.
 
         Args:
             metrics (Metrics): The metrics that should be logged in this epoch.
@@ -71,7 +75,8 @@ class Logger:
         return metrics, host_metrics
 
     def finalize(self, status: str):
-        """Closes the logger.
+        """
+        Closes the logger.
 
         Args:
             status (str): The status of the training run (e.g. success, failure).

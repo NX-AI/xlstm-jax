@@ -26,9 +26,8 @@ import jax
 import numpy as np
 import tensorflow as tf
 
-########## Functions used by HF pipeline
 
-
+# Functions used by HF pipeline
 def tokenization(example, hf_tokenizer, max_length, column_name):
     """Tokenize a HuggingFace dataset"""
     return hf_tokenizer(example[column_name], truncation=True, max_length=max_length)
@@ -48,9 +47,7 @@ class HFNormalizeFeatures(grain.MapTransform):
         }
 
 
-########## Functions used by Grain pipeline
-
-
+# Functions used by Grain pipeline
 @dataclasses.dataclass
 class ParseFeatures(grain.MapTransform):
     """Parse serialized example"""

@@ -9,7 +9,7 @@ from xlstm_jax.models.xlstm_clean.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple,
     recurrent_step_stabilized_simple,
 )
-from xlstm_jax.models.xlstm_clean.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_clean.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 from xlstm_jax.models.xlstm_clean.blocks.xlstm_block import xLSTMBlock, xLSTMBlockConfig
