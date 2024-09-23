@@ -1,14 +1,14 @@
 import re
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any, Literal
 
 import jax
 import jax.numpy as jnp
 import optax
-from flax import linen as nn
 
 from xlstm_jax.configs import ConfigDict
+from xlstm_jax.trainer.base.param_utils import get_param_mask_fn, get_sharded_global_norm
 
 from .scheduler import SchedulerConfig, build_lr_scheduler
 
@@ -108,7 +108,7 @@ def build_optimizer_function(
             b2=optimizer_config.beta2,
             eps=optimizer_config.eps,
             weight_decay=optimizer_config.weight_decay,
-            mask=_get_param_mask_fn(
+            mask=get_param_mask_fn(
                 exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
             ),
         )
@@ -122,66 +122,6 @@ def build_optimizer_function(
         raise ValueError(f"Unknown optimizer {optimizer_name}.")
 
     return opt_class
-
-
-def _key_path_to_str(path: jax.tree_util.KeyPath) -> str:
-    """
-    Converts a path to a string.
-
-    An adjusted version of jax.tree_util.keystr to be more intuitive
-    and fitting to our flatten_dict method.
-
-    Args:
-        path (jax.tree_util.KeyPath): Path.
-
-    Returns:
-        str: Path as string.
-    """
-    cleaned_keys = []
-    for key in path:
-        if isinstance(key, jax.tree_util.DictKey):
-            cleaned_keys.append(f"{key.key}")
-        elif isinstance(key, jax.tree_util.SequenceKey):
-            cleaned_keys.append(f"{key.idx}")
-        elif isinstance(key, jax.tree_util.GetAttrKey):
-            cleaned_keys.append(key.name)
-        else:
-            cleaned_keys.append(str(key))
-    return ".".join(cleaned_keys)
-
-
-def _get_param_mask_fn(
-    exclude: Sequence[str] | None, include: Sequence[str] | None = None
-) -> Callable[[PyTree], PyTree]:
-    """
-    Returns a function that generates a mask, which can for instance be used for weight decay.
-
-    Args:
-        exclude (Sequence[str]): List of strings to exclude.
-        include (Sequence[str]): List of strings to include. If None, all parameters except those in exclude are used.
-
-    Returns:
-        Callable[[PyTree], PyTree]: Function that generates a mask.
-    """
-    assert exclude is None or include is None, "Only one of exclude or include can be set."
-
-    def is_param_included(path, _):
-        param_name = _key_path_to_str(path)
-        if exclude is not None:
-            return not any(re.search(excl, param_name) for excl in exclude)
-        elif include is not None:
-            return any(re.search(incl, param_name) for incl in include)
-        else:
-            return True
-
-    def mask_fn(params: PyTree):
-        mask_tree = jax.tree_util.tree_map_with_path(
-            is_param_included,
-            params,
-        )
-        return mask_tree
-
-    return mask_fn
 
 
 def build_gradient_transformations(
@@ -222,7 +162,7 @@ def build_gradient_transformations(
         post_trans.append(
             optax.add_decayed_weights(
                 optimizer_config.weight_decay,
-                mask=_get_param_mask_fn(
+                mask=get_param_mask_fn(
                     exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
                 ),
             )
@@ -245,34 +185,13 @@ def clip_by_global_norm_sharded(max_norm: float) -> optax.GradientTransformation
         optax.GradientTransformation: Gradient transformation.
     """
 
-    def _sharded_norm_logits(update: jax.Array | nn.Partitioned):
-        if isinstance(update, nn.Partitioned):
-            # For partitioned parameters, we first calculate the norm per device parameter.
-            # Then, we sum the norm logit over every axes the parameter has been sharded over.
-            # This gives the norm logit for the whole parameter.
-            norm_logit = (update.value**2).sum()
-            sharded_axes = [name for name in jax.tree.leaves(update.names) if name is not None]
-            return jax.lax.psum(norm_logit, axis_name=sharded_axes)
-        else:
-            # For replicated parameters, we calculate the norm logit directly.
-            return (update**2).sum()
-
-    def _sharded_global_norm(updates: PyTree):
-        # Calculate the global norm over sharded parameters.
-        # General norm: sqrt(sum(x**2))
-        norm_logits_per_param = jax.tree.map(
-            lambda x: _sharded_norm_logits(x), updates, is_leaf=lambda x: isinstance(x, nn.Partitioned)
-        )
-        norm_sq = jax.tree_util.tree_reduce(jnp.add, norm_logits_per_param)
-        return jnp.sqrt(norm_sq)
-
-    def update_fn(updates, state, params=None):
+    def update_fn(updates, state, params=None) -> tuple[PyTree, PyTree]:
         # Clip gradients by global norm.
         # - updates: gradients
         # - state: optimizer state of transformation (empty in this case)
         # - params: (optional) model params, unused here
         del params
-        g_norm = _sharded_global_norm(updates)
+        g_norm, _ = get_sharded_global_norm(updates)
         g_norm = jnp.maximum(max_norm, g_norm)
         updates = jax.tree_util.tree_map(lambda x: x * (max_norm / g_norm), updates)
         return updates, state

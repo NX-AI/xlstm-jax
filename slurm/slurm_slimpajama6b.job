@@ -2,13 +2,13 @@
 #SBATCH --job-name=xlstm-jax
 #SBATCH --nodes=1
 #SBATCH --partition=compute
-#SBATCH --gres=gpu:4
+#SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
 #SBATCH --cpus-per-task=12  # Number of cores per socket on compute nodes
-#SBATCH --ntasks-per-node=4
+#SBATCH --ntasks-per-node=8
 #SBATCH --wait-all-nodes=1
 #SBATCH --time=1-00:00:00
-#SBATCH --output=/nfs-gpu/xlstm/logs/outputs_plippe/outputs/xlstm-jax/wikitext103/%j.out
+#SBATCH --output=/nfs-gpu/xlstm/logs/outputs_plippe/outputs/xlstm-jax/slimpajama6b/%j.out
 #SBATCH --exclusive
 
 #-------------------------------------------------------------------------------------------------
@@ -16,10 +16,26 @@
 # Change directory (user env not supported in --chdir)
 cd /home/${USER}/xlstm-jax/
 
+# determine log directory
+log_dir="${OUTPUT_DIR}/outputs/xlstm-jax/slimpajama6b/"
+# count directories with version_*
+exp_version=$(ls -l $log_dir | grep -c version_)
+echo "Found $exp_version existing experiments"
+exp_version=$((exp_version + 1))
+# do a while loop to make sure we don't overwrite existing experiments
+while [ -d "${log_dir}/version_${exp_version}" ]; do
+    exp_version=$((exp_version + 1))
+done
+echo "Using version_${exp_version} for this experiment"
+export LOG_DIR="${log_dir}/version_${exp_version}"
+mkdir -p $LOG_DIR
+
+sleep 5  # synchronize all nodes on the folder creation
+
 # Below is from oracle examples. I used the container example, as it uses srun instead of mpirun
 export PMI_DEBUG=1
 
-MACHINEFILE="${OUTPUT_DIR}/outputs/xlstm-jax/wikitext103/hostfile"
+MACHINEFILE="${LOG_DIR}/hostfile"
 
 scontrol show hostnames $SLURM_JOB_NODELIST > $MACHINEFILE
 echo MACHINEFILE
@@ -83,22 +99,7 @@ master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
 export MASTER_ADDR=$master_addr
 export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 
-# determine log directory
-log_dir="${OUTPUT_DIR}/outputs/xlstm-jax/wikitext103/"
-# count directories with version_*
-exp_version=$(ls -l $log_dir | grep -c version_)
-echo "Found $exp_version existing experiments"
-exp_version=$((exp_version + 1))
-# do a while loop to make sure we don't overwrite existing experiments
-while [ -d "${log_dir}/version_${exp_version}" ]; do
-    exp_version=$((exp_version + 1))
-done
-echo "Using version_${exp_version} for this experiment"
-export LOG_DIR="${log_dir}/version_${exp_version}"
-
-sleep 5  # synchronize all nodes on the folder creation
-
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_wikitext103.py --log_dir=$LOG_DIR'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR'

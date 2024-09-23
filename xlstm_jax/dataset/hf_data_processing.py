@@ -18,6 +18,7 @@ limitations under the License.
 Input pipeline using Huggingface datasets.
 """
 
+import logging
 from collections.abc import Sequence
 from functools import partial
 from itertools import chain
@@ -33,6 +34,8 @@ from xlstm_jax.dataset import grain_transforms
 from .configs import HFDataConfig
 from .grain_iterator import make_grain_llm_iterator
 from .multihost_dataloading import MultiHostDataLoadIterator
+
+LOGGER = logging.getLogger(__name__)
 
 
 def group_texts(examples: dict[str, Sequence[Any]], block_size: int) -> dict[str, Any]:
@@ -177,6 +180,8 @@ def preprocessing_pipeline(
     else:
         dataset = dataset.select_columns([data_column_name])
 
+    LOGGER.info(f"Dataset size: {len(dataset)}")
+
     operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
     multihost_gen = make_grain_llm_iterator(
         dataloading_host_index,
@@ -228,6 +233,7 @@ def make_hf_iterator(
         dataloading_host_index = process_indices.index(jax.process_index())
     if dataloading_host_count is None:
         dataloading_host_count = len(process_indices)
+    LOGGER.info(f"Loading training data of path {config.hf_path}.")
     train_ds = datasets.load_dataset(
         config.hf_path,
         data_dir=config.hf_data_dir,
@@ -257,6 +263,7 @@ def make_hf_iterator(
         drop_remainder=True,
     )
 
+    LOGGER.info(f"Loading evaluation data of path {config.hf_path}.")
     eval_ds = datasets.load_dataset(
         config.hf_path,
         data_dir=config.hf_data_dir,

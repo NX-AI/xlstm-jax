@@ -131,6 +131,10 @@ def make_grain_llm_iterator(
         iterator_length = int(math.ceil(len(dataset) / global_batch_size))
 
     multihost_gen = MultiHostDataLoadIterator(
-        dataloader, global_mesh, iterator_length=iterator_length, reset_after_epoch=not shuffle
+        dataloader,
+        global_mesh,
+        iterator_length=iterator_length,
+        dataset_size=len(dataset),
+        reset_after_epoch=not shuffle,
     )
     return multihost_gen

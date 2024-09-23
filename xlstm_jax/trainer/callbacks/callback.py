@@ -25,6 +25,20 @@ class CallbackConfig(ConfigDict):
     every_n_steps: int = -1
     main_process_only: bool = False
 
+    def create(self, trainer: Any, data_module: Any = None) -> "Callback":
+        """
+        Creates the callback object.
+
+        Args:
+            trainer: Trainer object.
+            data_module (optional): Data module object.
+
+        Returns:
+            Callback object.
+        """
+        del trainer, data_module
+        raise NotImplementedError("Method `create` must be implemented by subclasses.")
+
 
 class Callback:
     """
@@ -53,6 +67,8 @@ class Callback:
         self.every_n_epochs = config.every_n_epochs
         self.every_n_steps = config.every_n_steps
         self.main_process_only = config.main_process_only
+        self.active_on_epochs = (self.every_n_epochs > 0) and (not self.main_process_only or jax.process_index() == 0)
+        self.active_on_steps = (self.every_n_steps > 0) and (not self.main_process_only or jax.process_index() == 0)
 
     def on_training_start(self):
         """Called at the beginning of training."""
@@ -67,9 +83,8 @@ class Callback:
         Args:
             epoch_idx: Index of the current epoch.
         """
-        if epoch_idx % self.every_n_epochs != 0 or (self.main_process_only and jax.process_index() != 0):
-            return
-        self.on_filtered_training_epoch_start(epoch_idx)
+        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+            self.on_filtered_training_epoch_start(epoch_idx)
 
     def on_filtered_training_epoch_start(self, epoch_idx: int):
         """
@@ -87,9 +102,8 @@ class Callback:
             train_metrics: Dictionary of training metrics of the current epoch.
             epoch_idx: Index of the current epoch.
         """
-        if epoch_idx % self.every_n_epochs != 0 or (self.main_process_only and jax.process_index() != 0):
-            return
-        self.on_filtered_training_epoch_end(train_metrics, epoch_idx)
+        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+            self.on_filtered_training_epoch_end(train_metrics, epoch_idx)
 
     def on_filtered_training_epoch_end(self, train_metrics: Metrics, epoch_idx: int):
         """
@@ -109,9 +123,8 @@ class Callback:
             epoch_idx: Index of the current epoch.
             step_idx: Index of the current step.
         """
-        if step_idx % self.every_n_steps != 0 or (self.main_process_only and jax.process_index() != 0):
-            return
-        self.on_filtered_training_step(step_metrics, epoch_idx, step_idx)
+        if self.active_on_steps and step_idx % self.every_n_steps == 0:
+            self.on_filtered_training_step(step_metrics, epoch_idx, step_idx)
 
     def on_filtered_training_step(self, step_metrics: Metrics, epoch_idx: int, step_idx: int):
         """
@@ -130,9 +143,8 @@ class Callback:
             epoch_idx: Index of the current training epoch.
             step_idx: Index of the current training step.
         """
-        if epoch_idx % self.every_n_epochs != 0 or (self.main_process_only and jax.process_index() != 0):
-            return
-        self.on_filtered_validation_epoch_start(epoch_idx, step_idx)
+        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+            self.on_filtered_validation_epoch_start(epoch_idx, step_idx)
 
     def on_filtered_validation_epoch_start(self, epoch_idx: int, step_idx: int):
         """
@@ -152,9 +164,8 @@ class Callback:
             epoch_idx: Index of the current training epoch.
             step_idx: Index of the current training step.
         """
-        if epoch_idx % self.every_n_epochs != 0 or (self.main_process_only and jax.process_index() != 0):
-            return
-        self.on_filtered_validation_epoch_end(eval_metrics, epoch_idx, step_idx)
+        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+            self.on_filtered_validation_epoch_end(eval_metrics, epoch_idx, step_idx)
 
     def on_filtered_validation_epoch_end(self, eval_metrics: Metrics, epoch_idx: int, step_idx: int):
         """

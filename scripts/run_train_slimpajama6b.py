@@ -63,15 +63,15 @@ def main_train(args: argparse.Namespace):
         num_train_epochs=num_epochs,
         global_batch_size=batch_size,
         max_target_length=context_length,
-        hf_path="Salesforce/wikitext",
-        hf_data_dir="wikitext-103-raw-v1",
+        hf_path="DKYoon/SlimPajama-6B",
         hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
+        hf_num_map_processes=100,
         train_data_column="text",
         eval_data_column="text",
         tokenize_train_data=True,
         tokenize_eval_data=True,
         tokenizer_path="gpt2",
-        data_shuffle_seed=42,
+        data_shuffle_seed=123,
         add_bos=True,
         add_eos=True,
     )
@@ -104,7 +104,7 @@ def main_train(args: argparse.Namespace):
                 ModelCheckpointConfig(
                     every_n_epochs=5,
                     monitor="perplexity",
-                    max_to_keep=1,
+                    max_to_keep=4,
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
                 ),
@@ -126,12 +126,12 @@ def main_train(args: argparse.Namespace):
                     WandBLoggerConfig(
                         wb_project="xlstm_jax",
                         wb_entity="xlstm",
-                        wb_name=f"wikitext103_120M_{dtype}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}",
-                        wb_tags=["wikitext103", "120M", "reproduction"],
+                        wb_name=f"slimpajama6b_120M_{dtype}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}",
+                        wb_tags=["slimpajama6b", "120M", "reproduction"],
                     ),
                 ],
             ),
-            check_val_every_n_epoch=1,
+            check_val_every_n_steps=1_000,
             enable_progress_bar=False,
             check_for_nan=True,
             log_grad_norm=True,
@@ -175,7 +175,7 @@ def main_train(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Train xLSTM model on WikiText-103 dataset.")
-    parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/wikitext103")
+    parser = argparse.ArgumentParser(description="Train xLSTM model on SlimPajama6B dataset.")
+    parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/slimpajama6b")
     args = parser.parse_args()
     main_train(args)

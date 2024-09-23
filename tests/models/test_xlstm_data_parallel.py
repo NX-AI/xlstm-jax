@@ -130,6 +130,7 @@ LARGE_MODEL_CONFIGS = [
 
 
 def _create_mesh(config: xLSTMLMModelConfig, fsdp_axis_size: int = 1) -> Mesh:
+    """Create a mesh with the given FSDP configuration."""
     device_array = np.array(jax.devices()).reshape(-1, fsdp_axis_size, 1, 1)
     return Mesh(
         device_array,
@@ -145,6 +146,7 @@ def _create_mesh(config: xLSTMLMModelConfig, fsdp_axis_size: int = 1) -> Mesh:
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 @pytest.mark.parametrize("gradient_accumulate_steps", [1, 4])
 def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int):
+    """Test that data parallel produces the same outputs as single device."""
     mesh = _create_mesh(config)
     rng = jax.random.PRNGKey(42)
     model_rng, data_rng = jax.random.split(rng)
@@ -231,6 +233,7 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
 
 
 def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
+    """Assert that two pytrees are equal."""
     if isinstance(tree1, dict):
         assert isinstance(
             tree2, dict
@@ -260,6 +263,7 @@ def _assert_pytree_equal(tree1: PyTree, tree2: PyTree, full_key: str = ""):
 
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 def test_fsdp(config: xLSTMLMModelConfig):
+    """Test that FSDP shards parameters correctly."""
     mesh = _create_mesh(config, fsdp_axis_size=pytest.num_devices)
     config = dataclasses.replace(
         config,

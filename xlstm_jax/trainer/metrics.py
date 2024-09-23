@@ -1,21 +1,30 @@
-from typing import Any
+import logging
+from collections.abc import Sequence
+from typing import Any, Literal
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 from flax.core import FrozenDict, freeze, unfreeze
 
+# Mode for logging. Describes how to aggregate metrics over steps.
+# mean: Mean of the metric.
+# mean_nopostfix: Mean of the metric without adding a mean postfix to the key.
+# single: Single value of the metric, i.e. only tracks the last value.
+# max: Maximum value of the metric.
+# std: Standard deviation of the metric.
+LogMode = Literal["mean", "mean_nopostfix", "single", "max", "std"]
 # Immutable metrics for compilation.
-ImmutableMetricElement = FrozenDict[str, jax.Array | int | float]
+ImmutableMetricElement = FrozenDict[LogMode, FrozenDict[str, jax.Array | int | float]]
 ImmutableMetrics = FrozenDict[str, ImmutableMetricElement]
 # Mutable metrics for updating/editing.
-MutableMetricElement = dict[str, jax.Array | int | float]
+MutableMetricElement = dict[LogMode, dict[str, jax.Array | int | float]]
 MutableMetrics = dict[str, MutableMetricElement]
 # Metrics forwarded per step.
-StepMetrics = dict[
-    str,
-    jax.Array | int | float | dict[str, jax.Array | int | float],
-]
+StepMetricsElement = (
+    jax.Array | int | float | dict[Literal["value", "count", "log_modes"], jax.Array | int | float | Sequence[LogMode]]
+)
+StepMetrics = dict[str, StepMetricsElement]
 # Combined types.
 MetricElement = ImmutableMetricElement | MutableMetricElement
 Metrics = ImmutableMetrics | MutableMetrics
@@ -23,11 +32,13 @@ Metrics = ImmutableMetrics | MutableMetrics
 HostMetricElement = float | int | np.ndarray
 HostMetrics = dict[str, HostMetricElement]
 
+LOGGER = logging.getLogger(__name__)
+
 
 def update_metrics(
     global_metrics: Metrics | None,
     step_metrics: StepMetrics,
-    train: bool = True,
+    default_log_modes: Sequence[LogMode] | None = None,
 ) -> ImmutableMetrics:
     """
     Update metrics with new values.
@@ -35,8 +46,9 @@ def update_metrics(
     Args:
         global_metrics: Global metrics to update. If None, a new dictionary is created.
         step_metrics: Metrics to update with.
-        train: Whether the metrics are logged during training or evaluation. If training,
-            we add a step-wise metric, otherwise we only add a mean over all steps.
+        default_log_modes: The default log mode for the metrics. If None, only the mean will
+            be logged. Otherwise, we log each of the modes specified. The metric key will be
+            appended with the log mode.
 
     Returns:
         Updated global metrics.
@@ -52,12 +64,13 @@ def update_metrics(
             metric_in = {"value": metric_in}
         val = metric_in["value"]
         count = metric_in.get("count", 1)
-        global_metrics = _update_single_metric(
+        log_modes = metric_in.get("log_modes", default_log_modes)
+        _update_single_metric(
             global_metrics,
             key,
             val,
             count,
-            train,
+            log_modes,
         )
     global_metrics = freeze(global_metrics)
     return global_metrics
@@ -68,40 +81,48 @@ def _update_single_metric(
     key: str,
     value: Any,
     count: Any,
-    train: bool,
+    log_modes: Sequence[LogMode] | None = None,
 ) -> MutableMetrics:
     """
     Update a single metric.
-
-    For training, we create a key both for tracking the mean over N steps and the last of N steps.
-    This helps identify instabilities better while having a smoother curve. For evaluation, we only
-    add a mean over all steps.
 
     Args:
         global_metrics: Global metrics to update.
         key: Key of the metric to update.
         value: Value of the metric to update.
         count: Count of the metric to update.
-        train: Whether the metrics are logged during training or evaluation. If training,
-            we add a step-wise metric, otherwise we only add a mean over all steps.
-
-    Returns:
-        Updated global metrics.
+        log_modes: The log modes for the metric.
     """
+    if log_modes is None:
+        log_modes = ["mean_nopostfix"]
+
+    # Get previous metrics from global dict.
     if key not in global_metrics:
-        metrics_dict = {"value": 0.0, "count": 0}
-    else:
-        metrics_dict = global_metrics[key]
-    metrics_dict["count"] += count
-    metrics_dict["value"] += value
-    if train:
-        # Key for tracking the mean over N steps.
-        global_metrics[key + "_mean"] = metrics_dict
-        # Key for tracking the last of N steps.
-        global_metrics[key + "_single"] = {"value": value, "count": count}
-    else:
-        global_metrics[key] = metrics_dict
-    return global_metrics
+        global_metrics[key] = {mode: {"value": 0.0, "count": 0} for mode in log_modes}
+    metrics_dict = global_metrics[key]
+
+    # Update each log mode.
+    for log_mode in log_modes:
+        mode_dict = metrics_dict[log_mode]
+        if log_mode == "mean" or log_mode == "mean_nopostfix":
+            # For mean, we store the sum of the values and the count.
+            mode_dict["count"] += count
+            mode_dict["value"] += value
+        elif log_mode == "single":
+            # For single, we store the last value.
+            mode_dict["count"] = count
+            mode_dict["value"] = value
+        elif log_mode == "max":
+            # For max, we store the maximum average value over all steps.
+            mode_dict["count"] = 1
+            mode_dict["value"] = jnp.maximum(mode_dict["value"], value / count)
+        elif log_mode == "std":
+            # For std, we store the sum of the values and the sum of the squared values.
+            mode_dict["count"] += 1
+            mode_dict["value"] += value / count
+            mode_dict["value2"] = mode_dict.get("value2", 0.0) + (value / count) ** 2
+        else:
+            raise ValueError(f"Invalid log mode {log_mode}.")
 
 
 def get_metrics(
@@ -129,7 +150,19 @@ def get_metrics(
     metrics = {}
     for key in host_metrics:
         if isinstance(host_metrics[key], (dict, FrozenDict)):
-            metrics[key] = host_metrics[key]["value"] / host_metrics[key]["count"]
+            for log_mode in host_metrics[key]:
+                out_key = key if log_mode == "mean_nopostfix" else f"{key}_{log_mode}"
+                mode_metrics = host_metrics[key][log_mode]
+                if mode_metrics["count"] == 0:
+                    LOGGER.warning(f"Metric {key} has count 0.")
+                    metrics[out_key] = 0.0
+                elif log_mode == "std":
+                    mean = mode_metrics["value"] / mode_metrics["count"]
+                    mean2 = mode_metrics["value2"] / mode_metrics["count"]
+                    std = np.sqrt(mean2 - mean**2)
+                    metrics[out_key] = std
+                else:
+                    metrics[out_key] = mode_metrics["value"] / mode_metrics["count"]
         else:
             metrics[key] = host_metrics[key]
     if reset_metrics:

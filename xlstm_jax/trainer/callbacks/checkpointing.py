@@ -30,8 +30,6 @@ class ModelCheckpointConfig(CallbackConfig):
         save_optimizer_state: Whether to save the optimizer state.
         enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more
             information.
-        class_name: Name of the checkpoint class. Should be "ModelCheckpoint", except you are implementing a custom
-            checkpoint class that inherits from this config.
     """
 
     max_to_keep: int | None = 1
@@ -39,13 +37,36 @@ class ModelCheckpointConfig(CallbackConfig):
     mode: Literal["min", "max"] = "min"
     save_optimizer_state: bool = True
     enable_async_checkpointing: bool = True
-    class_name: str = "ModelCheckpoint"
+
+    def create(self, trainer: Any, data_module: Any = None) -> "ModelCheckpoint":
+        """
+        Creates the ModelCheckpoint callback.
+
+        Args:
+            trainer: Trainer object.
+            data_module (optional): Data module object.
+
+        Returns:
+            ModelCheckpoint object.
+        """
+        return ModelCheckpoint(self, trainer, data_module)
 
 
 class ModelCheckpoint(Callback):
     """Callback to save model parameters and mutable variables to the logging directory."""
 
     def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: Any | None = None):
+        """
+        Initialize the Model Checkpoint callback.
+
+        Sets up an orbax checkpoint manager to save model parameters, training step, random number generator state, and
+        metadata to the logging directory.
+
+        Args:
+            config: The configuration for the ModelCheckpoint callback.
+            trainer: The trainer object.
+            data_module: The data module object.
+        """
         super().__init__(config, trainer, data_module)
         assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
         self.log_path: Path = self.trainer.log_path
@@ -83,6 +104,17 @@ class ModelCheckpoint(Callback):
         )
 
     def on_filtered_validation_epoch_end(self, eval_metrics, epoch_idx: int, step_idx: int):
+        """
+        Saves the model at the end of the validation epoch.
+
+        Args:
+            eval_metrics: Dictionary of evaluation metrics. If a monitored metric is set, the model is saved based on
+                the monitored metrics in this dictionary. If the monitored metric is not found, an error is raised.
+                The metrics are saved along with the model.
+            epoch_idx: Index of the current epoch.
+            step_idx: Index of the current step.
+        """
+        del epoch_idx
         self.save_model(eval_metrics, step_idx)
 
     def save_model(self, eval_metrics: Metrics, step_idx: int):
@@ -90,8 +122,10 @@ class ModelCheckpoint(Callback):
         Saves model state dict to the logging directory.
 
         Args:
-            eval_metrics: Dictionary of evaluation metrics.
-            epoch_idx: Index of the current epoch.
+            eval_metrics: Dictionary of evaluation metrics. If a monitored metric is set, the model is saved based on
+                the monitored metrics in this dictionary. If the monitored metric is not found, an error is raised.
+                The metrics are saved along with the model.
+            step_idx: Index of the current step.
         """
         logging.info(f"Saving model at step {step_idx} with eval metrics {eval_metrics}.")
         if self.config.monitor is not None:
@@ -150,6 +184,13 @@ class ModelCheckpoint(Callback):
         return state_dict
 
     def finalize(self, status: str | None = None):
+        """
+        Closes the checkpoint manager.
+
+        Args:
+            status: The status of the training run (e.g. success, failure).
+        """
+        del status
         logging.info("Closing checkpoint manager")
         self.manager.wait_until_finished()
         self.manager.close()

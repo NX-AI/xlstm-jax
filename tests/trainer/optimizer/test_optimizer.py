@@ -34,6 +34,7 @@ class ToyModel(nn.Module):
 
     @nn.compact
     def __call__(self, x):
+        """Forward pass with two dense layers and a layer norm."""
         x = nn.Dense(self.features, name="in", bias_init=jax.nn.initializers.normal())(x)
         x = nn.LayerNorm(name="ln", bias_init=jax.nn.initializers.normal())(x)
         x = nn.relu(x)
@@ -431,8 +432,12 @@ def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_siz
 
 
 def _get_trainer(optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, fsdp_size: int) -> MSETrainer:
+    """Helper function to create a trainer for testing."""
     trainer = MSETrainer(
-        TrainerConfig(),
+        TrainerConfig(
+            log_grad_norm=False,
+            log_param_norm=False,
+        ),
         ModelConfig(
             model_class=MSEToyModel,
             parallel=ParallelConfig(
@@ -449,6 +454,7 @@ def _get_trainer(optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, 
 
 
 def _assert_pytree_equal(tree1: dict[str, Any], tree2: dict[str, Any]):
+    """Asserts that the structure and elements of two PyTrees are equal."""
     tree1 = jax.device_get(flatten_dict(tree1))
     tree2 = jax.device_get(flatten_dict(tree2))
     assert tree1.keys() == tree2.keys(), f"Array keys are not the same: {tree1.keys()} vs {tree2.keys()}"

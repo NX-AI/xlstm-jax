@@ -104,7 +104,6 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
         num_epochs=4,
     )
     assert new_final_metrics is not None
-    print("New metrics", new_final_metrics)
     assert new_final_metrics["val_epoch_4"]["loss"] == final_metrics["val_epoch_4"]["loss"], "Loss should be the same."
 
 

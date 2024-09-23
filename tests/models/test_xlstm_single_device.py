@@ -3,6 +3,7 @@ from typing import Any
 import jax
 import jax.numpy as jnp
 import jax.test_util
+import numpy as np
 import pytest
 
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.backend.simple import (
@@ -27,6 +28,7 @@ from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple import (
 
 
 def test_xLSTMLMModel():
+    """Test a full xLSTM model."""
     config = xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
@@ -68,6 +70,7 @@ def test_xLSTMLMModel():
 
 
 def _pytree_get_dtype(tree: Any) -> dict[str, Any]:
+    """Get the dtype of all elements in a pytree."""
     if isinstance(tree, dict):
         new_dict = {}
         for key in tree:
@@ -87,6 +90,7 @@ def _pytree_get_dtype(tree: Any) -> dict[str, Any]:
 
 
 def test_xLSTMBlockStack():
+    """Test a stack of xLSTM blocks."""
     config = xLSTMBlockStackConfig(
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
@@ -123,6 +127,7 @@ def test_xLSTMBlockStack():
 
 
 def test_ln():
+    """Test LayerNorm and MultiHeadLayerNorm."""
     rng = jax.random.PRNGKey(42)
     inp_rng, model_rng = jax.random.split(rng)
     x = jax.random.normal(inp_rng, (2, 3, 4))
@@ -147,6 +152,7 @@ def test_ln():
 
 
 def test_linear_headwise():
+    """Test the LinearHeadwiseExpand layer."""
     config = LinearHeadwiseExpandConfig(in_features=4, num_heads=2, expand_factor_up=1)
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng = jax.random.split(rng)
@@ -167,6 +173,7 @@ def test_linear_headwise():
 
 
 def test_bias_linear_init():
+    """Test the bias_linspace_init function."""
     init_fn = bias_linspace_init(start=0.0, end=6.0)
     key = jax.random.PRNGKey(0)
     shape = (7,)
@@ -188,6 +195,7 @@ def test_bias_linear_init():
 
 
 def test_feedforward():
+    """Test the FeedForward layer."""
     config = FeedForwardConfig(
         proj_factor=1.3,
         act_fn="gelu",
@@ -209,6 +217,7 @@ def test_feedforward():
 
 
 def test_causal_conv1d():
+    """Test the CausalConv1d layer."""
     config = CausalConv1dConfig(feature_dim=3, kernel_size=4, channel_mixing=False)
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng = jax.random.split(rng)
@@ -232,6 +241,7 @@ def test_causal_conv1d():
 
 
 def test_xLSTMBlock():
+    """Test the xLSTMBlock."""
     config = xLSTMBlockConfig(
         mlstm=mLSTMLayerConfig(
             conv1d_kernel_size=4,
@@ -265,6 +275,7 @@ def test_xLSTMBlock():
 
 @pytest.mark.parametrize("vmap_qk", [True, False])
 def test_mLSTMLayer(vmap_qk: bool):
+    """Test the mLSTMLayer."""
     config = mLSTMLayerConfig(
         embedding_dim=8,
         context_length=16,
@@ -291,6 +302,7 @@ def test_mLSTMLayer(vmap_qk: bool):
 
 
 def test_mLSTMBlock():
+    """Test the mLSTMBlock."""
     config = mLSTMBlockConfig(
         mlstm=mLSTMLayerConfig(
             conv1d_kernel_size=4,
@@ -316,8 +328,7 @@ def test_mLSTMBlock():
 
 
 def test_mLSTMBackend():
-    import numpy as np
-
+    """Test the mLSTM backend functions."""
     rng = np.random.default_rng(42)
     B, NH, S, DH = 2, 3, 4, 5
     q = rng.standard_normal((B, NH, S, DH)).astype(jnp.float32)

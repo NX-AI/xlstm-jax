@@ -48,7 +48,6 @@ class mLSTMLayer(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        print("Single Embedding Dim", self.config.embedding_dim)
         B, S, _ = x.shape
 
         # up-projection

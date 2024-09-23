@@ -16,6 +16,7 @@ dependencies:
       - optree==0.12.1
       - orbax==0.1.9
       - orbax-checkpoint==0.6.1
+      - pandas
       - pytest==8.3.2
       - tabulate==0.9.0
       - tensorflow==2.17.0
@@ -26,3 +27,4 @@ dependencies:
       - grain
       - datasets
       - transformers
+      - wandb

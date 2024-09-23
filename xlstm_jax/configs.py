@@ -1,5 +1,8 @@
+import inspect
 from dataclasses import dataclass
 from pathlib import Path
+
+from .import_utils import class_to_name
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -21,6 +24,10 @@ class ConfigDict:
                 d[k] = tuple([x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v])
             elif isinstance(v, Path):
                 d[k] = v.as_posix()
-            else:
+            elif inspect.isclass(v):
+                d[k] = class_to_name(v)
+            elif isinstance(v, (int, float, str, bool)):
                 d[k] = v
+            else:
+                d[k] = str(v)
         return d

@@ -4,6 +4,7 @@ import flax
 import jax
 import jax.numpy as jnp
 import numpy as np
+import optax
 import pytest
 import torch
 
@@ -97,10 +98,10 @@ def test_xLSTMLMModel(config_torch):
     model_torch = xLSTMLMModel_torch(config_torch)
     model_torch.reset_parameters()
     model_torch.eval()
-    input_tensor = np_rng.integers(0, 100, (2, 128))
+    input_tensor = np_rng.integers(0, config_torch.vocab_size, (2, 128))
     with torch.no_grad():
         logits_torch = model_torch(torch.from_numpy(input_tensor))
-    assert logits_torch.shape == (2, 128, 100)
+    assert logits_torch.shape == (2, 128, config_torch.vocab_size)
     assert logits_torch.dtype == torch.float32
 
     config_jax = mLSTMLayerConfig_jax(
@@ -130,6 +131,13 @@ def test_xLSTMLMModel(config_torch):
     model_jax = xLSTMLMModel_jax(config_jax)
     params_jax = model_jax.init(jax.random.PRNGKey(0), input_tensor, train=False)["params"]
     params_jax = jax.device_get(params_jax)
+
+    # Check equal number of parameters.
+    num_torch_params = sum(p.numel() for p in model_torch.parameters())
+    num_jax_params = sum(p.size for p in jax.tree.leaves(params_jax))
+    assert num_torch_params == num_jax_params, f"Number of parameters differ: {num_torch_params} vs {num_jax_params}."
+
+    # Convert PyTorch parameters to JAX parameters.
     params_jax = _convert_params_torch_to_jax(
         params_torch=dict(model_torch.named_parameters()), params_jax=params_jax, config=config_torch
     )
@@ -137,6 +145,44 @@ def test_xLSTMLMModel(config_torch):
     assert logits_jax.shape == (2, 128, 100)
     assert logits_jax.dtype == jnp.float32
     np.testing.assert_allclose(logits_torch.numpy(), logits_jax, atol=1e-5, rtol=1e-5)
+
+    # Add a bit of noise to PyTorch parameters and check equivalence again.
+    torch.manual_seed(0)
+    for p in model_torch.parameters():
+        p.data.add_(torch.randn_like(p) * 1e-1)
+    with torch.no_grad():
+        logits_torch = model_torch(torch.from_numpy(input_tensor))
+    params_jax = _convert_params_torch_to_jax(
+        params_torch=dict(model_torch.named_parameters()), params_jax=params_jax, config=config_torch
+    )
+    logits_jax = model_jax.apply({"params": params_jax}, input_tensor, train=False)
+    np.testing.assert_allclose(logits_torch.numpy(), logits_jax, atol=1e-5, rtol=1e-5)
+
+    # Verify equal gradients.
+    logits_torch = model_torch(torch.from_numpy(input_tensor))
+    loss_torch = torch.nn.functional.cross_entropy(
+        logits_torch.view(-1, config_torch.vocab_size), torch.from_numpy(input_tensor).flatten()
+    )
+    loss_torch.backward()
+    grads_torch = {name: p.grad for name, p in model_torch.named_parameters()}
+
+    def loss_fn(params: PyTree, input_tensor: jnp.ndarray) -> jnp.ndarray:
+        logits = model_jax.apply({"params": params}, input_tensor, train=True)
+        return optax.softmax_cross_entropy_with_integer_labels(
+            logits.reshape(-1, config_jax.vocab_size), input_tensor.flatten()
+        ).mean()
+
+    grads_jax = jax.grad(loss_fn)(params_jax, jnp.array(input_tensor))
+    grads_jax = jax.device_get(grads_jax)
+    grads_torch_to_jax = _convert_params_torch_to_jax(
+        params_torch=grads_torch, params_jax=grads_jax, config=config_torch, is_grad=True
+    )
+    grads_jax = flatten_dict(grads_jax)
+    grads_torch_to_jax = flatten_dict(grads_torch_to_jax)
+    for key in grads_torch_to_jax.keys():
+        g_torch = grads_torch_to_jax[key]
+        g_jax = grads_jax[key]
+        np.testing.assert_allclose(g_torch, g_jax, atol=1e-5, rtol=1e-5, err_msg=f"Gradient deviates for key: {key}")
 
 
 @pytest.mark.parametrize("config_torch", LARGE_MODEL_CONFIGS)
@@ -224,8 +270,12 @@ def test_pytorch_jax_LN():
 
 
 def _convert_params_torch_to_jax(
-    params_torch: dict[str, Any], params_jax: PyTree | None = None, config: xLSTMLMModelConfig_torch | None = None
+    params_torch: dict[str, Any],
+    params_jax: PyTree | None = None,
+    config: xLSTMLMModelConfig_torch | None = None,
+    is_grad: bool = False,
 ):
+    """Convert PyTorch parameters to JAX parameters."""
     params_jax_new = dict()
     for key, p_torch in params_torch.items():
         param = p_torch.data.numpy()
@@ -233,7 +283,8 @@ def _convert_params_torch_to_jax(
             key = "token_embedding.embedding"
         elif key.endswith("norm.weight"):
             key = key[: -len(".weight")] + ".scale"
-            param = param + 1.0
+            if not is_grad:
+                param = param + 1.0
             if key.endswith("mlstm_cell.outnorm.scale"):
                 assert config is not None, "Need config to configure multi-head layer norm params correctly."
                 param = param.reshape(config.mlstm_block.mlstm.num_heads, -1)
@@ -251,6 +302,7 @@ def _convert_params_torch_to_jax(
 
 
 def _add_nested_param_to_dict(param_dict: dict[str, Any], key: str, param: Any) -> None:
+    """Add a nested parameter to a dictionary."""
     if "." in key:
         sub_key, key = key.split(".", 1)
         if sub_key not in param_dict:
@@ -263,6 +315,7 @@ def _add_nested_param_to_dict(param_dict: dict[str, Any], key: str, param: Any) 
 
 
 def _check_equal_pytree_struct(tree1: PyTree, tree2: PyTree, full_key: str = ""):
+    """Check that two PyTrees have the same structure."""
     if isinstance(tree1, dict):
         assert isinstance(
             tree2, dict

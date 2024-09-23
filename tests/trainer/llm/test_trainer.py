@@ -35,6 +35,7 @@ class LLMToyModel(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = False, **kwargs) -> jax.Array:
+        """Forward pass of the model."""
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         # Input layer with TP. All devices share the same input already (hence skip_communication),
         # but each will have a different output. We split the output features over the TP axis.

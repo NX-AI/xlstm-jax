@@ -103,6 +103,7 @@ LARGE_MODEL_CONFIGS = [
 
 
 def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
+    """Create a mesh with the given model axis size."""
     device_array = np.array(jax.devices()).reshape(-1, 1, 1, model_axis_size)
     return Mesh(
         device_array,
@@ -119,6 +120,7 @@ def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
 @pytest.mark.parametrize("gradient_accumulate_steps", [1])
 @pytest.mark.parametrize("model_axis_size", [1, 2, 4])
 def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
+    """Test a simple forward pass with tensor parallelism."""
     mesh = _create_mesh(config, model_axis_size=model_axis_size)
     rng = jax.random.PRNGKey(42)
     model_rng, data_rng = jax.random.split(rng)

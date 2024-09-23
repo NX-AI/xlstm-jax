@@ -1,11 +1,15 @@
+from pathlib import Path
+
 import jax
 import jax.numpy as jnp
+import pandas as pd
 import pytest
 
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.trainer import TrainerConfig
+from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
 from ..helpers.mse_trainer import MSETrainer, ToyModel
@@ -82,3 +86,77 @@ def test_mse_trainer(tp_size: int, fsdp_size: int):
     assert new_metrics is not None
     assert new_metrics["loss"] == final_metrics[epoch_keys[1]]["loss"], "Loss should be the same."
     assert new_metrics["l1_dist"] == final_metrics[epoch_keys[1]]["l1_dist"], "L1 distance should be the same."
+
+
+def test_nan_checks(tmp_path: Path):
+    """Tests training a simple model with MSE loss under different mesh configs."""
+    log_path = tmp_path / "logs"
+    fl_dir = "file_logs"
+    trainer = MSETrainer(
+        TrainerConfig(
+            check_val_every_n_epoch=1,
+            check_val_every_n_steps=100,
+            check_for_nan=True,
+            logger=LoggerConfig(
+                log_every_n_steps=20,
+                log_path=log_path,
+                log_tools=[FileLoggerConfig(log_dir=fl_dir)],
+            ),
+        ),
+        ModelConfig(
+            model_class=ToyModel,
+            parallel=ParallelConfig(
+                data_axis_size=-1,
+                model_axis_size=1,
+                fsdp_axis_size=1,
+                fsdp_min_weight_size=pytest.num_devices,
+            ),
+        ),
+        OptimizerConfig(
+            name="adam",
+            scheduler=SchedulerConfig(
+                name="constant",
+                lr=1e-3,
+            ),
+        ),
+        batch=Batch(
+            inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+        ),
+    )
+
+    def data_gen_fn(idx: int) -> Batch:
+        inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
+        labels = inputs[:, 0:1]
+        if idx == 210:
+            labels = jnp.nan * labels
+        return Batch(inputs=inputs, targets=labels)
+
+    train_loader = [data_gen_fn(idx) for idx in range(250)]
+    val_loader = train_loader[:20]
+    final_metrics = trainer.train_model(
+        train_loader,
+        val_loader,
+        num_epochs=2,
+    )
+    assert final_metrics is not None
+    assert not any(
+        key.startswith("val_epoch") for key in final_metrics.keys()
+    ), "No validation metrics should be logged at an epoch, NaN should have been detected beforehand."
+    assert set(final_metrics.keys()) == {
+        "val_step_100",
+        "val_step_200",
+    }, f"Only two validations should have been logged, but found keys: {final_metrics.keys()}."
+
+    assert log_path.exists()
+    assert (log_path / "output.log").exists()
+    assert (log_path / fl_dir).exists(), f"Expected file logging directory {log_path / fl_dir} to exist"
+    assert (
+        log_path / fl_dir / "metrics_train.csv"
+    ).exists(), f"Expected metrics file {log_path / fl_dir / f'metrics_train.csv'} to exist"
+    df = pd.read_csv(log_path / fl_dir / "metrics_train.csv")
+    # Logs till 220 (11 steps), plus one epoch time.
+    assert df.shape[0] == 12, f"Expected 12 columns in the metrics file, but got {df.shape[0]}."
+    assert "loss_mean" in df.columns, "Expected 'loss_mean' column in the metrics file."
+    # Check that last loss is NaN.
+    assert jnp.isnan(df["loss_mean"].values[-2]), "Expected last loss to be NaN."

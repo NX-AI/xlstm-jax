@@ -56,6 +56,9 @@ class SyntheticDataIterator:
     def __len__(self):
         return self.num_batches
 
+    def get_dataset_size(self):
+        return self.num_batches * self.config.global_batch_size
+
     @staticmethod
     def raw_generate_synthetic_data(config: SyntheticDataConfig):
         """Generates a single batch of synthetic data"""

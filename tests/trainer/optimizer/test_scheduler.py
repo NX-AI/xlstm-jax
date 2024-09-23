@@ -5,6 +5,7 @@ from xlstm_jax.trainer.optimizer.scheduler import SchedulerConfig, build_lr_sche
 
 
 def _check_warmup(lr: float, warmup_steps: int, warmup_lr: float):
+    """Check the warmup phase of the learning rate schedule."""
     if warmup_steps > 0:
         np.testing.assert_allclose(lr[0], 0.0, err_msg="Initial warmup LR is not 0.0.")
         np.testing.assert_allclose(
@@ -20,6 +21,7 @@ def _check_warmup(lr: float, warmup_steps: int, warmup_lr: float):
 
 
 def _check_cooldown(lr: float, cooldown_steps: int, last_lr: float):
+    """Check the cooldown phase of the learning rate schedule."""
     if cooldown_steps > 0:
         np.testing.assert_allclose(lr[-1], 0.0, err_msg="Final cooldown LR is not 0.0.")
         np.testing.assert_allclose(
@@ -42,6 +44,7 @@ def test_scheduler_exponential_decay(
     warmup_steps: int,
     cooldown_steps: int,
 ):
+    """Test the exponential decay scheduler."""
     config = SchedulerConfig(
         name="exponential_decay",
         lr=0.1,
@@ -69,6 +72,10 @@ def test_scheduler_exponential_decay(
     )
     # Cooldown.
     _check_cooldown(lr, cooldown_steps, last_lr)
+    # Verify outside of cooldown.
+    steps = np.arange(decay_steps * 10)
+    lr = lr_schedule(steps)
+    assert np.all(lr >= 0.0), "Learning rate is negative outside of cooldown phase."
 
 
 @pytest.mark.parametrize("end_lr,end_lr_factor", [(0.05, None), (None, 0.01)])
@@ -82,6 +89,7 @@ def test_cosine_decay(
     warmup_steps: int,
     cooldown_steps: int,
 ):
+    """Test the cosine decay scheduler."""
     config = SchedulerConfig(
         name="cosine_decay",
         lr=0.1,
@@ -125,6 +133,10 @@ def test_cosine_decay(
     )
     # Cooldown.
     _check_cooldown(lr, cooldown_steps, last_lr)
+    # Verify outside of cooldown.
+    steps = np.arange(decay_steps * 10)
+    lr = lr_schedule(steps)
+    assert np.all(lr >= 0.0), "Learning rate is negative outside of cooldown phase."
 
 
 @pytest.mark.parametrize("lr_peak", [0.1, 0.02, 0.005])
@@ -137,6 +149,7 @@ def test_constant(
     warmup_steps: int,
     cooldown_steps: int,
 ):
+    """Test the constant scheduler."""
     config = SchedulerConfig(
         name="constant",
         lr=lr_peak,
@@ -162,6 +175,10 @@ def test_constant(
     )
     # Cooldown.
     _check_cooldown(lr, cooldown_steps, lr_peak)
+    # Verify outside of cooldown.
+    steps = np.arange(decay_steps * 10)
+    lr = lr_schedule(steps)
+    assert np.all(lr >= 0.0), "Learning rate is negative outside of cooldown phase."
 
 
 @pytest.mark.parametrize("end_lr,end_lr_factor", [(0.05, None), (None, 0.01)])
@@ -175,6 +192,7 @@ def test_linear(
     warmup_steps: int,
     cooldown_steps: int,
 ):
+    """Test the linear decay scheduler."""
     config = SchedulerConfig(
         name="linear",
         lr=0.1,
@@ -202,10 +220,15 @@ def test_linear(
     np.testing.assert_allclose(lr_linear[-1], last_lr, atol=1e-5, rtol=1e-5, err_msg="Final LR is not correct.")
     # Cooldown.
     _check_cooldown(lr, cooldown_steps, last_lr)
+    # Verify outside of cooldown.
+    steps = np.arange(decay_steps * 10)
+    lr = lr_schedule(steps)
+    assert np.all(lr >= 0.0), "Learning rate is negative outside of cooldown phase."
 
 
 @pytest.mark.parametrize("end_lr,end_lr_factor", [(0.05, 0.1), (1.0, 0.01), (100.0, 0.001), (0.1, 0.1)])
 def test_end_lr_conflict(end_lr: float, end_lr_factor: float):
+    """Test that the end_lr and end_lr_factor cannot be set differently at the same time."""
     config = SchedulerConfig(
         name="constant",
         lr=0.1,
@@ -214,3 +237,25 @@ def test_end_lr_conflict(end_lr: float, end_lr_factor: float):
     )
     with pytest.raises(AssertionError):
         build_lr_scheduler(config)
+
+
+@pytest.mark.parametrize("decay_steps", [100, 200, 300])
+@pytest.mark.parametrize("cooldown_steps", [0, 10, 20, 50])
+def test_no_negative_lrs(decay_steps: int, cooldown_steps: int):
+    """Test that the learning rate does not go negative, even outside of the cooldown phase."""
+    config = SchedulerConfig(
+        name="exponential_decay",
+        lr=0.1,
+        end_lr_factor=0.1,
+        decay_steps=decay_steps,
+        cooldown_steps=cooldown_steps,
+    )
+    lr_schedule = build_lr_scheduler(config)
+    steps = np.arange(decay_steps + 1)
+    lr = lr_schedule(steps)
+    # Cooldown.
+    _check_cooldown(lr, cooldown_steps, 0.01)
+    # Verify outside of cooldown.
+    steps = np.arange(decay_steps * 10)
+    lr = lr_schedule(steps)
+    assert np.all(lr >= 0.0), "Learning rate is negative outside of cooldown phase."

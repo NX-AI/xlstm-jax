@@ -100,6 +100,7 @@ class MultiHostDataLoadIterator:
         dataloader: tf.data.Dataset | Iterable,
         global_mesh: Mesh,
         iterator_length: int | None = None,
+        dataset_size: int | None = None,
         reset_after_epoch: bool = False,
     ):
         """
@@ -111,6 +112,9 @@ class MultiHostDataLoadIterator:
             iterator_length: int | None: The length of the iterator. If provided, the iterator will
                 stop after this many steps with a StopIteration exception. Otherwise, will continue
                 over the iterator until it raises an exception itself.
+            dataset_size: int | None: The size of the dataset. If provided, will be returned by
+                get_dataset_size. Otherwise, will return None. Can be used to communicate the dataset
+                size to functions that use the iterator.
             reset_after_epoch: bool: Whether to reset the iterator between epochs or not. If True,
                 the iterator will reset after each epoch, otherwise it will continue from where it
                 left off. If you have a indefinite iterator (e.g. train iterator with grain and shuffle),
@@ -120,6 +124,7 @@ class MultiHostDataLoadIterator:
         self.global_mesh = global_mesh
         self.dataloader = dataloader
         self.iterator_length = iterator_length
+        self.dataset_size = dataset_size
         self.reset_after_epoch = reset_after_epoch
         self.step_counter = 0
         if isinstance(self.dataloader, tf.data.Dataset):
@@ -128,6 +133,9 @@ class MultiHostDataLoadIterator:
             self.local_iterator = iter(self.dataloader)
         else:
             raise ValueError("Type error: dataloader should be either tf.data.Dataset or Iterable.")
+
+    def get_dataset_size(self):
+        return self.dataset_size
 
     def reset(self):
         self.step_counter = 0

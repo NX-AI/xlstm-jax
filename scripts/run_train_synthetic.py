@@ -13,9 +13,9 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 from xlstm_jax.trainer import TrainerConfig
-from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
+from xlstm_jax.trainer.callbacks import JaxProfilerConfig, LearningRateMonitorConfig, ModelCheckpointConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
-from xlstm_jax.trainer.logger import LoggerConfig
+from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig, TensorBoardLoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
 os.environ["JAX_PLATFORMS"] = "cpu"  # or "gpu"
@@ -34,7 +34,7 @@ def main_train(args: argparse.Namespace):
         model_axis_name="tp",
         pipeline_axis_name="pp",
         fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-        fsdp_min_weight_size=2**8,
+        fsdp_min_weight_size=NUM_DEVICES,
         fsdp_axis_size=2,
         model_axis_size=2,
         data_axis_size=-1,
@@ -45,14 +45,15 @@ def main_train(args: argparse.Namespace):
     batch_size = 8
     context_length = 32
     log_path = Path(args.log_dir)
+    num_epochs = 2
 
     # Create data iterator.
     data_config = SyntheticDataConfig(
         global_batch_size=32,
         max_target_length=context_length,
         data_shuffle_seed=42,
-        num_train_batches=250,
-        num_val_batches=50,
+        num_train_batches=252,
+        num_val_batches=53,
     )
     data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
 
@@ -66,7 +67,7 @@ def main_train(args: argparse.Namespace):
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
         parallel=parallel,
-        dtype=jnp.float32,
+        dtype=jnp.bfloat16,
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -89,10 +90,25 @@ def main_train(args: argparse.Namespace):
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
                 ),
+                LearningRateMonitorConfig(),
+                JaxProfilerConfig(),
             ),
-            logger=LoggerConfig(log_path=log_path),
+            logger=LoggerConfig(
+                log_path=log_path,
+                log_every_n_steps=20,
+                log_tools=[
+                    FileLoggerConfig(log_dir="file_logs", config_format="json"),
+                    TensorBoardLoggerConfig(log_dir="tensorboard", tb_flush_secs=10),
+                ],
+            ),
             check_val_every_n_steps=100,
             check_val_every_n_epoch=1,
+            check_for_nan=True,
+            log_grad_norm=True,
+            log_grad_norm_per_param=False,
+            log_param_norm=True,
+            log_param_norm_per_param=False,
+            default_train_log_modes=("mean", "std", "max"),
         ),
         ModelConfig(
             model_class=xLSTMLMModel,
@@ -100,11 +116,20 @@ def main_train(args: argparse.Namespace):
             model_config=xlstm_config,
         ),
         OptimizerConfig(
-            name="adam",
+            name="adamw",
             scheduler=SchedulerConfig(
-                name="constant",
-                lr=1e-4,
+                name="exponential_decay",
+                lr=1e-3,
+                decay_steps=len(data_iterator) * num_epochs,
+                end_lr_factor=0.1,
+                warmup_steps=20,
+                cooldown_steps=10,
             ),
+            grad_clip_norm=1.0,
+            weight_decay=0.1,
+            weight_decay_include=[r".*kernel"],
+            beta2=0.99,
+            eps=1e-8,
         ),
         batch=LLMBatch.get_dtype_struct(batch_size, context_length),
         mesh=mesh,
