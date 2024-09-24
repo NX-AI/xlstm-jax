@@ -242,6 +242,7 @@ def make_hf_iterator(
         split="train",
         streaming=False,
         token=config.hf_access_token,
+        num_proc=config.hf_num_data_processes,
     )
     train_iter = preprocessing_pipeline(
         dataloading_host_index=dataloading_host_index,
@@ -272,6 +273,7 @@ def make_hf_iterator(
         split=config.hf_eval_split,
         streaming=False,
         token=config.hf_access_token,
+        num_proc=config.hf_num_data_processes,
     )
     if config.global_batch_size_for_eval > 0:
         eval_batch_size = config.global_batch_size_for_eval

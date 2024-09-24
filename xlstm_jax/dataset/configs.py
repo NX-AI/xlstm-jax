@@ -44,6 +44,8 @@ class HFDataConfig(DataConfig):
         hf_train_files: Optional[str]: Specific training files to use.
         hf_eval_files: Optional[str]: Specific evaluation files to use.
         hf_eval_split: Optional[str]: Split to use for evaluation.
+        hf_num_data_processes: Optional[int]: Number of processes to use for
+            downloading the dataset.
         hf_num_map_processes: Optional[int]: Number of processes to use for mapping.
         train_data_column: str: Column name for training data.
         eval_data_column: str: Column name for evaluation data.
@@ -62,6 +64,7 @@ class HFDataConfig(DataConfig):
     hf_train_files: str | None = None
     hf_eval_files: str | None = None
     hf_eval_split: str | None = "validation"
+    hf_num_data_processes: int | None = None
     hf_num_map_processes: int | None = None
     train_data_column: str = "text"
     eval_data_column: str = "text"
