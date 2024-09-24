@@ -12,9 +12,8 @@ from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks import JaxProfilerConfig, LearningRateMonitorConfig, ModelCheckpointConfig
-from xlstm_jax.trainer.llm.trainer import LLMTrainer
+from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig, TensorBoardLoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
@@ -82,7 +81,7 @@ def main_train(args: argparse.Namespace):
 
     # Create trainer with sub-configs.
     trainer = LLMTrainer(
-        TrainerConfig(
+        LLMTrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",
@@ -109,6 +108,8 @@ def main_train(args: argparse.Namespace):
             log_param_norm=True,
             log_param_norm_per_param=False,
             default_train_log_modes=("mean", "std", "max"),
+            log_logit_stats=True,
+            log_intermediates=True,
         ),
         ModelConfig(
             model_class=xLSTMLMModel,

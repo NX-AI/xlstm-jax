@@ -70,6 +70,8 @@ class ModelCheckpoint(Callback):
         super().__init__(config, trainer, data_module)
         assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
         self.log_path: Path = self.trainer.log_path
+        self.checkpoint_path = self.log_path / "checkpoints"
+        self.checkpoint_path.mkdir(parents=True, exist_ok=True)
 
         options = ocp.CheckpointManagerOptions(
             max_to_keep=self.config.max_to_keep,
@@ -97,7 +99,7 @@ class ModelCheckpoint(Callback):
         if self.config.save_optimizer_state:
             item_handlers["opt_state"] = ocp.StandardCheckpointHandler()
         self.manager = ocp.CheckpointManager(
-            directory=(self.log_path / "checkpoints").absolute().as_posix(),
+            directory=self.checkpoint_path.absolute().as_posix(),
             item_names=tuple(item_handlers.keys()),
             item_handlers=item_handlers,
             options=options,

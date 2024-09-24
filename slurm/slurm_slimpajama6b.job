@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name=xlstm-jax
-#SBATCH --nodes=1
+#SBATCH --nodes=8
 #SBATCH --partition=compute
 #SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
@@ -28,9 +28,9 @@ while [ -d "${log_dir}/version_${exp_version}" ]; do
 done
 echo "Using version_${exp_version} for this experiment"
 export LOG_DIR="${log_dir}/version_${exp_version}"
-mkdir -p $LOG_DIR
 
 sleep 5  # synchronize all nodes on the folder creation
+mkdir -p $LOG_DIR
 
 # Below is from oracle examples. I used the container example, as it uses srun instead of mpirun
 export PMI_DEBUG=1
@@ -102,4 +102,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR --model="1.3B"'

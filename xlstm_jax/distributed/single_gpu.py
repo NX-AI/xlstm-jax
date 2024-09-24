@@ -1,4 +1,4 @@
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 
 import jax
 import jax.numpy as jnp
@@ -14,7 +14,7 @@ def accumulate_gradients_loop(
     rng: PRNGKeyArray,
     num_minibatches: int,
     loss_fn: Callable,
-) -> tuple[PyTree, Metrics]:
+) -> tuple[PyTree, Metrics, Sequence[PyTree]]:
     """
     Calculate gradients and metrics for a batch using gradient accumulation.
 
@@ -27,7 +27,7 @@ def accumulate_gradients_loop(
         loss_fn: Loss function to calculate gradients and metrics.
 
     Returns:
-        Tuple with accumulated gradients and metrics over the mini-batches.
+        Tuple with accumulated gradients, metrics, and collected mutable variables over the mini-batches.
     """
     batch_size = batch.inputs.shape[0]
     minibatch_size = batch_size // num_minibatches
@@ -37,6 +37,7 @@ def accumulate_gradients_loop(
     # Prepare loop variables.
     grads = None
     metrics = None
+    collected_mutable_vars = []
     for minibatch_idx in range(num_minibatches):
         with jax.named_scope(f"minibatch_{minibatch_idx}"):
             # Split the batch into mini-batches.
@@ -44,7 +45,9 @@ def accumulate_gradients_loop(
             end = start + minibatch_size
             minibatch = jax.tree.map(lambda x: x[start:end], batch)
             # Calculate gradients and metrics for the minibatch.
-            (_, step_metrics), step_grads = grad_fn(state.params, state.apply_fn, minibatch, rngs[minibatch_idx])
+            (_, (step_metrics, mutable_vars)), step_grads = grad_fn(
+                state.params, state.apply_fn, minibatch, rngs[minibatch_idx]
+            )
             # Accumulate gradients and metrics across mini-batches.
             if grads is None:
                 grads = step_grads
@@ -52,9 +55,13 @@ def accumulate_gradients_loop(
             else:
                 grads = jax.tree.map(jnp.add, grads, step_grads)
                 metrics = jax.tree.map(jnp.add, metrics, step_metrics)
+            # Add mutable variables to the list.
+            collected_mutable_vars.append(mutable_vars)
     # Average gradients over mini-batches.
     grads = jax.tree.map(lambda g: g / num_minibatches, grads)
-    return grads, metrics
+    # Stack mutable variables into a single PyTree, like in scan.
+    mutable_vars = jax.tree.map(lambda *x: jnp.stack(x, axis=0), *collected_mutable_vars)
+    return grads, metrics, mutable_vars
 
 
 def accumulate_gradients_scan(
@@ -63,7 +70,7 @@ def accumulate_gradients_scan(
     rng: PRNGKeyArray,
     num_minibatches: int,
     loss_fn: Callable,
-) -> tuple[PyTree, Metrics]:
+) -> tuple[PyTree, Metrics, PyTree]:
     """
     Calculate gradients and metrics for a batch using gradient accumulation.
 
@@ -79,7 +86,7 @@ def accumulate_gradients_scan(
         loss_fn: Loss function to calculate gradients and metrics.
 
     Returns:
-        Tuple with accumulated gradients and metrics over the mini-batches.
+        Tuple with accumulated gradients, metrics, and collected mutable variables over the mini-batches.
     """
     batch_size = batch.inputs.shape[0]
     minibatch_size = batch_size // num_minibatches
@@ -97,23 +104,25 @@ def accumulate_gradients_scan(
             ),
             batch,
         )
-        (_, step_metrics), step_grads = grad_fn(state.params, state.apply_fn, minibatch, rngs[minibatch_idx])
-        return step_grads, step_metrics
+        (_, (step_metrics, mutable_vars)), step_grads = grad_fn(
+            state.params, state.apply_fn, minibatch, rngs[minibatch_idx]
+        )
+        return step_grads, step_metrics, mutable_vars
 
     def _scan_step(
         carry: tuple[PyTree, Metrics], minibatch_idx: jax.Array | int
-    ) -> tuple[tuple[PyTree, Metrics], None]:
+    ) -> tuple[tuple[PyTree, Metrics], PyTree]:
         """Scan step function for looping over mini-batches."""
-        step_grads, step_metrics = _minibatch_step(minibatch_idx)
+        step_grads, step_metrics, mutable_vars = _minibatch_step(minibatch_idx)
         carry = jax.tree.map(jnp.add, carry, (step_grads, step_metrics))
-        return carry, None
+        return carry, mutable_vars
 
     # Determine initial shapes for gradients and metrics.
-    grads_shapes, metrics_shape = jax.eval_shape(_minibatch_step, 0)
+    grads_shapes, metrics_shape, _ = jax.eval_shape(_minibatch_step, 0)
     grads = jax.tree.map(lambda x: jnp.zeros(x.shape, x.dtype), grads_shapes)
     metrics = jax.tree.map(lambda x: jnp.zeros(x.shape, x.dtype), metrics_shape)
     # Loop over mini-batches to determine gradients and metrics.
-    (grads, metrics), _ = jax.lax.scan(
+    (grads, metrics), mutable_vars = jax.lax.scan(
         _scan_step,
         init=(grads, metrics),
         xs=jnp.arange(num_minibatches),
@@ -121,7 +130,7 @@ def accumulate_gradients_scan(
     )
     # Average gradients over mini-batches.
     grads = jax.tree.map(lambda g: g / num_minibatches, grads)
-    return grads, metrics
+    return grads, metrics, mutable_vars
 
 
 def accumulate_gradients(
@@ -131,7 +140,7 @@ def accumulate_gradients(
     num_minibatches: int,
     loss_fn: Callable,
     use_scan: bool = False,
-) -> tuple[PyTree, Metrics]:
+) -> tuple[PyTree, Metrics, Sequence[PyTree] | PyTree]:
     """
     Calculate gradients and metrics for a batch using gradient accumulation.
 
@@ -147,7 +156,7 @@ def accumulate_gradients(
         use_scan: Whether to use `jax.lax.scan` for looping over the mini-batches.
 
     Returns:
-        Tuple with accumulated gradients and metrics over the mini-batches.
+        Tuple with accumulated gradients, metrics, and collected mutable variables over the mini-batches.
     """
     if use_scan:
         return accumulate_gradients_scan(

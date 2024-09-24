@@ -28,10 +28,12 @@ from xlstm_jax.trainer.logger import Logger, LoggerConfig
 from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
 
-from .param_utils import get_grad_norms, get_num_params, get_param_norms, tabulate_params
+from .param_utils import flatten_dict, get_grad_norms, get_num_params, get_param_norms, tabulate_params
 from .train_state import TrainState
 
 LOGGER = logging.getLogger(__name__)
+
+PyTree = Any
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -50,6 +52,8 @@ class TrainerConfig(ConfigDict):
         enable_progress_bar: Whether to enable the progress bar. For multi-process training, only the main process will
             show the progress bar.
         gradient_accumulate_steps: Number of steps to accumulate gradients before updating the parameters.
+        gradient_accumulate_scan: Whether to use scan for gradient accumulation. This can be more memory efficient and
+            significantly faster to compile for large models, but can be slighlty slower due to memory slicing.
         check_val_every_n_epoch: Check validation every N training epochs. If -1, no validation is performed after an
             epoch. Note that this is not mutually exclusive with check_val_every_n_steps, and both can be used.
         check_val_every_n_steps: Check validation every N training steps. If -1, no validation is performed on a
@@ -62,9 +66,15 @@ class TrainerConfig(ConfigDict):
         log_param_norm: Whether to log the parameter norm.
         log_param_norm_per_param: Whether to log the parameter norm per parameter. If
             the model has many parameters, this can lead to a large log file.
+        log_intermediates: Whether to log intermediate values during training. This is useful for debugging, but can
+            lead to a large log file and a bit of overhead during training, if intermediates are complex to compute.
+            Intermediates can be recorded by using the `self.sow("intermediates", "KEY", VALUE)` method in the model.
+            The intermediate values are automatically registered and logged. Note that the values should be scalars.
         default_train_log_modes: Default logging modes for training metrics. Can be "mean", "mean_nopostfix", "single",
             "max", or "std". See metrics for more information. Each selected mode will be logged with the corresponding
             postfix. During validation, we only log the mean of the metrics.
+        intermediates_log_modes: Logging modes for intermediate values. See default_train_log_modes for more
+            information.
         logger: Configuration for the logger.
         callbacks: List of callbacks to apply.
         seed_eval: Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
@@ -76,6 +86,7 @@ class TrainerConfig(ConfigDict):
     donate_train_state: bool = True
     enable_progress_bar: bool = True
     gradient_accumulate_steps: int = 1
+    gradient_accumulate_scan: bool = False
     check_val_every_n_epoch: int = 1
     check_val_every_n_steps: int = -1
     check_for_nan: bool = True
@@ -83,7 +94,9 @@ class TrainerConfig(ConfigDict):
     log_grad_norm_per_param: bool = False
     log_param_norm: bool = True
     log_param_norm_per_param: bool = False
+    log_intermediates: bool = False
     default_train_log_modes: Sequence[str] = ("mean",)
+    intermediates_log_modes: Sequence[str] = ("mean",)
     logger: LoggerConfig = LoggerConfig()
     callbacks: Sequence[CallbackConfig] = ()
     seed_eval: int = 0
@@ -413,7 +426,7 @@ class TrainerModule:
 
     def loss_function(
         self, params: Any, apply_fn: Any, batch: Batch, rng: jax.Array, train: bool = True
-    ) -> tuple[jax.Array, Metrics]:
+    ) -> tuple[jax.Array, tuple[Metrics, PyTree]]:
         """
         The loss function that is used for training.
 
@@ -427,7 +440,7 @@ class TrainerModule:
             train: Whether the model is in training mode.
 
         Returns:
-            The loss and a dictionary of metrics.
+            The loss and a tuple of metrics and mutable variables.
         """
         del params, apply_fn, batch, rng, train
         raise NotImplementedError
@@ -454,19 +467,39 @@ class TrainerModule:
             # Split the random key for the current step.
             next_rng, step_rng = jax.random.split(state.rng)
             # Forward and backward with gradient accumulation.
-            grads, step_metrics = accumulate_gradients(
+            grads, step_metrics, mutable_variables = accumulate_gradients(
                 state,
                 batch,
                 step_rng,
                 self.trainer_config.gradient_accumulate_steps,
                 loss_fn=partial(self.loss_function, train=True),
+                use_scan=self.trainer_config.gradient_accumulate_scan,
             )
+            # If we have intermediates in mutable variables, pop them and add to metrics.
+            if mutable_variables is not None and "intermediates" in mutable_variables:
+                if not isinstance(mutable_variables, FrozenDict):
+                    mutable_variables = freeze(mutable_variables)
+                mutable_variables, intermediates = mutable_variables.pop("intermediates")
+                intermediates = flatten_dict(intermediates, flatten_sequences=True)
+                intermediates = jax.tree.map(
+                    lambda x: x.mean(), intermediates
+                )  # If we scan, we may have multiple values.
+                assert all(v.size == 1 for v in intermediates.values()), "Only scalar intermediates supported."
+                if self.trainer_config.log_intermediates:
+                    intermediate_metrics = {
+                        k: {"value": v, "count": 1, "log_modes": self.trainer_config.intermediates_log_modes}
+                        for k, v in intermediates.items()
+                    }
+                    step_metrics.update(intermediate_metrics)
+            # If no mutable variables, set to None for state.
+            if mutable_variables is not None and len(mutable_variables) == 0:
+                mutable_variables = None
             # Update parameters. We need to sync the gradients across devices before updating.
             with jax.named_scope("sync_gradients"):
                 grads = sync_gradients(
                     grads, (self.data_axis_name, self.fsdp_axis_name, self.pipeline_axis_name, self.model_axis_name)
                 )
-            new_state = state.apply_gradients(grads=grads, rng=next_rng)
+            new_state = state.apply_gradients(grads=grads, rng=next_rng, mutable_variables=mutable_variables)
             # Sum metrics across replicas. Communication negligible and can be done async to backward.
             with jax.named_scope("sync_metrics"):
                 step_metrics = jax.tree.map(
@@ -478,7 +511,9 @@ class TrainerModule:
                             self.pipeline_axis_name,
                             self.model_axis_name,
                         ),
-                    ),
+                    )
+                    if not isinstance(x, str)
+                    else x,
                     step_metrics,
                 )
 
@@ -533,7 +568,7 @@ class TrainerModule:
                 batch, axis_name=(self.model_axis_name, self.pipeline_axis_name), axis=0, tiled=True
             )
             # Forward pass and compute metrics.
-            _, step_metrics = self.loss_function(
+            _, (step_metrics, _) = self.loss_function(
                 state.params,
                 state.apply_fn,
                 batch,
@@ -550,7 +585,9 @@ class TrainerModule:
                             self.pipeline_axis_name,
                             self.model_axis_name,
                         ),
-                    ),
+                    )
+                    if not isinstance(x, str)
+                    else x,
                     step_metrics,
                 )
             metrics = update_metrics(metrics, step_metrics, default_log_modes=("mean_nopostfix",))

@@ -17,6 +17,8 @@ def parallel_stabilized_simple(
     lower_triangular_matrix: jax.Array = None,
     stabilize_rowwise: bool = True,
     eps: float = 1e-6,
+    qkv_dtype: jnp.dtype | None = None,
+    gate_dtype: jnp.dtype | None = None,
     **kwargs,
 ) -> jax.Array:
     """
@@ -34,13 +36,36 @@ def parallel_stabilized_simple(
         lower_triangular_matrix (jax.Array, optional): (S,S). Defaults to None.
         stabilize_rowwise (bool, optional): Wether to stabilize the combination matrix C rowwise (take maximum per row).
             Alternative: Subtract the maximum over all rows. Defaults to True.
+        eps (float, optional): Small value to avoid division by zero. Defaults to 1e-6.
+        qkv_dtype (jnp.dtype, optional): dtype of queries, keys and values. Defaults to None,
+            which infers the dtype from the inputs.
+        gate_dtype (jnp.dtype, optional): dtype of igate_preact and fgate_preact. Defaults to None,
+            which infers the dtype from the inputs.
 
     Returns:
         jax.Array: (B, NH, S, DH), h_tilde_state
     """
 
     B, S, DH = queries.shape
-    _dtype = queries.dtype
+    if gate_dtype is None:
+        gate_dtype = igate_preact.dtype
+        assert gate_dtype == fgate_preact.dtype, (
+            f"igate_preact and fgate_preact must have the same dtype, got {igate_preact.dtype}"
+            f" for igate_preact and {fgate_preact.dtype} for fgate_preact."
+        )
+    else:
+        igate_preact = igate_preact.astype(gate_dtype)
+        fgate_preact = fgate_preact.astype(gate_dtype)
+    if qkv_dtype is None:
+        qkv_dtype = queries.dtype
+        assert qkv_dtype == keys.dtype == values.dtype, (
+            f"queries, keys and values must have the same dtype, got {queries.dtype} for queries,"
+            f" {keys.dtype} for keys and {values.dtype} for values."
+        )
+    else:
+        queries = queries.astype(qkv_dtype)
+        keys = keys.astype(qkv_dtype)
+        values = values.astype(qkv_dtype)
     assert (
         queries.shape == keys.shape == values.shape
     ), f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
@@ -63,7 +88,7 @@ def parallel_stabilized_simple(
 
     log_fgates_cumsum = jnp.concat(
         [
-            jnp.zeros((B, 1, 1), dtype=_dtype),
+            jnp.zeros((B, 1, 1), dtype=gate_dtype),
             jnp.cumsum(log_fgates, axis=-2),
         ],
         axis=-2,
@@ -89,13 +114,16 @@ def parallel_stabilized_simple(
         # (B, NH, 1, 1)
     log_D_matrix_stabilized = log_D_matrix - max_log_D  # (B, NH, S, S)
     D_matrix = jnp.exp(log_D_matrix_stabilized)  # (B, NH, S, S)
+    D_matrix = D_matrix.astype(qkv_dtype)
 
     keys_scaled = keys / math.sqrt(DH)
 
     # combination matrix C
     qk_matrix = queries @ keys_scaled.swapaxes(-2, -1)  # (B, NH, S, S)
     C_matrix = qk_matrix * D_matrix  # (B, NH, S, S)
-    normalizer = jnp.maximum(jnp.abs(C_matrix.sum(axis=-1, keepdims=True)), jnp.exp(-max_log_D))  # (B, NH, S, 1)
+    normalizer = jnp.maximum(
+        jnp.abs(C_matrix.sum(axis=-1, keepdims=True)), jnp.exp(-max_log_D).astype(qkv_dtype)
+    )  # (B, NH, S, 1)
     # (B, NH, S, S)
     C_matrix_normalized = C_matrix / (normalizer + eps)
 

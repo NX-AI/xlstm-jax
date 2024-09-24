@@ -60,7 +60,7 @@ def loss_fn(
     batch: Batch,
     rng: jax.Array,
     config: ParallelConfig,
-) -> tuple[jax.Array, dict[str, Any]]:
+) -> tuple[jax.Array, tuple[dict[str, Any], PyTree]]:
     # Since dropout masks vary across the batch dimension, we want each device to generate a
     # different mask. We can achieve this by folding the rng over the data axis, so that each
     # device gets a different rng and thus mask.
@@ -88,7 +88,7 @@ def loss_fn(
         "accuracy": (correct_pred.sum(), batch_size),
     }
     loss = loss.mean()
-    return loss, step_metrics
+    return loss, (step_metrics, None)
 
 
 def train_step(
@@ -96,7 +96,7 @@ def train_step(
 ) -> tuple[TrainState, Metrics]:
     print("Compiling train step...")
     rng, step_rng = jax.random.split(state.rng)
-    grads, step_metrics = accumulate_gradients(
+    grads, step_metrics, _ = accumulate_gradients(
         state,
         batch,
         step_rng,

@@ -13,9 +13,8 @@ from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks import JaxProfilerConfig, LearningRateMonitorConfig, ModelCheckpointConfig
-from xlstm_jax.trainer.llm.trainer import LLMTrainer
+from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig, TensorBoardLoggerConfig, WandBLoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
@@ -39,7 +38,8 @@ def main_train(args: argparse.Namespace):
         pipeline_axis_name="pp",
         fsdp_modules=(),
         fsdp_min_weight_size=2**8,
-        remat=("mLSTMBlock"),
+        # remat=("mLSTMBlock"),
+        remat=(),
         fsdp_axis_size=1,
         model_axis_size=1,
         data_axis_size=-1,
@@ -53,7 +53,7 @@ def main_train(args: argparse.Namespace):
     batch_size = 16 * len(jax.devices())
     context_length = 2048
     num_epochs = 10
-    dtype = "float32"
+    dtype = "bfloat16"
     lr = 1e-3
     log_path = Path(args.log_dir)
 
@@ -99,7 +99,7 @@ def main_train(args: argparse.Namespace):
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
     trainer = LLMTrainer(
-        TrainerConfig(
+        LLMTrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     every_n_epochs=5,
@@ -139,6 +139,8 @@ def main_train(args: argparse.Namespace):
             log_param_norm=True,
             log_param_norm_per_param=False,
             default_train_log_modes=("mean", "std", "max"),
+            log_logit_stats=True,
+            log_intermediates=True,
         ),
         ModelConfig(
             model_class=xLSTMLMModel,

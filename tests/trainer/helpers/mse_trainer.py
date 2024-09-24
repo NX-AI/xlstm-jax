@@ -13,6 +13,8 @@ from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.base.trainer import TrainerModule
 from xlstm_jax.trainer.metrics import Metrics
 
+PyTree = Any
+
 
 class ToyModel(nn.Module):
     """
@@ -26,6 +28,7 @@ class ToyModel(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = False, **kwargs) -> jax.Array:
+        """Forward pass of the model."""
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         # Input layer with TP. All devices share the same input already (hence skip_communication),
         # but each will have a different output. We split the output features over the TP axis.
@@ -59,6 +62,8 @@ class ToyModel(nn.Module):
         )
         x = dense_fn(name="middle")(x)
         x = nn.swish(x)
+        # Intermediate features for testing logging.
+        self.sow("intermediates", "last_activations", x.std())
         # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline
         # axis over the batch dimension. Then, we apply the layer and calculate the outputs.
         x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
@@ -75,12 +80,14 @@ class ToyModel(nn.Module):
 class MSETrainer(TrainerModule):
     def loss_function(
         self, params: Any, apply_fn: Any, batch: Batch, rng: jax.Array, train: bool = True
-    ) -> tuple[jax.Array, Metrics]:
+    ) -> tuple[jax.Array, tuple[Metrics, PyTree]]:
+        """Loss function to calculate gradients and metrics."""
         # Apply the model to the inputs. This is where the forward pass happens.
-        preds = apply_fn(
+        preds, mutable_vars = apply_fn(
             {"params": params},
             batch.inputs,
             train=train,
+            mutable="intermediates",
         )
         # Select the labels per device. This is only needed if we want to split the output over the mesh.
         # Otherwise, the TP and PP devices may share the same outputs.
@@ -100,4 +107,4 @@ class MSETrainer(TrainerModule):
             "l1_dist": {"value": l1_dist.sum(), "count": batch_size},
         }
         loss = loss.mean()
-        return loss, step_metrics
+        return loss, (step_metrics, mutable_vars)

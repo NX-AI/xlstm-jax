@@ -15,9 +15,8 @@ from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
-from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
-from xlstm_jax.trainer.llm.trainer import LLMTrainer
+from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
@@ -104,9 +103,9 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
     Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
     """
     batch_size = 8
-    context_length = 32
+    context_length = 16
     trainer = LLMTrainer(
-        TrainerConfig(
+        LLMTrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",
@@ -183,9 +182,9 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
 def test_llm_padding(tmp_path: Path):
     """Tests whether the padding works correctly in the LLM Trainer."""
     batch_size = 8
-    context_length = 32
+    context_length = 16
     trainer = LLMTrainer(
-        TrainerConfig(
+        LLMTrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",
@@ -264,7 +263,7 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     # General hyperparameters.
     batch_size = 8
-    context_length = 32
+    context_length = 16
     parallel = ParallelConfig(
         data_axis_name="dp",
         fsdp_axis_name="fsdp",
@@ -300,7 +299,7 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
     )
 
     trainer = LLMTrainer(
-        TrainerConfig(
+        LLMTrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
                     monitor="perplexity",

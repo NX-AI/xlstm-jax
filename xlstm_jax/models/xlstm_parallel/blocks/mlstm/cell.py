@@ -20,6 +20,7 @@ class mLSTMCellConfig(SubModelConfig):
         default_factory=lambda: mLSTMBackendNameAndKwargs(name="parallel_stabilized")
     )
     dtype: jnp.dtype = jnp.bfloat16
+    gate_dtype: jnp.dtype = jnp.float32
 
 
 class mLSTMCell(nn.Module):
@@ -34,18 +35,24 @@ class mLSTMCell(nn.Module):
         with jax.named_scope("mlstm_gates"):
             igate_preact = nn.Dense(
                 features=self.config.num_heads,
-                dtype=self.config.dtype,
+                dtype=self.config.gate_dtype,
                 bias_init=nn.initializers.normal(stddev=0.1),
                 kernel_init=nn.initializers.zeros,
                 name="igate",
             )(qkv)
             fgate_preact = nn.Dense(
                 features=self.config.num_heads,
-                dtype=self.config.dtype,
+                dtype=self.config.gate_dtype,
                 bias_init=bias_linspace_init(3.0, 6.0),
                 kernel_init=nn.initializers.zeros,
                 name="fgate",
             )(qkv)
+            self.sow("intermediates", "max_igate_preact", jnp.max(igate_preact))
+            self.sow("intermediates", "max_fgate_preact", jnp.max(fgate_preact))
+            self.sow("intermediates", "min_igate_preact", jnp.min(igate_preact))
+            self.sow("intermediates", "min_fgate_preact", jnp.min(fgate_preact))
+            self.sow("intermediates", "mean_igate_preact", jnp.mean(igate_preact))
+            self.sow("intermediates", "mean_fgate_preact", jnp.mean(fgate_preact))
 
         q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
         k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)

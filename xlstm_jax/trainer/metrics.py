@@ -63,6 +63,8 @@ def update_metrics(
         if not isinstance(metric_in, dict):
             metric_in = {"value": metric_in}
         val = metric_in["value"]
+        if isinstance(val, jnp.ndarray):
+            val = val.astype(jnp.float32)
         count = metric_in.get("count", 1)
         log_modes = metric_in.get("log_modes", default_log_modes)
         _update_single_metric(
