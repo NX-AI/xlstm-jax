@@ -173,6 +173,7 @@ def preprocessing_pipeline(
             partial(group_texts, block_size=max_target_length),
             batched=True,
             batch_size=10 * max_target_length,
+            num_proc=hf_num_map_processes,
             desc="Grouping texts",
         )
 
