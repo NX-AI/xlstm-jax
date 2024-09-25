@@ -33,6 +33,8 @@ class ParallelConfig(ConfigDict):
         fsdp_grad_scatter_dtype: The dtype to cast the gradients to before
             scattering. If None, the dtype of the parameters is used.
         tp_async_dense: Whether to use asynchronous tensor parallelism for dense layers.
+            Default to False, as on local hardware, ppermute communication introduces
+            large overhead.
     """
 
     data_axis_size: int = -1
@@ -48,7 +50,7 @@ class ParallelConfig(ConfigDict):
     fsdp_min_weight_size: int = 2**18
     fsdp_gather_dtype: Literal["float32", "bfloat16", "float16"] | None = None
     fsdp_grad_scatter_dtype: Literal["float32", "bfloat16", "float16"] | None = None
-    tp_async_dense: bool = True
+    tp_async_dense: bool = False
 
 
 @dataclass(kw_only=True, frozen=True)

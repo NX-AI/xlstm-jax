@@ -121,11 +121,12 @@ def main_train(args: argparse.Namespace):
 
     # Create data iterator.
     log_info("Creating data iterator.")
+    data_name = "600B" if args.use_full_dataset else "6B"
     data_config = HFDataConfig(
         num_train_epochs=num_epochs,
         global_batch_size=batch_size,
         max_target_length=context_length,
-        hf_path="DKYoon/SlimPajama-6B",
+        hf_path="cerebras/SlimPajama-627B" if args.use_full_dataset else "DKYoon/SlimPajama-6B",
         hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
         hf_num_map_processes=100,
         train_data_column="text",
@@ -172,8 +173,8 @@ def main_train(args: argparse.Namespace):
                     WandBLoggerConfig(
                         wb_project="xlstm_jax",
                         wb_entity="xlstm",
-                        wb_name=f"slimpajama6b_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}",
-                        wb_tags=["slimpajama6b", args.model, "reproduction"],
+                        wb_name=f"slimpajama{data_name}_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}",
+                        wb_tags=[f"slimpajama{data_name}", args.model, "reproduction"],
                     ),
                 ],
             ),
@@ -226,5 +227,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train xLSTM model on SlimPajama6B dataset.")
     parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="120M")
     parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/slimpajama6b")
+    parser.add_argument(
+        "--use_full_dataset", action="store_true", help="If True, uses the 600B dataset instead of the 6B version."
+    )
     args = parser.parse_args()
     main_train(args)

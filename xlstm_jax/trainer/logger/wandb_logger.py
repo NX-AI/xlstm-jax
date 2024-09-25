@@ -89,6 +89,7 @@ class WandBLogger(LoggerTool):
             return
 
         LOGGER.info("Setting up WandB logging.")
+        self.log_path.mkdir(parents=True, exist_ok=True)
         wandb.login(host=self.config.wb_host, key=self.config.wb_key)
         self.wandb_run = wandb.init(
             entity=self.config.wb_entity,
