@@ -258,7 +258,7 @@ def make_hf_iterator(
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
         num_epochs=config.num_train_epochs,
-        shuffle=True,
+        shuffle=config.shuffle_train_data,
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,

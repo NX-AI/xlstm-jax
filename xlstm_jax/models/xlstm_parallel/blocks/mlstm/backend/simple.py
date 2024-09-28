@@ -134,20 +134,33 @@ def parallel_stabilized_simple(
 
 
 @dataclass
-class mLSTMBackendJaxConfig:
+class mLSTMBackendParallelConfig:
     context_length: int = -1
 
     def assign_model_config_params(self, model_config, *args, **kwargs):
         self.context_length = model_config.context_length
 
 
-class mLSTMBackendJax(mLSTMBackend):
-    config_class = mLSTMBackendJaxConfig
+class mLSTMBackendParallel(mLSTMBackend):
+    config_class = mLSTMBackendParallelConfig
 
     @nn.compact
     def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array, f: jax.Array):
+        """Forward pass of the parallel stabilized backend."""
         causal_mask = jnp.tril(jnp.ones((self.config.context_length, self.config.context_length), dtype=jnp.bool_))
         return parallel_stabilized_simple(q, k, v, i, f, lower_triangular_matrix=causal_mask)
+
+    @property
+    def can_vmap_over_heads(self) -> bool:
+        """
+        Whether the backend can be vmaped over the heads dimension.
+
+        The backend is written independent of the heads dimension, and thus can be vmapped.
+
+        Returns:
+            bool: True
+        """
+        return True
 
 
 def recurrent_step_stabilized_simple(

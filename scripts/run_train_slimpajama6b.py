@@ -11,6 +11,7 @@ from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMBackendNameAndKwargs
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 from xlstm_jax.trainer.callbacks import JaxProfilerConfig, LearningRateMonitorConfig, ModelCheckpointConfig
@@ -40,7 +41,7 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 )
             ),
@@ -49,6 +50,35 @@ MODEL_CONFIGS = {
         "gradient_accumulate_steps": 1,
         "fsdp_modules": (),
         "remat": (),
+        "data_axis_size": -1,
+        "fsdp_axis_size": 1,
+        "lr": 1e-3,
+    },
+    "165M": {
+        "model_config": lambda parallel: xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=768,
+            num_blocks=24,
+            context_length=2048,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            scan_blocks=True,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=4,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                    ),
+                )
+            ),
+        ),
+        "batch_size_per_device": 16,
+        "gradient_accumulate_steps": 1,
+        "fsdp_modules": (),
+        "remat": ("mLSTMBlock",),
         "data_axis_size": -1,
         "fsdp_axis_size": 1,
         "lr": 1e-3,
@@ -69,7 +99,7 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 )
             ),
@@ -134,13 +164,14 @@ def main_train(args: argparse.Namespace):
         tokenize_train_data=True,
         tokenize_eval_data=True,
         tokenizer_path="gpt2",
+        shuffle_train_data=True,
         data_shuffle_seed=123,
         add_bos=True,
         add_eos=True,
     )
     data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
 
-    # Define model config - 120M parameters.
+    # Define model config.
     xlstm_config = global_model_config["model_config"](parallel=parallel)
 
     # Create trainer with sub-configs.

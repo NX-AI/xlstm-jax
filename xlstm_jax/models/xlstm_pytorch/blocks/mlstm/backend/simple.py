@@ -50,7 +50,7 @@ def parallel_stabilized_simple(
 
     log_fgates_cumsum = torch.cat(
         [
-            torch.zeros((B, NH, 1, 1), dtype=_dtype, device=_device),
+            torch.zeros((B, NH, 1, 1), dtype=log_fgates.dtype, device=_device),
             torch.cumsum(log_fgates, dim=-2),
         ],
         dim=-2,
@@ -76,13 +76,16 @@ def parallel_stabilized_simple(
         # (B, NH, 1, 1)
     log_D_matrix_stabilized = log_D_matrix - max_log_D  # (B, NH, S, S)
     D_matrix = torch.exp(log_D_matrix_stabilized)  # (B, NH, S, S)
+    D_matrix = D_matrix.to(_dtype)
 
     keys_scaled = keys / math.sqrt(DH)
 
     # combination matrix C
     qk_matrix = queries @ keys_scaled.transpose(-2, -1)  # (B, NH, S, S)
     C_matrix = qk_matrix * D_matrix  # (B, NH, S, S)
-    normalizer = torch.maximum(C_matrix.sum(dim=-1, keepdim=True).abs(), torch.exp(-max_log_D))  # (B, NH, S, 1)
+    normalizer = torch.maximum(
+        C_matrix.sum(dim=-1, keepdim=True).abs(), torch.exp(-max_log_D).to(_dtype)
+    )  # (B, NH, S, 1)
     # (B, NH, S, S)
     C_matrix_normalized = C_matrix / (normalizer + eps)
 

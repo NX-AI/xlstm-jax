@@ -28,6 +28,10 @@ except ImportError:
 # Set W&B offline for tests.
 os.environ["WANDB_MODE"] = "offline"
 
+# Set XLSTM test data environment variable if not set.
+if "XLSTM_JAX_TEST_DATA" not in os.environ:
+    os.environ["XLSTM_JAX_TEST_DATA"] = "/nfs-gpu/xlstm/shared_tests"
+
 
 # Share environment variables with pytest.
 def pytest_configure():

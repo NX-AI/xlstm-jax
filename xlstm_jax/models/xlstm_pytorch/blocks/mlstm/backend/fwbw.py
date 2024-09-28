@@ -2,10 +2,10 @@ import math
 from dataclasses import asdict, dataclass
 
 import torch
+from torch.amp import custom_bwd, custom_fwd
 
 # from torch.amp import custom_fwd, custom_bwd
 from torch.autograd.function import once_differentiable
-from torch.cuda.amp import custom_bwd, custom_fwd
 
 
 def rev_cumsum_off(x):

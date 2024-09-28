@@ -1,12 +1,17 @@
 from dataclasses import dataclass, field
 from functools import partial
 
+from .config import mLSTMBackend
 from .config_utils import NameAndKwargs
+from .fwbw import mLSTMBackendFwbw
 from .layer_factory import create_layer
-from .simple import mLSTMBackendJax, recurrent_step_stabilized_simple
+from .simple import mLSTMBackendParallel
+from .triton_kernels import mLSTMBackendTriton
 
 _mlstm_backend_registry = {
-    "parallel_stabilized": mLSTMBackendJax,
+    "parallel_stabilized": mLSTMBackendParallel,
+    "fwbw_stabilized": mLSTMBackendFwbw,
+    "triton_kernels": mLSTMBackendTriton,
 }
 
 

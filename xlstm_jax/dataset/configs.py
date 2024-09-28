@@ -18,6 +18,7 @@ class DataConfig(ConfigDict):
             global_batch_size, but at least 1 per device.
         expansion_factor_real_data: int: Expansion factor for real data. If -1,
             all hosts will load real data.
+        shuffle_train_data: bool: Whether to shuffle the training data.
         data_shuffle_seed: int: Seed for data shuffling.
     """
 
@@ -26,6 +27,7 @@ class DataConfig(ConfigDict):
     global_batch_size_to_train_on: int = -1
     global_batch_size_for_eval: int = -1
     expansion_factor_real_data: int = -1
+    shuffle_train_data: bool = True
     data_shuffle_seed: int = 42
 
 
