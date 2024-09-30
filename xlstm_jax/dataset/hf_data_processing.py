@@ -31,14 +31,14 @@ from jax.sharding import Mesh
 
 from xlstm_jax.dataset import grain_transforms
 
-from .configs import HFDataConfig
+from .configs import HFHubDataConfig, HFLocalDataConfig
 from .grain_iterator import make_grain_llm_iterator
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
 
 
-def group_texts(examples: dict[str, Sequence[Any]], block_size: int) -> dict[str, Any]:
+def group_texts(examples: dict[str, Sequence[Any]], block_size: int, eod_token: int = None) -> dict[str, Any]:
     """
     Groups texts together in a chunk of block_size.
 
@@ -48,16 +48,23 @@ def group_texts(examples: dict[str, Sequence[Any]], block_size: int) -> dict[str
     Args:
         examples: The data elements that should be grouped. The data elements should be batched, i.e., a list of lists.
         block_size: The size of the block to group the texts in.
+        eod_token: The end-of-document token to add at the end of each block. If None, no
+            end-of-document token is added.
 
     Returns:
         dict: The grouped data elements.
     """
-    # Concatenate all texts.
-    concatenated_examples = {k: list(chain(*examples[k])) for k in examples.keys()}
-    # Add a seq_ids column to keep track of the original sequence.
-    concatenated_examples["seq_ids"] = list(
-        chain(*[[i] * (len(examples["input_ids"][i])) for i in range(len(examples["input_ids"]))])
-    )
+    # Concatenate all texts. Add End-of-Document token if provided.
+    if eod_token is not None:
+        # Interleave the EOD token between the examples.
+        def exmp_to_chain_fn(x):
+            return chain(*chain.from_iterable(zip(x, [[eod_token]] * len(x))))
+    else:
+
+        def exmp_to_chain_fn(x):
+            return chain(*x)
+
+    concatenated_examples = {k: list(exmp_to_chain_fn(examples[k])) for k in examples.keys()}
     total_length = len(concatenated_examples[list(examples.keys())[0]])
     # We drop the small remainder, we could add padding if the model supported it instead of this drop, you can
     # customize this part to your needs.
@@ -68,6 +75,114 @@ def group_texts(examples: dict[str, Sequence[Any]], block_size: int) -> dict[str
         k: [t[i : i + block_size] for i in range(0, total_length, block_size)] for k, t in concatenated_examples.items()
     }
     return result
+
+
+def tokenize_dataset(
+    dataset: datasets.Dataset,
+    tokenizer_path: str,
+    add_bos: bool,
+    add_eos: bool,
+    column_name: str,
+    hf_access_token: str | None = None,
+    num_proc: int | None = None,
+    cache_dir: str | None = None,
+) -> tuple[datasets.Dataset, transformers.AutoTokenizer]:
+    """
+    Tokenizes the dataset.
+
+    Args:
+        dataset: The dataset to tokenize.
+        tokenizer: The tokenizer to use.
+        add_bos: Whether to add the beginning of sequence token.
+        add_eos: Whether to add the end of sequence token.
+        column_name: The column name in the dataset.
+        hf_access_token: The access token for HuggingFace.
+        num_proc: The number of processes to use in the preprocessing maps.
+        cache_dir: The cache directory for the tokenizer.
+
+    Returns:
+        The tokenized dataset and the tokenizer.
+    """
+    tokenizer = transformers.AutoTokenizer.from_pretrained(
+        tokenizer_path,
+        clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
+        legacy=False,
+        token=hf_access_token,
+        use_fast=True,
+        add_bos=add_bos,
+        add_eos=add_eos,
+        cache_dir=cache_dir,
+    )
+
+    def _tokenize(example):
+        return tokenizer(
+            example, return_attention_mask=False, return_token_type_ids=False, truncation=False, max_length=None
+        )
+
+    dataset = dataset.map(
+        _tokenize,
+        input_columns=column_name,
+        remove_columns=[column_name],
+        batched=True,
+        num_proc=num_proc,
+        desc="Tokenizing",
+    )
+    return dataset, tokenizer
+
+
+def preprocess_hf_dataset(
+    dataset: datasets.Dataset,
+    tokenizer_path: str,
+    column_name: str,
+    max_target_length: int,
+    add_bos: bool = False,
+    add_eos: bool = False,
+    add_eod: bool = True,
+    hf_access_token: str | None = None,
+    num_proc: int | None = None,
+    tokenizer_cache_dir: str | None = None,
+) -> datasets.Dataset:
+    """
+    Preprocesses the HuggingFace dataset.
+
+    Performs both tokenization and grouping of the texts.
+
+    Args:
+        dataset: The dataset to preprocess.
+        tokenizer_path: The path to the tokenizer.
+        column_name: The column name in the dataset.
+        max_target_length: The maximum target length.
+        add_bos: Whether to add the beginning of sequence token.
+        add_eos: Whether to add the end of sequence token.
+        add_eod: Whether to add an end of document token.
+        hf_access_token: The access token for HuggingFace.
+        num_proc: The number of processes to use in the preprocessing maps.
+        tokenizer_cache_dir: The cache directory for the tokenizer.
+
+    Returns:
+        The preprocessed dataset.
+    """
+    dataset, tokenizer = tokenize_dataset(
+        dataset,
+        tokenizer_path,
+        add_bos,
+        add_eos,
+        column_name,
+        hf_access_token,
+        num_proc,
+        tokenizer_cache_dir,
+    )
+    dataset = dataset.select_columns(["input_ids"])
+
+    dataset = dataset.map(
+        partial(group_texts, block_size=max_target_length, eod_token=tokenizer.eos_token_id if add_eod else None),
+        batched=True,
+        batch_size=10 * max_target_length,
+        num_proc=num_proc,
+        desc="Grouping texts",
+    )
+    dataset = dataset.select_columns(["input_ids"]).rename_column("input_ids", column_name)
+    return dataset
 
 
 def preprocessing_pipeline(
@@ -92,6 +207,7 @@ def preprocessing_pipeline(
     worker_count: int = 1,
     worker_buffer_size: int = 1,
     drop_remainder: bool = True,
+    tokenizer_cache_dir: str | None = None,
 ) -> MultiHostDataLoadIterator:
     """
     Pipeline for preprocessing HF dataset.
@@ -134,6 +250,7 @@ def preprocessing_pipeline(
             providing a number of epochs, the last batch of all epochs together will be
             dropped if this is set to True. If set to False, the last batch of all epochs
             together will be included in the iterator.
+        tokenizer_cache_dir: The cache directory for the tokenizer.
 
     Returns:
         MultiHostDataLoadIterator: The multi-host data loading iterator.
@@ -143,39 +260,17 @@ def preprocessing_pipeline(
     assert not grain_packing, "We are currently not using grain packing."
 
     if tokenize:
-        tokenizer = transformers.AutoTokenizer.from_pretrained(
+        dataset = preprocess_hf_dataset(
+            dataset,
             tokenizer_path,
-            add_bos_token=add_bos,
-            add_eos_token=add_eos,
-            clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
-            legacy=False,
-            token=hf_access_token,
-        )
-
-        dataset = dataset.map(
-            grain_transforms.tokenization,
-            batched=True,
-            fn_kwargs={"hf_tokenizer": tokenizer, "max_length": None, "column_name": data_column_name},
+            data_column_name,
+            max_target_length,
+            add_bos=add_bos,
+            add_eos=add_eos,
+            hf_access_token=hf_access_token,
             num_proc=hf_num_map_processes,
-            desc="Tokenizing",
+            tokenizer_cache_dir=tokenizer_cache_dir,
         )
-        dataset = dataset.select_columns(["input_ids"])
-
-        # TextGrouper and subsequent map is taken from xlstm-dev:
-        # concatenate sequences
-        # text_grouper = TextGrouper(context_length=max_target_length, output_column=None)
-        # dataset = dataset.map(
-        #     text_grouper, batched=True, batch_size=10 * max_target_length
-        # )  # increase batch_size to reduce removed tokens
-        dataset = dataset.map(
-            partial(group_texts, block_size=max_target_length),
-            batched=True,
-            batch_size=10 * max_target_length,
-            num_proc=hf_num_map_processes,
-            desc="Grouping texts",
-        )
-
-        dataset = dataset.select_columns(["input_ids"]).rename_column("input_ids", data_column_name)
     else:
         dataset = dataset.select_columns([data_column_name])
 
@@ -204,8 +299,8 @@ def preprocessing_pipeline(
     return multihost_gen
 
 
-def make_hf_iterator(
-    config: HFDataConfig,
+def make_hf_hub_iterator(
+    config: HFHubDataConfig,
     global_mesh: Mesh,
     process_indices: list[int],
     dataloading_host_index: int | None = None,
@@ -215,7 +310,7 @@ def make_hf_iterator(
     Load, preprocess dataset and return iterators for huggingface datasets.
 
     Args:
-        config: HFDataConfig object with dataset configuration.
+        config: HFHubDataConfig object with dataset configuration.
         global_mesh: The global mesh to shard the data over.
         process_indices: List of process indices that should load the real data. This is used to determine the data
             loading host index and host count if not provided.
@@ -260,6 +355,7 @@ def make_hf_iterator(
         add_bos=config.add_bos,
         add_eos=config.add_eos,
         drop_remainder=True,
+        tokenizer_cache_dir=config.hf_cache_dir,
     )
 
     LOGGER.info(f"Loading evaluation data of path {config.hf_path}.")
@@ -295,6 +391,88 @@ def make_hf_iterator(
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
+        drop_remainder=True,
+        tokenizer_cache_dir=config.hf_cache_dir,
+    )
+    # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
+
+    return train_iter, eval_iter
+
+
+def make_hf_local_iterator(
+    config: HFLocalDataConfig,
+    global_mesh: Mesh,
+    process_indices: list[int],
+    dataloading_host_index: int | None = None,
+    dataloading_host_count: int | None = None,
+) -> tuple[MultiHostDataLoadIterator, MultiHostDataLoadIterator]:
+    """
+    Load a preprocessed dataset from disk and return iterators for huggingface datasets.
+
+    Args:
+        config: HFLocalDataConfig object with dataset configuration.
+        global_mesh: The global mesh to shard the data over.
+        process_indices: List of process indices that should load the real data. This is used to
+            determine the dataloading host index and host count if not provided.
+        dataloading_host_index: The index of the dataloading host. Will be used to select the
+            correct shard of the dataset. If None, determined from process_indices and
+            jax.process_index().
+        dataloading_host_count: The number of dataloading hosts. Will be used to determine the
+            shard size. If not provided, determined from process_indices.
+
+    Returns:
+        Tuple of training and evaluation iterators.
+    """
+    if dataloading_host_index is None:
+        dataloading_host_index = process_indices.index(jax.process_index())
+    if dataloading_host_count is None:
+        dataloading_host_count = len(process_indices)
+
+    # Load training data from disk.
+    train_path = config.data_path / config.train_split
+    LOGGER.info(f"Loading training data from local path {train_path}.")
+    assert train_path.exists(), f"Training data path {train_path} does not exist."
+    train_ds = datasets.load_from_disk(train_path.absolute().as_posix())
+
+    # Create training iterator.
+    train_iter = preprocessing_pipeline(
+        dataloading_host_index=dataloading_host_index,
+        dataloading_host_count=dataloading_host_count,
+        global_mesh=global_mesh,
+        dataset=train_ds,
+        data_column_name=config.train_data_column,
+        tokenize=False,
+        global_batch_size=config.global_batch_size,
+        max_target_length=config.max_target_length,
+        num_epochs=config.num_train_epochs,
+        shuffle=config.shuffle_train_data,
+        data_shuffle_seed=config.data_shuffle_seed,
+        drop_remainder=True,
+    )
+
+    # Load evaluation data from disk.
+    eval_path = config.data_path / config.eval_split
+    LOGGER.info(f"Loading evaluation data from local path {eval_path}.")
+    assert eval_path.exists(), f"Evaluation data path {eval_path} does not exist."
+    eval_ds = datasets.load_from_disk(eval_path.absolute().as_posix())
+
+    # Create evaluation iterator.
+    if config.global_batch_size_for_eval > 0:
+        eval_batch_size = config.global_batch_size_for_eval
+    else:
+        eval_batch_size = config.global_batch_size
+    eval_iter = preprocessing_pipeline(
+        dataloading_host_index=dataloading_host_index,
+        dataloading_host_count=dataloading_host_count,
+        global_mesh=global_mesh,
+        dataset=eval_ds,
+        data_column_name=config.eval_data_column,
+        tokenize=False,
+        global_batch_size=eval_batch_size,
+        max_target_length=config.max_target_length,
+        num_epochs=1,
+        shuffle=False,
+        data_shuffle_seed=config.data_shuffle_seed,
         drop_remainder=True,
     )
     # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.

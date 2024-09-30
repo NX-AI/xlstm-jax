@@ -5,7 +5,7 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 
-from xlstm_jax.dataset import HFDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import HFLocalDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -26,11 +26,11 @@ LOGGER.setLevel(logging.INFO)
 
 MODEL_CONFIGS = {
     "120M": {
-        "model_config": lambda parallel: xLSTMLMModelConfig(
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
             vocab_size=50304,
             embedding_dim=768,
             num_blocks=12,
-            context_length=2048,
+            context_length=context_length,
             tie_weights=False,
             add_embedding_dropout=False,
             add_post_blocks_norm=True,
@@ -55,11 +55,11 @@ MODEL_CONFIGS = {
         "lr": 1e-3,
     },
     "165M": {
-        "model_config": lambda parallel: xLSTMLMModelConfig(
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
             vocab_size=50304,
             embedding_dim=768,
             num_blocks=24,
-            context_length=2048,
+            context_length=context_length,
             tie_weights=False,
             add_embedding_dropout=False,
             add_post_blocks_norm=True,
@@ -84,11 +84,11 @@ MODEL_CONFIGS = {
         "lr": 1e-3,
     },
     "1.3B": {
-        "model_config": lambda parallel: xLSTMLMModelConfig(
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
             vocab_size=50304,
             embedding_dim=2048,
             num_blocks=48,
-            context_length=2048,
+            context_length=context_length,
             tie_weights=False,
             add_embedding_dropout=False,
             add_post_blocks_norm=True,
@@ -99,7 +99,7 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                        gate_dtype=jnp.float32,  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 )
             ),
@@ -111,6 +111,35 @@ MODEL_CONFIGS = {
         "data_axis_size": -1,
         "fsdp_axis_size": 1,
         "lr": 7e-4,
+    },
+    "7B": {
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=4096,
+            num_blocks=64,
+            context_length=context_length,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            scan_blocks=True,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    num_heads=8,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=jnp.float32,  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                    ),
+                )
+            ),
+        ),
+        "batch_size_per_device": 8,
+        "gradient_accumulate_steps": 1,
+        "fsdp_modules": ("Embed", "LMHead", "mLSTMBlock"),
+        "remat": ("mLSTMBlock",),
+        "data_axis_size": -1,
+        "fsdp_axis_size": 8,
+        "lr": 5e-4,
     },
 }
 
@@ -130,11 +159,13 @@ def main_train(args: argparse.Namespace):
         model_axis_name="tp",
         pipeline_axis_name="pp",
         fsdp_modules=global_model_config["fsdp_modules"],
+        fsdp_gather_dtype="bfloat16",
         fsdp_min_weight_size=2**18,
         remat=global_model_config["remat"],
         fsdp_axis_size=global_model_config["fsdp_axis_size"],
         model_axis_size=global_model_config.get("model_axis_size", 1),
         data_axis_size=global_model_config["data_axis_size"],
+        tp_async_dense=False,
     )
     mesh = initialize_mesh(parallel_config=parallel)
     log_info("Mesh initialized.")
@@ -148,31 +179,29 @@ def main_train(args: argparse.Namespace):
     num_train_steps = 95_000
     lr = global_model_config.get("lr", 1e-3)
     log_path = Path(args.log_dir)
+    base_data_path = Path("/nfs-gpu/xlstm/data/hf_datasets/")
 
     # Create data iterator.
     log_info("Creating data iterator.")
     data_name = "600B" if args.use_full_dataset else "6B"
-    data_config = HFDataConfig(
+    data_path = base_data_path / ("cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B")
+    data_path = data_path / f"ctx{context_length}"
+    data_config = HFLocalDataConfig(
         num_train_epochs=num_epochs,
         global_batch_size=batch_size,
+        data_path=data_path,
         max_target_length=context_length,
-        hf_path="cerebras/SlimPajama-627B" if args.use_full_dataset else "DKYoon/SlimPajama-6B",
-        hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
-        hf_num_map_processes=100,
         train_data_column="text",
         eval_data_column="text",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
-        tokenizer_path="gpt2",
         shuffle_train_data=True,
         data_shuffle_seed=123,
-        add_bos=True,
-        add_eos=True,
     )
     data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
 
     # Define model config.
-    xlstm_config = global_model_config["model_config"](parallel=parallel)
+    xlstm_config = global_model_config["model_config"](parallel=parallel, context_length=context_length)
+    backend_name = xlstm_config.mlstm_block.mlstm.mlstm_cell.backend.name
+    wb_name = f"slimpajama{data_name}_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}_{backend_name}"
 
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
@@ -182,7 +211,7 @@ def main_train(args: argparse.Namespace):
                 ModelCheckpointConfig(
                     every_n_epochs=1,
                     monitor="perplexity",
-                    max_to_keep=4,
+                    max_to_keep=1,
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
                 ),
@@ -204,12 +233,12 @@ def main_train(args: argparse.Namespace):
                     WandBLoggerConfig(
                         wb_project="xlstm_jax",
                         wb_entity="xlstm",
-                        wb_name=f"slimpajama{data_name}_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}",
-                        wb_tags=[f"slimpajama{data_name}", args.model, "reproduction"],
+                        wb_name=wb_name,
+                        wb_tags=[f"slimpajama{data_name}", args.model, "reproduction", backend_name],
                     ),
                 ],
             ),
-            check_val_every_n_steps=1_000,
+            check_val_every_n_steps=2_000,
             enable_progress_bar=False,
             check_for_nan=True,
             log_grad_norm=True,

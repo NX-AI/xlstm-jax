@@ -7,7 +7,7 @@
 #SBATCH --cpus-per-task=12  # Number of cores per socket on compute nodes
 #SBATCH --ntasks-per-node=8
 #SBATCH --wait-all-nodes=1
-#SBATCH --time=1-00:00:00
+#SBATCH --time=2-00:00:00
 #SBATCH --output=/nfs-gpu/xlstm/logs/outputs_plippe/outputs/xlstm-jax/slimpajama6b/%j.out
 #SBATCH --exclusive
 
@@ -102,4 +102,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR --model="120M"'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR --model="165M" --use_full_dataset'

@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from pathlib import Path
 
 from xlstm_jax.configs import ConfigDict
 
@@ -26,8 +27,28 @@ class DataConfig(ConfigDict):
 
 
 @dataclass(kw_only=True, frozen=True)
-class HFDataConfig(DataConfig):
-    """HuggingFace dataset configuration."""
+class HFLocalDataConfig(DataConfig):
+    """
+    HuggingFace dataset configuration for locally preprocessed datasets.
+    """
+
+    num_train_epochs: int
+    """Number of training epochs. Needs to be specified for the shuffling."""
+    data_path: Path
+    """Path to the dataset directory."""
+    train_data_column: str = "text"
+    """Column name for training data."""
+    eval_data_column: str = "text"
+    """Column name for evaluation data."""
+    train_split: str = "train"
+    """Split to use for training. Should be a subdirectory of data_dir."""
+    eval_split: str = "validation"
+    """Split to use for evaluation. Should be a subdirectory of data_dir."""
+
+
+@dataclass(kw_only=True, frozen=True)
+class HFHubDataConfig(DataConfig):
+    """HuggingFace dataset configuration for datasets on HuggingFace."""
 
     num_train_epochs: int
     """Number of epochs to train on. The data iterator for training data needs to know how many epochs to iterate over
@@ -60,10 +81,12 @@ class HFDataConfig(DataConfig):
     """Whether to tokenize evaluation data."""
     tokenizer_path: str = "gpt2"
     """Path to the tokenizer."""  # TODO: is this really a path or rather a name?
-    add_bos: bool = True
+    add_bos: bool = False
     """Whether to add `beginning of sequence` token."""
-    add_eos: bool = True
+    add_eos: bool = False
     """Whether to add `end of sequence` token."""
+    add_eod: bool = True
+    """Whether to add an end of document token."""
 
 
 @dataclass(kw_only=True, frozen=True)

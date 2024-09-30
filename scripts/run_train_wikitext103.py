@@ -5,7 +5,7 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 
-from xlstm_jax.dataset import HFDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import HFHubDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -59,7 +59,7 @@ def main_train(args: argparse.Namespace):
 
     # Create data iterator.
     log_info("Creating data iterator.")
-    data_config = HFDataConfig(
+    data_config = HFHubDataConfig(
         num_train_epochs=num_epochs,
         global_batch_size=batch_size,
         max_target_length=context_length,

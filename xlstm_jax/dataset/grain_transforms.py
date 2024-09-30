@@ -28,11 +28,6 @@ import tensorflow as tf
 
 
 # Functions used by HF pipeline
-def tokenization(example, hf_tokenizer, max_length, column_name):
-    """Tokenize a HuggingFace dataset"""
-    return hf_tokenizer(example[column_name], truncation=True, max_length=max_length)
-
-
 @dataclasses.dataclass
 class HFNormalizeFeatures(grain.MapTransform):
     """Normalize feature keys for HuggingFace input"""
@@ -138,29 +133,53 @@ def shift_right(x, axis=1):
     return padded[tuple(slices)]
 
 
-def shift_and_refine(x, axis=1):
-    """Shift inputs, set segmentation to 0 when target element is 0.
-    Replace EOS by 0 for packed inputs."""
-    x["inputs"] = shift_right(x["inputs"], axis=axis)
-    targets_nonzero = x["targets"] != 0
-    x["inputs_segmentation"] *= targets_nonzero
-    x["targets_segmentation"] *= targets_nonzero
-    # For packed targets, the first shifted token of a new sequence is made
-    # 0, rather than being the EOS token for the last sequence.
-    x["inputs"] *= x["inputs_segmentation"] == shift_right(x["inputs_segmentation"], axis=axis)
+def shift_left(x, axis=1):
+    """Shift the input to the left by padding and slicing on axis."""
+    pad_widths = [(0, 0)] * len(x.shape)
+    pad_widths[axis] = (0, 1)
+    slices = [
+        slice(None),
+    ] * len(x.shape)
+    slices[axis] = slice(1, None)
+    padded = np.pad(x, pad_widths, mode="constant", constant_values=x.dtype.type(0))
+    return padded[tuple(slices)]
+
+
+def shift_and_refine(
+    x: dict[str, np.ndarray], shift_target: bool = True, use_packing: bool = False, axis: int = 1
+) -> dict[str, np.ndarray]:
+    """Shift inputs or targets, and adjust segmentation."""
+    if shift_target:
+        # Last token is made invalid.
+        x["targets"] = shift_left(x["targets"], axis=axis)
+        x["targets_segmentation"] = shift_left(x["targets_segmentation"], axis=axis)
+    else:
+        # First token becomes start-of-sequence token (0).
+        x["inputs"] = shift_right(x["inputs"], axis=axis)
+        x["inputs_segmentation"] = shift_right(x["inputs_segmentation"], axis=axis)
+
+    if use_packing:
+        targets_nonzero = x["targets"] != 0
+        x["inputs_segmentation"] *= targets_nonzero
+        x["targets_segmentation"] *= targets_nonzero
+        # For packed targets, the first shifted token of a new sequence is made
+        # 0, rather than being the EOS token for the last sequence.
+        x["inputs"] *= x["inputs_segmentation"] == shift_right(x["inputs_segmentation"], axis=axis)
 
     return x
 
 
 @dataclasses.dataclass
 class ShiftData(grain.MapTransform):
-    """Shift inputs and refine annotations."""
+    """Shift inputs/targets and refine annotations."""
 
-    def __init__(self, axis=1):
+    def __init__(self, shift_target: bool = True, use_packing: bool = False, axis: int = 1):
+        self.shift_target = shift_target
+        self.use_packing = use_packing
         self.axis = axis
 
     def map(self, data):
-        return shift_and_refine(data, axis=self.axis)
+        return shift_and_refine(data, shift_target=self.shift_target, use_packing=self.use_packing, axis=self.axis)
 
 
 @dataclasses.dataclass

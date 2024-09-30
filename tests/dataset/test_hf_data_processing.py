@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from jax.sharding import PartitionSpec as P
 
-from xlstm_jax.dataset import HFDataConfig, create_data_iterator
+from xlstm_jax.dataset import HFHubDataConfig, create_data_iterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
 
@@ -31,7 +31,7 @@ def test_hf_dataset(tmp_path: Path):
     # Define data configuration.
     global_batch_size = 64
     context_length = 128
-    data_config = HFDataConfig(
+    data_config = HFHubDataConfig(
         num_train_epochs=2,
         global_batch_size=global_batch_size,
         max_target_length=context_length,
