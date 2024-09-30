@@ -8,10 +8,11 @@ from flax import linen as nn
 
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
 
+from ....configs import ParallelConfig
 from ...components.conv import CausalConv1d, CausalConv1dConfig
 from ...components.init import small_init, wang_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from ...utils import ParallelConfig, UpProjConfigMixin, prepare_module
+from ...utils import UpProjConfigMixin, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
 
 

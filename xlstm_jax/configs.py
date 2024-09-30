@@ -2,7 +2,7 @@ import inspect
 from dataclasses import dataclass
 from pathlib import Path
 
-from .import_utils import class_to_name
+from xlstm_jax.import_utils import class_to_name
 
 
 @dataclass(kw_only=True, frozen=True)

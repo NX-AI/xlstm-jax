@@ -367,7 +367,7 @@ class sLSTMCellBase(nn.Module):
 
     def _zero_state(self, input: torch.Tensor) -> torch.Tensor:
         """
-        Return a zero state matching dtype and batch size of ``input``.
+        Return a zero state matching dtype and batch size of `input`.
 
         Args:
             input: Tensor, to specify the device and dtype of the returned tensors.

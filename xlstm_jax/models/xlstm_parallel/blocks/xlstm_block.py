@@ -4,9 +4,9 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
+from ...configs import ParallelConfig
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.ln import LayerNorm
-from ..utils import ParallelConfig
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 
 

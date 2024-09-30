@@ -6,8 +6,12 @@ from flax.struct import dataclass
 
 @dataclass
 class Batch:
+    """Batch of training data."""
+
     inputs: jax.Array
+    """The input data."""
     targets: jax.Array
+    """The target data."""
 
     def __getitem__(self, key):
         """Supports slicing and element access in batch."""
@@ -22,23 +26,20 @@ class Batch:
 
 @dataclass
 class LLMBatch(Batch):
-    """Batch for LLM training.
+    """
+    Batch for LLM training.
 
     Contains inputs and targets along with their respective positions and segmentations.
-
-    Attributes:
-        inputs (jax.Array): The input data.
-        targets (jax.Array): The target data.
-        inputs_position (jax.Array): Positions of the input tokens.
-        inputs_segmentation (jax.Array): Segmentation of the input tokens. 0 to indicate padding.
-        targets_position (jax.Array): Positions of the target tokens.
-        targets_segmentation (jax.Array): Segmentation of the target tokens. 0 to indicate padding.
     """
 
     inputs_position: jax.Array
+    """Positions of the input tokens."""
     inputs_segmentation: jax.Array
+    """Segmentation of the input tokens. 0 to indicate padding."""
     targets_position: jax.Array
+    """Positions of the target tokens."""
     targets_segmentation: jax.Array
+    """Segmentation of the target tokens. 0 to indicate padding."""
 
     @staticmethod
     def from_inputs(inputs: jax.Array, targets: jax.Array | None = None) -> "LLMBatch":

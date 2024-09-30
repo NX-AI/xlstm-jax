@@ -13,19 +13,16 @@ LOGGER = logging.getLogger(__name__)
 
 @dataclass(kw_only=True, frozen=True)
 class LearningRateMonitorConfig(CallbackConfig):
-    """Configuration for the LearningRateMonitor callback.
-
-    Attributes:
-        every_n_epochs: Log the learning rate every n epochs. Set to -1 to disable.
-        every_n_steps: Log the learning rate every n steps. By default, logs every 50 steps.
-        main_process_only: Log the learning rate only in the main process.
-        log_lr_key: Key to use for logging the learning rate.
-    """
+    """Configuration for the LearningRateMonitor callback."""
 
     every_n_epochs: int = -1
+    """Log the learning rate every n epochs. Set to -1 to disable."""
     every_n_steps: int = 50
+    """Log the learning rate every n steps. By default, logs every 50 steps."""
     main_process_only: bool = True
+    """Log the learning rate only in the main process."""
     log_lr_key: str = "optimizer/lr"
+    """Key to use for logging the learning rate."""
 
     def create(self, trainer: Any, data_module: Any = None) -> "LearningRateMonitor":
         """

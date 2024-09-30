@@ -23,8 +23,8 @@ class LLMTrainerConfig(TrainerConfig):
     See TrainerConfig for inherited attributes.
 
     Attributes:
-        log_logit_stats: Whether to log statistics of the logits during training. Note
-            that for large vocabularies, this can be expensive.
+        log_logit_stats: Whether to log statistics of the logits during training. Note that for large vocabularies, this
+            can be expensive.
     """
 
     log_logit_stats: bool = False
@@ -40,14 +40,14 @@ class LLMTrainer(TrainerModule):
         Calculate the loss function for the model.
 
         Args:
-            params (Any): The model parameters.
-            apply_fn (Any): The model apply function.
-            batch (LLMBatch): The input batch.
-            rng (jax.Array): The random number generator.
-            train (bool, optional): Whether the model is in training mode. Defaults to True.
+            params: The model parameters.
+            apply_fn: The model apply function.
+            batch: The input batch.
+            rng: The random number generator.
+            train: Whether the model is in training mode. Defaults to True.
 
         Returns:
-            Tuple[jax.Array, Tuple[Metrics, PyTree]]: The loss and a tuple of metrics and mutable variables.
+            The loss and a tuple of metrics and mutable variables.
         """
         # Since dropout masks vary across the batch dimension, we want each device to generate a
         # different mask. We can achieve this by folding the rng over the data axis, so that each
@@ -114,7 +114,7 @@ class LLMTrainer(TrainerModule):
         Will be passed to logger. Adds perplexity to the metrics.
 
         Returns:
-            Callable[[HostMetrics], HostMetrics]: The postprocess metric function.
+            The postprocess metric function.
         """
 
         def _postprocess_metrics(metrics: HostMetrics) -> HostMetrics:

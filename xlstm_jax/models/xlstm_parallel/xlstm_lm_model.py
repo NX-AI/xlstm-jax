@@ -9,8 +9,9 @@ from xlstm_jax.distributed.array_utils import split_array_over_mesh
 from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
 
+from ..configs import ParallelConfig
 from .components.init import small_init
-from .utils import ParallelConfig, prepare_module
+from .utils import prepare_module
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
 

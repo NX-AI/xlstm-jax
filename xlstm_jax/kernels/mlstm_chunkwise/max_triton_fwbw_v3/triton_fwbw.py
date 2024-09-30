@@ -54,6 +54,7 @@ def _mlstm_chunkwise_fwbw_generator(
     Returns:
         A function that computes the forward pass of the mLSTM chunkwise formulation, which custom gradients for the
         backward pass. The function input signatures is:
+
             forward(
                 matQ: jax.Array,  # (B, NH, S, DHQK)
                 matK: jax.Array,  # (B, NH, S, DHQK)

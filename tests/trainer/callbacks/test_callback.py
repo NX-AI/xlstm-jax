@@ -22,55 +22,55 @@ class ToyCallback(Callback):
 
     def on_filtered_training_epoch_start(self, epoch_idx: int):
         """Test function for training epoch start."""
-        assert self.every_n_epochs > 0, "Train epoch start should not be called if every_n_epochs is not active."
+        assert self._every_n_epochs > 0, "Train epoch start should not be called if every_n_epochs is not active."
         assert (
-            epoch_idx % self.every_n_epochs == 0
-        ), f"Train epoch start called at epoch idx {epoch_idx} but every {self.every_n_epochs} epochs."
-        assert (not self.main_process_only) or (
+            epoch_idx % self._every_n_epochs == 0
+        ), f"Train epoch start called at epoch idx {epoch_idx} but every {self._every_n_epochs} epochs."
+        assert (not self._main_process_only) or (
             jax.process_index() == 0
         ), "Train epoch start should only be called in the main process."
 
     def on_filtered_training_epoch_end(self, train_metrics: Metrics, epoch_idx: int):
         """Test function for training epoch end."""
         del train_metrics
-        assert self.every_n_epochs > 0, "Train epoch end should not be called if every_n_epochs is not active."
+        assert self._every_n_epochs > 0, "Train epoch end should not be called if every_n_epochs is not active."
         assert (
-            epoch_idx % self.every_n_epochs == 0
-        ), f"Train epoch end called at epoch idx {epoch_idx} but every {self.every_n_epochs} epochs."
-        assert (not self.main_process_only) or (
+            epoch_idx % self._every_n_epochs == 0
+        ), f"Train epoch end called at epoch idx {epoch_idx} but every {self._every_n_epochs} epochs."
+        assert (not self._main_process_only) or (
             jax.process_index() == 0
         ), "Train epoch end should only be called in the main process."
 
     def on_filtered_validation_epoch_start(self, epoch_idx: int, step_idx: int):
         """Test function for validation epoch start."""
         del step_idx
-        assert self.every_n_epochs > 0, "Validation epoch start should not be called if every_n_epochs is not active."
+        assert self._every_n_epochs > 0, "Validation epoch start should not be called if every_n_epochs is not active."
         assert (
-            epoch_idx % self.every_n_epochs == 0
-        ), f"Validation epoch start called at epoch idx {epoch_idx} but every {self.every_n_epochs} epochs."
-        assert (not self.main_process_only) or (
+            epoch_idx % self._every_n_epochs == 0
+        ), f"Validation epoch start called at epoch idx {epoch_idx} but every {self._every_n_epochs} epochs."
+        assert (not self._main_process_only) or (
             jax.process_index() == 0
         ), "Validation epoch start should only be called in the main process."
 
     def on_filtered_validation_epoch_end(self, val_metrics: Metrics, epoch_idx: int, step_idx: int):
         """Test function for validation epoch end."""
         del val_metrics, step_idx
-        assert self.every_n_epochs > 0, "Validation epoch end should not be called if every_n_epochs is not active."
+        assert self._every_n_epochs > 0, "Validation epoch end should not be called if every_n_epochs is not active."
         assert (
-            epoch_idx % self.every_n_epochs == 0
-        ), f"Validation epoch end called at epoch idx {epoch_idx} but every {self.every_n_epochs} epochs."
-        assert (not self.main_process_only) or (
+            epoch_idx % self._every_n_epochs == 0
+        ), f"Validation epoch end called at epoch idx {epoch_idx} but every {self._every_n_epochs} epochs."
+        assert (not self._main_process_only) or (
             jax.process_index() == 0
         ), "Validation epoch end should only be called in the main process."
 
     def on_filtered_training_step(self, step_metrics: Metrics, epoch_idx: int, step_idx: int):
         """Test function for training step."""
         del step_metrics, epoch_idx
-        assert self.every_n_steps > 0, "Train step should not be called if every_n_steps is not active."
+        assert self._every_n_steps > 0, "Train step should not be called if every_n_steps is not active."
         assert (
-            step_idx % self.every_n_steps == 0
-        ), f"Train step called at step idx {step_idx} but every {self.every_n_steps} steps."
-        assert (not self.main_process_only) or (
+            step_idx % self._every_n_steps == 0
+        ), f"Train step called at step idx {step_idx} but every {self._every_n_steps} steps."
+        assert (not self._main_process_only) or (
             jax.process_index() == 0
         ), "Train step should only be called in the main process."
 

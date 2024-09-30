@@ -7,13 +7,17 @@ import jax.numpy as jnp
 import numpy as np
 from flax.core import FrozenDict, freeze, unfreeze
 
-# Mode for logging. Describes how to aggregate metrics over steps.
-# mean: Mean of the metric.
-# mean_nopostfix: Mean of the metric without adding a mean postfix to the key.
-# single: Single value of the metric, i.e. only tracks the last value.
-# max: Maximum value of the metric.
-# std: Standard deviation of the metric.
 LogMode = Literal["mean", "mean_nopostfix", "single", "max", "std"]
+"""Mode for logging. Describes how to aggregate metrics over steps.
+
+- `mean`: Mean of the metric.
+- `mean_nopostfix`: Mean of the metric without adding a mean postfix to the key.
+- `single`: Single value of the metric, i.e. only tracks the last value.
+- `max`: Maximum value of the metric.
+- `std`: Standard deviation of the metric.
+"""
+# TODO: not clear how to document module level type definitions
+# TODO: Python 3.12 has the new `type` statement, check if this makes things easier
 # Immutable metrics for compilation.
 ImmutableMetricElement = FrozenDict[LogMode, FrozenDict[str, jax.Array | int | float]]
 ImmutableMetrics = FrozenDict[str, ImmutableMetricElement]
@@ -44,11 +48,10 @@ def update_metrics(
     Update metrics with new values.
 
     Args:
-        global_metrics: Global metrics to update. If None, a new dictionary is created.
+        global_metrics: Global metrics to update. If `None`, a new dictionary is created.
         step_metrics: Metrics to update with.
-        default_log_modes: The default log mode for the metrics. If None, only the mean will
-            be logged. Otherwise, we log each of the modes specified. The metric key will be
-            appended with the log mode.
+        default_log_modes: The default log mode for the metrics. If `None`, only the mean will be logged. Otherwise, we
+            log each of the modes specified. The metric key will be appended with the log mode.
 
     Returns:
         Updated global metrics.
@@ -134,16 +137,15 @@ def get_metrics(
     """
     Calculates metrics to log from global metrics.
 
-    Supports resetting the global metrics after logging. For example, if the global metrics
-    are logged every epoch, the global metrics can be reset after obtaining the metrics to log
-    such that the next epoch starts with empty metrics.
+    Supports resetting the global metrics after logging. For example, if the global metrics are logged every epoch, the
+    global metrics can be reset after obtaining the metrics to log such that the next epoch starts with empty metrics.
 
     Args:
         global_metrics: Global metrics to log.
         reset_metrics: Whether to reset the metrics after logging.
 
     Returns:
-        The updated global metrics if reset_metrics is True, otherwise the original global metrics.
+        The updated global metrics if reset_metrics is `True`, otherwise the original global metrics.
         Additionally, the metrics to log on the host device are returned.
     """
     if isinstance(global_metrics, FrozenDict) and reset_metrics:

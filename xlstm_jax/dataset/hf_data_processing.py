@@ -42,13 +42,11 @@ def group_texts(examples: dict[str, Sequence[Any]], block_size: int) -> dict[str
     """
     Groups texts together in a chunk of block_size.
 
-    This reduces the padding in the pre-training data by saving slices of data in a single
-    sequence. Alternative to this is an online packing algorithm, which may lead to small
-    padding overheads.
+    This reduces the padding in the pre-training data by saving slices of data in a single sequence. Alternative to
+    this is an online packing algorithm, which may lead to small padding overheads.
 
     Args:
-        examples: The data elements that should be grouped. The data elements should be
-            batched, i.e., a list of lists.
+        examples: The data elements that should be grouped. The data elements should be batched, i.e., a list of lists.
         block_size: The size of the block to group the texts in.
 
     Returns:
@@ -99,12 +97,12 @@ def preprocessing_pipeline(
     Pipeline for preprocessing HF dataset.
 
     Args:
-        dataloading_host_index: The index of the dataloading host. Will be used to select the
-            correct shard of the dataset. In JAX, this is equivalent to `jax.process_index()`.
-        dataloading_host_count: The number of dataloading hosts. Will be used to determine the
-            shard size. In JAX, this is equivalent to `jax.process_count()`.
+        dataloading_host_index: The index of the data loading host. Will be used to select the
+            correct shard of the dataset. In JAX, this is equivalent to :func:`jax.process_index()`.
+        dataloading_host_count: The number of data loading hosts. Will be used to determine the
+            shard size. In JAX, this is equivalent to :func:`jax.process_count()`.
         global_mesh: The global mesh to shard the data over.
-        dataset: The dataset to load. Should provide a __getitem__ method to access elements.
+        dataset: The dataset to load. Should provide a `__getitem__` method to access elements.
         data_column_name: The column name for the data in the dataset.
         tokenize: Whether to tokenize the data.
         global_batch_size: The global batch size.
@@ -119,8 +117,8 @@ def preprocessing_pipeline(
             batch of all epochs together is dropped.
         tokenizer_path: The path to the tokenizer.
         hf_access_token: The access token for HuggingFace.
-        hf_num_map_processes: The number of processes to use in the preprocessing maps. If None,
-            no multi-processing is used.
+        hf_num_map_processes: The number of processes to use in the preprocessing maps. If `None`,
+            no multiprocessing is used.
         add_bos: Whether to add the beginning of sequence token.
         add_eos: Whether to add the end of sequence token.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
@@ -219,13 +217,12 @@ def make_hf_iterator(
     Args:
         config: HFDataConfig object with dataset configuration.
         global_mesh: The global mesh to shard the data over.
-        process_indices: List of process indices that should load the real data. This is used to
-            determine the dataloading host index and host count if not provided.
-        dataloading_host_index: The index of the dataloading host. Will be used to select the
-            correct shard of the dataset. If None, determined from process_indices and
-            jax.process_index().
-        dataloading_host_count: The number of dataloading hosts. Will be used to determine the
-            shard size. If not provided, determined from process_indices.
+        process_indices: List of process indices that should load the real data. This is used to determine the data
+            loading host index and host count if not provided.
+        dataloading_host_index: The index of the data loading host. Will be used to select the correct shard of the
+            dataset. If `None`, determined from process_indices and :func:`jax.process_index()`.
+        dataloading_host_count: The number of data loading hosts. Will be used to determine the shard size. If not
+            provided, determined from `process_indices`.
 
     Returns:
         Tuple of training and evaluation iterators.

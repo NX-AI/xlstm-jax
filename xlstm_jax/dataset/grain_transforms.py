@@ -165,16 +165,15 @@ class ShiftData(grain.MapTransform):
 
 @dataclasses.dataclass
 class CollacteToBatch(grain.MapTransform):
-    """Collate data to batch."""
+    """
+    Collate data to batch.
+
+    Args:
+        batch_class: A NamedTuple or dataclass to hold the batch data.
+        key_map: Dictionary to map input to batch keys. Keys that are not found in the dictionary will be used as is.
+    """
 
     def __init__(self, batch_class: NamedTuple, key_map: dict[str, str] | None = None):
-        """Initialize map transformation.
-
-        Args:
-          batch_class: A NamedTuple or dataclass to hold the batch data.
-          key_map: A dictionary to map input keys to batch keys. Keys that are not found in
-            the dictionary will be used as is.
-        """
         self.batch_class = batch_class
         self.key_map = key_map if key_map is not None else {}
 

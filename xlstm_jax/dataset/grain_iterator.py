@@ -55,11 +55,11 @@ def make_grain_llm_iterator(
 
     Args:
         dataloading_host_index: The index of the dataloading host. Will be used to select the
-            correct shard of the dataset. In JAX, this is equivalent to `jax.process_index()`.
+            correct shard of the dataset. In JAX, this is equivalent to :func:`jax.process_index()`.
         dataloading_host_count: The number of dataloading hosts. Will be used to determine the
-            shard size. In JAX, this is equivalent to `jax.process_count()`.
+            shard size. In JAX, this is equivalent to :func:`jax.process_count()`.
         global_mesh: The global mesh to shard the data over.
-        dataset: The dataset to load. Should provide a __getitem__ method to access elements.
+        dataset: The dataset to load. Should provide a `__getitem__` method to access elements.
         global_batch_size: The global batch size.
         max_target_length: The maximum target length.
         shuffle: Whether to shuffle the dataset. If you want a different shuffle order each
@@ -70,19 +70,19 @@ def make_grain_llm_iterator(
             batches of an epoch can spill over into the first batch of the next epoch, to
             avoid dropping data. The argument `drop_remainder` controls whether the very last
             batch of all epochs together is dropped.
-        operations: A list of grain operations to apply to the dataset before batching.
+        operations: A list of `grain` operations to apply to the dataset before batching.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
             with a lot of padding, as batch elements will be packed together in a sequence
             to reduce the amount of padding. This can improve throughput efficiency. NOTE:
             if packing is enabled, the length of the iterator cannot be determined in advance
             and is likely incorrect in the iterator (will be set to maximum number of batches).
-        shift: Whether to shift the input data to create the target data.=
-        worker_count: The number of workers to use. In grain, a single worker is usually
+        shift: Whether to shift the input data to create the target data.
+        worker_count: The number of workers to use. In `grain`, a single worker is usually
             sufficient, as the data loading is done in parallel across hots.
         worker_buffer_size: The buffer size for the workers.
         drop_remainder: Whether to drop the remainder of the dataset. Note that in case of
             providing a number of epochs, the last batch of all epochs together will be
-            dropped if this is set to True. If set to False, the last batch of all epochs
+            dropped if this is set to `True`. If set to `False`, the last batch of all epochs
             together will be included in the iterator.
     """
     if operations is None:

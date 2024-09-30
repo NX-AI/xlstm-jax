@@ -20,7 +20,7 @@ from xlstm_jax.distributed.single_gpu import (
     accumulate_gradients,
 )
 
-from .utils import ParallelConfig
+from ..configs import ParallelConfig
 from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 
 

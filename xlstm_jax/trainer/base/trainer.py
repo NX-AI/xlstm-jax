@@ -38,71 +38,77 @@ PyTree = Any
 
 @dataclass(kw_only=True, frozen=True)
 class TrainerConfig(ConfigDict):
-    """
-    Configuration for the Trainer module.
-
-    Attributes:
-        seed: Random seed for reproducibility. To be used in the model init and training step.
-        debug: Whether to run in debug mode. This disables jitting of the training and evaluation functions, which will
-            slow down the training significantly but makes debugging easier.
-        donate_train_state: Whether to donate the train state in the training step. This can reduce memory usage as the
-            parameters and optimizer states are in-place updated in the training step. However, this prevents using the
-            previous train state after calling the training step (not used in Trainer, but keep in mind for custom
-            training loops and callbacks).
-        enable_progress_bar: Whether to enable the progress bar. For multi-process training, only the main process will
-            show the progress bar.
-        gradient_accumulate_steps: Number of steps to accumulate gradients before updating the parameters.
-        gradient_accumulate_scan: Whether to use scan for gradient accumulation. This can be more memory efficient and
-            significantly faster to compile for large models, but can be slighlty slower due to memory slicing.
-        check_val_every_n_epoch: Check validation every N training epochs. If -1, no validation is performed after an
-            epoch. Note that this is not mutually exclusive with check_val_every_n_steps, and both can be used.
-        check_val_every_n_steps: Check validation every N training steps. If -1, no validation is performed on a
-            per-step basis. Note that this is not mutually exclusive with check_val_every_n_epoch, and both can be used.
-        check_for_nan: Whether to check for NaN values in the loss during training. If a NaN value is found, the
-            training will be stopped.
-        log_grad_norm: Whether to log the gradient norm.
-        log_grad_norm_per_param: Whether to log the gradient norm per parameter. If
-            the model has many parameters, this can lead to a large log file.
-        log_param_norm: Whether to log the parameter norm.
-        log_param_norm_per_param: Whether to log the parameter norm per parameter. If
-            the model has many parameters, this can lead to a large log file.
-        log_intermediates: Whether to log intermediate values during training. This is useful for debugging, but can
-            lead to a large log file and a bit of overhead during training, if intermediates are complex to compute.
-            Intermediates can be recorded by using the `self.sow("intermediates", "KEY", VALUE)` method in the model.
-            The intermediate values are automatically registered and logged. Note that the values should be scalars.
-        default_train_log_modes: Default logging modes for training metrics. Can be "mean", "mean_nopostfix", "single",
-            "max", or "std". See metrics for more information. Each selected mode will be logged with the corresponding
-            postfix. During validation, we only log the mean of the metrics.
-        intermediates_log_modes: Logging modes for intermediate values. See default_train_log_modes for more
-            information.
-        logger: Configuration for the logger.
-        callbacks: List of callbacks to apply.
-        seed_eval: Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
-            reproducibility of evaluation metrics.
-    """
+    """Configuration for the Trainer module."""
 
     seed: int = 0
+    """Random seed for reproducibility. To be used in the model init and training step."""
     debug: bool = False
+    """Whether to run in debug mode. This disables jitting of the training and evaluation functions, which will slow
+    down the training significantly but makes debugging easier."""
     donate_train_state: bool = True
+    """Whether to donate the train state in the training step. This can reduce memory usage as the parameters and
+    optimizer states are in-place updated in the training step. However, this prevents using the previous train state
+    after calling the training step (not used in Trainer, but keep in mind for custom training loops and callbacks)."""
     enable_progress_bar: bool = True
+    """Whether to enable the progress bar. For multiprocess training, only the main process will show the progress bar.
+    """
     gradient_accumulate_steps: int = 1
+    """Number of steps to accumulate gradients before updating the parameters."""
     gradient_accumulate_scan: bool = False
+    """Whether to use scan for gradient accumulation. This can be more memory efficient and significantly faster to
+    compile for large models, but can be slighlty slower due to memory slicing."""
     check_val_every_n_epoch: int = 1
+    """Check validation every N training epochs. If -1, no validation is performed after an epoch. Note that this is
+    not mutually exclusive with check_val_every_n_steps, and both can be used."""
     check_val_every_n_steps: int = -1
+    """Check validation every N training steps. If -1, no validation is performed on a per-step basis. Note that this
+    is not mutually exclusive with check_val_every_n_epoch, and both can be used."""
     check_for_nan: bool = True
+    """Whether to check for NaN values in the loss during training. If NaNs are found, training will be stopped."""
     log_grad_norm: bool = True
+    """Whether to log the gradient norm."""
     log_grad_norm_per_param: bool = False
+    """Whether to log the gradient norm per parameter. If the model has many parameters, this can lead to a large log
+    file."""
     log_param_norm: bool = True
+    """Whether to log the parameter norm."""
     log_param_norm_per_param: bool = False
+    """Whether to log the parameter norm per parameter. If the model has many parameters, this can lead to a large log
+    file."""
     log_intermediates: bool = False
+    """Whether to log intermediate values during training. This is useful for debugging, but can lead to a large log
+    file and a bit of overhead during training, if intermediates are complex to compute. Intermediates can be recorded
+    by using the ``self.sow("intermediates", "KEY", VALUE)`` method in the model. The intermediate values are
+    automatically registered and logged. Note that the values should be scalars."""
     default_train_log_modes: Sequence[str] = ("mean",)
+    """Default logging modes for training metrics. Can be `mean`, `mean_nopostfix`, `single`, `max`, or `std`. See
+    metrics for more information. Each selected mode will be logged with the corresponding postfix. During validation,
+    we only log the `mean` of the metrics."""
     intermediates_log_modes: Sequence[str] = ("mean",)
+    """Logging modes for intermediate values. See `default_train_log_modes` for more information."""
     logger: LoggerConfig = LoggerConfig()
+    """Configuration for the logger."""
     callbacks: Sequence[CallbackConfig] = ()
+    """List of callbacks to apply."""
     seed_eval: int = 0
+    """Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
+    reproducibility of evaluation metrics."""
 
 
 class TrainerModule:
+    """
+    A basic Trainer module summarizing most common training functionalities like logging, model initialization, training
+    loop, etc..
+
+    Args:
+        trainer_config: A dictionary containing the trainer configuration.
+        model_config: A dictionary containing the model configuration.
+        optimizer_config: A dictionary containing the optimizer configuration.
+        batch: An input to the model with which the shapes are inferred. Can be a :class:`jax.ShapeDtypeStruct` instead
+            of actual full arrays for efficiency.
+        mesh: A mesh object to use for parallel training. If `None`, a new mesh will be created.
+    """
+
     def __init__(
         self,
         trainer_config: TrainerConfig,
@@ -111,18 +117,6 @@ class TrainerModule:
         batch: Batch,
         mesh: Mesh | None = None,
     ):
-        """
-        A basic Trainer module summarizing most common training functionalities like logging, model initialization,
-        training loop, etc..
-
-        Args:
-            trainer_config: A dictionary containing the trainer configuration.
-            model_config: A dictionary containing the model configuration.
-            optimizer_config: A dictionary containing the optimizer configuration.
-            batch: An input to the model with which the shapes are inferred. Can be a :class:`jax.ShapeDtypeStruct`
-                instead of actual full arrays for efficiency.
-            mesh: A mesh object to use for parallel training. If None, a new mesh will be created.
-        """
         super().__init__()
         self.trainer_config = trainer_config
         self.model_config = model_config
@@ -147,8 +141,7 @@ class TrainerModule:
         """
         Convert a batch to the input format expected by the model.
 
-        Needs to be implemented by the subclass if batch.inputs is not
-        sufficient.
+        Needs to be implemented by the subclass if `batch.inputs` is not sufficient.
 
         Args:
             batch: A batch of data.
@@ -164,7 +157,7 @@ class TrainerModule:
 
         Args:
             model_config: A dictionary containing the model configuration, including the parallelization parameters.
-            mesh: A mesh object to use for parallel training. If None, a new mesh is created.
+            mesh: A mesh object to use for parallel training. If `None`, a new mesh is created.
         """
         if mesh is None:
             self.mesh = initialize_mesh(parallel_config=model_config.parallel)
@@ -309,7 +302,7 @@ class TrainerModule:
         metrics shape.
 
         Args:
-            batch: An input to the model with which the shapes are inferred. If None, the ``exmp_batch`` is used.
+            batch: An input to the model with which the shapes are inferred. If None, the :attr:`exmp_batch` is used.
 
         Returns:
             A dictionary of metrics with the same shape as the train metrics.
@@ -330,7 +323,7 @@ class TrainerModule:
         See init_train_metrics for more details.
 
         Args:
-            batch: An input to the model with which the shapes are inferred. If None, the ``exmp_batch`` is used.
+            batch: An input to the model with which the shapes are inferred. If None, the :attr:`exmp_batch` is used.
 
         Returns:
             A dictionary of metrics with the same shape as the eval metrics.
@@ -893,13 +886,9 @@ class TrainerModule:
             "train_steps_per_epoch": len(train_loader) if hasattr(train_loader, "__len__") else steps_per_epoch,
             "num_epochs": num_epochs,
             "num_train_steps": num_train_steps,
-            "train_dataset_size": train_loader.get_dataset_size()
-            if hasattr(train_loader, "get_dataset_size")
-            else None,
-            "val_dataset_size": val_loader.get_dataset_size() if hasattr(val_loader, "get_dataset_size") else None,
-            "test_dataset_size": test_loader.get_dataset_size()
-            if test_loader is not None and hasattr(test_loader, "get_dataset_size")
-            else None,
+            "train_dataset_size": getattr(train_loader, "dataset_size", None),
+            "val_dataset_size": getattr(val_loader, "dataset_size", None),
+            "test_dataset_size": None if test_loader is None else getattr(test_loader, "dataset_size", None),
         }
         dataset_metrics = {k: v for k, v in dataset_metrics.items() if v is not None}
         self.logger.log_host_metrics(dataset_metrics, step=self.global_step, mode="dataset")

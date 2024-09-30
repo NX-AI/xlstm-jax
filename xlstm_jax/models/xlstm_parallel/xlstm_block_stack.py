@@ -6,9 +6,9 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from ..configs import SubModelConfig
+from ..configs import ParallelConfig, SubModelConfig
 from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlockConfig
-from .utils import ParallelConfig, prepare_module
+from .utils import prepare_module
 
 
 @dataclass

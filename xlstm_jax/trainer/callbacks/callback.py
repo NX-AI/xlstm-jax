@@ -9,21 +9,17 @@ from xlstm_jax.trainer.metrics import Metrics
 
 @dataclass(kw_only=True, frozen=True)
 class CallbackConfig(ConfigDict):
-    """
-    Base configuration of a callback.
-
-    Attributes:
-        every_n_epochs: If the callback implements functions on a per-epoch basis (e.g. `on_training_epoch_start`,
-            `on_training_epoch_end`, `on_validation_epoch_start`), this parameter specifies the frequency of calling
-            these functions.
-        every_n_steps: If the callback implements functions on a per-step basis (e.g. `on_training_step`), this
-            parameter specifies the frequency of calling these functions.
-        main_process_only: Whether to call the callback only in the main process.
-    """
+    """Base configuration of a callback."""
 
     every_n_epochs: int = 1
+    """If the callback implements functions on a per-epoch basis (e.g. `on_training_epoch_start`,
+    `on_training_epoch_end`, `on_validation_epoch_start`), this parameter specifies the frequency of calling these
+    functions."""
     every_n_steps: int = -1
+    """If the callback implements functions on a per-step basis (e.g. `on_training_step`), this parameter specifies the
+    frequency of calling these functions."""
     main_process_only: bool = False
+    """Whether to call the callback only in the main process."""
 
     def create(self, trainer: Any, data_module: Any = None) -> "Callback":
         """
@@ -50,25 +46,24 @@ class Callback:
     each epoch or step.
 
     Note: all counts of epoch index and step index are starting at 1 (i.e. the first epoch is 1 instead of 0).
+
+    Args:
+        config: Configuration dictionary.
+        trainer: Trainer object.
+        data_module (optional): Data module object.
     """
 
     def __init__(self, config: ConfigDict, trainer: Any, data_module: Any | None = None):
-        """
-        Base class for callbacks.
-
-        Args:
-            config: Configuration dictionary.
-            trainer: Trainer object.
-            data_module (optional): Data module object.
-        """
-        self.config = config
+        self.config = config  # TODO: define CallbackConfig
         self.trainer = trainer
         self.data_module = data_module
-        self.every_n_epochs = config.every_n_epochs
-        self.every_n_steps = config.every_n_steps
-        self.main_process_only = config.main_process_only
-        self.active_on_epochs = (self.every_n_epochs > 0) and (not self.main_process_only or jax.process_index() == 0)
-        self.active_on_steps = (self.every_n_steps > 0) and (not self.main_process_only or jax.process_index() == 0)
+        self._every_n_epochs = config.every_n_epochs
+        self._every_n_steps = config.every_n_steps
+        self._main_process_only = config.main_process_only
+        self._active_on_epochs = (self._every_n_epochs > 0) and (
+            not self._main_process_only or jax.process_index() == 0
+        )
+        self._active_on_steps = (self._every_n_steps > 0) and (not self._main_process_only or jax.process_index() == 0)
 
     def on_training_start(self):
         """Called at the beginning of training."""
@@ -83,7 +78,7 @@ class Callback:
         Args:
             epoch_idx: Index of the current epoch.
         """
-        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+        if self._active_on_epochs and epoch_idx % self._every_n_epochs == 0:
             self.on_filtered_training_epoch_start(epoch_idx)
 
     def on_filtered_training_epoch_start(self, epoch_idx: int):
@@ -102,7 +97,7 @@ class Callback:
             train_metrics: Dictionary of training metrics of the current epoch.
             epoch_idx: Index of the current epoch.
         """
-        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+        if self._active_on_epochs and epoch_idx % self._every_n_epochs == 0:
             self.on_filtered_training_epoch_end(train_metrics, epoch_idx)
 
     def on_filtered_training_epoch_end(self, train_metrics: Metrics, epoch_idx: int):
@@ -123,7 +118,7 @@ class Callback:
             epoch_idx: Index of the current epoch.
             step_idx: Index of the current step.
         """
-        if self.active_on_steps and step_idx % self.every_n_steps == 0:
+        if self._active_on_steps and step_idx % self._every_n_steps == 0:
             self.on_filtered_training_step(step_metrics, epoch_idx, step_idx)
 
     def on_filtered_training_step(self, step_metrics: Metrics, epoch_idx: int, step_idx: int):
@@ -132,6 +127,7 @@ class Callback:
 
         Args:
             step_metrics: Dictionary of training metrics of the current step.
+            epoch_idx: Index of the current epo.
             step_idx: Index of the current step.
         """
 
@@ -143,7 +139,7 @@ class Callback:
             epoch_idx: Index of the current training epoch.
             step_idx: Index of the current training step.
         """
-        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+        if self._active_on_epochs and epoch_idx % self._every_n_epochs == 0:
             self.on_filtered_validation_epoch_start(epoch_idx, step_idx)
 
     def on_filtered_validation_epoch_start(self, epoch_idx: int, step_idx: int):
@@ -164,7 +160,7 @@ class Callback:
             epoch_idx: Index of the current training epoch.
             step_idx: Index of the current training step.
         """
-        if self.active_on_epochs and epoch_idx % self.every_n_epochs == 0:
+        if self._active_on_epochs and epoch_idx % self._every_n_epochs == 0:
             self.on_filtered_validation_epoch_end(eval_metrics, epoch_idx, step_idx)
 
     def on_filtered_validation_epoch_end(self, eval_metrics: Metrics, epoch_idx: int, step_idx: int):

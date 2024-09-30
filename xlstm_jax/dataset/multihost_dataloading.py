@@ -87,12 +87,23 @@ def get_next_batch_sharded(local_iterator: Iterator, global_mesh: Mesh) -> jax.A
 
 class MultiHostDataLoadIterator:
     """
-    Wrapper around a tf.data.Dataset or Iterable to iterate over data in a multi-host setup.
+    Create a MultiHostDataLoadIterator.
 
-    Folds get_next_batch_sharded into a iterator class, and supports breaking indefinite iterator
-    into epochs.
+    Wrapper around a :class:`tf.data.Dataset` or Iterable to iterate over data in a multi-host setup.
+    Folds get_next_batch_sharded into an iterator class, and supports breaking indefinite iterator into epochs.
 
-    TODO (later PR): Add support for getting and setting state of the iterator.
+    Args:
+        dataloader: The dataloader to iterate over.
+        global_mesh: The mesh to shard the data over.
+        iterator_length: The length of the iterator. If provided, the iterator will stop after this many steps with a
+            :class:`StopIteration` exception. Otherwise, will continue over the iterator until it raises an exception
+            itself.
+        dataset_size: size of the dataset. If provided, will be returned by get_dataset_size. Otherwise, will return
+            `None`. Can be used to communicate the dataset size to functions that use the iterator.
+        reset_after_epoch: Whether to reset the iterator between epochs or not. If `True`, the iterator will reset
+            after each epoch, otherwise it will continue from where it left off. If you have an indefinite iterator
+            (e.g. train iterator with grain and shuffle), this should be set to `False`. For un-shuffled iterators in
+            grain (e.g. validation), this should be set to `True`.
     """
 
     def __init__(
@@ -103,24 +114,7 @@ class MultiHostDataLoadIterator:
         dataset_size: int | None = None,
         reset_after_epoch: bool = False,
     ):
-        """
-        Create a MultiHostDataLoadIterator.
-
-        Args:
-            dataloader: tf.data.Dataset | Iterable: The dataloader to iterate over.
-            global_mesh: Mesh: The mesh to shard the data over.
-            iterator_length: int | None: The length of the iterator. If provided, the iterator will
-                stop after this many steps with a StopIteration exception. Otherwise, will continue
-                over the iterator until it raises an exception itself.
-            dataset_size: int | None: The size of the dataset. If provided, will be returned by
-                get_dataset_size. Otherwise, will return None. Can be used to communicate the dataset
-                size to functions that use the iterator.
-            reset_after_epoch: bool: Whether to reset the iterator between epochs or not. If True,
-                the iterator will reset after each epoch, otherwise it will continue from where it
-                left off. If you have a indefinite iterator (e.g. train iterator with grain and shuffle),
-                this should be set to False. For unshuffled iterators in grain (e.g. validation),
-                this should be set to True.
-        """
+        # TODO Add support for getting and setting state of the iterator (https://github.com/NX-AI/xlstm-jax/issues/59)
         self.global_mesh = global_mesh
         self.dataloader = dataloader
         self.iterator_length = iterator_length
@@ -133,9 +127,6 @@ class MultiHostDataLoadIterator:
             self.local_iterator = iter(self.dataloader)
         else:
             raise ValueError("Type error: dataloader should be either tf.data.Dataset or Iterable.")
-
-    def get_dataset_size(self):
-        return self.dataset_size
 
     def reset(self):
         self.step_counter = 0

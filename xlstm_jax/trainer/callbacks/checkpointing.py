@@ -53,20 +53,19 @@ class ModelCheckpointConfig(CallbackConfig):
 
 
 class ModelCheckpoint(Callback):
-    """Callback to save model parameters and mutable variables to the logging directory."""
+    """
+    Callback to save model parameters and mutable variables to the logging directory.
+
+    Sets up an orbax checkpoint manager to save model parameters, training step, random number generator state, and
+    metadata to the logging directory.
+
+    Args:
+        config: The configuration for the ModelCheckpoint callback.
+        trainer: The trainer object.
+        data_module: The data module object.
+    """
 
     def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: Any | None = None):
-        """
-        Initialize the Model Checkpoint callback.
-
-        Sets up an orbax checkpoint manager to save model parameters, training step, random number generator state, and
-        metadata to the logging directory.
-
-        Args:
-            config: The configuration for the ModelCheckpoint callback.
-            trainer: The trainer object.
-            data_module: The data module object.
-        """
         super().__init__(config, trainer, data_module)
         assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
         self.log_path: Path = self.trainer.log_path
