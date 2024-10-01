@@ -5,6 +5,7 @@ import jax.numpy as jnp
 import jax.test_util
 import numpy as np
 import pytest
+from flax import linen as nn
 
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple,
@@ -140,15 +141,27 @@ def test_ln():
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
 
-    x = jax.random.normal(inp_rng, (2, 8, 3, 4))
-    model = MultiHeadLayerNorm(dtype=jnp.float32)
+    x = jax.random.normal(inp_rng, (2, 8, 3, 384))
+    model = MultiHeadLayerNorm(dtype=jnp.float32, axis=1, eps=1e-5)
     params = model.init(model_rng, x)
     y = model.apply(params, x)
-    assert params["params"]["scale"].shape == (8, 4)
+    assert params["params"]["scale"].shape == (x.shape[1], x.shape[-1])
     assert len(params["params"]) == 1
-    assert y.shape == (2, 8, 3, 4)
+    assert y.shape == x.shape
     assert jnp.allclose(y.std(axis=-1), 1, atol=1e-3), y.std(axis=-1)
     assert jnp.allclose(y.mean(axis=-1), 0, atol=1e-3), y.mean(axis=-1)
+
+    # Compare to Group normalization
+    group_norm = nn.GroupNorm(dtype=jnp.float32, num_groups=x.shape[1], epsilon=1e-5)
+    x_gn = x.transpose(0, 2, 1, 3).reshape(x.shape[0] * x.shape[2], -1)
+    params = group_norm.init(model_rng, x_gn)
+    y_gn = group_norm.apply(params, x_gn)
+    y_gn = y_gn.reshape(x.shape[0], x.shape[2], x.shape[1], x.shape[3]).transpose(0, 2, 1, 3)
+    y = jax.device_get(y)
+    y_gn = jax.device_get(y_gn)
+    np.testing.assert_allclose(y_gn.std(axis=-1), 1, atol=1e-3)
+    np.testing.assert_allclose(y_gn.mean(axis=-1), 0, atol=1e-3)
+    np.testing.assert_allclose(y, y_gn)
 
 
 def test_linear_headwise():
