@@ -18,6 +18,8 @@ class xLSTMBlockConfig:
 
     feedforward: FeedForwardConfig | None = None
     dtype: jnp.dtype = jnp.bfloat16
+    norm_eps: float = 1e-6
+    """Epsilon value for numerical stability in layer norm."""
 
     # we initialize these with None to catch the case where they are not set
     _num_blocks: int = None
@@ -59,6 +61,7 @@ class xLSTMBlock(nn.Module):
             dtype=self.config.dtype,
             name="xlstm_norm",
             axis_name=self.config.parallel.model_axis_name,
+            eps=self.config.norm_eps,
         )
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
@@ -78,6 +81,7 @@ class xLSTMBlock(nn.Module):
                 dtype=self.config.dtype,
                 name="ffn_norm",
                 axis_name=self.config.parallel.model_axis_name,
+                eps=self.config.norm_eps,
             )
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)
