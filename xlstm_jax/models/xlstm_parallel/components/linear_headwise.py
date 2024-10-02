@@ -74,7 +74,7 @@ class LinearHeadwiseExpand(nn.Module):
         x = jnp.einsum("...hd,hod->...ho", x, weight)
         x = x.reshape(*x.shape[:-2], -1)
         if self.config.bias:
-            bias = self.param("bias", jax.nn.initializers.zeros, (self.config._out_features,))
+            bias = self.param("bias", self.bias_init, (self.config._out_features,))
             if not self.config.trainable_bias:
                 bias = jax.lax.stop_gradient(bias)
             bias = bias.astype(self.config.dtype)

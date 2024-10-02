@@ -1,6 +1,7 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
 from functools import partial
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -35,6 +36,15 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     # For debugging purposes, we allow skipping the mLSTM cell
     # and only have the up and down projection.
     debug_cell: bool = False
+    gate_input: Literal["qkv", "x_mlstm", "x_mlstm_conv", "x_mlstm_conv_act"] = "qkv"
+    """Which input to use for the mLSTM cell gates. Options are:
+    - "qkv": use the query, key and value vectors concatenated as input. Default, as in paper version.
+    - "x_mlstm": use the output of the mLSTM up projection layer. These are the same features that go into
+        the V projection.
+    - "x_mlstm_conv": use the output of the convolution on the mLSTM up projection features.
+    - "x_mlstm_conv_act": use the output of the activation function on the convolution on the mLSTM up projection
+        features. These are the same features that go into the QK projection.
+    """
 
     _num_blocks: int = 1
     _inner_embedding_dim: int = None
@@ -246,7 +256,20 @@ class mLSTMInnerLayer(nn.Module):
             "mLSTMCell",
             self.config.parallel,
         )
-        h_tilde_state = mlstm_cell(config=self.config.mlstm_cell, name="mlstm_cell")(q=q, k=k, v=v)
+        gate_input = None
+        if self.config.gate_input == "qkv":
+            gate_input = q, k, v
+        elif self.config.gate_input == "x_mlstm":
+            gate_input = x_mlstm
+        elif self.config.gate_input == "x_mlstm_conv":
+            gate_input = x_mlstm_conv
+        elif self.config.gate_input == "x_mlstm_conv_act":
+            gate_input = x_mlstm_conv_act
+        else:
+            raise ValueError(f"Invalid gate_inputs: {self.config.gate_input}")
+        h_tilde_state = mlstm_cell(config=self.config.mlstm_cell, name="mlstm_cell")(
+            q=q, k=k, v=v, gate_input=gate_input
+        )
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
         h_tilde_state_skip = h_tilde_state + (learnable_skip * x_mlstm_conv_act)

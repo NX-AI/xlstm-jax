@@ -13,6 +13,7 @@ from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_clean.xlstm_lm_model import xLSTMLMModel as xLSTMLMModelClean
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
@@ -45,6 +46,11 @@ MODEL_CONFIGS = [
                 dropout=0.2,
                 embedding_dim=16,
                 context_length=32,
+                gate_input="qkv",
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=True,
+                    gate_soft_cap=30.0,
+                ),
             )
         ),
     ),
@@ -71,6 +77,11 @@ MODEL_CONFIGS = [
                 dropout=0.2,
                 embedding_dim=16,
                 context_length=32,
+                gate_input="x_mlstm_conv_act",
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=False,
+                    gate_soft_cap=None,
+                ),
             )
         ),
     ),

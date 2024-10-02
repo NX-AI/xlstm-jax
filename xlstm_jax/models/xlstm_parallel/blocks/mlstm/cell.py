@@ -7,6 +7,7 @@ from flax import linen as nn
 from xlstm_jax.models.configs import SubModelConfig
 
 from ...components.init import bias_linspace_init
+from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...components.ln import MultiHeadLayerNorm
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
@@ -26,34 +27,91 @@ class mLSTMCellConfig(SubModelConfig):
     gate_dtype: jnp.dtype = jnp.float32
     gate_soft_cap: float | None = None
     """Soft cap for the gate pre-activations. If None, no cap is applied."""
+    gate_linear_headwise: bool = False
+    """If True, the gate pre-activations are computed with a linear headwise layer, similar to QKV.
+    Otherwise, each gate head takes as input the full features across all heads."""
 
 
 class mLSTMCell(nn.Module):
     config: mLSTMCellConfig
 
     @nn.compact
-    def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, **kwargs):
-        B, S, _ = q.shape
-        qkv = jnp.concatenate([q, k, v], axis=-1)
+    def __call__(
+        self,
+        q: jax.Array,
+        k: jax.Array,
+        v: jax.Array,
+        gate_input: jax.Array | tuple[jax.Array, ...] | None = None,
+        **kwargs,
+    ):
+        """mLSTM cell implementation.
 
-        # compute input and forget gate pre-activations  - why taking all heads as input?
+        Args:
+            q: Query tensor. Should be of shape (batch_size, context_length, embedding_dim).
+            k: Key tensor. Should be of shape (batch_size, context_length, embedding_dim).
+            v: Value tensor. Should be of shape (batch_size, context_length, embedding_dim).
+            gate_input: Input to the gate layers that predict the gate pre-activations. If None, the input
+                is (q, k, v). If a tuple, the inputs are concatenated along the last axis. For linear
+                headwise layers, the inputs are reshaped to (batch_size, context_length, num_heads, -1) and
+                concatenated along the last axis.
+            kwargs: Additional arguments for the mLSTM backend.
+        """
+        B, S, _ = q.shape
+
+        # Prepare gate input.
+        if gate_input is None:
+            gate_input = (q, k, v)
+        if isinstance(gate_input, tuple):
+            if self.config.gate_linear_headwise:
+                # If headwise, we need to restructure the features such that the headwise features of each input are
+                # concatenated on the last axis.
+                gate_input = [inp.reshape(*inp.shape[:-1], self.config.num_heads, -1) for inp in gate_input]
+                gate_input = jnp.concatenate(gate_input, axis=-1)
+                gate_input = gate_input.reshape(*gate_input.shape[:-2], -1)
+            else:
+                # For a dense layer, the order of the inputs does not matter.
+                gate_input = jnp.concatenate(gate_input, axis=-1)
+
+        # Compute input and forget gate pre-activations.
         with jax.named_scope("mlstm_gates"):
-            igate_preact = nn.Dense(
-                features=self.config.num_heads,
-                dtype=self.config.gate_dtype,
+            # Layer is either a linear headwise layer (inputs per-head features) or a dense layer (inputs all features).
+            def gate_layer(bias_init, name):
+                if self.config.gate_linear_headwise:
+                    return LinearHeadwiseExpand(
+                        config=LinearHeadwiseExpandConfig(
+                            in_features=gate_input.shape[-1],
+                            num_heads=self.config.num_heads,
+                            _out_features=self.config.num_heads,
+                            bias=True,
+                            dtype=self.config.gate_dtype,
+                        ),
+                        bias_init=bias_init,
+                        kernel_init=nn.initializers.zeros,
+                        name=name,
+                    )
+                else:
+                    return nn.Dense(
+                        features=self.config.num_heads,
+                        dtype=self.config.gate_dtype,
+                        bias_init=bias_init,
+                        kernel_init=nn.initializers.zeros,
+                        name=name,
+                    )
+
+            igate_preact = gate_layer(
                 bias_init=nn.initializers.normal(stddev=0.1),
-                kernel_init=nn.initializers.zeros,
                 name="igate",
-            )(qkv)
-            fgate_preact = nn.Dense(
-                features=self.config.num_heads,
-                dtype=self.config.gate_dtype,
+            )(gate_input)
+            fgate_preact = gate_layer(
                 bias_init=bias_linspace_init(3.0, 6.0),
-                kernel_init=nn.initializers.zeros,
                 name="fgate",
-            )(qkv)
+            )(gate_input)
+
+            # Apply soft cap to the gate pre-activations.
             igate_preact = soft_cap_logits(igate_preact, self.config.gate_soft_cap)
             fgate_preact = soft_cap_logits(fgate_preact, self.config.gate_soft_cap)
+
+            # Log intermediate statistics of the gates.
             self.sow("intermediates", "max_igate_preact", jnp.max(igate_preact))
             self.sow("intermediates", "max_fgate_preact", jnp.max(fgate_preact))
             self.sow("intermediates", "min_igate_preact", jnp.min(igate_preact))
