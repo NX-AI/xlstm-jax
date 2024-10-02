@@ -25,6 +25,7 @@ MODEL_CONFIGS = [
     xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
+        logits_soft_cap=30.0,
         num_blocks=3,
         context_length=32,
         tie_weights=False,
@@ -50,6 +51,7 @@ MODEL_CONFIGS = [
     xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
+        logits_soft_cap=None,
         num_blocks=3,
         context_length=32,
         tie_weights=False,

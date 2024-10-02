@@ -11,7 +11,7 @@ from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
 
 from ..configs import ParallelConfig
 from .components.init import small_init
-from .utils import prepare_module
+from .utils import prepare_module, soft_cap_logits
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
 
@@ -21,6 +21,8 @@ class xLSTMLMModelConfig(xLSTMBlockStackConfig):
     tie_weights: bool = False
     weight_decay_on_embedding: bool = False
     add_embedding_dropout: bool = False
+    logits_soft_cap: float | None = None
+    """Soft cap for the LM output logits. If None, no cap is applied."""
     parallel: ParallelConfig | None = None
 
 
@@ -56,6 +58,7 @@ class xLSTMLMModel(nn.Module):
             partial(TPOutputLayer, config=self.config, name="lm_head"), "LMHead", config=self.config.parallel
         )
         logits = pred_fn()(x)
+        logits = soft_cap_logits(logits, self.config.logits_soft_cap)
         return logits
 
 

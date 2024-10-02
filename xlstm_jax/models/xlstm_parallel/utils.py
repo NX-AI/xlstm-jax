@@ -2,6 +2,7 @@ import math
 from collections.abc import Callable
 from dataclasses import dataclass
 
+import jax
 from flax import linen as nn
 
 from xlstm_jax.distributed import shard_module_params
@@ -27,6 +28,26 @@ class UpProjConfigMixin(SubModelConfig):
                 multiple_of_multiplier = math.floor(multiple_of_multiplier)
 
             self._proj_up_dim = int(multiple_of_multiplier * self.round_proj_up_to_multiple_of)
+
+
+def soft_cap_logits(logits: jax.Array, cap_value: float | jax.Array) -> jax.Array:
+    """
+    Soft caps logits to a value.
+
+    Performs a tanh operation on the logits and scales the result to the cap value. Common technique in attention
+    and output language heads to prevent large logits from dominating the softmax. See for example Gemma2:
+    https://arxiv.org/abs/2408.00118
+
+    Args:
+        logits: The logits to cap.
+        cap_value: The value to cap logits to. If None, no cap is applied.
+
+    Returns:
+        The capped logits.
+    """
+    if cap_value is None:
+        return logits
+    return cap_value * nn.tanh(logits / cap_value)
 
 
 def prepare_module(

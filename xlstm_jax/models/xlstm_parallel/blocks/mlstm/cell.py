@@ -8,6 +8,7 @@ from xlstm_jax.models.configs import SubModelConfig
 
 from ...components.init import bias_linspace_init
 from ...components.ln import MultiHeadLayerNorm
+from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
 
 
@@ -21,6 +22,8 @@ class mLSTMCellConfig(SubModelConfig):
     )
     dtype: jnp.dtype = jnp.bfloat16
     gate_dtype: jnp.dtype = jnp.float32
+    gate_soft_cap: float | None = None
+    """Soft cap for the gate pre-activations. If None, no cap is applied."""
 
 
 class mLSTMCell(nn.Module):
@@ -47,6 +50,8 @@ class mLSTMCell(nn.Module):
                 kernel_init=nn.initializers.zeros,
                 name="fgate",
             )(qkv)
+            igate_preact = soft_cap_logits(igate_preact, self.config.gate_soft_cap)
+            fgate_preact = soft_cap_logits(fgate_preact, self.config.gate_soft_cap)
             self.sow("intermediates", "max_igate_preact", jnp.max(igate_preact))
             self.sow("intermediates", "max_fgate_preact", jnp.max(fgate_preact))
             self.sow("intermediates", "min_igate_preact", jnp.min(igate_preact))
