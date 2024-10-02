@@ -88,11 +88,13 @@ def _get_standard_adam(scheduler_config: SchedulerConfig, num_update_steps: int 
 
 
 @pytest.mark.parametrize(
-    "optimizer_name", ["adam", "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamaxw", "lamb"]
+    "optimizer_name", ["adam", "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamaxw", "lamb", "ademamix"]
 )
 def test_optimizer_variants(optimizer_name: str):
     """Tests that all optimizers are running and improving loss."""
-    optimizer_config = OptimizerConfig(name=optimizer_name, scheduler=SchedulerConfig(name="constant", lr=1e-2))
+    optimizer_config = OptimizerConfig(
+        name=optimizer_name, scheduler=SchedulerConfig(name="constant", lr=1e-2, decay_steps=1000)
+    )
     optimizer, _ = build_optimizer(optimizer_config)
     assert optimizer is not None
     train_state = _init_model(optimizer)

@@ -1,3 +1,4 @@
+import logging
 import re
 from collections.abc import Sequence
 from dataclasses import dataclass
@@ -10,7 +11,10 @@ import optax
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.trainer.base.param_utils import get_param_mask_fn, get_sharded_global_norm
 
+from .ademamix import ademamix, alpha_scheduler, beta3_scheduler
 from .scheduler import SchedulerConfig, build_lr_scheduler
+
+LOGGER = logging.getLogger(__name__)
 
 PyTree = Any
 
@@ -26,6 +30,9 @@ class OptimizerConfig(ConfigDict):
         scheduler (SchedulerConfig): Configuration for learning rate scheduler.
         beta1 (float): Exponential decay rate for the first moment estimates. This includes momentum in SGD.
         beta2 (float): Exponential decay rate for the second moment estimates.
+        beta3 (float): For AdEMAMix, exponential decay rate for the slow EMA.
+        alpha (float): For AdEMAMix, mixing coefficient for the linear combination of the fast and slow EMAs.
+            Commonly in the range 5-10, with Mamba models performing best at 8. TODO: Update with xLSTM results.
         eps (float): Epsilon value for numerical stability in Adam-like optimizers.
         weight_decay (float): Weight decay coefficient.
         weight_decay_exclude (Sequence[re.Pattern] | None): List of regex patterns to exclude from weight decay.
@@ -45,6 +52,8 @@ class OptimizerConfig(ConfigDict):
     scheduler: SchedulerConfig
     beta1: float = 0.9
     beta2: float = 0.999
+    beta3: float = 0.9999
+    alpha: float = 8.0
     eps: float = 1e-8
     weight_decay: float = 0.0
     weight_decay_exclude: Sequence[re.Pattern] | None = None
@@ -118,6 +127,28 @@ def build_optimizer_function(
             momentum=optimizer_config.beta1,
             nesterov=optimizer_config.nesterov,
         )
+    elif optimizer_name == "ademamix":
+        total_train_steps = optimizer_config.scheduler.decay_steps
+        if total_train_steps <= 0:
+            LOGGER.warning(
+                "AdEMAMix uses the decay steps from scheduler to adjust its alpha and beta scheduler. "
+                "However, none was given. Will be setting it by default to 100k steps."
+            )
+            total_train_steps = 100_000
+        opt_class = ademamix(
+            learning_rate,
+            b1=optimizer_config.beta1,
+            b2=optimizer_config.beta2,
+            b3=optimizer_config.beta3,
+            alpha=optimizer_config.alpha,
+            alpha_scheduler=alpha_scheduler(optimizer_config.alpha, 0.0, warmup=total_train_steps),
+            b3_scheduler=beta3_scheduler(optimizer_config.beta3, optimizer_config.beta1, warmup=total_train_steps),
+            eps=optimizer_config.eps,
+            weight_decay=optimizer_config.weight_decay,
+            mask=get_param_mask_fn(
+                exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
+            ),
+        )
     else:
         raise ValueError(f"Unknown optimizer {optimizer_name}.")
 
@@ -158,7 +189,7 @@ def build_gradient_transformations(
         pre_trans.append(optax.clip(optimizer_config.grad_clip_value))
 
     # Weight decay.
-    if optimizer_config.weight_decay > 0.0 and optimizer_name not in ["adamw"]:
+    if optimizer_config.weight_decay > 0.0 and optimizer_name not in ["adamw", "nadamw", "adamaxw", "lamb", "ademamix"]:
         post_trans.append(
             optax.add_decayed_weights(
                 optimizer_config.weight_decay,
