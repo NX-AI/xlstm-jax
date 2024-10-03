@@ -5,6 +5,7 @@ from typing import Any
 import jax
 
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
+from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
 from xlstm_jax.trainer.optimizer import build_lr_scheduler
 
@@ -24,7 +25,7 @@ class LearningRateMonitorConfig(CallbackConfig):
     log_lr_key: str = "optimizer/lr"
     """Key to use for logging the learning rate."""
 
-    def create(self, trainer: Any, data_module: Any = None) -> "LearningRateMonitor":
+    def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "LearningRateMonitor":
         """
         Creates the LearningRateMonitor callback.
 
@@ -41,7 +42,7 @@ class LearningRateMonitorConfig(CallbackConfig):
 class LearningRateMonitor(Callback):
     """Callback to monitor the learning rate."""
 
-    def __init__(self, config: LearningRateMonitorConfig, trainer: Any, data_module: Any | None = None):
+    def __init__(self, config: LearningRateMonitorConfig, trainer: Any, data_module: DataloaderModule | None = None):
         super().__init__(config, trainer, data_module)
         self.lr_scheduler = jax.jit(
             build_lr_scheduler(self.trainer.optimizer_config.scheduler),

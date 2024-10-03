@@ -19,12 +19,14 @@ Input pipeline using Huggingface datasets.
 """
 
 import logging
+import math
 from collections.abc import Sequence
 from functools import partial
 from itertools import chain
-from typing import Any
+from typing import Any, SupportsIndex
 
 import datasets
+import grain.python as grain
 import jax
 import transformers
 from jax.sharding import Mesh
@@ -36,6 +38,65 @@ from .grain_iterator import make_grain_llm_iterator
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
+
+
+class PaddedDataset(grain.RandomAccessDataSource):
+    """Dataset wrapper to pad the dataset to be a multiple of the global batch size."""
+
+    def __init__(self, dataset: datasets.Dataset, full_dataset_length: int, column_name: str):
+        """
+        Initializes the PaddedDataset.
+
+        Args:
+            dataset: The dataset to pad.
+            full_dataset_length: The full dataset length, including padding. Should be a multiple of the global
+                batch size with which the dataset is loaded. Also lengths smaller than the dataset are supported
+                and will return the smaller length.
+            column_name: The column name in the dataset that is returned.
+        """
+        self.dataset = dataset
+        self.full_dataset_length = full_dataset_length
+        self.column_name = column_name
+
+    def __len__(self):
+        """Returns the full dataset length."""
+        return self.full_dataset_length
+
+    def __getitem__(self, record_key: SupportsIndex) -> Any:
+        """Returns padding if the record key is out of bounds, otherwise returns the dataset record."""
+        if record_key >= len(self.dataset):
+            return {self.column_name: []}
+        else:
+            return self.dataset[record_key]
+
+    def __repr__(self):
+        return (
+            f"PaddedDataset({self.dataset}, full_dataset_length={self.full_dataset_length}, "
+            f"column_name={self.column_name})"
+        )
+
+
+def pad_hf_dataset(
+    dataset: datasets.Dataset,
+    global_batch_size: int,
+    column_name: str,
+) -> PaddedDataset:
+    """
+    Pads the dataset to match a multiple of the global batch size.
+
+    Args:
+        dataset: The dataset to pad.
+        global_batch_size: The global batch size.
+        column_name: The column name in the dataset.
+
+    Returns:
+        The padded dataset.
+    """
+    dataset_length = len(dataset)
+    padded_length = int(math.ceil(dataset_length / global_batch_size)) * global_batch_size
+    padded_dataset = PaddedDataset(dataset, padded_length, column_name)
+    LOGGER.info(f"Padding dataset to length {padded_length}.")
+    return padded_dataset
 
 
 def group_texts(examples: dict[str, Sequence[Any]], block_size: int, eod_token: int = None) -> dict[str, Any]:
@@ -208,6 +269,7 @@ def preprocessing_pipeline(
     worker_buffer_size: int = 1,
     drop_remainder: bool = True,
     tokenizer_cache_dir: str | None = None,
+    max_steps_per_epoch: int | None = None,
 ) -> MultiHostDataLoadIterator:
     """
     Pipeline for preprocessing HF dataset.
@@ -251,6 +313,9 @@ def preprocessing_pipeline(
             dropped if this is set to True. If set to False, the last batch of all epochs
             together will be included in the iterator.
         tokenizer_cache_dir: The cache directory for the tokenizer.
+        max_steps_per_epoch: The maximum number of steps per epoch. If provided, the iterator
+            will stop after this many steps with a :class:`StopIteration` exception. Otherwise,
+            will continue over the iterator until all batches are consumed.
 
     Returns:
         MultiHostDataLoadIterator: The multi-host data loading iterator.
@@ -274,6 +339,21 @@ def preprocessing_pipeline(
     else:
         dataset = dataset.select_columns([data_column_name])
 
+    if not drop_remainder:
+        if grain_packing:
+            LOGGER.warning(
+                "Dropping remainder can lead to process stalls with packing. "
+                "Recommended to only use with infinite data loaders."
+            )
+        dataset = pad_hf_dataset(dataset, global_batch_size, data_column_name)
+
+    if max_steps_per_epoch is not None:
+        LOGGER.info(f"Limiting number of steps per epoch to {max_steps_per_epoch}.")
+        if isinstance(dataset, PaddedDataset):
+            dataset.full_dataset_length = max_steps_per_epoch * global_batch_size
+        else:
+            dataset = PaddedDataset(dataset, max_steps_per_epoch * global_batch_size, data_column_name)
+
     LOGGER.info(f"Dataset size: {len(dataset)}")
 
     operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
@@ -292,7 +372,8 @@ def preprocessing_pipeline(
         shift=shift,
         worker_count=worker_count,
         worker_buffer_size=worker_buffer_size,
-        drop_remainder=drop_remainder,
+        drop_remainder=True,  # remainder is padded up if not dropped
+        reset_after_epoch=(num_epochs == 1),  # only reset if we go over a single epoch
     )
 
     # Return multi-host jax.Array prep iterator
@@ -386,13 +467,14 @@ def make_hf_hub_iterator(
         hf_num_map_processes=config.hf_num_map_processes,
         global_batch_size=eval_batch_size,
         max_target_length=config.max_target_length,
-        num_epochs=1,
+        num_epochs=1_000_000,  # Infinite epochs for evals
         shuffle=False,
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
-        drop_remainder=True,
+        drop_remainder=False,
         tokenizer_cache_dir=config.hf_cache_dir,
+        max_steps_per_epoch=config.eval_max_steps_per_epoch,
     )
     # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
 
@@ -470,10 +552,11 @@ def make_hf_local_iterator(
         tokenize=False,
         global_batch_size=eval_batch_size,
         max_target_length=config.max_target_length,
-        num_epochs=1,
+        num_epochs=1_000_000,  # Infinite epochs for evals
         shuffle=False,
         data_shuffle_seed=config.data_shuffle_seed,
-        drop_remainder=True,
+        drop_remainder=False,
+        max_steps_per_epoch=config.eval_max_steps_per_epoch,
     )
     # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
 

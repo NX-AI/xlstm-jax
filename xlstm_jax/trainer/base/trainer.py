@@ -24,6 +24,7 @@ from xlstm_jax.distributed.common_types import PRNGKeyArray
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint
+from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.logger import Logger, LoggerConfig
 from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
@@ -647,6 +648,13 @@ class TrainerModule:
         train_metrics = None
         epoch_idx = 0
 
+        # Share data loaders with callbacks.
+        data_module = DataloaderModule(
+            train_dataloader=train_loader, val_dataloader=val_loader, test_dataloader=test_loader
+        )
+        for callback in self.callbacks:
+            callback.set_dataset(data_module)
+
         # Main training loop.
         stop_training_with_error = False
         while self.global_step < num_train_steps and not stop_training_with_error:
@@ -1021,6 +1029,41 @@ class TrainerModule:
                 LOGGER.warning("No model checkpoint callback found in callbacks.")
         else:
             self.restore(state_dict)
+
+    def load_data_loaders(
+        self,
+        step_idx: int = -1,
+        train_loader: Iterator | None = None,
+        val_loader: Iterator | None = None,
+        test_loader: Iterator | None = None,
+    ):
+        """
+        Load states of the data loaders from the logging directory.
+
+        Args:
+            step_idx: Step index to load the data loaders from. If -1, uses the global train step.
+            train_loader: If given, the training data loader is set to this value.
+            val_loader: If given, the validation data loader is set to this value.
+            test_loader: If given, the test data loader is set to this value.
+        """
+        if step_idx == -1:
+            step_idx = self.global_step
+        LOGGER.info(f"Loading data loaders from step {step_idx}")
+        state_dict = None
+
+        # Find data loader checkpoint callback.
+        for callback in self.callbacks:
+            if isinstance(callback, ModelCheckpoint):
+                state_dict = callback.load_dataloader(step_idx)
+                break
+
+        # Restore data loaders from state dict if found.
+        if state_dict is None:
+            LOGGER.warning("No data loader checkpoint callback found in callbacks.")
+        else:
+            for key, loader in [("train", train_loader), ("val", val_loader), ("test", test_loader)]:
+                if key in state_dict and loader is not None and hasattr(loader, "set_state"):
+                    loader.set_state(state_dict[key])
 
     def restore(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
         """

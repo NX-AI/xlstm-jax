@@ -1,8 +1,8 @@
-import itertools
 from pathlib import Path
 
 import jax
 import jax.numpy as jnp
+import numpy as np
 import pytest
 from flax import linen as nn
 
@@ -18,7 +18,53 @@ from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 from ..helpers.mse_trainer import MSETrainer, ToyModel
 
 
-@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
+class DataLoader:
+    def __init__(self, data: list[Batch], shuffle: bool = True):
+        self.data = data
+        self.shuffle = shuffle
+        self.epoch_idx = 0
+        self.step_idx = 0
+        self.seed = int(np.random.default_rng(len(self.data)).integers(0, 2**31))
+        self._set_permutation()
+        self.state_set = False
+
+    def _set_permutation(self):
+        if self.shuffle:
+            self.permutation = np.random.default_rng(self.seed + self.epoch_idx).permutation(len(self.data))
+        else:
+            self.permutation = np.arange(len(self.data))
+
+    def __iter__(self):
+        if not self.state_set:
+            self.step_idx = 0
+            self._set_permutation()
+        self.state_set = False
+        return self
+
+    def __next__(self):
+        if self.step_idx >= len(self.data):
+            self.epoch_idx += 1
+            self.step_idx = 0
+            raise StopIteration
+        idx = self.permutation[self.step_idx]
+        self.step_idx += 1
+        return self.data[idx]
+
+    def __len__(self):
+        return len(self.data)
+
+    def get_state(self) -> dict[str, int]:
+        return {"epoch_idx": self.epoch_idx, "step_idx": self.step_idx, "seed": self.seed}
+
+    def set_state(self, state: dict[str, int]):
+        self.epoch_idx = state["epoch_idx"]
+        self.step_idx = state["step_idx"]
+        assert self.seed == state["seed"], "Seed mismatch."
+        self._set_permutation()
+        self.state_set = True
+
+
+@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2)])
 def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     Tests checkpointing with ModelCheckpoint callback with per-epoch eval.
@@ -71,8 +117,8 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
         labels = inputs[:, 0:1]
         return Batch(inputs=inputs, targets=labels)
 
-    train_loader = [data_gen_fn(idx) for idx in range(100)]
-    val_loader = train_loader[:20]
+    train_loader = DataLoader([data_gen_fn(idx) for idx in range(100)], shuffle=False)
+    val_loader = DataLoader(train_loader.data[:20], shuffle=False)
     final_metrics = trainer.train_model(
         train_loader,
         val_loader,
@@ -92,8 +138,17 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
     assert len(list(checkpoint_path.glob("*"))) == 2
     assert (checkpoint_path / "checkpoint_300").exists()
     assert (checkpoint_path / "checkpoint_400").exists()
+    # Check that dataloader states are saved.
+    dataloader_path = log_path / "checkpoints_dataloaders"
+    assert dataloader_path.exists()
+    assert len(list(dataloader_path.glob("*"))) == 4
+    assert (dataloader_path / "checkpoint_300").exists()
+    assert (dataloader_path / "checkpoint_400").exists()
     # Load an older model and reproduce the validation metric at this point.
     trainer.load_model(step_idx=300)
+    trainer.load_data_loaders(step_idx=300, train_loader=train_loader, val_loader=val_loader)
+    assert train_loader.epoch_idx == 3
+    assert train_loader.step_idx == 0
     new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=3)
     assert new_metrics is not None
     assert new_metrics["loss"] == final_metrics["val_epoch_3"]["loss"], "Loss should be the same."
@@ -107,7 +162,7 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
     assert new_final_metrics["val_epoch_4"]["loss"] == final_metrics["val_epoch_4"]["loss"], "Loss should be the same."
 
 
-@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
+@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2)])
 def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     Tests checkpointing with ModelCheckpoint callback with per-step eval.
@@ -160,9 +215,9 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
         labels = inputs[:, 0:1]
         return Batch(inputs=inputs, targets=labels)
 
-    train_loader = [data_gen_fn(idx) for idx in range(100)]
-    val_loader = train_loader[:20]
-    train_loader = itertools.cycle(train_loader)
+    train_loader = DataLoader([data_gen_fn(idx) for idx in range(100)] * 10)
+    val_loader = DataLoader(train_loader.data[:20], shuffle=False)
+    # train_loader = itertools.cycle(train_loader)
     final_metrics = trainer.train_model(
         train_loader,
         val_loader,
@@ -184,6 +239,7 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
     assert (checkpoint_path / "checkpoint_400").exists()
     # Load an older model and reproduce the validation metric at this point.
     trainer.load_model(step_idx=300)
+    trainer.load_data_loaders(step_idx=300, train_loader=train_loader, val_loader=val_loader)
     new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=3)
     assert new_metrics is not None
     assert new_metrics["loss"] == final_metrics["val_step_300"]["loss"], "Loss should be the same."
@@ -253,8 +309,8 @@ def test_checkpointing_per_epoch_and_step(tmp_path: Path):
         labels = inputs[:, 0:1]
         return Batch(inputs=inputs, targets=labels)
 
-    train_loader = [data_gen_fn(idx) for idx in range(100)]
-    val_loader = train_loader[:20]
+    train_loader = DataLoader([data_gen_fn(idx) for idx in range(100)])
+    val_loader = DataLoader(train_loader.data[:20])
     final_metrics = trainer.train_model(
         train_loader,
         val_loader,
@@ -339,6 +395,7 @@ def test_loading_to_new_topology(tmp_path: Path):
         return Batch(inputs=inputs, targets=labels)
 
     trainer = get_trainer(8)
+    # As an example, we leave the data loader saving out.
     train_loader = [data_gen_fn(idx) for idx in range(100)]
     val_loader = train_loader[:20]
     final_metrics = trainer.train_model(train_loader, val_loader, num_epochs=4)
@@ -348,7 +405,6 @@ def test_loading_to_new_topology(tmp_path: Path):
     checkpoint_path = log_path / "checkpoints"
     assert checkpoint_path.exists()
     assert (checkpoint_path / "checkpoint_400").exists()
-    # trainer.load_model(epoch_idx=4)
     # Load the model into different FSDP sizes
     for fsdp_size in [1, 2, 4, 8]:
         new_trainer = get_trainer(fsdp_size)

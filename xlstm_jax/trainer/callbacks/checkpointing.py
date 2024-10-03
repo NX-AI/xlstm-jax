@@ -1,14 +1,19 @@
+import json
+import logging
+import pickle
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
 import jax
 import orbax.checkpoint as ocp
-from absl import logging
 
 from xlstm_jax.import_utils import class_to_name
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
+from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
+
+LOGGER = logging.getLogger(__name__)
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -28,6 +33,7 @@ class ModelCheckpointConfig(CallbackConfig):
         mode: One of {"min", "max"}. If "min", saves the model with the smallest value of the monitored metric. If
             "max", saves the model with the largest value of the monitored metric.
         save_optimizer_state: Whether to save the optimizer state.
+        save_dataloader_state: Whether to save the dataloader state.
         enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more
             information.
     """
@@ -36,9 +42,10 @@ class ModelCheckpointConfig(CallbackConfig):
     monitor: str | None = None
     mode: Literal["min", "max"] = "min"
     save_optimizer_state: bool = True
+    save_dataloader_state: bool = True
     enable_async_checkpointing: bool = True
 
-    def create(self, trainer: Any, data_module: Any = None) -> "ModelCheckpoint":
+    def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "ModelCheckpoint":
         """
         Creates the ModelCheckpoint callback.
 
@@ -65,12 +72,15 @@ class ModelCheckpoint(Callback):
         data_module: The data module object.
     """
 
-    def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: Any | None = None):
+    def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: DataloaderModule | None = None):
         super().__init__(config, trainer, data_module)
         assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
         self.log_path: Path = self.trainer.log_path
         self.checkpoint_path = self.log_path / "checkpoints"
         self.checkpoint_path.mkdir(parents=True, exist_ok=True)
+        self.dataloader_path = self.log_path / "checkpoints_dataloaders"
+        if self.config.save_dataloader_state:
+            self.dataloader_path.mkdir(parents=True, exist_ok=True)
 
         options = ocp.CheckpointManagerOptions(
             max_to_keep=self.config.max_to_keep,
@@ -117,6 +127,8 @@ class ModelCheckpoint(Callback):
         """
         del epoch_idx
         self.save_model(eval_metrics, step_idx)
+        if self.config.save_dataloader_state:
+            self.save_dataloader(step_idx)
 
     def save_model(self, eval_metrics: Metrics, step_idx: int):
         """
@@ -128,7 +140,7 @@ class ModelCheckpoint(Callback):
                 The metrics are saved along with the model.
             step_idx: Index of the current step.
         """
-        logging.info(f"Saving model at step {step_idx} with eval metrics {eval_metrics}.")
+        LOGGER.info(f"Saving model at step {step_idx} with eval metrics {eval_metrics}.")
         if self.config.monitor is not None:
             assert (
                 self.config.monitor in eval_metrics
@@ -149,7 +161,49 @@ class ModelCheckpoint(Callback):
         save_items = ocp.args.Composite(**save_items)
         self.manager.save(step_idx, args=save_items, metrics=eval_metrics)
 
-    def load_model(self, step_idx: int = -1, load_best: bool = False):
+    def save_dataloader(self, step_idx: int):
+        """
+        Saves the dataloader state to the logging directory.
+
+        Args:
+            step_idx: Index of the current step.
+        """
+        LOGGER.info(f"Saving dataloader state at step {step_idx}.")
+        if self.data_module is None:
+            LOGGER.warning("Data module not set. Skipping dataloader state save.")
+            return
+        checkpoint_path = self.dataloader_path / f"checkpoint_{step_idx}"
+        checkpoint_path.mkdir(parents=True, exist_ok=True)
+
+        # Save metadata for dataloaders.
+        if jax.process_index() == 0:
+            metadata = {
+                "step": step_idx,
+                "process_count": jax.process_count(),
+                "primary_host": jax.process_index(),
+                "train_exists": self.data_module.train_dataloader is not None,
+                "val_exists": self.data_module.val_dataloader is not None,
+                "test_exists": self.data_module.test_dataloader is not None,
+            }
+            metadata_path = checkpoint_path / "metadata.json"
+            with open(metadata_path, "w") as f:
+                json.dump(metadata, f)
+
+        # Save state for each dataloader.
+        for loader, name in [(self.data_module.train_dataloader, "train"), (self.data_module.val_dataloader, "val")]:
+            if loader is not None and hasattr(loader, "get_state"):
+                state_dict = loader.get_state()
+                # Save with pickle to support custom objects.
+                dir_path = checkpoint_path / name
+                dir_path.mkdir(parents=True, exist_ok=True)
+                file_path = dir_path / f"process_{jax.process_index()}.pkl"
+                LOGGER.info(f"Saving dataloader state for {name} in process {jax.process_index()}.")
+                with open(file_path, "wb") as f:
+                    pickle.dump(state_dict, f)
+            else:
+                LOGGER.warning(f"No dataloader state found for {name}. Skipping save.")
+
+    def load_model(self, step_idx: int = -1, load_best: bool = False) -> dict[str, Any]:
         """
         Loads model parameters and variables from the logging directory.
 
@@ -161,7 +215,7 @@ class ModelCheckpoint(Callback):
         Returns:
             Dictionary of loaded model parameters and additional variables.
         """
-        logging.info(f"Loading model at step {step_idx}.")
+        LOGGER.info(f"Loading model at step {step_idx}.")
         if step_idx == -1:
             if load_best:
                 step_idx = self.manager.best_step()
@@ -184,6 +238,52 @@ class ModelCheckpoint(Callback):
         state_dict = {k: v for k, v in state_dict.items() if v is not None}
         return state_dict
 
+    def load_dataloader(self, step_idx: int) -> dict[str, Any]:
+        """
+        Loads the dataloader state from the logging directory.
+
+        Args:
+            step_idx: Index of the step to load.
+
+        Returns:
+            Dictionary of loaded dataloader states.
+        """
+        LOGGER.info(f"Loading dataloader state at step {step_idx}.")
+        if self.data_module is None:
+            LOGGER.warning("Data module not set. Skipping dataloader state load.")
+            return {}
+
+        # Check that checkpoint path exists.
+        checkpoint_path = self.dataloader_path / f"checkpoint_{step_idx}"
+        if not checkpoint_path.exists():
+            LOGGER.warning(f"No dataloader state found at step {step_idx}.")
+            return {}
+
+        # Check metadata and that process count matches.
+        metadata_path = checkpoint_path / "metadata.json"
+        with open(metadata_path) as f:
+            metadata = json.load(f)
+        if metadata["process_count"] != jax.process_count():
+            LOGGER.warning(
+                f"Process count mismatch. Expected {metadata['process_count']} but got {jax.process_count()}."
+            )
+            return {}
+
+        # Load state for each dataloader.
+        state_dict = {}
+        for name in ["train", "val", "test"]:
+            dir_path = checkpoint_path / name
+            if not dir_path.exists():
+                LOGGER.info(f"No dataloader state found for {name}.")
+                continue
+            file_path = dir_path / f"process_{jax.process_index()}.pkl"
+            if file_path.exists():
+                with open(file_path, "rb") as f:
+                    state_dict[name] = pickle.load(f)
+            else:
+                LOGGER.warning(f"No dataloader state found for {name} in process {jax.process_index()}.")
+        return state_dict
+
     def finalize(self, status: str | None = None):
         """
         Closes the checkpoint manager.
@@ -192,6 +292,6 @@ class ModelCheckpoint(Callback):
             status: The status of the training run (e.g. success, failure).
         """
         del status
-        logging.info("Closing checkpoint manager")
+        LOGGER.info("Closing checkpoint manager")
         self.manager.wait_until_finished()
         self.manager.close()

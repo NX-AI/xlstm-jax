@@ -162,3 +162,90 @@ def test_grain_dataloader_shuffling_over_epochs(num_elements: int, global_batch_
     assert (
         np.unique(ep0_batches).shape[0] == ep0_batches.shape[0]
     ), "The batches should contain all unique elements of the dataset."
+
+
+@pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
+@pytest.mark.parametrize("switch_after_num_batches", [5, 15, 30])
+def test_grain_dataloader_states(switch_after_num_batches: int):
+    """Test that we can get and set states as expected."""
+    num_elements = 500
+    global_batch_size = 32
+    # Initialize mesh.
+    parallel = ParallelConfig(
+        fsdp_axis_size=1,
+        model_axis_size=1,
+        data_axis_size=1,
+    )
+    # Use only one device for this test, as in practice, each data loader process only sees a single device.
+    mesh = initialize_mesh(parallel_config=parallel, device_array=np.array(jax.devices())[0:1])
+
+    # Create a synthetic dataset with the specified number of elements.
+    context_length = 16
+    dataset = [
+        {key: np.ones((context_length,), dtype=np.int32) * idx for key in ["inputs", "targets"]}
+        for idx in range(num_elements)
+    ]
+
+    # Create iterator.
+    dataloader = make_grain_llm_iterator(
+        dataloading_host_index=0,
+        dataloading_host_count=1,
+        global_mesh=mesh,
+        dataset=dataset,
+        global_batch_size=global_batch_size,
+        max_target_length=context_length,
+        shuffle=True,
+        data_shuffle_seed=42,
+        num_epochs=4,
+        drop_remainder=True,
+    )
+
+    # Load couple of batches and save the state.
+    batch_idx = 0
+    next_batches = []
+    save_state = None
+    for _ in range(4):
+        for batch in dataloader:
+            batch_idx += 1
+            if batch_idx == switch_after_num_batches:
+                save_state = dataloader.get_state()
+            elif batch_idx > switch_after_num_batches:
+                next_batches.append(batch)
+                if batch_idx == switch_after_num_batches + 10:
+                    break
+        if len(next_batches) == 10:
+            break
+
+    # Create a new iterator and set the state.
+    new_dataloader = make_grain_llm_iterator(
+        dataloading_host_index=0,
+        dataloading_host_count=1,
+        global_mesh=mesh,
+        dataset=dataset,
+        global_batch_size=global_batch_size,
+        max_target_length=context_length,
+        shuffle=True,
+        data_shuffle_seed=42,
+        num_epochs=4,
+        drop_remainder=True,
+    )
+    new_dataloader.set_state(save_state)
+
+    # Load the next batches from the new iterator.
+    new_batches = []
+    for _ in range(4):
+        for batch in new_dataloader:
+            new_batches.append(batch)
+            if len(new_batches) == len(next_batches):
+                break
+        if len(new_batches) == len(next_batches):
+            break
+
+    # Check that the batches are the same.
+    next_batches = jax.device_get(next_batches)
+    new_batches = jax.device_get(new_batches)
+    for idx, (batch1, batch2) in enumerate(zip(next_batches, new_batches)):
+        for attr in ["inputs", "targets"]:
+            np.testing.assert_array_equal(
+                getattr(batch1, attr), getattr(batch2, attr), f"Batch {idx} does not match for attribute {attr}."
+            )

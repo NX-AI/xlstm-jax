@@ -44,6 +44,8 @@ class HFLocalDataConfig(DataConfig):
     """Split to use for training. Should be a subdirectory of data_dir."""
     eval_split: str = "validation"
     """Split to use for evaluation. Should be a subdirectory of data_dir."""
+    eval_max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch for evaluation."""
 
 
 @dataclass(kw_only=True, frozen=True)
@@ -75,6 +77,8 @@ class HFHubDataConfig(DataConfig):
     """Column name for training data."""
     eval_data_column: str = "text"
     """Column name for evaluation data."""
+    eval_max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch for evaluation."""
     tokenize_train_data: bool = True
     """Whether to tokenize training data."""
     tokenize_eval_data: bool = True

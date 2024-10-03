@@ -21,15 +21,19 @@ Adapted from Sholto's:
 https://github.com/sholtodouglas/multihost_dataloading
 """
 
+import logging
 import time
 from collections.abc import Iterable, Iterator
 from functools import partial  # pylint: disable=g-importing-member
+from typing import Any
 
 import jax
 import jax.tree_util as jtu
 import numpy as np
 import tensorflow as tf  # pylint: disable=g-import-not-at-top
 from jax.sharding import Mesh, NamedSharding, PartitionSpec
+
+LOGGER = logging.getLogger(__name__)
 
 
 def _build_global_shape_and_sharding(
@@ -114,12 +118,12 @@ class MultiHostDataLoadIterator:
         dataset_size: int | None = None,
         reset_after_epoch: bool = False,
     ):
-        # TODO Add support for getting and setting state of the iterator (https://github.com/NX-AI/xlstm-jax/issues/59)
         self.global_mesh = global_mesh
         self.dataloader = dataloader
         self.iterator_length = iterator_length
         self.dataset_size = dataset_size
         self.reset_after_epoch = reset_after_epoch
+        self.state_set = False
         self.step_counter = 0
         if isinstance(self.dataloader, tf.data.Dataset):
             self.local_iterator = self.dataloader.as_numpy_iterator()
@@ -138,8 +142,29 @@ class MultiHostDataLoadIterator:
             else:
                 raise ValueError("Type error: dataloader should be either tf.data.Dataset or grain.DataLoader.")
 
+    def get_state(self) -> dict[str, Any]:
+        state = {"step": self.step_counter, "iterator_length": self.iterator_length}
+        if hasattr(self.local_iterator, "get_state"):
+            state["iterator"] = self.local_iterator.get_state()
+        return state
+
+    def set_state(self, state: dict[str, Any]):
+        assert (
+            self.iterator_length == state["iterator_length"]
+        ), "The iterator length in the state differs from the current iterator length. Cannot load state."
+        if hasattr(self.local_iterator, "set_state"):
+            self.step_counter = int(state["step"])
+            self.local_iterator.set_state(state["iterator"])
+            self.state_set = True
+        else:
+            LOGGER.warning("The local iterator has no `set_state` method. Skipping setting the state.")
+            self.state_set = False
+
     def __iter__(self):
-        self.reset()
+        if not self.state_set or self.step_counter >= self.iterator_length:
+            # If we previously set the state, we do not want to reset it, except if we would have done it anyway.
+            self.reset()
+        self.state_set = False
         return self
 
     def __len__(self):

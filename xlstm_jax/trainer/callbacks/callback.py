@@ -4,6 +4,7 @@ from typing import Any
 import jax
 
 from xlstm_jax.configs import ConfigDict
+from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
 
 
@@ -21,7 +22,7 @@ class CallbackConfig(ConfigDict):
     main_process_only: bool = False
     """Whether to call the callback only in the main process."""
 
-    def create(self, trainer: Any, data_module: Any = None) -> "Callback":
+    def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "Callback":
         """
         Creates the callback object.
 
@@ -53,8 +54,8 @@ class Callback:
         data_module (optional): Data module object.
     """
 
-    def __init__(self, config: ConfigDict, trainer: Any, data_module: Any | None = None):
-        self.config = config  # TODO: define CallbackConfig
+    def __init__(self, config: CallbackConfig, trainer: Any, data_module: DataloaderModule | None = None):
+        self.config = config
         self.trainer = trainer
         self.data_module = data_module
         self._every_n_epochs = config.every_n_epochs
@@ -192,7 +193,7 @@ class Callback:
             epoch_idx: Index of the current epoch.
         """
 
-    def set_dataset(self, data_module: Any):
+    def set_dataset(self, data_module: DataloaderModule):
         """
         Sets the data module.
 

@@ -78,7 +78,7 @@ class ToyCallback(Callback):
 class ToyCallbackConfig(CallbackConfig):
     """Configuration for the ToyCallback."""
 
-    def create(self, trainer: TrainerModule, data_module: Any = None) -> Callback:
+    def create(self, trainer: TrainerModule, data_module: Any | None = None) -> Callback:
         return ToyCallback(self, trainer, data_module)
 
 

@@ -45,6 +45,7 @@ def make_grain_llm_iterator(
     worker_count: int = 1,
     worker_buffer_size: int = 1,
     drop_remainder: bool = True,
+    reset_after_epoch: bool = False,
 ) -> MultiHostDataLoadIterator:
     """
     Create a multi-host dataloader with grain for LLM training.
@@ -84,6 +85,11 @@ def make_grain_llm_iterator(
             providing a number of epochs, the last batch of all epochs together will be
             dropped if this is set to `True`. If set to `False`, the last batch of all epochs
             together will be included in the iterator.
+        reset_after_epoch: Whether to reset the iterator after each epoch. If set to `True`,
+            the iterator will start from the beginning of the dataset after each epoch. If set
+            to `False`, the iterator will continue from where it left off in the dataset. Note
+            that resetting the iterator can be expensive in a multi-host setup and can fail if
+            the multi-processing pool could not be set up.
     """
     if operations is None:
         operations = []
@@ -135,6 +141,6 @@ def make_grain_llm_iterator(
         global_mesh,
         iterator_length=iterator_length,
         dataset_size=len(dataset),
-        reset_after_epoch=not shuffle,
+        reset_after_epoch=reset_after_epoch,
     )
     return multihost_gen

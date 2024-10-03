@@ -7,6 +7,7 @@ from typing import Any
 import jax
 
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
+from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
 
 LOGGER = logging.getLogger(__name__)
@@ -37,7 +38,7 @@ class JaxProfilerConfig(CallbackConfig):
     profile_n_steps: int = 5
     profile_log_dir: str = "tensorboard"
 
-    def create(self, trainer: Any, data_module: Any = None) -> "JaxProfiler":
+    def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "JaxProfiler":
         """
         Creates the JaxProfiler callback.
 
@@ -54,7 +55,7 @@ class JaxProfilerConfig(CallbackConfig):
 class JaxProfiler(Callback):
     """Callback to profile model training steps."""
 
-    def __init__(self, config: JaxProfilerConfig, trainer: Any, data_module: Any | None = None):
+    def __init__(self, config: JaxProfilerConfig, trainer: Any, data_module: DataloaderModule | None = None):
         """
         Initialize the JaxProfiler callback.
 
