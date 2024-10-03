@@ -230,5 +230,5 @@ def test_log_intermediates(tmp_path: Path, gradient_accumulate_scan: bool, gradi
     ).exists(), f"Expected metrics file {log_path / fl_dir / f'metrics_train.csv'} to exist"
     df = pd.read_csv(log_path / fl_dir / "metrics_train.csv")
     assert (
-        "last_activations.0_mean" in df.columns
-    ), f"Expected 'last_activations.0_mean' column in the metrics file, but got {df.columns}."
+        "last_activations.0_0_mean" in df.columns
+    ), f"Expected 'last_activations.0_0_mean' column in the metrics file, but got {df.columns}."

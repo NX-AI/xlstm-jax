@@ -475,10 +475,19 @@ class TrainerModule:
                     mutable_variables = freeze(mutable_variables)
                 mutable_variables, intermediates = mutable_variables.pop("intermediates")
                 intermediates = flatten_dict(intermediates, flatten_sequences=True)
-                intermediates = jax.tree.map(
-                    lambda x: x.mean(), intermediates
-                )  # If we scan, we may have multiple values.
+                inter_keys = list(intermediates.keys())
+                for key in inter_keys:
+                    if intermediates[key].ndim == 1 or (intermediates[key].ndim == 2 and 1 in intermediates[key].shape):
+                        # For scanned intermediates, we need to flatten them and add them individually.
+                        val = intermediates.pop(key)
+                        val = val.reshape(-1)
+                        for i in range(val.shape[0]):
+                            intermediates[f"{key}_{i}"] = val[i]
+                    else:
+                        # For larger intermediates, we take the mean.
+                        intermediates[key] = intermediates[key].mean()
                 assert all(v.size == 1 for v in intermediates.values()), "Only scalar intermediates supported."
+                # Add intermediates to metrics.
                 if self.trainer_config.log_intermediates:
                     intermediate_metrics = {
                         k: {"value": v, "count": 1, "log_modes": self.trainer_config.intermediates_log_modes}
