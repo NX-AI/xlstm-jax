@@ -104,6 +104,22 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     batch_size = 8
     context_length = 16
+    model_config = ModelConfig(
+        model_class=LLMToyModel,
+        parallel=ParallelConfig(
+            data_axis_size=-1,
+            model_axis_size=tp_size,
+            fsdp_axis_size=fsdp_size,
+            fsdp_min_weight_size=pytest.num_devices,
+        ),
+    )
+    optimizer_config = OptimizerConfig(
+        name="adam",
+        scheduler=SchedulerConfig(
+            name="constant",
+            lr=1e-4,
+        ),
+    )
     trainer = LLMTrainer(
         LLMTrainerConfig(
             callbacks=(
@@ -117,22 +133,8 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
             logger=LoggerConfig(log_path=tmp_path),
             check_val_every_n_epoch=1,
         ),
-        ModelConfig(
-            model_class=LLMToyModel,
-            parallel=ParallelConfig(
-                data_axis_size=-1,
-                model_axis_size=tp_size,
-                fsdp_axis_size=fsdp_size,
-                fsdp_min_weight_size=pytest.num_devices,
-            ),
-        ),
-        OptimizerConfig(
-            name="adam",
-            scheduler=SchedulerConfig(
-                name="constant",
-                lr=1e-4,
-            ),
-        ),
+        model_config,
+        optimizer_config,
         batch=LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length),
     )
 
@@ -177,6 +179,34 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
     assert (
         new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
     ), "Perplexity should match the loaded model."
+    # Check loading from pretrained model.
+    new_trainer = LLMTrainer(
+        LLMTrainerConfig(
+            callbacks=(
+                ModelCheckpointConfig(
+                    monitor="perplexity",
+                    max_to_keep=4,
+                    save_optimizer_state=True,
+                    enable_async_checkpointing=True,
+                ),
+            ),
+            logger=LoggerConfig(log_path=tmp_path / "new_trainer_subdir"),
+            check_val_every_n_epoch=1,
+        ),
+        model_config,
+        optimizer_config,
+        batch=LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length),
+    )
+    new_trainer.load_pretrained_model(tmp_path, step_idx=200, train_loader=train_loader, val_loader=val_loader)
+    new_final_metrics = new_trainer.train_model(
+        train_loader,
+        val_loader,
+        num_epochs=5,
+    )
+    assert new_final_metrics is not None
+    assert (
+        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
+    ), "Perplexity should match the loaded pretrained model."
 
 
 def test_llm_padding(tmp_path: Path):

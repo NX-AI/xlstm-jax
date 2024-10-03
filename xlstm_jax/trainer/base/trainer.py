@@ -23,7 +23,7 @@ from xlstm_jax.distributed import accumulate_gradients, sync_gradients
 from xlstm_jax.distributed.common_types import PRNGKeyArray
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
-from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint
+from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint, load_pretrained_model
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.logger import Logger, LoggerConfig
 from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
@@ -1037,7 +1037,7 @@ class TrainerModule:
             else:
                 LOGGER.warning("No model checkpoint callback found in callbacks.")
         else:
-            self.restore(state_dict)
+            self.restore_model(state_dict)
 
     def load_data_loaders(
         self,
@@ -1074,7 +1074,7 @@ class TrainerModule:
                 if key in state_dict and loader is not None and hasattr(loader, "set_state"):
                     loader.set_state(state_dict[key])
 
-    def restore(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
+    def restore_model(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
         """
         Restore the state of the trainer from a state dictionary.
 
@@ -1097,6 +1097,71 @@ class TrainerModule:
             rng=state_dict.get("rng", self.state.rng),
         )
         self.global_step = jax.device_get(self.state.step).item()
+
+    def restore_data_loaders(
+        self,
+        state_dict: dict[str, Any],
+        train_loader: Iterator | None = None,
+        val_loader: Iterator | None = None,
+        test_loader: Iterator | None = None,
+    ):
+        """
+        Restore the state of the data loaders from a state dictionary.
+
+        Args:
+            state_dict: State dictionary to restore from. Should contain the keys "train", "val" and "test" with
+                the data loader states.
+            train_loader: If given, the training data loader is set to this value.
+            val_loader: If given, the validation data loader is set to this value.
+            test_loader: If given, the test data loader is set to this value.
+        """
+        LOGGER.info("Restoring data loaders with keys " + str(state_dict.keys()))
+        # Restore data loaders from state dict.
+        for key, loader in [("train", train_loader), ("val", val_loader), ("test", test_loader)]:
+            if key in state_dict:
+                if loader is None:
+                    LOGGER.warning(
+                        f"Data loader {key} had saved state dict, but was not provided in the restoring function. "
+                        "Skipping."
+                    )
+                    continue
+                elif not hasattr(loader, "set_state"):
+                    LOGGER.warning(f"Data loader {key} had saved state dict, but no set_state method. Skipping.")
+                    continue
+                else:
+                    LOGGER.info(f"Restoring data loader {key}")
+                    loader.set_state(state_dict[key])
+
+    def load_pretrained_model(
+        self,
+        checkpoint_path: Path,
+        step_idx: int = -1,
+        load_best: bool = False,
+        train_loader: Iterator | None = None,
+        val_loader: Iterator | None = None,
+        test_loader: Iterator | None = None,
+    ):
+        """
+        Load a pretrained model from a checkpoint directory.
+
+        Args:
+            checkpoint_path: Path to the checkpoint directory.
+            step_idx: Step index to load the model from. If -1, the latest model is loaded.
+            load_best: If True, loads the best model instead of the latest model.
+            raise_if_not_found: If True, raises an error if no model is found. If False, logs a warning instead.
+            train_loader: If given, the training data loader is set to the state of the pretrained model.
+            val_loader: If given, the validation data loader is set to the state of the pretrained model.
+            test_loader: If given, the test data loader is set to the state of the pretrained model.
+        """
+        LOGGER.info(f"Loading pretrained model from {checkpoint_path}")
+        state_dict, data_module_state = load_pretrained_model(
+            checkpoint_path, trainer=self, step_idx=step_idx, load_best=load_best
+        )
+        assert len(state_dict) > 0, "No model checkpoint found in the directory."
+        self.restore_model(state_dict)
+        self.restore_data_loaders(
+            data_module_state, train_loader=train_loader, val_loader=val_loader, test_loader=test_loader
+        )
 
     @classmethod
     def load_from_checkpoint(

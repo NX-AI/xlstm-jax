@@ -70,7 +70,8 @@ MODEL_CONFIGS = {
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                        gate_dtype=jnp.float32,
+                        backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                     ),
                 )
             ),
@@ -274,6 +275,16 @@ def main_train(args: argparse.Namespace):
         mesh=mesh,
     )
 
+    if len(args.load_checkpoint_from) > 0:
+        log_info(f"Loading checkpoint from {args.load_checkpoint_from}.")
+        trainer.load_pretrained_model(
+            Path(args.load_checkpoint_from),
+            step_idx=-1,
+            load_best=False,
+            train_loader=data_iterator,
+            val_loader=eval_data_iterator,
+        )
+
     log_info("Training model.")
     final_metrics = trainer.train_model(
         train_loader=data_iterator,
@@ -290,5 +301,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "--use_full_dataset", action="store_true", help="If True, uses the 600B dataset instead of the 6B version."
     )
+    parser.add_argument("--load_checkpoint_from", type=str, default="")
     args = parser.parse_args()
     main_train(args)

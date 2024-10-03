@@ -36,6 +36,7 @@ class ModelCheckpointConfig(CallbackConfig):
         save_dataloader_state: Whether to save the dataloader state.
         enable_async_checkpointing: Whether to enable asynchronous checkpointing. See orbax documentation for more
             information.
+        log_path: Path to save the checkpoints as subfolder to. If None, saves to the logging directory of the trainer.
     """
 
     max_to_keep: int | None = 1
@@ -44,6 +45,7 @@ class ModelCheckpointConfig(CallbackConfig):
     save_optimizer_state: bool = True
     save_dataloader_state: bool = True
     enable_async_checkpointing: bool = True
+    log_path: Path | None = None
 
     def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "ModelCheckpoint":
         """
@@ -74,8 +76,13 @@ class ModelCheckpoint(Callback):
 
     def __init__(self, config: ModelCheckpointConfig, trainer: Any, data_module: DataloaderModule | None = None):
         super().__init__(config, trainer, data_module)
-        assert self.trainer.log_path is not None, "Log directory must be set in the trainer if using ModelCheckpoint."
-        self.log_path: Path = self.trainer.log_path
+        if self.config.log_path is not None:
+            self.log_path = self.config.log_path
+        else:
+            assert (
+                self.trainer.log_path is not None
+            ), "Log directory must be set in the trainer if using ModelCheckpoint."
+            self.log_path: Path = self.trainer.log_path
         self.checkpoint_path = self.log_path / "checkpoints"
         self.checkpoint_path.mkdir(parents=True, exist_ok=True)
         self.dataloader_path = self.log_path / "checkpoints_dataloaders"
@@ -215,12 +222,8 @@ class ModelCheckpoint(Callback):
         Returns:
             Dictionary of loaded model parameters and additional variables.
         """
+        step_idx = self.resolve_step_idx(step_idx, load_best)
         LOGGER.info(f"Loading model at step {step_idx}.")
-        if step_idx == -1:
-            if load_best:
-                step_idx = self.manager.best_step()
-            else:
-                step_idx = self.manager.latest_step()
         args = {
             "step": ocp.args.ArrayRestore(self.trainer.state.step),
             "params": ocp.args.StandardRestore(self.trainer.state.params),
@@ -238,20 +241,20 @@ class ModelCheckpoint(Callback):
         state_dict = {k: v for k, v in state_dict.items() if v is not None}
         return state_dict
 
-    def load_dataloader(self, step_idx: int) -> dict[str, Any]:
+    def load_dataloader(self, step_idx: int = -1, load_best: bool = False) -> dict[str, Any]:
         """
         Loads the dataloader state from the logging directory.
 
         Args:
-            step_idx: Index of the step to load.
+            step_idx: Index of the step to load. If -1, loads the latest step by default.
+            load_best: If True and step_idx is -1, loads the best checkpoint
+                based on the monitored metric instead of the latest checkpoint.
 
         Returns:
             Dictionary of loaded dataloader states.
         """
+        step_idx = self.resolve_step_idx(step_idx, load_best)
         LOGGER.info(f"Loading dataloader state at step {step_idx}.")
-        if self.data_module is None:
-            LOGGER.warning("Data module not set. Skipping dataloader state load.")
-            return {}
 
         # Check that checkpoint path exists.
         checkpoint_path = self.dataloader_path / f"checkpoint_{step_idx}"
@@ -284,6 +287,26 @@ class ModelCheckpoint(Callback):
                 LOGGER.warning(f"No dataloader state found for {name} in process {jax.process_index()}.")
         return state_dict
 
+    def resolve_step_idx(self, step_idx: int, load_best: bool) -> int:
+        """
+        Resolves the step index to load.
+
+        Args:
+            step_idx: Index of the step to load. If -1, loads the latest step by default.
+            load_best: If True and step_idx is -1, loads the best checkpoint
+                based on the monitored metric instead of the latest checkpoint.
+
+        Returns:
+            The resolved step index.
+        """
+        if step_idx != -1:
+            return step_idx
+        if load_best:
+            step_idx = self.manager.best_step()
+        else:
+            step_idx = self.manager.latest_step()
+        return step_idx
+
     def finalize(self, status: str | None = None):
         """
         Closes the checkpoint manager.
@@ -295,3 +318,32 @@ class ModelCheckpoint(Callback):
         LOGGER.info("Closing checkpoint manager")
         self.manager.wait_until_finished()
         self.manager.close()
+
+
+def load_pretrained_model(
+    checkpoint_path: Path,
+    trainer: Any,
+    step_idx: int = -1,
+    load_best: bool = False,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """
+    Loads a pretrained model from a checkpoint.
+
+    Args:
+        checkpoint_path: Path to the checkpoint directory.
+        trainer: Trainer object.
+        data_module (optional): Data module object.
+        step_idx: Index of the step to load. If -1, loads the latest step by default.
+        load_best: If True and step_idx is -1, loads the best checkpoint
+            based on the monitored metric instead of the latest checkpoint.
+
+    Returns:
+        Dictionary of loaded model parameters and additional variables, as well as the dataloader state.
+    """
+    config = ModelCheckpointConfig(log_path=checkpoint_path)
+    callback = ModelCheckpoint(config, trainer, None)
+    step_idx = callback.resolve_step_idx(step_idx, load_best)
+    state_dict = callback.load_model(step_idx)
+    data_module_state = callback.load_dataloader(step_idx)
+    callback.finalize()
+    return (state_dict, data_module_state)
