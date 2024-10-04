@@ -55,13 +55,13 @@ class HFHubDataConfig(DataConfig):
     num_train_epochs: int
     """Number of epochs to train on. The data iterator for training data needs to know how many epochs to iterate over
     because of the way `grain` implements shuffling."""
-    hf_path: str
+    hf_path: Path | str
     """Path to the dataset on HuggingFace."""
-    hf_cache_dir: str | None = None
+    hf_cache_dir: Path | str | None = None
     """Directory to cache the dataset."""
     hf_access_token: str | None = None
     """Access token for HuggingFace"""
-    hf_data_dir: str | None = None
+    hf_data_dir: Path | str | None = None
     """Directory for additional data files."""
     hf_train_files: str | None = None
     """Specific training files to use"""
@@ -91,6 +91,8 @@ class HFHubDataConfig(DataConfig):
     """Whether to add `end of sequence` token."""
     add_eod: bool = True
     """Whether to add an end of document token."""
+    grain_packing: bool = False
+    """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
 
 
 @dataclass(kw_only=True, frozen=True)

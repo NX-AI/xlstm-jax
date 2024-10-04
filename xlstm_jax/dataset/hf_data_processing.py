@@ -1,5 +1,4 @@
-"""
-Copyright 2023 Google LLC
+"""Copyright 2023 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,11 +40,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PaddedDataset(grain.RandomAccessDataSource):
-    """Dataset wrapper to pad the dataset to be a multiple of the global batch size."""
+    """Dataset wrapper to pad the dataset to be a multiple of the global batch
+    size."""
 
     def __init__(self, dataset: datasets.Dataset, full_dataset_length: int, column_name: str):
-        """
-        Initializes the PaddedDataset.
+        """Initializes the PaddedDataset.
 
         Args:
             dataset: The dataset to pad.
@@ -63,7 +62,8 @@ class PaddedDataset(grain.RandomAccessDataSource):
         return self.full_dataset_length
 
     def __getitem__(self, record_key: SupportsIndex) -> Any:
-        """Returns padding if the record key is out of bounds, otherwise returns the dataset record."""
+        """Returns padding if the record key is out of bounds, otherwise
+        returns the dataset record."""
         if record_key >= len(self.dataset):
             return {self.column_name: []}
         else:
@@ -81,8 +81,7 @@ def pad_hf_dataset(
     global_batch_size: int,
     column_name: str,
 ) -> PaddedDataset:
-    """
-    Pads the dataset to match a multiple of the global batch size.
+    """Pads the dataset to match a multiple of the global batch size.
 
     Args:
         dataset: The dataset to pad.
@@ -100,8 +99,7 @@ def pad_hf_dataset(
 
 
 def group_texts(examples: dict[str, Sequence[Any]], block_size: int, eod_token: int = None) -> dict[str, Any]:
-    """
-    Groups texts together in a chunk of block_size.
+    """Groups texts together in a chunk of block_size.
 
     This reduces the padding in the pre-training data by saving slices of data in a single sequence. Alternative to
     this is an online packing algorithm, which may lead to small padding overheads.
@@ -148,8 +146,7 @@ def tokenize_dataset(
     num_proc: int | None = None,
     cache_dir: str | None = None,
 ) -> tuple[datasets.Dataset, transformers.AutoTokenizer]:
-    """
-    Tokenizes the dataset.
+    """Tokenizes the dataset.
 
     Args:
         dataset: The dataset to tokenize.
@@ -202,9 +199,9 @@ def preprocess_hf_dataset(
     hf_access_token: str | None = None,
     num_proc: int | None = None,
     tokenizer_cache_dir: str | None = None,
+    apply_group_texts: bool = True,
 ) -> datasets.Dataset:
-    """
-    Preprocesses the HuggingFace dataset.
+    """Preprocesses the HuggingFace dataset.
 
     Performs both tokenization and grouping of the texts.
 
@@ -224,24 +221,24 @@ def preprocess_hf_dataset(
         The preprocessed dataset.
     """
     dataset, tokenizer = tokenize_dataset(
-        dataset,
-        tokenizer_path,
-        add_bos,
-        add_eos,
-        column_name,
-        hf_access_token,
-        num_proc,
-        tokenizer_cache_dir,
+        dataset=dataset,
+        tokenizer_path=tokenizer_path,
+        add_bos=add_bos,
+        add_eos=add_eos,
+        column_name=column_name,
+        hf_access_token=hf_access_token,
+        num_proc=num_proc,
+        cache_dir=tokenizer_cache_dir,
     )
     dataset = dataset.select_columns(["input_ids"])
-
-    dataset = dataset.map(
-        partial(group_texts, block_size=max_target_length, eod_token=tokenizer.eos_token_id if add_eod else None),
-        batched=True,
-        batch_size=10 * max_target_length,
-        num_proc=num_proc,
-        desc="Grouping texts",
-    )
+    if apply_group_texts:
+        dataset = dataset.map(
+            partial(group_texts, block_size=max_target_length, eod_token=tokenizer.eos_token_id if add_eod else None),
+            batched=True,
+            batch_size=10 * max_target_length,
+            num_proc=num_proc,
+            desc="Grouping texts",
+        )
     dataset = dataset.select_columns(["input_ids"]).rename_column("input_ids", column_name)
     return dataset
 
@@ -263,6 +260,7 @@ def preprocessing_pipeline(
     hf_num_map_processes: int | None = None,
     add_bos: bool = True,
     add_eos: bool = True,
+    add_eod: bool = True,
     grain_packing: bool = False,
     shift: bool = True,
     worker_count: int = 1,
@@ -271,8 +269,7 @@ def preprocessing_pipeline(
     tokenizer_cache_dir: str | None = None,
     max_steps_per_epoch: int | None = None,
 ) -> MultiHostDataLoadIterator:
-    """
-    Pipeline for preprocessing HF dataset.
+    """Pipeline for preprocessing HF dataset.
 
     Args:
         dataloading_host_index: The index of the data loading host. Will be used to select the
@@ -299,6 +296,7 @@ def preprocessing_pipeline(
             no multiprocessing is used.
         add_bos: Whether to add the beginning of sequence token.
         add_eos: Whether to add the end of sequence token.
+        add_eod: Whether to add an end of document token.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
             with a lot of padding, as batch elements will be packed together in a sequence
             to reduce the amount of padding. This can improve throughput efficiency. NOTE:
@@ -322,22 +320,49 @@ def preprocessing_pipeline(
     """
 
     assert global_batch_size % global_mesh.size == 0, "Batch size should be divisible number of global devices."
-    assert not grain_packing, "We are currently not using grain packing."
 
+    # if tokenize=True, assume that dataset may be pre-processed (tokenized + grouped) already.
     if tokenize:
-        dataset = preprocess_hf_dataset(
-            dataset,
-            tokenizer_path,
-            data_column_name,
-            max_target_length,
-            add_bos=add_bos,
-            add_eos=add_eos,
-            hf_access_token=hf_access_token,
-            num_proc=hf_num_map_processes,
-            tokenizer_cache_dir=tokenizer_cache_dir,
-        )
+        # We can tokenize either via HF map (offline) or using grain (online).
+        if grain_packing:
+            dataset = dataset.select_columns([data_column_name])
+            tokenizer = transformers.AutoTokenizer.from_pretrained(
+                tokenizer_path,
+                clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
+                legacy=False,
+                token=hf_access_token,
+                use_fast=True,
+                add_bos=add_bos,
+                add_eos=add_eos,
+                cache_dir=tokenizer_cache_dir,
+            )
+            operations = [
+                grain_transforms.HFTokenize(
+                    tokenizer=tokenizer,
+                    column_name=data_column_name,
+                    max_length=max_target_length,
+                    add_eod=add_eod,
+                ),
+                grain_transforms.HFNormalizeFeatures("input_ids"),
+            ]
+        else:
+            dataset = preprocess_hf_dataset(
+                dataset=dataset,
+                tokenizer_path=tokenizer_path,
+                column_name=data_column_name,
+                max_target_length=max_target_length,
+                add_bos=add_bos,
+                add_eos=add_eos,
+                add_eod=add_eod,
+                hf_access_token=hf_access_token,
+                num_proc=hf_num_map_processes,
+                tokenizer_cache_dir=tokenizer_cache_dir,
+                apply_group_texts=True,
+            )
+            operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
     else:
         dataset = dataset.select_columns([data_column_name])
+        operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
 
     if not drop_remainder:
         if grain_packing:
@@ -349,6 +374,12 @@ def preprocessing_pipeline(
 
     if max_steps_per_epoch is not None:
         LOGGER.info(f"Limiting number of steps per epoch to {max_steps_per_epoch}.")
+        if grain_packing:
+            LOGGER.warning(
+                f"Using packing with PaddedDataset. We limit to max {max_steps_per_epoch * global_batch_size} "
+                f"sequences, which may be at most {max_steps_per_epoch} batches, but can be fewer due to packing"
+            )
+
         if isinstance(dataset, PaddedDataset):
             dataset.full_dataset_length = max_steps_per_epoch * global_batch_size
         else:
@@ -356,7 +387,6 @@ def preprocessing_pipeline(
 
     LOGGER.info(f"Dataset size: {len(dataset)}")
 
-    operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
     multihost_gen = make_grain_llm_iterator(
         dataloading_host_index,
         dataloading_host_count,
@@ -387,8 +417,7 @@ def make_hf_hub_iterator(
     dataloading_host_index: int | None = None,
     dataloading_host_count: int | None = None,
 ) -> tuple[MultiHostDataLoadIterator, MultiHostDataLoadIterator]:
-    """
-    Load, preprocess dataset and return iterators for huggingface datasets.
+    """Load, preprocess dataset and return iterators for huggingface datasets.
 
     Args:
         config: HFHubDataConfig object with dataset configuration.
@@ -435,6 +464,8 @@ def make_hf_hub_iterator(
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
+        add_eod=config.add_eod,
+        grain_packing=config.grain_packing,
         drop_remainder=True,
         tokenizer_cache_dir=config.hf_cache_dir,
     )
@@ -472,6 +503,8 @@ def make_hf_hub_iterator(
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
+        add_eod=config.add_eod,
+        grain_packing=config.grain_packing,
         drop_remainder=False,
         tokenizer_cache_dir=config.hf_cache_dir,
         max_steps_per_epoch=config.eval_max_steps_per_epoch,
@@ -488,8 +521,8 @@ def make_hf_local_iterator(
     dataloading_host_index: int | None = None,
     dataloading_host_count: int | None = None,
 ) -> tuple[MultiHostDataLoadIterator, MultiHostDataLoadIterator]:
-    """
-    Load a preprocessed dataset from disk and return iterators for huggingface datasets.
+    """Load a preprocessed dataset from disk and return iterators for
+    huggingface datasets.
 
     Args:
         config: HFLocalDataConfig object with dataset configuration.

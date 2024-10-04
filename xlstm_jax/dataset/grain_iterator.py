@@ -1,5 +1,4 @@
-"""
-Copyright 2023 Google LLC
+"""Copyright 2023 Google LLC.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -47,8 +46,7 @@ def make_grain_llm_iterator(
     drop_remainder: bool = True,
     reset_after_epoch: bool = False,
 ) -> MultiHostDataLoadIterator:
-    """
-    Create a multi-host dataloader with grain for LLM training.
+    """Create a multi-host dataloader with grain for LLM training.
 
     The dataloader will perform batch packing, padding, and shifting of the data to create
     a batch of LLMBatch objects. The LLMBatch object will contain the input and target data
@@ -111,7 +109,7 @@ def make_grain_llm_iterator(
     if shift:
         operations.append(grain_transforms.ShiftData(axis=1))
 
-    operations.append(grain_transforms.CollacteToBatch(batch_class=LLMBatch))
+    operations.append(grain_transforms.CollateToBatch(batch_class=LLMBatch))
 
     index_sampler = grain.IndexSampler(
         num_records=len(dataset),
