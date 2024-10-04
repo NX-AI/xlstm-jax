@@ -367,20 +367,29 @@ def preprocessing_pipeline(
     if not drop_remainder:
         if grain_packing:
             LOGGER.warning(
-                "Dropping remainder can lead to process stalls with packing. "
-                "Recommended to only use with infinite data loaders."
+                "drop_remainder is set to False, but grain_packing is enabled. This is currently incompatible, "
+                "since PaddedDataset is applied to a datasets instance. Not using drop_remainder!"
             )
-        dataset = pad_hf_dataset(dataset, global_batch_size, data_column_name)
+            # PaddedDataset assumes that dataset instance is tokenized and grouped, i.e. the format
+            # {str: List[int]} is expected, where the list of integers are tokens.
+            # However, when grain_packing is enabled, the dataset instance will be unprocessed, i.e. a raw string.
+            # In order to support this for packing, we would need to implement this operation in grain.
+        else:
+            dataset = pad_hf_dataset(dataset, global_batch_size, data_column_name)
 
     if max_steps_per_epoch is not None:
         LOGGER.info(f"Limiting number of steps per epoch to {max_steps_per_epoch}.")
         if grain_packing:
             LOGGER.warning(
-                f"Using packing with PaddedDataset. We limit to max {max_steps_per_epoch * global_batch_size} "
-                f"sequences, which may be at most {max_steps_per_epoch} batches, but can be fewer due to packing"
+                "Trying to use max_steps_per_epoch, but grain_packing is enabled. Will limit number of examples to "
+                "max_steps_per_epoch * global_batch_size, but this may lead to fewer batches than max_steps_per_epoch."
             )
-
-        if isinstance(dataset, PaddedDataset):
+        if len(dataset) <= max_steps_per_epoch * global_batch_size:
+            LOGGER.info(
+                f"Dataset size is {len(dataset)}, which is smaller than max_steps_per_epoch * global_batch_size "
+                f"{max_steps_per_epoch * global_batch_size}. Skipping limiting the number of steps per epoch."
+            )
+        elif isinstance(dataset, PaddedDataset):
             dataset.full_dataset_length = max_steps_per_epoch * global_batch_size
         else:
             dataset = PaddedDataset(dataset, max_steps_per_epoch * global_batch_size, data_column_name)

@@ -256,6 +256,19 @@ def test_hf_dataset_with_packing(tmp_path: Path):
         ), f"Could not find the {i}-th original document in the decoded documents from unpacked batch."
     assert counter_empty_doc <= 5, "Failed sanity-check: more than 5 out of the first 10 documents are empty."
 
+    # 7) Test that we can iterate 3x through the validation set without running into issues.
+    # Note: atm the iterator is non-deterministic. The first batch is not the same for each epoch.
+    # But we test that we have close to the same number of batches for each epoch.
+    n_batches_per_epoch = [0 for _ in range(3)]
+    for epoch_idx in range(3):
+        for batch in eval_iterator:
+            n_batches_per_epoch[epoch_idx] += 1
+            assert n_batches_per_epoch[epoch_idx] < 1000, "Eval iterator loaded more than 1k batches."
+    # assert that we have +-2 difference in numbers of batches
+    assert (
+        max(n_batches_per_epoch) - min(n_batches_per_epoch) <= 2
+    ), f"Difference in number of batches is too large. Got {n_batches_per_epoch} batches per epoch."
+
 
 def _load_n_batches(iterator: MultiHostDataLoadIterator, max_batches: int = 20) -> list[LLMBatch]:
     """Loads a given number of batches from an iterator.
