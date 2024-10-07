@@ -30,6 +30,12 @@ class mLSTMCellConfig(SubModelConfig):
     gate_linear_headwise: bool = False
     """If True, the gate pre-activations are computed with a linear headwise layer, similar to QKV.
     Otherwise, each gate head takes as input the full features across all heads."""
+    igate_bias_init_range: tuple[float, float] | float | None = None
+    """Input gate bias initialization. If a tuple, the bias is initialized with a linspace in the given range.
+    If a float, the bias is initialized with the given value. If None, the bias is initialized with normal(0.1)."""
+    fgate_bias_init_range: tuple[float, float] | float | None = (3.0, 6.0)
+    """Forget gate bias initialization. If a tuple, the bias is initialized with a linspace in the given range.
+    If a float, the bias is initialized with the given value. If None, the bias is initialized with normal(0.1)."""
 
 
 class mLSTMCell(nn.Module):
@@ -98,12 +104,24 @@ class mLSTMCell(nn.Module):
                         name=name,
                     )
 
+            # Initialization function for the gate biases.
+            def gate_init(init_range):
+                if init_range is None:
+                    # Previous default behavior for input gate.
+                    init_fn = nn.initializers.normal(stddev=0.1)
+                elif isinstance(init_range, tuple):
+                    init_fn = bias_linspace_init(*init_range)
+                else:
+                    init_fn = nn.initializers.constant(init_range)
+                return init_fn
+
+            # Compute the gate pre-activations.
             igate_preact = gate_layer(
-                bias_init=nn.initializers.normal(stddev=0.1),
+                bias_init=gate_init(self.config.igate_bias_init_range),
                 name="igate",
             )(gate_input)
             fgate_preact = gate_layer(
-                bias_init=bias_linspace_init(3.0, 6.0),
+                bias_init=gate_init(self.config.fgate_bias_init_range),
                 name="fgate",
             )(gate_input)
 
@@ -118,6 +136,8 @@ class mLSTMCell(nn.Module):
             self.sow("intermediates", "min_fgate_preact", jnp.min(fgate_preact))
             self.sow("intermediates", "mean_igate_preact", jnp.mean(igate_preact))
             self.sow("intermediates", "mean_fgate_preact", jnp.mean(fgate_preact))
+            self.sow("intermediates", "igate_bias", self.get_variable("params", "igate")["bias"].mean())
+            self.sow("intermediates", "fgate_bias", self.get_variable("params", "fgate")["bias"].mean())
 
         q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
         k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
