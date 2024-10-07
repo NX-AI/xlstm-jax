@@ -8,6 +8,7 @@ from flax import linen as nn
 
 from ..configs import ParallelConfig, SubModelConfig
 from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlockConfig
+from .components.init import InitDistribution
 from .utils import prepare_module
 
 
@@ -25,6 +26,8 @@ class xLSTMBlockStackConfig(SubModelConfig):
     scan_blocks: bool = False
     dtype: Any = jnp.bfloat16
     parallel: ParallelConfig | None = None
+    init_distribution_embed: InitDistribution = "normal"
+    init_distribution_out: InitDistribution = "normal"
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.

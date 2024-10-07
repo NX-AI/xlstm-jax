@@ -2,7 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v4.6.0
+  rev: v5.0.0
   hooks:
   - id: check-added-large-files
   - id: check-case-conflict
@@ -34,12 +34,13 @@ repos:
   hooks:
   - id: pyupgrade
     args: [ --py311-plus ]
-- repo: https://github.com/PyCQA/docformatter
-  rev: v1.7.5
-  hooks:
-  - id: docformatter
+# disable docformatter because of https://github.com/PyCQA/docformatter/issues/289
+#- repo: https://github.com/PyCQA/docformatter
+#  rev: v1.7.5
+#  hooks:
+#  - id: docformatter
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.6.4
+  rev: v0.6.9
   hooks:
   - id: ruff
     types_or: [ python, pyi, jupyter ]
@@ -63,7 +64,7 @@ repos:
     - id: interrogate
       args: [tests]
 - repo: https://github.com/pycqa/flake8
-  rev: 6.0.0
+  rev: 7.1.1
   hooks:
     - id: flake8
       additional_dependencies: [Flake8-pyproject]

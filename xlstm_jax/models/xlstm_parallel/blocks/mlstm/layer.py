@@ -11,7 +11,7 @@ from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsy
 
 from ....configs import ParallelConfig
 from ...components.conv import CausalConv1d, CausalConv1dConfig
-from ...components.init import small_init, wang_init
+from ...components.init import InitDistribution, small_init, wang_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...utils import UpProjConfigMixin, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
@@ -24,6 +24,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     num_heads: int = 4
     proj_factor: float = 2.0
     vmap_qk: bool = False
+    init_distribution: InitDistribution = "normal"
 
     # will be set toplevel config
     embedding_dim: int = -1
@@ -76,6 +77,7 @@ class mLSTMLayer(nn.Module):
             else TPDense
         )
         # up-projection
+        up_proj_init = small_init(dim=embedding_dim, distribution=self.config.init_distribution)
         if self.config.parallel.tp_async_dense:
             x_inner = tp_dense_fn(
                 dense_fn=partial(
@@ -86,7 +88,7 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
-                kernel_init=small_init(embedding_dim),
+                kernel_init=up_proj_init,
                 name="proj_up",
             )(x)
         else:
@@ -101,7 +103,7 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
-                kernel_init=small_init(embedding_dim),
+                kernel_init=up_proj_init,
                 skip_communication=True,
                 name="proj_up_mlstm",
             )(x)
@@ -114,7 +116,7 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
-                kernel_init=small_init(embedding_dim),
+                kernel_init=up_proj_init,
                 skip_communication=True,
                 name="proj_up_z",
             )(x)
@@ -200,6 +202,7 @@ class mLSTMInnerLayer(nn.Module):
         x_mlstm_conv_act = nn.swish(x_mlstm_conv)
 
         num_proj_heads = round(self.config._inner_embedding_dim // self.config.qkv_proj_blocksize)
+        qkv_init = small_init(dim=self.config.embedding_dim * tp_size, distribution=self.config.init_distribution)
         if self.config.vmap_qk:
             qk = nn.vmap(
                 LinearHeadwiseExpand,
@@ -215,7 +218,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
-                kernel_init=small_init(self.config.embedding_dim),
+                kernel_init=qkv_init,
                 name="qk_proj",
             )(x_mlstm_conv_act)
             q, k = qk[0], qk[1]
@@ -227,7 +230,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
-                kernel_init=small_init(self.config.embedding_dim * tp_size),
+                kernel_init=qkv_init,
                 name="q_proj",
             )(x_mlstm_conv_act)
             k = LinearHeadwiseExpand(
@@ -237,7 +240,7 @@ class mLSTMInnerLayer(nn.Module):
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
-                kernel_init=small_init(self.config.embedding_dim * tp_size),
+                kernel_init=qkv_init,
                 name="k_proj",
             )(x_mlstm_conv_act)
         v = LinearHeadwiseExpand(
@@ -247,7 +250,7 @@ class mLSTMInnerLayer(nn.Module):
                 bias=self.config.bias,
                 dtype=self.config.dtype,
             ),
-            kernel_init=small_init(self.config.embedding_dim * tp_size),
+            kernel_init=qkv_init,
             name="v_proj",
         )(x_mlstm)
 

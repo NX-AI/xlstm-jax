@@ -39,7 +39,7 @@ class xLSTMLMModel(nn.Module):
                 nn.Embed,
                 num_embeddings=self.config.vocab_size,
                 features=self.config.embedding_dim // tp_size,
-                embedding_init=small_init(self.config.embedding_dim),
+                embedding_init=small_init(self.config.embedding_dim, self.config.init_distribution_embed),
                 dtype=self.config.dtype,
                 name="embed",
             ),
@@ -86,7 +86,7 @@ class TPOutputLayer(nn.Module):
         )
         x = dense_fn(
             features=self.config.vocab_size,
-            kernel_init=small_init(self.config.embedding_dim),
+            kernel_init=small_init(self.config.embedding_dim, self.config.init_distribution_out),
             use_bias=False,
             dtype=jnp.float32,
             name="out_dense",
