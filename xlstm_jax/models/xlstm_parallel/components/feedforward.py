@@ -36,7 +36,7 @@ class FeedForwardConfig(UpProjConfigMixin):
     embedding_dim: int = -1
     dropout: float = 0.0
     bias: bool = False
-    ff_type: Literal["ffn_gated"] = "ffn_gated"
+    ff_type: Literal["ffn_gated", "ffn"] = "ffn_gated"
     dtype: jnp.dtype = jnp.bfloat16
 
     _num_blocks: int = 1
@@ -51,18 +51,25 @@ class GatedFeedForward(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        up_out = nn.Dense(
-            features=2 * self.config._proj_up_dim,
-            kernel_init=small_init(x.shape[-1]),
+        embedding_dim = x.shape[-1]
+        up_proj = nn.Dense(
+            features=self.config._proj_up_dim,
+            kernel_init=small_init(embedding_dim),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up",
         )(x)
-        gate_preact, up_proj = jnp.split(up_out, 2, axis=-1)
+        gate_preact = nn.Dense(
+            features=self.config._proj_up_dim,
+            kernel_init=small_init(embedding_dim),
+            use_bias=self.config.bias,
+            dtype=self.config.dtype,
+            name="proj_up_gate",
+        )(x)
         gate_act = get_act_fn(self.config.act_fn)(gate_preact)
         out = nn.Dense(
-            features=self.config.embedding_dim,
-            kernel_init=wang_init(x.shape[-1], num_blocks=self.config._num_blocks),
+            features=embedding_dim,
+            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_down",
@@ -71,8 +78,35 @@ class GatedFeedForward(nn.Module):
         return out
 
 
-def create_feedforward(config: FeedForwardConfig) -> nn.Module:
+class FeedForward(nn.Module):
+    config: FeedForwardConfig
+
+    @nn.compact
+    def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
+        embedding_dim = x.shape[-1]
+        x = nn.Dense(
+            features=self.config._proj_up_dim,
+            kernel_init=small_init(embedding_dim),
+            use_bias=self.config.bias,
+            dtype=self.config.dtype,
+            name="proj_up",
+        )(x)
+        x = get_act_fn(self.config.act_fn)(x)
+        x = nn.Dense(
+            features=embedding_dim,
+            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
+            use_bias=self.config.bias,
+            dtype=self.config.dtype,
+            name="proj_down",
+        )(x)
+        x = nn.Dropout(rate=self.config.dropout, deterministic=not train)(x)
+        return x
+
+
+def create_feedforward(config: FeedForwardConfig, name: str = "ffn") -> nn.Module:
     if config.ff_type == "ffn_gated":
-        return GatedFeedForward(config)
+        return GatedFeedForward(config, name=name)
+    elif config.ff_type == "ffn":
+        return FeedForward(config, name=name)
     else:
         raise ValueError(f"Unknown feedforward type {config.ff_type}")

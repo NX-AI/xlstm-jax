@@ -8,6 +8,7 @@ from ...configs import ParallelConfig
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.ln import LayerNorm
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
+from .mlstm.layer_v1 import mLSTMLayerV1
 
 
 @dataclass
@@ -64,7 +65,10 @@ class xLSTMBlock(nn.Module):
             eps=self.config.norm_eps,
         )
         if self.config.mlstm is not None:
-            xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
+            block_class = mLSTMLayer
+            if self.config.mlstm.layer_type == "mlstm_v1":
+                block_class = mLSTMLayerV1
+            xlstm = block_class(config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
             # xlstm = sLSTMLayer(config=self.config.slstm)
             raise NotImplementedError("sLSTM not implemented in JAX yet.")

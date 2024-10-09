@@ -13,6 +13,7 @@ from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMBackendNameAndKwargs
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 from xlstm_jax.trainer.callbacks import JaxProfilerConfig, LearningRateMonitorConfig, ModelCheckpointConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
@@ -84,6 +85,45 @@ MODEL_CONFIGS = {
         "fsdp_axis_size": 1,
         "lr": 1e-3,
     },
+    "165M_v1": {
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=768,
+            # Fewer blocks due to FFN being in mLSTM block.
+            num_blocks=12,
+            context_length=context_length,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            scan_blocks=True,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    layer_type="mlstm_v1",
+                    num_heads=4,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=jnp.float32,
+                        backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
+                        igate_bias_init_range=-3.0,
+                    ),
+                ),
+                feedforward=FeedForwardConfig(
+                    proj_factor=4.0,
+                    act_fn="gelu",
+                    ff_type="ffn",
+                    dtype=jnp.bfloat16,
+                ),
+            ),
+        ),
+        "batch_size_per_device": 16,
+        "gradient_accumulate_steps": 1,
+        "fsdp_modules": (),
+        "remat": ("mLSTMBlock",),
+        "data_axis_size": -1,
+        "fsdp_axis_size": 1,
+        "lr": 1e-3,
+    },
     "1.3B": {
         "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
             vocab_size=50304,
@@ -102,10 +142,49 @@ MODEL_CONFIGS = {
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=jnp.float32,  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
-                )
+                ),
             ),
         ),
         "batch_size_per_device": 8,
+        "gradient_accumulate_steps": 1,
+        "fsdp_modules": (),
+        "remat": ("mLSTMBlock",),
+        "data_axis_size": -1,
+        "fsdp_axis_size": 1,
+        "lr": 7e-4,
+    },
+    "1.3B_v1": {
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=2048,
+            num_blocks=24,
+            context_length=context_length,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            scan_blocks=True,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    layer_type="mlstm_v1",
+                    num_heads=4,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=jnp.float32,
+                        backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
+                        # Lowering the input bias init appears to stabilize training.
+                        igate_bias_init_range=-10.0,
+                    ),
+                ),
+                feedforward=FeedForwardConfig(
+                    proj_factor=4.0,
+                    act_fn="gelu",
+                    ff_type="ffn",
+                    dtype=jnp.bfloat16,
+                ),
+            ),
+        ),
+        "batch_size_per_device": 16,
         "gradient_accumulate_steps": 1,
         "fsdp_modules": (),
         "remat": ("mLSTMBlock",),
@@ -135,6 +214,44 @@ MODEL_CONFIGS = {
             ),
         ),
         "batch_size_per_device": 8,
+        "gradient_accumulate_steps": 1,
+        "fsdp_modules": ("Embed", "LMHead", "mLSTMBlock"),
+        "remat": ("mLSTMBlock",),
+        "data_axis_size": -1,
+        "fsdp_axis_size": 8,
+        "lr": 5e-4,
+    },
+    "7B_v1": {
+        "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
+            vocab_size=50304,
+            embedding_dim=4096,
+            num_blocks=30,
+            context_length=context_length,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            scan_blocks=True,
+            dtype=jnp.bfloat16,
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    layer_type="mlstm_v1",
+                    num_heads=8,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=jnp.float32,
+                        backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
+                        igate_bias_init_range=-3.0,
+                    ),
+                ),
+                feedforward=FeedForwardConfig(
+                    proj_factor=4.0,
+                    act_fn="gelu",
+                    ff_type="ffn",
+                    dtype=jnp.bfloat16,
+                ),
+            ),
+        ),
+        "batch_size_per_device": 16,
         "gradient_accumulate_steps": 1,
         "fsdp_modules": ("Embed", "LMHead", "mLSTMBlock"),
         "remat": ("mLSTMBlock",),
@@ -217,7 +334,7 @@ def main_train(args: argparse.Namespace):
                     enable_async_checkpointing=True,
                 ),
                 LearningRateMonitorConfig(
-                    every_n_steps=20,
+                    every_n_steps=50,
                     every_n_epochs=-1,
                     main_process_only=True,
                 ),
@@ -227,7 +344,7 @@ def main_train(args: argparse.Namespace):
             ),
             logger=LoggerConfig(
                 log_path=log_path,
-                log_every_n_steps=20,
+                log_every_n_steps=50,
                 log_tools=[
                     FileLoggerConfig(log_dir="file_logs", config_format="json"),
                     TensorBoardLoggerConfig(log_dir="tensorboard", tb_flush_secs=10),

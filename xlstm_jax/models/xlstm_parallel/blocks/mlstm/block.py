@@ -5,6 +5,7 @@ from flax import linen as nn
 
 from xlstm_jax.models.configs import SubModelConfig
 
+from ...components.feedforward import FeedForwardConfig
 from ..xlstm_block import xLSTMBlock, xLSTMBlockConfig
 from .layer import mLSTMLayerConfig
 
@@ -12,6 +13,7 @@ from .layer import mLSTMLayerConfig
 @dataclass
 class mLSTMBlockConfig(SubModelConfig):
     mlstm: mLSTMLayerConfig = field(default_factory=mLSTMLayerConfig)
+    feedforward: FeedForwardConfig | None = None
 
     # we initialize these with None to catch the case where they are not set
     _num_blocks: int = None
@@ -28,7 +30,7 @@ def get_partial_mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> callabl
         xLSTMBlockConfig(
             mlstm=config.mlstm,
             slstm=None,
-            feedforward=None,
+            feedforward=config.feedforward,
             dtype=config.mlstm.dtype,
             parallel=config.parallel,
             _num_blocks=config._num_blocks,

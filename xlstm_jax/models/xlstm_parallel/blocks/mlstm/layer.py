@@ -25,6 +25,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     proj_factor: float = 2.0
     vmap_qk: bool = False
     init_distribution: InitDistribution = "normal"
+    layer_type: Literal["mlstm", "mlstm_v1"] = "mlstm"
 
     # will be set toplevel config
     embedding_dim: int = -1

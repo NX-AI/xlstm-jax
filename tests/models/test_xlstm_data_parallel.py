@@ -15,6 +15,7 @@ from xlstm_jax.models.xlstm_clean.xlstm_lm_model import xLSTMLMModel as xLSTMLMM
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from xlstm_jax.trainer.base.param_utils import flatten_dict
@@ -83,6 +84,42 @@ MODEL_CONFIGS = [
                     gate_soft_cap=None,
                 ),
             )
+        ),
+    ),
+    xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=16,
+        logits_soft_cap=None,
+        num_blocks=1,
+        context_length=32,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            remat=(),
+            fsdp_modules=(),
+        ),
+        scan_blocks=True,
+        dtype=jnp.float32,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                layer_type="mlstm_v1",
+                num_heads=4,
+                embedding_dim=16,
+                context_length=32,
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-3.0,
+                ),
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=2.0,
+                act_fn="gelu",
+                embedding_dim=16,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn",
+                dtype=jnp.float32,
+            ),
         ),
     ),
 ]
