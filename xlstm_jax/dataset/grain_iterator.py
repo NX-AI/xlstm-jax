@@ -41,6 +41,8 @@ def make_grain_llm_iterator(
     operations: list[grain.MapTransform] | None = None,
     grain_packing: bool = False,
     shift: bool = True,
+    shift_target: bool = True,
+    eod_token_id: int = 0,
     worker_count: int = 1,
     worker_buffer_size: int = 1,
     drop_remainder: bool = True,
@@ -76,8 +78,13 @@ def make_grain_llm_iterator(
             if packing is enabled, the length of the iterator cannot be determined in advance
             and is likely incorrect in the iterator (will be set to maximum number of batches).
         shift: Whether to shift the input data to create the target data.
+        shift_target: Whether to shift the targets left (True) or inputs right (False).
+        eod_token_id: The token ID to use for the end-of-document token. Used if shifting the
+            the inputs right and adding an end-of-document token to the sequence. If not
+            provided, the default value of 0 will be used. Recommended to set this to a value
+            explicitly with the tokenizer's EOD token ID.
         worker_count: The number of workers to use. In `grain`, a single worker is usually
-            sufficient, as the data loading is done in parallel across hots.
+            sufficient, as the data loading is done in parallel across hosts.
         worker_buffer_size: The buffer size for the workers.
         drop_remainder: Whether to drop the remainder of the dataset. Note that in case of
             providing a number of epochs, the last batch of all epochs together will be
@@ -107,7 +114,7 @@ def make_grain_llm_iterator(
         )
 
     if shift:
-        operations.append(grain_transforms.ShiftData(axis=1))
+        operations.append(grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id))
 
     operations.append(grain_transforms.CollateToBatch(batch_class=LLMBatch))
 

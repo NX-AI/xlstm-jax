@@ -123,20 +123,45 @@ class PadToMaxLength(grain.MapTransform):
         return data
 
 
-def shift_right(x: np.ndarray, axis: int = 1, padding_value: int = 0) -> np.ndarray:
-    """Shift the input to the right by padding and slicing on axis."""
+def shift_right(x: np.ndarray, axis: int = 1, padding_value: int = 0, pad_by_first_element: bool = False) -> np.ndarray:
+    """
+    Shift the input to the right by padding and slicing on axis.
+
+    Args:
+        x: Input array to shift.
+        axis: Axis to shift along.
+        padding_value: Value to use for padding.
+        pad_by_first_element: If True, does not use padding_value but instead the first element of the array on the
+            axis.
+
+    Returns:
+        Shifted array.
+    """
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (1, 0)
     slices = [
         slice(None),
     ] * len(x.shape)
     slices[axis] = slice(0, -1)
-    padded = np.pad(x, pad_widths, mode="constant", constant_values=x.dtype.type(padding_value))
+    if pad_by_first_element:
+        padded = np.concatenate([np.expand_dims(x.take(0, axis=axis), axis=axis), x], axis=axis)
+    else:
+        padded = np.pad(x, pad_widths, mode="constant", constant_values=x.dtype.type(padding_value))
     return padded[tuple(slices)]
 
 
 def shift_left(x: np.ndarray, axis: int = 1, padding_value: int = 0) -> np.ndarray:
-    """Shift the input to the left by padding and slicing on axis."""
+    """
+    Shift the input to the left by padding and slicing on axis.
+
+    Args:
+        x: Input array to shift.
+        axis: Axis to shift along.
+        padding_value: Value to use for padding.
+
+    Returns:
+        Shifted array.
+    """
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (0, 1)
     slices = [
@@ -161,13 +186,13 @@ def shift_and_refine(
     else:
         # First token becomes start-of-sequence token (padding_value).
         x["inputs"] = shift_right(x["inputs"], axis=axis, padding_value=padding_value)
-        x["inputs_segmentation"] = shift_right(x["inputs_segmentation"], axis=axis, padding_value=0)
-
-    # Invalidate tokens by setting padded_value (0) where we have padding (i.e. where segmentation mask is zero).
-    targets_mask = x["targets_segmentation"] != 0
-    inputs_mask = x["inputs_segmentation"] != 0
-    x["targets"] = x["targets"] * targets_mask + padding_value * (~targets_mask)
-    x["inputs"] = x["inputs"] * inputs_mask + padding_value * (~inputs_mask)
+        # When shifting inputs right, the first token is a start-of-sequence token for the 1st sequence.
+        # Thus, it gets the same segmentation as the first element.
+        x["inputs_segmentation"] = shift_right(
+            x["inputs_segmentation"],
+            axis=axis,
+            pad_by_first_element=True,
+        )
     return x
 
 
@@ -175,12 +200,28 @@ def shift_and_refine(
 class ShiftData(grain.MapTransform):
     """Shift inputs/targets and refine annotations."""
 
-    def __init__(self, shift_target: bool = True, axis: int = 1):
+    def __init__(
+        self,
+        shift_target: bool = True,
+        eod_token_id: int = 0,
+        pad_token_id: int = 0,
+        axis: int = 1,
+    ):
         self.shift_target = shift_target
+        # When shifting inputs, we use the end-of-document token as the begin-of-sequence token.
+        self.eod_token_id = eod_token_id
+        # When shifting targets, we use padding tokens as the last token. Note that this can be
+        # any token, as the last token is made invalid via the target mask.
+        self.pad_token_id = pad_token_id
         self.axis = axis
 
     def map(self, data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
-        return shift_and_refine(data, shift_target=self.shift_target, axis=self.axis)
+        return shift_and_refine(
+            x=data,
+            shift_target=self.shift_target,
+            padding_value=self.eod_token_id if not self.shift_target else self.pad_token_id,
+            axis=self.axis,
+        )
 
 
 @dataclasses.dataclass
@@ -208,7 +249,14 @@ class CollateToBatch(grain.MapTransform):
 class HFTokenize(grain.MapTransform):
     """Tokenize text feature keys."""
 
-    def __init__(self, tokenizer, column_name: str = "text", max_length: int | None = None, add_eod: bool = True):
+    def __init__(
+        self,
+        tokenizer,
+        column_name: str = "text",
+        max_length: int | None = None,
+        add_eod: bool = True,
+        eod_token_id: int | None = None,
+    ):
         """
         Args:
             tokenizer: HuggingFace tokenizer to use.
@@ -216,11 +264,16 @@ class HFTokenize(grain.MapTransform):
             max_length: Maximum length of the sequence. If None, no truncation is performed.
             add_eod: Whether to add an end-of-document token to the sequence.
                      Note: EOD token is added only if sequence is shorter than max_length, truly marking the end.
+            eod_token_id: Token ID to use for the end-of-document token. If None, the tokenizer's EOS token ID is used.
         """
         self.tokenizer = tokenizer
         self.column_name = column_name
         self.max_length = max_length
         self.add_eod = add_eod
+        if add_eod:
+            self.eod_token_id = eod_token_id if eod_token_id is not None else tokenizer.eos_token_id
+        else:
+            self.eod_token_id = None
 
     def _tokenize(self, example: str) -> BatchEncoding[str, list[int]]:
         return self.tokenizer(
@@ -235,9 +288,8 @@ class HFTokenize(grain.MapTransform):
         tokenized_data = self._tokenize(data[self.column_name])
         if self.add_eod:
             # using the EOS token id of the tokenizer for marking EOD (there is no EOD token in the tokenizer).
-            eod_token_id = self.tokenizer.eos_token_id
             tokenized_data_with_eod = {
-                key: (val + [eod_token_id]) if self.max_length is None or len(val) < self.max_length else val
+                key: (val + [self.eod_token_id]) if self.max_length is None or len(val) < self.max_length else val
                 for key, val in tokenized_data.items()
             }
             return tokenized_data_with_eod

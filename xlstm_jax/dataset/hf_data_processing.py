@@ -336,12 +336,15 @@ def preprocessing_pipeline(
                 add_eos=add_eos,
                 cache_dir=tokenizer_cache_dir,
             )
+            shift_target = False
+            eod_token_id = tokenizer.eos_token_id
             operations = [
                 grain_transforms.HFTokenize(
                     tokenizer=tokenizer,
                     column_name=data_column_name,
                     max_length=max_target_length,
                     add_eod=add_eod,
+                    eod_token_id=eod_token_id,
                 ),
                 grain_transforms.HFNormalizeFeatures("input_ids"),
             ]
@@ -360,9 +363,13 @@ def preprocessing_pipeline(
                 apply_group_texts=True,
             )
             operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
+            shift_target = True
+            eod_token_id = 0  # not needed: we need eod_token for first input when shift_target=False
     else:
         dataset = dataset.select_columns([data_column_name])
         operations = [grain_transforms.HFNormalizeFeatures(data_column_name)]
+        shift_target = True
+        eod_token_id = 0
 
     if not drop_remainder:
         if grain_packing:
@@ -409,6 +416,8 @@ def preprocessing_pipeline(
         operations=operations,
         grain_packing=grain_packing,
         shift=shift,
+        shift_target=shift_target,
+        eod_token_id=eod_token_id,
         worker_count=worker_count,
         worker_buffer_size=worker_buffer_size,
         drop_remainder=True,  # remainder is padded up if not dropped
