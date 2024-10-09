@@ -5,7 +5,12 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 import torch
+from flax import linen as nn
 
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.attention import (
+    mLSTMBackendAttention,
+    mLSTMBackendAttentionConfig,
+)
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.fwbw import (
     mlstm_fwbw_custom_grad as mlstm_fwbw_custom_grad_jax,
 )
@@ -422,3 +427,82 @@ def test_fwbw_pytorch_vs_jax_backward(context_length: int, chunk_size: int, use_
             rtol=1e-2,
             err_msg=f"Mismatch between JAX and PyTorch gradient backends in fwbw for {gname}.",
         )
+
+
+@pytest.mark.parametrize("context_length", [128, 256])
+@pytest.mark.parametrize("activation_function", ["softmax", "sigmoid", "none"])
+@pytest.mark.parametrize("qk_pre_activation_function", ["swish", "none"])
+def test_attention_backend(context_length: int, activation_function: str, qk_pre_activation_function: str):
+    """Test the mLSTM attention backend."""
+    # Prepare the input data.
+    B = 4
+    NH = 2
+    S = context_length
+    DHQK = 64
+    DHV = 32
+    rng = np.random.default_rng(42)
+    q = rng.normal(size=(B, NH, S, DHQK)).astype(np.float32)
+    k = rng.normal(size=(B, NH, S, DHQK)).astype(np.float32)
+    v = rng.normal(size=(B, NH, S, DHV)).astype(np.float32)
+
+    # Run the JAX backend.
+    config = mLSTMBackendAttentionConfig(
+        context_length=S,
+        activation_function=activation_function,
+        qk_pre_activation_function=qk_pre_activation_function,
+    )
+    backend = nn.vmap(mLSTMBackendAttention, in_axes=(1, 1, 1), out_axes=1)(config)
+    out = backend.apply({}, q, k, v)
+    out = jax.device_get(out)
+
+    assert out.shape == v.shape, "Output shape must match the values shape."
+
+    # Query perturbation test
+    q_perturbed = np.copy(q)
+    pert_idx = 5
+    q_perturbed[0, 0, pert_idx, :] = 1.0
+    out_query_perturbed = backend.apply({}, q_perturbed, k, v)
+    out_query_perturbed = jax.device_get(out_query_perturbed)
+    np.testing.assert_allclose(
+        out[1:], out_query_perturbed[1:], err_msg="Perturbation of other batch element must not affect the output."
+    )
+    np.testing.assert_allclose(
+        out[0, 1:], out_query_perturbed[0, 1:], err_msg="Perturbation of other head must not affect the output."
+    )
+    np.testing.assert_allclose(
+        out[0, 0, :pert_idx],
+        out_query_perturbed[0, 0, :pert_idx],
+        err_msg="Perturbation of other query must not affect the output.",
+    )
+    np.testing.assert_allclose(
+        out[0, 0, pert_idx + 1 :],
+        out_query_perturbed[0, 0, pert_idx + 1 :],
+        err_msg="Perturbation of other query must not affect the output.",
+    )
+    assert not np.allclose(
+        out[0, 0, pert_idx], out_query_perturbed[0, 0, pert_idx]
+    ), "Perturbation of the query must affect the output of the same query."
+
+    # Key perturbation test
+    k_perturbed = np.copy(k)
+    pert_idx = 5
+    k_perturbed[0, 0, pert_idx, :] = 1.0
+    out_key_perturbed = backend.apply({}, q, k_perturbed, v)
+    out_key_perturbed = jax.device_get(out_key_perturbed)
+    np.testing.assert_allclose(
+        out[1:], out_key_perturbed[1:], err_msg="Perturbation of other batch element must not affect the output."
+    )
+    np.testing.assert_allclose(
+        out[0, 1:], out_key_perturbed[0, 1:], err_msg="Perturbation of other head must not affect the output."
+    )
+    np.testing.assert_allclose(
+        out[0, 0, :pert_idx],
+        out_key_perturbed[0, 0, :pert_idx],
+        err_msg="Perturbation of other key must not affect the output.",
+    )
+    assert not np.allclose(
+        out[0, 0, pert_idx], out_key_perturbed[0, 0, pert_idx]
+    ), "Perturbation of the key must affect the output of the same key."
+    assert not np.allclose(
+        out[0, 0, pert_idx + 1 :], out_key_perturbed[0, 0, pert_idx + 1 :]
+    ), "Perturbation of the key must affect the output of the same key."
