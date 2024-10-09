@@ -103,6 +103,7 @@ class LLMTrainer(TrainerModule):
                         "log_modes": ["mean"],
                     },
                     "logits_max": {"value": logits_max, "count": 1, "log_modes": ["max"]},
+                    "token_utilization": {"value": num_targets, "count": targets_mask.size, "log_modes": ["mean"]},
                 }
             )
         return avg_loss, (step_metrics, mutable_variables)
