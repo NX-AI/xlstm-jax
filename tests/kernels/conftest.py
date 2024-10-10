@@ -9,6 +9,27 @@ import pytest
 os.environ["JAX_PLATFORMS"] = ""
 os.environ.pop("CUDA_VISIBLE_DEVICES", None)
 
+# Use cuda_compat to enable XLA parallel compilation. First, check if
+# cuda-compat is installed in the current environment.  We assume that jax is
+# installed in the same environment as cuda-compat so first, we get folder where
+# jax is installed.
+jax_folder = jax.__path__[0]
+# Then, we get the path to the cuda-compat folder. cuda-compat is installed in
+# the root folder of the environment, which resides 4 levels above the jax
+# folder.
+cuda_compat_folder = os.path.abspath(os.path.join(jax_folder, "../../../../cuda-compat"))
+# Now we check whether the cuda-compat folder exists.
+cuda_compat_installed = os.path.exists(cuda_compat_folder)
+
+# If cuda-compat is installed, we add the path to the LD_LIBRARY_PATH environment variable.
+if cuda_compat_installed:
+    ld_library_path = os.environ.get("LD_LIBRARY_PATH")
+    if ld_library_path is not None:
+        os.environ["LD_LIBRARY_PATH"] = f"{ld_library_path}:{cuda_compat_folder}"
+    else:
+        os.environ["LD_LIBRARY_PATH"] = f"{cuda_compat_folder}"
+
+
 try:
     import jax_triton
 
