@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -8,7 +9,7 @@ from xlstm_jax.models.configs import SubModelConfig
 
 from ...components.init import bias_linspace_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from ...components.ln import MultiHeadLayerNorm
+from ...components.normalization import MultiHeadNormLayer
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
 
@@ -23,6 +24,8 @@ class mLSTMCellConfig(SubModelConfig):
     )
     norm_eps: float = 1e-6
     """Epsilon value for numerical stability in layer norm."""
+    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
+    """Type of normalization layer to use."""
     dtype: jnp.dtype = jnp.bfloat16
     gate_dtype: jnp.dtype = jnp.float32
     gate_soft_cap: float | None = None
@@ -163,8 +166,14 @@ class mLSTMCell(nn.Module):
                 h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
             h_state = h_state.transpose(0, 2, 1, 3)
 
-        h_state_norm = MultiHeadLayerNorm(
-            weight=True, bias=False, dtype=self.config.dtype, name="outnorm", axis=2, eps=self.config.norm_eps
+        h_state_norm = MultiHeadNormLayer(
+            weight=True,
+            bias=False,
+            dtype=self.config.dtype,
+            name="outnorm",
+            axis=2,
+            eps=self.config.norm_eps,
+            norm_type=self.config.norm_type,
         )(h_state)
         h_state_norm = h_state_norm.reshape(B, S, -1)
         return h_state_norm

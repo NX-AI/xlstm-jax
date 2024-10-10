@@ -33,6 +33,7 @@ def get_partial_mLSTMBlock(config: mLSTMBlockConfig, *args, **kwargs) -> callabl
             feedforward=config.feedforward,
             dtype=config.mlstm.dtype,
             parallel=config.parallel,
+            norm_eps=config.mlstm.mlstm_cell.norm_eps,
             _num_blocks=config._num_blocks,
             _block_idx=config._block_idx,
         ),

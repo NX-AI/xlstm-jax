@@ -66,6 +66,7 @@ class xLSTMBlockStackConfig(SubModelConfig):
             self.mlstm_block.mlstm.dropout = self.dropout
             self.mlstm_block.mlstm.context_length = self.context_length
             self.mlstm_block.mlstm.dtype = self.dtype
+            self.mlstm_block.mlstm.norm_type = self.norm_type
             self.mlstm_block.parallel = self.parallel
 
             self.mlstm_block._num_blocks = self.num_blocks

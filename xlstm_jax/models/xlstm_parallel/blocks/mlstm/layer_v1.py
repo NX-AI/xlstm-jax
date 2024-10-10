@@ -7,7 +7,7 @@ from flax import linen as nn
 from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
 
 from ...components.init import bias_linspace_init, small_init, wang_init
-from ...components.ln import MultiHeadLayerNorm
+from ...components.normalization import MultiHeadNormLayer
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend
 from .layer import mLSTMLayerConfig
@@ -127,7 +127,7 @@ class mLSTMLayerV1(nn.Module):
             h_state = h_state.transpose(0, 2, 1, 3)
 
         # Normalize output of mLSTM cell
-        h_state_norm = MultiHeadLayerNorm(
+        h_state_norm = MultiHeadNormLayer(
             weight=True,
             bias=False,
             dtype=self.config.dtype,

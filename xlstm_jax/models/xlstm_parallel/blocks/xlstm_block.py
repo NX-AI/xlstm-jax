@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -6,7 +7,7 @@ from flax import linen as nn
 
 from ...configs import ParallelConfig
 from ..components.feedforward import FeedForwardConfig, create_feedforward
-from ..components.ln import LayerNorm
+from ..components.normalization import NormLayer
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 from .mlstm.layer_v1 import mLSTMLayerV1
 
@@ -21,6 +22,8 @@ class xLSTMBlockConfig:
     dtype: jnp.dtype = jnp.bfloat16
     norm_eps: float = 1e-6
     """Epsilon value for numerical stability in layer norm."""
+    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
+    """Type of normalization layer to use."""
 
     # we initialize these with None to catch the case where they are not set
     _num_blocks: int = None
@@ -34,6 +37,7 @@ class xLSTMBlockConfig:
             self.mlstm._num_blocks = self._num_blocks
             self.mlstm._block_idx = self._block_idx
             self.mlstm.parallel = self.parallel
+            self.mlstm.norm_type = self.norm_type
         if self.slstm:
             self.slstm._num_blocks = self._num_blocks
             self.slstm._block_idx = self._block_idx
@@ -56,13 +60,14 @@ class xLSTMBlock(nn.Module):
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
         # LayerNorm best to do over model axis, not sync beforehand due to costly embedding size.
-        xlstm_norm = LayerNorm(
+        xlstm_norm = NormLayer(
             weight=True,
             bias=False,
             dtype=self.config.dtype,
             name="xlstm_norm",
             axis_name=self.config.parallel.model_axis_name,
             eps=self.config.norm_eps,
+            norm_type=self.config.norm_type,
         )
         if self.config.mlstm is not None:
             block_class = mLSTMLayer
@@ -79,13 +84,14 @@ class xLSTMBlock(nn.Module):
         x = x + x_xlstm
 
         if self.config.feedforward is not None:
-            ffn_norm = LayerNorm(
+            ffn_norm = NormLayer(
                 weight=True,
                 bias=False,
                 dtype=self.config.dtype,
                 name="ffn_norm",
                 axis_name=self.config.parallel.model_axis_name,
                 eps=self.config.norm_eps,
+                norm_type=self.config.norm_type,
             )
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)

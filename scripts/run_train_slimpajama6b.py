@@ -164,6 +164,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
+            norm_type="rmsnorm",
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(

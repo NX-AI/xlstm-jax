@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -11,6 +12,7 @@ from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
 
 from ..configs import ParallelConfig
 from .components.init import small_init
+from .components.normalization import resolve_norm
 from .utils import prepare_module, soft_cap_logits
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
@@ -21,6 +23,10 @@ class xLSTMLMModelConfig(xLSTMBlockStackConfig):
     tie_weights: bool = False
     weight_decay_on_embedding: bool = False
     add_embedding_dropout: bool = False
+    norm_eps: float = 1e-6
+    """Epsilon value for numerical stability in normalization layer."""
+    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
+    """Type of normalization layer to use."""
     logits_soft_cap: float | None = None
     """Soft cap for the LM output logits. If None, no cap is applied."""
     parallel: ParallelConfig | None = None
@@ -72,12 +78,20 @@ class TPOutputLayer(nn.Module):
         x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
         # Apply norm - Shard parameters over model axis.
         if self.config.add_post_blocks_norm:
-            norm_fn = shard_module_params(
-                nn.LayerNorm,
+            norm_class, norm_kwargs = resolve_norm(
+                self.config.norm_type,
+                weight=True,
+                bias=False,
+                eps=self.config.norm_eps,
+                dtype=self.config.dtype,
+                name="out_norm",
+            )
+            norm_class = shard_module_params(
+                norm_class,
                 axis_name=self.config.parallel.model_axis_name,
                 min_weight_size=self.config.parallel.fsdp_min_weight_size,
             )
-            x = norm_fn(use_bias=False, dtype=self.config.dtype, name="out_norm")(x)
+            x = norm_class(**norm_kwargs)(x)
         # Apply output layer - Shard parameters over model axis.
         dense_fn = shard_module_params(
             nn.Dense,

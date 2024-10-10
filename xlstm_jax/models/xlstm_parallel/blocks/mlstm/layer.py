@@ -26,6 +26,8 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     vmap_qk: bool = False
     init_distribution: InitDistribution = "normal"
     layer_type: Literal["mlstm", "mlstm_v1"] = "mlstm"
+    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
+    """Type of normalization layer to use."""
 
     # will be set toplevel config
     embedding_dim: int = -1
@@ -60,6 +62,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
         self.mlstm_cell.embedding_dim = self._inner_embedding_dim
         self.mlstm_cell.num_heads = self.num_heads
         self.mlstm_cell.dtype = self.dtype
+        self.mlstm_cell.norm_type = self.norm_type
 
 
 class mLSTMLayer(nn.Module):
