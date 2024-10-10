@@ -2,8 +2,6 @@ import os
 
 import pytest
 
-from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
-
 # Select CPU or GPU devices.
 if "CUDA_VISIBLE_DEVICES" not in os.environ or os.environ["CUDA_VISIBLE_DEVICES"] == "":
     os.environ["CUDA_VISIBLE_DEVICES"] = ""
@@ -20,6 +18,10 @@ elif "JAX_PLATFORM_NAME" not in os.environ:
 # Select number of devices. On CPU, we simulate 8 devices.
 if os.environ["JAX_PLATFORMS"] == "cpu":
     NUM_DEVICES = 8
+    # The following line has to be imported here to avoid jax being initialized before
+    # setting JAX_PLATFORMS to "cpu".
+    from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
+
     simulate_CPU_devices(NUM_DEVICES)
 else:
     NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))

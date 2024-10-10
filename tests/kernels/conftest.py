@@ -5,10 +5,6 @@ import jax.numpy as jnp
 import numpy as np
 import pytest
 
-# For kernel tests, we need a GPU.
-os.environ["JAX_PLATFORMS"] = ""
-os.environ.pop("CUDA_VISIBLE_DEVICES", None)
-
 # Use cuda_compat to enable XLA parallel compilation. First, check if
 # cuda-compat is installed in the current environment.  We assume that jax is
 # installed in the same environment as cuda-compat so first, we get folder where
