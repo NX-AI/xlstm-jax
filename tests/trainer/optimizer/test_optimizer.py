@@ -359,6 +359,8 @@ def test_weight_decay(weight_decay: float, optimizer_name: str, exclude: list[st
 @pytest.mark.parametrize("use_sharded_clip_norm", [False, True])
 def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_sharded_clip_norm: bool):
     """Tests that the sharded grad norm is correctly calculated in FSDP and clipped."""
+    if pytest.num_devices < fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     scheduler_config = SchedulerConfig(name="constant", lr=1.0)
     optimizer_config_single_device = OptimizerConfig(
         name="sgd", scheduler=scheduler_config, grad_clip_norm=grad_clip_norm, use_sharded_clip_norm=False
@@ -401,6 +403,8 @@ def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
 def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_size: int):
     """Tests that the sharded grad norm is correctly calculated in TP+FSDP and clipped."""
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     scheduler_config = SchedulerConfig(name="constant", lr=1.0)
     optimizer_config_multi_device = OptimizerConfig(
         name="sgd",

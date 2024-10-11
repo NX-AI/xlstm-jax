@@ -28,7 +28,9 @@ def test_grain_dataloader_process_split(
         data_axis_size=1,
     )
     # Use only one device for this test, as in practice, each data loader process only sees a single device.
-    mesh = initialize_mesh(parallel_config=parallel, device_array=np.array(jax.devices())[0:1])
+    mesh = initialize_mesh(
+        init_distributed_on_slurm=False, parallel_config=parallel, device_array=np.array(jax.devices())[0:1]
+    )
 
     # Create a synthetic dataset with the specified number of elements.
     context_length = 16
@@ -113,7 +115,9 @@ def test_grain_dataloader_shuffling_over_epochs(num_elements: int, global_batch_
         data_axis_size=1,
     )
     # Use only one device for this test, as in practice, each data loader process only sees a single device.
-    mesh = initialize_mesh(parallel_config=parallel, device_array=np.array(jax.devices())[0:1])
+    mesh = initialize_mesh(
+        init_distributed_on_slurm=False, parallel_config=parallel, device_array=np.array(jax.devices())[0:1]
+    )
 
     # Create a synthetic dataset with the specified number of elements.
     context_length = 16
@@ -177,7 +181,9 @@ def test_grain_dataloader_states(switch_after_num_batches: int):
         data_axis_size=1,
     )
     # Use only one device for this test, as in practice, each data loader process only sees a single device.
-    mesh = initialize_mesh(parallel_config=parallel, device_array=np.array(jax.devices())[0:1])
+    mesh = initialize_mesh(
+        init_distributed_on_slurm=False, parallel_config=parallel, device_array=np.array(jax.devices())[0:1]
+    )
 
     # Create a synthetic dataset with the specified number of elements.
     context_length = 16

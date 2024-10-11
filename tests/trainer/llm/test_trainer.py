@@ -102,6 +102,8 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
 
     Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
     """
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     batch_size = 8
     context_length = 16
     model_config = ModelConfig(
@@ -176,9 +178,10 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
         num_epochs=5,
     )
     assert new_final_metrics is not None
-    assert (
-        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
-    ), "Perplexity should match the loaded model."
+    assert new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"], (
+        "Perplexity should match the loaded model, but got "
+        f"{new_final_metrics['val_epoch_5']['perplexity']} versus {final_metrics['val_epoch_5']['perplexity']}."
+    )
     # Check loading from pretrained model.
     new_trainer = LLMTrainer(
         LLMTrainerConfig(
@@ -204,9 +207,10 @@ def test_llm_trainer(tmp_path: Path, tp_size: int, fsdp_size: int):
         num_epochs=5,
     )
     assert new_final_metrics is not None
-    assert (
-        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
-    ), "Perplexity should match the loaded pretrained model."
+    assert new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"], (
+        "Perplexity should match the loaded pretrained model, but got "
+        f"{new_final_metrics['val_epoch_5']['perplexity']} versus {final_metrics['val_epoch_5']['perplexity']}."
+    )
 
 
 def test_llm_padding(tmp_path: Path):
@@ -291,6 +295,8 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
 
     Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
     """
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     # General hyperparameters.
     batch_size = 8
     context_length = 16
@@ -399,6 +405,7 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
         num_epochs=5,
     )
     assert new_final_metrics is not None
-    assert (
-        new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"]
-    ), "Perplexity should match the loaded model."
+    assert new_final_metrics["val_epoch_5"]["perplexity"] == final_metrics["val_epoch_5"]["perplexity"], (
+        "Perplexity should match the loaded pretrained model, but got "
+        f"{new_final_metrics['val_epoch_5']['perplexity']} versus {final_metrics['val_epoch_5']['perplexity']}."
+    )

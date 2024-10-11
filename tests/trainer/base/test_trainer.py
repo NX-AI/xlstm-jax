@@ -18,6 +18,8 @@ from ..helpers.mse_trainer import MSETrainer, ToyModel
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
 def test_mse_trainer(tp_size: int, fsdp_size: int):
     """Tests training a simple model with MSE loss under different mesh configs."""
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     trainer = MSETrainer(
         TrainerConfig(
             check_val_every_n_epoch=1,

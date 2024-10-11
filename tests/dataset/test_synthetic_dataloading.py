@@ -15,6 +15,8 @@ def test_synthetic_dataloader(
     num_train_batches: int, num_val_batches: int, global_batch_size: int, tp_size: int, fsdp_size: int
 ):
     """Test data loading with synthetic data."""
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     parallel = ParallelConfig(
         data_axis_name="dp",
         fsdp_axis_name="fsdp",
@@ -28,7 +30,7 @@ def test_synthetic_dataloader(
     )
 
     # Initialize mesh.
-    mesh = initialize_mesh(parallel_config=parallel)
+    mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     # Specify the configuration for the synthetic data.
     max_target_length = 128

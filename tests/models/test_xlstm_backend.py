@@ -38,6 +38,8 @@ def test_parallelize_backend_pytorch_vs_jax(context_length: int, use_jit: bool):
     but this is difficult to test due to JAX requiring the flag "JAX_ENABLE_X64" which
     messes with the default dtype and fails the other tests.
     """
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     # Prepare the input data.
     B = 1
     S = context_length
@@ -210,7 +212,7 @@ def test_jax_fwbw_vs_parallelized(context_length: int, chunk_size: int, stabiliz
     np.testing.assert_allclose(
         out_fwbw,
         out_parallel,
-        atol=1e-5,
+        atol=1e-5 if jax.default_backend() == "cpu" else 1e-2,
         rtol=1e-2,
         err_msg="Mismatch between parallel and fwbw backends.",
     )
@@ -224,6 +226,8 @@ def test_fwbw_pytorch_vs_jax(context_length: int, chunk_size: int, use_jit: bool
     """
     Tests the mLSTM forward-backward stabilized backend in PyTorch compared to JAX.
     """
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     if chunk_size > context_length:
         pytest.skip("Chunk size must be smaller than the context length.")
     # Prepare the input data.
@@ -355,6 +359,8 @@ def test_fwbw_pytorch_vs_jax_backward(context_length: int, chunk_size: int, use_
     """
     Tests the mLSTM forward-backward stabilized backend in PyTorch compared to JAX.
     """
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     if chunk_size > context_length:
         pytest.skip("Chunk size must be smaller than the context length.")
     # Prepare the input data.

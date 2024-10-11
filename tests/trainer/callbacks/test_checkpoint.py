@@ -72,6 +72,8 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing_per_epoch" / f"tp_{tp_size}_fsdp_{fsdp_size}"
     trainer = MSETrainer(
         TrainerConfig(
@@ -170,6 +172,8 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing_per_step" / f"tp_{tp_size}_fsdp_{fsdp_size}"
     trainer = MSETrainer(
         TrainerConfig(
@@ -348,6 +352,8 @@ def test_loading_to_new_topology(tmp_path: Path):
     We hereby consider a scenario where we train a model with FSDP, and want to load it to a new topology with no FSDP.
     We check that the model can be loaded and achieves the same validation performance.
     """
+    if pytest.num_devices < 8:
+        pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing" / "fsdp_to_dp"
 
     def get_trainer(fsdp_size: int):

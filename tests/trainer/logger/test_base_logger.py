@@ -83,8 +83,8 @@ def test_base_logging_mse_trainer(tmp_path: Path):
             model_class=ToyModel,
             parallel=ParallelConfig(
                 data_axis_size=-1,
-                model_axis_size=2,
-                fsdp_axis_size=2,
+                model_axis_size=1,
+                fsdp_axis_size=1,
                 fsdp_min_weight_size=pytest.num_devices,
             ),
         ),

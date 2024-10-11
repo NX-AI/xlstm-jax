@@ -93,6 +93,8 @@ LARGE_MODEL_CONFIGS = [
 @pytest.mark.parametrize("config_torch", MODEL_CONFIGS)
 def test_xLSTMLMModel(config_torch):
     """Test that PyTorch and JAX xLSTMLMModel produce the same output."""
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     torch.manual_seed(0)
     np_rng = np.random.default_rng(0)
     model_torch = xLSTMLMModel_torch(config_torch)
@@ -188,6 +190,8 @@ def test_xLSTMLMModel(config_torch):
 @pytest.mark.parametrize("config_torch", LARGE_MODEL_CONFIGS)
 def test_xLSTMLMModel_initialization(config_torch):
     """Test that the parameters of the PyTorch and JAX models are similar after initialization."""
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     torch.manual_seed(0)
     np_rng = np.random.default_rng(0)
     model_torch = xLSTMLMModel_torch(config_torch)
@@ -250,6 +254,8 @@ def test_xLSTMLMModel_initialization(config_torch):
 
 def test_pytorch_jax_LN():
     """Test that PyTorch and JAX LayerNorm produce the same output."""
+    if jax.default_backend() != "cpu":
+        pytest.skip("PyTorch backend can only be run on CPU so far, difference are not representative with GPU.")
     rng = np.random.default_rng(0)
     input_tensor = rng.normal(size=(2, 100, 128)).astype(np.float32)
     torch_layernorm = torch.nn.LayerNorm(128, eps=1e-5)

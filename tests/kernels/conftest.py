@@ -31,7 +31,9 @@ try:
 
     jt_version = jax_triton.__version__
 
-    TRITON_AVAILABLE = True
+    # If we run on GPU environments with jax triton installed, but with JAX_PLATFORMS
+    # set to CPU, we need to disable the triton tests.
+    TRITON_AVAILABLE = os.environ.get("JAX_PLATFORMS", "") != "cpu"
 except ImportError:
     TRITON_AVAILABLE = False
 

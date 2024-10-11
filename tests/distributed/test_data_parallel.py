@@ -88,11 +88,14 @@ def test_gather_array_with_mean_grads_scatter_dtype():
         err_msg="Gathering the array in float32 and then casting it to bfloat16 should give the same result as "
         "gathering it directly in bfloat16 and only casting the gradients up.",
     )
-    assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "bfloat16")]), (
-        "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 "
-        "and bfloat16."
-    )
-    assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "float16")]), (
-        "Scattering the gradients in different dtypes should give different results, but resulted in same for float32 "
-        "and float16."
-    )
+
+    # For single device, there is no difference as nothing is scattered.
+    if pytest.num_devices > 1:
+        assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "bfloat16")]), (
+            "Scattering the gradients in different dtypes should give different results, but resulted in same "
+            "for float32 and bfloat16."
+        )
+        assert not np.all(all_grads[("float32", "float32")] == all_grads[("float32", "float16")]), (
+            "Scattering the gradients in different dtypes should give different results, but resulted in same "
+            "for float32 and float16."
+        )

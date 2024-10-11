@@ -121,6 +121,8 @@ def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
 @pytest.mark.parametrize("model_axis_size", [1, 2, 4])
 def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
     """Test a simple forward pass with tensor parallelism."""
+    if model_axis_size > pytest.num_devices:
+        pytest.skip("Not enough devices for model axis size.")
     mesh = _create_mesh(config, model_axis_size=model_axis_size)
     rng = jax.random.PRNGKey(42)
     model_rng, data_rng = jax.random.split(rng)
@@ -166,6 +168,8 @@ def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_
 @pytest.mark.parametrize("model_axis_size", [2, 4])
 def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_size: int):
     """Test that tensor parallel initialization matches data parallel initialization."""
+    if model_axis_size > pytest.num_devices:
+        pytest.skip("Not enough devices for model axis size.")
     config.__post_init__()
     base_mesh = _create_mesh(config, model_axis_size=1)
     rng = jax.random.PRNGKey(42)

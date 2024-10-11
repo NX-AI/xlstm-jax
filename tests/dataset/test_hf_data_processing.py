@@ -18,6 +18,8 @@ from xlstm_jax.models.configs import ParallelConfig
 def test_hf_dataset_with_group_texts(tmp_path: Path):
     """Test data loading with huggingface datasets, using group_texts applied
     via arrow_dataset.map method."""
+    fsdp_axis_size = min(2, pytest.num_devices)
+    model_axis_size = min(2, pytest.num_devices // fsdp_axis_size)
 
     parallel = ParallelConfig(
         data_axis_name="dp",
@@ -26,13 +28,13 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
         pipeline_axis_name="pp",
         fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
         fsdp_min_weight_size=2**8,
-        fsdp_axis_size=2,
-        model_axis_size=2,
+        fsdp_axis_size=fsdp_axis_size,
+        model_axis_size=model_axis_size,
         data_axis_size=-1,
     )
 
     # Initialize mesh.
-    mesh = initialize_mesh(parallel_config=parallel)
+    mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     # Define data configuration.
     global_batch_size = 64
@@ -329,7 +331,7 @@ def _setup_data(
     )
 
     # Initialize mesh.
-    mesh = initialize_mesh(parallel_config=parallel)
+    mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     data_config = HFHubDataConfig(
         num_train_epochs=2,
