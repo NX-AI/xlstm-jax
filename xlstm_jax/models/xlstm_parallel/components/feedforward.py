@@ -7,7 +7,7 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from ..utils import UpProjConfigMixin
-from .init import small_init, wang_init
+from .init import InitDistribution, InitFnName, create_common_init_fn, small_init
 
 _act_fn_registry = {
     "gelu": nn.gelu,
@@ -36,6 +36,10 @@ class FeedForwardConfig(UpProjConfigMixin):
     embedding_dim: int = -1
     dropout: float = 0.0
     bias: bool = False
+    init_distribution: InitDistribution = "normal"
+    """Distribution type from which to sample the weights."""
+    output_init_fn: InitFnName = "wang"
+    """Initialization function for the output projection layer."""
     ff_type: Literal["ffn_gated", "ffn"] = "ffn_gated"
     dtype: jnp.dtype = jnp.bfloat16
 
@@ -54,14 +58,14 @@ class GatedFeedForward(nn.Module):
         embedding_dim = x.shape[-1]
         up_proj = nn.Dense(
             features=self.config._proj_up_dim,
-            kernel_init=small_init(embedding_dim),
+            kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up",
         )(x)
         gate_preact = nn.Dense(
             features=self.config._proj_up_dim,
-            kernel_init=small_init(embedding_dim),
+            kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up_gate",
@@ -69,7 +73,12 @@ class GatedFeedForward(nn.Module):
         gate_act = get_act_fn(self.config.act_fn)(gate_preact)
         out = nn.Dense(
             features=embedding_dim,
-            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
+            kernel_init=create_common_init_fn(
+                fn_name=self.config.output_init_fn,
+                dim=embedding_dim,
+                num_blocks=self.config._num_blocks,
+                distribution=self.config.init_distribution,
+            ),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_down",
@@ -86,7 +95,7 @@ class FeedForward(nn.Module):
         embedding_dim = x.shape[-1]
         x = nn.Dense(
             features=self.config._proj_up_dim,
-            kernel_init=small_init(embedding_dim),
+            kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_up",
@@ -94,7 +103,12 @@ class FeedForward(nn.Module):
         x = get_act_fn(self.config.act_fn)(x)
         x = nn.Dense(
             features=embedding_dim,
-            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
+            kernel_init=create_common_init_fn(
+                fn_name=self.config.output_init_fn,
+                dim=embedding_dim,
+                num_blocks=self.config._num_blocks,
+                distribution=self.config.init_distribution,
+            ),
             use_bias=self.config.bias,
             dtype=self.config.dtype,
             name="proj_down",

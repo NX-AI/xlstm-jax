@@ -5,6 +5,7 @@ import jax.numpy as jnp
 from jax.nn.initializers import Initializer
 
 InitDistribution = Literal["normal", "truncated_normal", "uniform"]
+InitFnName = Literal["small", "wang", "wang2", "zeros"]
 
 
 def bias_linspace_init(start: float, end: float) -> Initializer:
@@ -65,6 +66,36 @@ def wang_init(dim: int, num_blocks: int, distribution: InitDistribution = "norma
     """
     std = 2 / num_blocks / jnp.sqrt(dim)
     return _dist_from_stddev(std, distribution)
+
+
+def create_common_init_fn(
+    fn_name: InitFnName, dim: int, num_blocks: int, distribution: InitDistribution = "normal"
+) -> Initializer:
+    """Create common initializer function.
+
+    Allows to create different types of initializers with a single function call.
+
+    Args:
+        fn_name: Name of the initializer function to create. Supported are "small" (:func:`~small_init`),
+            "wang" (:func:`~wang_init`), "wang2" (:func:`~wang_init` with 2x block num), and
+            "zeros" (zero initializer).
+        dim: Feature dimensionality to use in the initializer.
+        num_blocks: Number of layers / blocks in the model.
+        distribution: The distribution to sample from. Supported are normal, truncated normal, and uniform.
+
+    Returns:
+        Initializer function of the specified type.
+    """
+    if fn_name == "small":
+        return small_init(dim, distribution)
+    elif fn_name == "wang":
+        return wang_init(dim, num_blocks, distribution)
+    elif fn_name == "wang2":
+        return wang_init(dim, 2 * num_blocks, distribution)
+    elif fn_name == "zeros":
+        return jax.nn.initializers.zeros
+    else:
+        raise ValueError(f"Invalid initializer function name {fn_name}.")
 
 
 def _dist_from_stddev(stddev: float, distribution: InitDistribution) -> Initializer:

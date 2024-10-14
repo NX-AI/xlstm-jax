@@ -11,14 +11,12 @@ from jax.sharding import Mesh, PartitionSpec as P
 
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ParallelConfig
-from xlstm_jax.models.xlstm_clean.xlstm_lm_model import xLSTMLMModel as xLSTMLMModelClean
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict
 
 PyTree = Any
 
@@ -122,60 +120,6 @@ MODEL_CONFIGS = [
                 ff_type="ffn",
                 dtype=jnp.float32,
             ),
-        ),
-    ),
-]
-LARGE_MODEL_CONFIGS = [
-    xLSTMLMModelConfig(
-        vocab_size=1024,
-        embedding_dim=512,
-        num_blocks=2,
-        context_length=4,
-        tie_weights=False,
-        add_embedding_dropout=True,
-        add_post_blocks_norm=True,
-        parallel=ParallelConfig(
-            remat=(),
-            fsdp_modules=(),
-            tp_async_dense=True,
-        ),
-        scan_blocks=False,
-        dtype=jnp.float32,
-        mlstm_block=mLSTMBlockConfig(
-            mlstm=mLSTMLayerConfig(
-                proj_factor=2.0,
-                conv1d_kernel_size=4,
-                num_heads=4,
-                dropout=0.2,
-                embedding_dim=512,
-                context_length=4,
-            )
-        ),
-    ),
-    xLSTMLMModelConfig(
-        vocab_size=768,
-        embedding_dim=1536,
-        num_blocks=1,
-        context_length=4,
-        tie_weights=False,
-        add_embedding_dropout=True,
-        add_post_blocks_norm=True,
-        parallel=ParallelConfig(
-            remat=(),
-            fsdp_modules=(),
-            tp_async_dense=False,
-        ),
-        scan_blocks=False,
-        dtype=jnp.float32,
-        mlstm_block=mLSTMBlockConfig(
-            mlstm=mLSTMLayerConfig(
-                proj_factor=3.0,
-                conv1d_kernel_size=6,
-                num_heads=8,
-                dropout=0.0,
-                embedding_dim=1536,
-                context_length=4,
-            )
         ),
     ),
 ]
@@ -398,76 +342,3 @@ def test_fsdp(config: xLSTMLMModelConfig):
     )
     loss = metrics["loss"][0] / metrics["loss"][1]
     assert loss > 0, f"Loss must be greater zero, but is {loss}."
-
-
-@pytest.mark.parametrize("config", LARGE_MODEL_CONFIGS)
-def test_data_parallel_initialization(config: xLSTMLMModelConfig):
-    """Test that DP initialization gives same distributions as xlstm-clean single device."""
-    mesh = _create_mesh(config)
-    rng = jax.random.PRNGKey(42)
-    model_rng, data_rng = jax.random.split(rng)
-    input_array = jax.random.randint(data_rng, shape=(32, config.context_length), minval=0, maxval=config.vocab_size)
-    optimizer = optax.adamw(learning_rate=1e-3)
-    state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
-    assert state is not None
-    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
-        "Parameters should be replicated over axes, but found different sharding: "
-        f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
-    )
-    params = jax.device_get(state.params)
-    params = flatten_dict(params)
-
-    single_device_model = xLSTMLMModelClean(config)
-    single_device_params = single_device_model.init(model_rng, input_array, train=False)["params"]
-    single_device_params = jax.device_get(single_device_params)
-    single_device_params = flatten_dict(single_device_params)
-    params = _map_multi_device_to_single(params)
-
-    for key in params:
-        assert key in single_device_params, f"Key {key} not found in single device params."
-        p_md, p_sd = params[key], single_device_params[key]
-        assert np.prod(p_md.shape) == np.prod(p_sd.shape), f"Shape mismatch for key {key}: {p_md.shape} vs {p_sd.shape}"
-
-        if np.prod(p_md.shape) < 16:
-            atol_mean, atol_std = 1e-1, 1e-1
-        else:
-            atol_mean, atol_std = 1e-2, 1e-2
-        np.testing.assert_allclose(
-            p_md.mean(), p_sd.mean(), atol=atol_mean, err_msg=f"Mean deviates for key: {key} / shape: {p_md.shape}"
-        )
-        np.testing.assert_allclose(
-            p_md.std(),
-            p_sd.std(),
-            atol=atol_std,
-            rtol=0.1,
-            err_msg=f"Std deviates for key: {key} / shape: {p_md.shape}",
-        )
-
-
-def _map_multi_device_to_single(params: dict[str, jax.Array]) -> dict[str, jax.Array]:
-    """Maps multi-device parameters to single-device xlstm-clean parameters."""
-    for key in params:
-        if isinstance(params[key], nn.Partitioned):
-            params[key] = params[key].value
-    params["xlstm_block_stack.post_blocks_norm.scale"] = params.pop("lm_head.out_norm.scale")
-    params["lm_head.kernel"] = params.pop("lm_head.out_dense.kernel")
-    keys = list(params.keys())
-    for key in keys:
-        new_key = key
-        val = params.pop(key)
-        if ".sharded." in new_key:
-            new_key = new_key.replace(".sharded.", ".")
-        if ".shard_0." in new_key:
-            new_key = new_key.replace(".shard_0.", ".")
-        if ".inner_layer." in new_key:
-            new_key = new_key.replace(".inner_layer.", ".")
-        if ".Dense_0." in new_key:
-            new_key = new_key.replace(".Dense_0.", ".")
-        params[new_key] = val
-    keys = list(params.keys())
-    for key in keys:
-        if key.endswith("proj_up_mlstm.kernel"):
-            other_key = key.replace("proj_up_mlstm.kernel", "proj_up_z.kernel")
-            new_key = key.replace("proj_up_mlstm.kernel", "proj_up.kernel")
-            params[new_key] = np.concatenate([params.pop(key), params.pop(other_key)], axis=-1)
-    return params

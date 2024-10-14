@@ -11,7 +11,7 @@ from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsy
 
 from ....configs import ParallelConfig
 from ...components.conv import CausalConv1d, CausalConv1dConfig
-from ...components.init import InitDistribution, small_init, wang_init
+from ...components.init import InitDistribution, InitFnName, create_common_init_fn, small_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...utils import UpProjConfigMixin, prepare_module
 from .cell import mLSTMCell, mLSTMCellConfig
@@ -25,6 +25,9 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     proj_factor: float = 2.0
     vmap_qk: bool = False
     init_distribution: InitDistribution = "normal"
+    """Distribution type from which to sample the weights."""
+    output_init_fn: InitFnName = "wang"
+    """Initialization function for the output projection layer."""
     layer_type: Literal["mlstm", "mlstm_v1"] = "mlstm"
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
     """Type of normalization layer to use."""
@@ -176,7 +179,12 @@ class mLSTMLayer(nn.Module):
             ),
             model_axis_name=self.config.parallel.model_axis_name,
             tp_mode="scatter",
-            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
+            kernel_init=create_common_init_fn(
+                fn_name=self.config.output_init_fn,
+                dim=embedding_dim,
+                num_blocks=self.config._num_blocks,
+                distribution=self.config.init_distribution,
+            ),
             name="proj_down",
         )(h_state)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)

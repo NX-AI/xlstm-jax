@@ -6,7 +6,7 @@ from flax import linen as nn
 
 from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
 
-from ...components.init import bias_linspace_init, small_init, wang_init
+from ...components.init import bias_linspace_init, create_common_init_fn, small_init
 from ...components.normalization import MultiHeadNormLayer, NormLayer
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend
@@ -52,9 +52,10 @@ class mLSTMLayerV1(nn.Module):
                 )
 
             # QKV layers
-            q = proj_up_layer(name="dense_q", kernel_init=small_init(embedding_dim))(x)
-            k = proj_up_layer(name="dense_k", kernel_init=small_init(embedding_dim))(x)
-            v = proj_up_layer(name="dense_v", kernel_init=small_init(embedding_dim))(x)
+            qkv_init = small_init(embedding_dim, distribution=self.config.init_distribution)
+            q = proj_up_layer(name="dense_q", kernel_init=qkv_init)(x)
+            k = proj_up_layer(name="dense_k", kernel_init=qkv_init)(x)
+            v = proj_up_layer(name="dense_v", kernel_init=qkv_init)(x)
 
             # Output layer
             o = proj_up_layer(name="dense_o", kernel_init=nn.initializers.zeros)(x)
@@ -165,7 +166,12 @@ class mLSTMLayerV1(nn.Module):
             ),
             model_axis_name=self.config.parallel.model_axis_name,
             tp_mode="scatter",
-            kernel_init=wang_init(embedding_dim, num_blocks=self.config._num_blocks),
+            kernel_init=create_common_init_fn(
+                fn_name=self.config.output_init_fn,
+                dim=embedding_dim,
+                num_blocks=self.config._num_blocks,
+                distribution=self.config.init_distribution,
+            ),
             name="proj_down",
         )(h_state_out)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)

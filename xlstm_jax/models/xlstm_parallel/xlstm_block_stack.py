@@ -27,7 +27,9 @@ class xLSTMBlockStackConfig(SubModelConfig):
     dtype: Any = jnp.bfloat16
     parallel: ParallelConfig | None = None
     init_distribution_embed: InitDistribution = "normal"
+    """Distribution type from which to sample the embeddings."""
     init_distribution_out: InitDistribution = "normal"
+    """Distribution type from which to sample the LM output head."""
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.
