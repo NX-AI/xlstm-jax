@@ -1,6 +1,6 @@
 #!/bin/bash -l
 #SBATCH --job-name=xlstm-jax
-#SBATCH --nodes=1
+#SBATCH --nodes=2
 #SBATCH --partition=compute
 #SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
@@ -102,4 +102,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR --model="165M" --use_full_dataset'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama6b.py --log_dir=$LOG_DIR --model="1.3B_v1" --use_full_dataset --grad_norm_clip=0.5'

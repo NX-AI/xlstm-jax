@@ -97,6 +97,8 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
+            norm_eps=1e-6,
+            norm_type="rmsnorm",
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
@@ -105,7 +107,11 @@ MODEL_CONFIGS = {
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=jnp.float32,
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
-                        igate_bias_init_range=-3.0,
+                        # Lowering the input bias init appears to stabilize training.
+                        igate_bias_init_range=-10.0,
+                        add_qk_norm=False,
+                        norm_type="rmsnorm",
+                        norm_eps=1e-6,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -114,6 +120,7 @@ MODEL_CONFIGS = {
                     ff_type="ffn",
                     dtype=jnp.bfloat16,
                 ),
+                add_post_norm=False,
             ),
         ),
         "batch_size_per_device": 16,
@@ -164,6 +171,7 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
+            norm_eps=1e-6,
             norm_type="rmsnorm",
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
@@ -175,6 +183,9 @@ MODEL_CONFIGS = {
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                         # Lowering the input bias init appears to stabilize training.
                         igate_bias_init_range=-10.0,
+                        add_qk_norm=False,
+                        norm_type="rmsnorm",
+                        norm_eps=1e-6,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -183,6 +194,7 @@ MODEL_CONFIGS = {
                     ff_type="ffn",
                     dtype=jnp.bfloat16,
                 ),
+                add_post_norm=False,
             ),
         ),
         "batch_size_per_device": 16,
@@ -233,6 +245,8 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
+            norm_eps=1e-6,
+            norm_type="rmsnorm",
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
@@ -241,7 +255,11 @@ MODEL_CONFIGS = {
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=jnp.float32,
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
-                        igate_bias_init_range=-3.0,
+                        # Lowering the input bias init appears to stabilize training.
+                        igate_bias_init_range=-10.0,
+                        add_qk_norm=False,
+                        norm_type="rmsnorm",
+                        norm_eps=1e-6,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -250,6 +268,7 @@ MODEL_CONFIGS = {
                     ff_type="ffn",
                     dtype=jnp.bfloat16,
                 ),
+                add_post_norm=False,
             ),
         ),
         "batch_size_per_device": 16,
@@ -322,6 +341,20 @@ def main_train(args: argparse.Namespace):
     backend_name = xlstm_config.mlstm_block.mlstm.mlstm_cell.backend.name
     wb_name = f"slimpajama{data_name}_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}_{backend_name}"
 
+    # Optimizer config
+    if args.use_ademamix:
+        optimizer_kwargs = dict(
+            name="ademamix",
+            beta2=0.999,
+            beta3=0.9999,
+        )
+    else:
+        optimizer_kwargs = dict(
+            name="adamw",
+            beta2=0.95,
+            eps=1e-5,
+        )
+
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
     trainer = LLMTrainer(
@@ -357,13 +390,13 @@ def main_train(args: argparse.Namespace):
                     ),
                 ],
             ),
-            check_val_every_n_steps=2_000,
+            check_val_every_n_steps=5_000,
             enable_progress_bar=False,
             check_for_nan=True,
             log_grad_norm=True,
-            log_grad_norm_per_param=False,
+            log_grad_norm_per_param=True,
             log_param_norm=True,
-            log_param_norm_per_param=False,
+            log_param_norm_per_param=True,
             default_train_log_modes=("mean", "std", "max"),
             log_logit_stats=True,
             log_intermediates=True,
@@ -374,7 +407,7 @@ def main_train(args: argparse.Namespace):
             model_config=xlstm_config,
         ),
         OptimizerConfig(
-            name="adamw",
+            **optimizer_kwargs,
             scheduler=SchedulerConfig(
                 name="exponential_decay",
                 lr=lr,
@@ -383,11 +416,9 @@ def main_train(args: argparse.Namespace):
                 warmup_steps=750,
                 cooldown_steps=2_000,
             ),
-            grad_clip_norm=1.0,
+            grad_clip_norm=args.grad_norm_clip,
             weight_decay=0.1,
             weight_decay_include=[r".*kernel"],
-            beta2=0.95,
-            eps=1e-5,
         ),
         batch=LLMBatch.get_dtype_struct(batch_size, context_length),
         mesh=mesh,
@@ -420,5 +451,7 @@ if __name__ == "__main__":
         "--use_full_dataset", action="store_true", help="If True, uses the 600B dataset instead of the 6B version."
     )
     parser.add_argument("--load_checkpoint_from", type=str, default="")
+    parser.add_argument("--use_ademamix", action="store_true", help="If True, uses Ademamix optimizer.")
+    parser.add_argument("--grad_norm_clip", type=float, default=1.0, help="Gradient norm clipping value.")
     args = parser.parse_args()
     main_train(args)

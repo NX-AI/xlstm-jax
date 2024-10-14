@@ -7,7 +7,7 @@ from flax import linen as nn
 from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
 
 from ...components.init import bias_linspace_init, small_init, wang_init
-from ...components.normalization import MultiHeadNormLayer
+from ...components.normalization import MultiHeadNormLayer, NormLayer
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend
 from .layer import mLSTMLayerConfig
@@ -108,6 +108,19 @@ class mLSTMLayerV1(nn.Module):
         igate_preact = igate_preact[..., None]  # (B, S, NH, 1)
         fgate_preact = fgate_preact[..., None]  # (B, S, NH, 1)
 
+        # Normalize q and k.
+        if self.config.mlstm_cell.add_qk_norm:
+            norm_fn = partial(
+                NormLayer,
+                weight=True,
+                bias=False,
+                eps=self.config.mlstm_cell.norm_eps,
+                dtype=self.config.dtype,
+                norm_type=self.config.norm_type,
+            )
+            q = norm_fn(name="q_norm")(q)
+            k = norm_fn(name="k_norm")(k)
+
         backend_fn: mLSTMBackend = create_mlstm_backend(self.config.mlstm_cell)
 
         if backend_fn.can_vmap_over_heads:
@@ -159,8 +172,14 @@ class mLSTMLayerV1(nn.Module):
 
         # Log intermediate statistics of the mLSTM layer.
         self.sow("intermediates", "q_std", jnp.std(q, axis=-1).mean())
+        self.sow("intermediates", "q_abs_max", jnp.abs(q).max(axis=-1).mean())
+        self.sow("intermediates", "q_mean", q.mean())
         self.sow("intermediates", "k_std", jnp.std(k, axis=-1).mean())
+        self.sow("intermediates", "k_abs_max", jnp.abs(k).max(axis=-1).mean())
+        self.sow("intermediates", "k_mean", k.mean())
         self.sow("intermediates", "v_std", jnp.std(v, axis=-1).mean())
+        self.sow("intermediates", "v_abs_max", jnp.abs(v).max(axis=-1).mean())
+        self.sow("intermediates", "v_mean", v.mean())
         self.sow("intermediates", "max_igate_preact", jnp.max(igate_preact))
         self.sow("intermediates", "max_fgate_preact", jnp.max(fgate_preact))
         self.sow("intermediates", "min_igate_preact", jnp.min(igate_preact))

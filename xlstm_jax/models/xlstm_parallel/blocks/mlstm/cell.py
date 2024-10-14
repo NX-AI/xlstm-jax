@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+from functools import partial
 from typing import Literal
 
 import jax
@@ -9,7 +10,7 @@ from xlstm_jax.models.configs import SubModelConfig
 
 from ...components.init import bias_linspace_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from ...components.normalization import MultiHeadNormLayer
+from ...components.normalization import MultiHeadNormLayer, NormLayer
 from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
 
@@ -39,6 +40,8 @@ class mLSTMCellConfig(SubModelConfig):
     fgate_bias_init_range: tuple[float, float] | float | None = (3.0, 6.0)
     """Forget gate bias initialization. If a tuple, the bias is initialized with a linspace in the given range.
     If a float, the bias is initialized with the given value. If None, the bias is initialized with normal(0.1)."""
+    add_qk_norm: bool = False
+    """If True, adds a normalization layer on the query and key vectors before the mLSTM cell."""
 
 
 class mLSTMCell(nn.Module):
@@ -147,6 +150,19 @@ class mLSTMCell(nn.Module):
         v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
         igate_preact = igate_preact[..., None]  # (B, S, NH, 1)
         fgate_preact = fgate_preact[..., None]  # (B, S, NH, 1)
+
+        # Normalize q and k.
+        if self.config.add_qk_norm:
+            norm_fn = partial(
+                NormLayer,
+                weight=True,
+                bias=False,
+                eps=self.config.norm_eps,
+                dtype=self.config.dtype,
+                norm_type=self.config.norm_type,
+            )
+            q = norm_fn(name="q_norm")(q)
+            k = norm_fn(name="k_norm")(k)
 
         backend_fn: mLSTMBackend = create_mlstm_backend(self.config)
 
