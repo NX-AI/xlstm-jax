@@ -308,6 +308,7 @@ def _mlstm_chunkwise_bw(
     # Common arguments
     CHUNK_SIZE: int = 64,
     EPS: float = 1e-6,
+    reduce_slicing: bool = False,
 ) -> tuple[
     jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array | None, jax.Array | None, jax.Array | None
 ]:  # matDeltaQ, matDeltaK, matDeltaV, vecDeltaI, vecDeltaF, matDeltaC_initial, vecDeltaN_initial, scaDeltaM_initial
@@ -343,6 +344,9 @@ def _mlstm_chunkwise_bw(
             Defaults to None.
         CHUNK_SIZE: Chunk size. Defaults to 64.
         EPS: Epsilon value. Defaults to 1e-6.
+        reduce_slicing: If True, reduces the slicing operations taken in the preprocessing to
+            the kernel. This leads to performance improvements during training while returning
+            the same results. Defaults to False.
 
     Returns:
         Gradients for the query, key, value, vecI and vecF matrices. Shapes (B, NH, S, DHQK),
@@ -399,8 +403,12 @@ def _mlstm_chunkwise_bw(
     )  # (B, NH, NC * DHQK, DHV)
 
     # Parallel backward: compute the deltaQ, deltaK, deltaV, deltaI gradients
-    matC_k_states = matC_all[:, :, :-DHQK, :]  # Take the first NC states
+    if reduce_slicing:
+        matC_k_states = matC_all
+    else:
+        matC_k_states = matC_all[:, :, :-DHQK, :]  # Take the first NC states
 
+    # This slice cannot be reduced as the kernel would otherwise start at the wrong position.
     matDeltaC_k_states = matDeltaC_states[:, :, DHQK:, :]  # Take the last NC states
 
     matDeltaQ, matDeltaK, matDeltaV = _mlstm_chunkwise__parallel_bw_dQKV(

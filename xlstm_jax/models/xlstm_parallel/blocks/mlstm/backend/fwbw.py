@@ -54,6 +54,10 @@ def rev_cumsum_off(x: jax.Array):
 
 def rev_cumsum(x: jax.Array):
     """Compute the reverse cumulative sum of a tensor."""
+    # NOTE: This may not be the most efficient way to compute the reverse cumulative sum.
+    # A faster alternative can be (x.sum(axis=-1, keepdims=True) - x.cumsum(axis=-1) + x).
+    # However, in low precision, this may lead to different numerical results. Thus,
+    # the current implementation is used.
     x = jnp.flip(x, axis=(-1,))
     x = x.cumsum(axis=-1)
     x = jnp.flip(x, axis=(-1,))
@@ -127,10 +131,6 @@ def fwbw_forward(
         kv = jnp.einsum("bctk,bctd,bct->bckd", k, v, jnp.exp(forward_gates))
         ksum = jnp.einsum("bctk,bct->bck", k, jnp.exp(forward_gates))
 
-        c = jnp.empty_like(q, shape=(B, C + 1, K, V))
-        n = jnp.empty_like(q, shape=(B, C + 1, K))
-        m = jnp.empty_like(q, shape=(B, C + 1))
-
         def _inner_step(carry, xs):
             m_last, c_last, n_last, j = carry
             m_new = jnp.maximum(
@@ -160,9 +160,10 @@ def fwbw_forward(
             return (m_new, c_new, n_new, j + 1), (m_new, c_new, n_new)
 
         if initial_C is None:
-            initial_C = jnp.zeros_like(q, shape=(B, K, V))
-            initial_n = jnp.zeros_like(q, shape=(B, K))
-            initial_m = jnp.zeros_like(q, shape=(B,))
+            # Initialized in float32 following the kernel dtypes.
+            initial_C = jnp.zeros_like(q, shape=(B, K, V), dtype=jnp.float32)
+            initial_n = jnp.zeros_like(q, shape=(B, K), dtype=jnp.float32)
+            initial_m = jnp.zeros_like(q, shape=(B,), dtype=jnp.float32)
 
         _, (m, c, n) = jax.lax.scan(
             _inner_step,
@@ -453,9 +454,24 @@ def mlstm_fwbw_custom_grad(
         initial_m: jax.Array | None = None,
     ):
         h, ctx = fwbw_forward(q, k, v, i, f, config, initial_C, initial_n, initial_m)
+        h_dtype = h.dtype
+        h = h.astype(q.dtype)
 
         def backward(dh):
-            return fwbw_backward(ctx, dh, config)
+            dh = dh.astype(h_dtype)
+            dq, dk, dv, di, df, dC, dn, dm = fwbw_backward(ctx, dh, config)
+            dq = dq.astype(q.dtype)
+            dk = dk.astype(k.dtype)
+            dv = dv.astype(v.dtype)
+            di = di.astype(i.dtype)
+            df = df.astype(f.dtype)
+            if dC is not None and initial_C is not None:
+                dC = dC.astype(initial_C.dtype)
+            if dn is not None and initial_n is not None:
+                dn = dn.astype(initial_n.dtype)
+            if dm is not None and initial_m is not None:
+                dm = dm.astype(initial_m.dtype)
+            return dq, dk, dv, di, df, dC, dn, dm
 
         return h, backward
 
@@ -463,7 +479,7 @@ def mlstm_fwbw_custom_grad(
 
 
 class mLSTMBackendFwbw(mLSTMBackend):
-    config: mLSTMBackendFwbwConfig
+    config_class = mLSTMBackendFwbwConfig
 
     @nn.compact
     def __call__(

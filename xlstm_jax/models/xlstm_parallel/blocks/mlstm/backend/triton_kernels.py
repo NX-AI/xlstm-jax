@@ -15,6 +15,10 @@ class mLSTMBackendTritonConfig:
     """Dtype to use for the kernel computation. If None, uses the query dtype."""
     chunk_size: int = 64
     """Chunk size for the kernel computation."""
+    reduce_slicing: bool = True
+    """Whether to reduce slicing operations before the kernel computation.
+    Speeds up computation during training, but may limit initial states and
+    forwarding states during inference."""
 
     def assign_model_config_params(self, *args, **kwargs):
         pass
@@ -46,7 +50,14 @@ class mLSTMBackendTriton(mLSTMBackend):
             i = i[..., 0]
             f = f[..., 0]
         return mlstm_chunkwise_max_triton(
-            q, k, v, i, f, chunk_size=self.config.chunk_size, autocast_kernel_dtype=autocast_kernel_dtype
+            q,
+            k,
+            v,
+            i,
+            f,
+            chunk_size=self.config.chunk_size,
+            autocast_kernel_dtype=autocast_kernel_dtype,
+            reduce_slicing=self.config.reduce_slicing,
         )
 
     @property

@@ -107,7 +107,10 @@ if __name__ == "__main__":
             table["Max Abs Diff"].append(diffs.max())
             table["Max Rel Diff"].append((diffs / (np.abs(data_torch[key]) + 1e-8)).max())
             table["Mean Abs Diff"].append(diffs.mean())
-            table["Last-16 Diff"].append(diffs[:, :, -16:].mean())
+            if diffs.ndim >= 3:
+                table["Last-16 Diff"].append(diffs[:, :, -16:].mean())
+            else:
+                table["Last-16 Diff"].append("n/a")
             for q in [0.5, 0.9, 0.99]:
                 table[f"Quant-{q} Diff"].append(np.quantile(diffs, q))
 

@@ -343,6 +343,7 @@ def _mlstm_chunkwise_fw(
     return_all_states: bool = False,
     CHUNK_SIZE: int = 64,
     EPS: float = 1e-6,
+    reduce_slicing: bool = False,
 ) -> tuple[
     jax.Array,  # matH_out (B, NH, S, DHV)
     jax.Array,  # vecN_out (B, NH, S)
@@ -377,6 +378,9 @@ def _mlstm_chunkwise_fw(
         return_all_states: Whether to return all states. Defaults to False.
         CHUNK_SIZE: Chunk size for the kernel. Defaults to 64.
         EPS: Small value to avoid division by zero. Defaults to 1e-6.
+        reduce_slicing: If True, reduces the slicing operations taken in the preprocessing to
+            the kernel. This leads to performance improvements during training while returning
+            the same results. Defaults to False.
 
     Returns:
         Tuple containing the output matrix H (shape (B, NH, S, DHV)), the N vector (shape (B, NH, S)),
@@ -417,9 +421,10 @@ def _mlstm_chunkwise_fw(
         matQ=matQ,
         matK=matK,
         matV=matV,
-        matC_states=matC_k_states[:, :, :-DHQK, :],
-        vecN_states=vecN_k_states[:, :, :-DHQK],
-        scaMinter_states=scaMinter_k_states[:, :, :-1],
+        # These slices are not needed in the kernel and introduces considerable overhead.
+        matC_states=matC_k_states if reduce_slicing else matC_k_states[:, :, :-DHQK, :],
+        vecN_states=vecN_k_states if reduce_slicing else vecN_k_states[:, :, :-DHQK],
+        scaMinter_states=scaMinter_k_states if reduce_slicing else scaMinter_k_states[:, :, :-1],
         vecI=vecI,
         vecB=vecB,
         qk_scale=qk_scale,

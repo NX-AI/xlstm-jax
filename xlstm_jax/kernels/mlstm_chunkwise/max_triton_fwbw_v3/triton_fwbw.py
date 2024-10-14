@@ -36,6 +36,7 @@ def _mlstm_chunkwise_fwbw_generator(
     recompute_states_in_bw: bool = True,
     chunk_size: int = 64,
     eps: float = 1e-6,
+    reduce_slicing: bool = False,
 ) -> Callable[
     [jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array],
     tuple[jax.Array, jax.Array, jax.Array, jax.Array],
@@ -50,6 +51,9 @@ def _mlstm_chunkwise_fwbw_generator(
         recompute_states_in_bw: Whether to recompute the mLSTM states in the backward pass.
         chunk_size: The chunk size to use for the mLSTM computation.
         eps: The epsilon value to use for numerical stability.
+        reduce_slicing: If True, reduces the slicing operations taken in the preprocessing to
+            the kernel. This leads to performance improvements during training while returning
+            the same results. Defaults to False.
 
     Returns:
         A function that computes the forward pass of the mLSTM chunkwise formulation, which custom gradients for the
@@ -135,6 +139,7 @@ def _mlstm_chunkwise_fwbw_generator(
             return_all_states=(not recompute_states_in_bw),
             EPS=eps,
             CHUNK_SIZE=chunk_size,
+            reduce_slicing=reduce_slicing,
         )
         # Select what to return.
         if return_last_states:
@@ -183,6 +188,7 @@ def _mlstm_chunkwise_fwbw_generator(
                 matDeltaC_last=matDeltaC_last,
                 CHUNK_SIZE=chunk_size,
                 EPS=eps,
+                reduce_slicing=reduce_slicing,
             )
             # Cast back to original dtypes.
             matDeltaQ = matDeltaQ.astype(orig_dtypes["q"])
@@ -245,6 +251,7 @@ def mlstm_chunkwise_max_triton(
     eps: float = 1e-6,
     chunk_size: int = 64,
     autocast_kernel_dtype: jnp.dtype = jnp.float32,
+    reduce_slicing: bool = False,
 ) -> jax.Array | tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
     """
     Apply the mLSTM chunkwise formulation with Triton kernels.
@@ -265,6 +272,9 @@ def mlstm_chunkwise_max_triton(
         chunk_size: The chunk size to use for the mLSTM computation.
         autocast_kernel_dtype: The dtype to use for the kernel computation. All inputs arguments up
             to vecF are cast to this dtype. vecF is automatically casted to float32 in the kernels.
+        reduce_slicing: If True, reduces the slicing operations taken in the preprocessing to
+            the kernel. This leads to performance improvements during training while returning
+            the same results. Defaults to False.
 
     Returns:
         The output of the mLSTM computation. If return_last_states is True, the last states of the
@@ -276,6 +286,7 @@ def mlstm_chunkwise_max_triton(
         recompute_states_in_bw=True,
         chunk_size=chunk_size,
         eps=eps,
+        reduce_slicing=reduce_slicing,
     )
     matH_out, matC_last, vecN_last, scaM_last = _mlstm_chunkwise_fwbw(
         q,
