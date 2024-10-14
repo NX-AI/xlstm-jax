@@ -1,10 +1,14 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Literal
 
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
+
+from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
+from xlstm_jax.models.configs import ParallelConfig
 
 from ..utils import UpProjConfigMixin
 from .init import InitDistribution, InitFnName, create_common_init_fn, small_init
@@ -42,6 +46,7 @@ class FeedForwardConfig(UpProjConfigMixin):
     """Initialization function for the output projection layer."""
     ff_type: Literal["ffn_gated", "ffn"] = "ffn_gated"
     dtype: jnp.dtype = jnp.bfloat16
+    parallel: ParallelConfig | None = None
 
     _num_blocks: int = 1
 
@@ -55,24 +60,49 @@ class GatedFeedForward(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        embedding_dim = x.shape[-1]
-        up_proj = nn.Dense(
-            features=self.config._proj_up_dim,
-            kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
-            use_bias=self.config.bias,
-            dtype=self.config.dtype,
-            name="proj_up",
-        )(x)
-        gate_preact = nn.Dense(
-            features=self.config._proj_up_dim,
-            kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
-            use_bias=self.config.bias,
-            dtype=self.config.dtype,
-            name="proj_up_gate",
-        )(x)
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
+        assert self.config._proj_up_dim % tp_size == 0, "proj_up_dim must be divisible by the number of model replicas"
+        embedding_dim = x.shape[-1] * tp_size
+
+        # Helper function to create a dense layer for up-projection.
+        # We force it to not async, as the async version would not support the splitting of the projection as well
+        # by default. Could be implemented with extra splitting logic, but for now we keep it simple.
+        def up_layer_fn(name):
+            return TPDense(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config.dtype,
+                    features=self.config._proj_up_dim // tp_size,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                skip_communication=True,
+                kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
+                use_bias=self.config.bias,
+                name=name,
+            )
+
+        # Up-projection.
+        x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
+        up_proj = up_layer_fn(name="proj_up")(x)
+        gate_preact = up_layer_fn(name="proj_up_gate")(x)
         gate_act = get_act_fn(self.config.act_fn)(gate_preact)
-        out = nn.Dense(
-            features=embedding_dim,
+        x_interm = gate_act * up_proj
+
+        # Down-projection.
+        tp_dense_fn = (
+            partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
+            if self.config.parallel.tp_async_dense
+            else TPDense
+        )
+        out = tp_dense_fn(
+            dense_fn=partial(
+                nn.Dense,
+                dtype=self.config.dtype,
+                features=embedding_dim // tp_size if self.config.parallel.tp_async_dense else embedding_dim,
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+            tp_mode="scatter",
             kernel_init=create_common_init_fn(
                 fn_name=self.config.output_init_fn,
                 dim=embedding_dim,
@@ -80,9 +110,8 @@ class GatedFeedForward(nn.Module):
                 distribution=self.config.init_distribution,
             ),
             use_bias=self.config.bias,
-            dtype=self.config.dtype,
             name="proj_down",
-        )(gate_act * up_proj)
+        )(x_interm)
         out = nn.Dropout(rate=self.config.dropout, deterministic=not train)(out)
         return out
 
@@ -92,17 +121,41 @@ class FeedForward(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
-        embedding_dim = x.shape[-1]
-        x = nn.Dense(
-            features=self.config._proj_up_dim,
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
+        assert self.config._proj_up_dim % tp_size == 0, "proj_up_dim must be divisible by the number of model replicas"
+        embedding_dim = x.shape[-1] * tp_size
+
+        # Configure Tensor Parallel dense layer.
+        tp_dense_fn = (
+            partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
+            if self.config.parallel.tp_async_dense
+            else TPDense
+        )
+
+        # Up-projection.
+        x = tp_dense_fn(
+            dense_fn=partial(
+                nn.Dense,
+                dtype=self.config.dtype,
+                features=self.config._proj_up_dim // tp_size,
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+            tp_mode="gather",
             kernel_init=small_init(embedding_dim, distribution=self.config.init_distribution),
             use_bias=self.config.bias,
-            dtype=self.config.dtype,
             name="proj_up",
         )(x)
         x = get_act_fn(self.config.act_fn)(x)
-        x = nn.Dense(
-            features=embedding_dim,
+
+        # Down-projection.
+        x = tp_dense_fn(
+            dense_fn=partial(
+                nn.Dense,
+                dtype=self.config.dtype,
+                features=embedding_dim // tp_size if self.config.parallel.tp_async_dense else embedding_dim,
+            ),
+            model_axis_name=self.config.parallel.model_axis_name,
+            tp_mode="scatter",
             kernel_init=create_common_init_fn(
                 fn_name=self.config.output_init_fn,
                 dim=embedding_dim,
@@ -110,7 +163,6 @@ class FeedForward(nn.Module):
                 distribution=self.config.init_distribution,
             ),
             use_bias=self.config.bias,
-            dtype=self.config.dtype,
             name="proj_down",
         )(x)
         x = nn.Dropout(rate=self.config.dropout, deterministic=not train)(x)

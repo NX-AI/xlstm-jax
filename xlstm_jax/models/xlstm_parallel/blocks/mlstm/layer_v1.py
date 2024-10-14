@@ -21,6 +21,7 @@ class mLSTMLayerV1(nn.Module):
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
+        num_local_heads = self.config.num_heads // tp_size
         embedding_dim = x.shape[-1] * tp_size
 
         tp_dense_fn = (
@@ -41,12 +42,12 @@ class mLSTMLayerV1(nn.Module):
                     dense_fn=partial(
                         nn.Dense,
                         dtype=self.config.dtype,
-                        use_bias=self.config.bias,
                         features=embedding_dim // tp_size,
                     ),
                     model_axis_name=self.config.parallel.model_axis_name,
                     tp_mode="gather",
                     kernel_init=kernel_init,
+                    use_bias=self.config.bias,
                     skip_communication=True,
                     name=name,
                 )
@@ -66,13 +67,13 @@ class mLSTMLayerV1(nn.Module):
                     dense_fn=partial(
                         nn.Dense,
                         dtype=self.config.mlstm_cell.gate_dtype,
-                        use_bias=True,
-                        features=self.config.num_heads // tp_size,
+                        features=num_local_heads,
                         bias_init=bias_init,
                     ),
                     model_axis_name=self.config.parallel.model_axis_name,
                     tp_mode="gather",
                     kernel_init=nn.initializers.zeros,
+                    use_bias=True,
                     skip_communication=True,
                     name=name,
                 )
@@ -83,7 +84,7 @@ class mLSTMLayerV1(nn.Module):
                     # Previous default behavior for input gate.
                     init_fn = nn.initializers.normal(stddev=0.1)
                 elif isinstance(init_range, tuple):
-                    init_fn = bias_linspace_init(*init_range)
+                    init_fn = bias_linspace_init(*init_range, axis_name=self.config.parallel.model_axis_name)
                 else:
                     init_fn = nn.initializers.constant(init_range)
                 return init_fn
@@ -103,9 +104,9 @@ class mLSTMLayerV1(nn.Module):
             fgate_preact = soft_cap_logits(fgate_preact, self.config.mlstm_cell.gate_soft_cap)
 
         # mlstm branch
-        q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
+        q = q.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
+        k = k.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
+        v = v.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
         igate_preact = igate_preact[..., None]  # (B, S, NH, 1)
         fgate_preact = fgate_preact[..., None]  # (B, S, NH, 1)
 
@@ -148,6 +149,7 @@ class mLSTMLayerV1(nn.Module):
             name="outnorm",
             axis=2,
             eps=self.config.mlstm_cell.norm_eps,
+            model_axis_name=self.config.parallel.model_axis_name,
         )(h_state)
         h_state_norm = h_state_norm.reshape(B, S, -1)
 
@@ -159,7 +161,6 @@ class mLSTMLayerV1(nn.Module):
             dense_fn=partial(
                 nn.Dense,
                 dtype=self.config.dtype,
-                use_bias=self.config.bias,
                 features=self.config.embedding_dim // tp_size
                 if self.config.parallel.tp_async_dense
                 else self.config.embedding_dim,
@@ -172,6 +173,7 @@ class mLSTMLayerV1(nn.Module):
                 num_blocks=self.config._num_blocks,
                 distribution=self.config.init_distribution,
             ),
+            use_bias=self.config.bias,
             name="proj_down",
         )(h_state_out)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)

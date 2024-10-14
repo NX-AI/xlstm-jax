@@ -93,6 +93,7 @@ class TPDense(nn.Module):
             custom communication or where input has been already gathered beforehand.
         kernel_init: The initializer to use for the kernel of the dense layer.
         kernel_init_adjustment: The adjustment factor to use for the kernel initializer.
+        use_bias: Whether to use a bias in the dense layer.
         dense_name: The name of the dense layer module.
     """
 
@@ -102,6 +103,7 @@ class TPDense(nn.Module):
     skip_communication: bool = False
     kernel_init: Callable = nn.initializers.lecun_normal()
     kernel_init_adjustment: float = 1.0
+    use_bias: bool = True
     dense_name: str = "module"
 
     @nn.compact
@@ -115,13 +117,14 @@ class TPDense(nn.Module):
             module_fn=functools.partial(
                 self.dense_fn,
                 kernel_init=scale_init(self.kernel_init, self.kernel_init_adjustment),
+                use_bias=self.use_bias,
             ),
             name=self.dense_name,
         )
 
         if tp_mode == "none":
             # Vanilla dense layer.
-            x = self.dense_fn(kernel_init=self.kernel_init)(x)
+            x = self.dense_fn(kernel_init=self.kernel_init, use_bias=self.use_bias)(x)
         elif tp_mode == "gather":
             # Gather strategy: communicate all the inputs to all the devices, then perform the dense layer.
             if not self.skip_communication:
@@ -294,6 +297,7 @@ class TPAsyncDense(nn.Module):
         tp_mode: The Tensor Parallelism mode to use. Can be "scatter", "gather", or "none".
         kernel_init: The initializer to use for the kernel of the dense layer.
         kernel_init_adjustment: The adjustment factor to use for the kernel initializer.
+        use_bias: Whether to use a bias in the dense layer.
         dense_name: The name of the dense layer module.
         use_bidirectional_gather: Whether to use bidirectional or unidirectional gather over the device ring for
             communication.
@@ -306,6 +310,7 @@ class TPAsyncDense(nn.Module):
     tp_mode: Literal["scatter", "gather", "none"] = "none"
     kernel_init: Callable = nn.initializers.lecun_normal()
     kernel_init_adjustment: float = 1.0
+    use_bias: bool = True
     dense_name: str = "module"
     use_bidirectional_gather: bool = True
     use_bidirectional_scatter: bool = False
@@ -326,7 +331,7 @@ class TPAsyncDense(nn.Module):
         )
 
         if tp_mode == "none":
-            y = self.dense_fn(kernel_init=self.kernel_init, name="shard_0")(x)
+            y = self.dense_fn(kernel_init=self.kernel_init, use_bias=self.use_bias, name="shard_0")(x)
         elif tp_mode == "gather":
             # Async gathering of all inputs.
             async_op = async_gather_bidirectional if self.use_bidirectional_gather else async_gather
@@ -334,7 +339,9 @@ class TPAsyncDense(nn.Module):
             # Compute output per input (scheduled as communication makes inputs available).
             ys = [
                 dense_fn(
-                    module_kwargs={"use_bias": (i == 0)},  # Only need a single per final output feature.
+                    module_kwargs={
+                        "use_bias": (i == 0 and self.use_bias)
+                    },  # Only need a single per final output feature.
                     name=f"shard_{i}",
                 )(x)
                 for i, x in enumerate(xs)
@@ -345,7 +352,9 @@ class TPAsyncDense(nn.Module):
             # Calculate all outputs per device.
             ys = [
                 dense_fn(
-                    module_kwargs={"use_bias": (i == 0)},  # Only need a single per final output feature.
+                    module_kwargs={
+                        "use_bias": (i == 0 and self.use_bias)
+                    },  # Only need a single per final output feature.
                     name=f"shard_{i}",
                 )(x)
                 for i in range(tp_size)

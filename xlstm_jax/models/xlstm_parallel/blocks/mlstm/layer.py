@@ -66,6 +66,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
         self.mlstm_cell.num_heads = self.num_heads
         self.mlstm_cell.dtype = self.dtype
         self.mlstm_cell.norm_type = self.norm_type
+        self.mlstm_cell.parallel = self.parallel
 
 
 class mLSTMLayer(nn.Module):
@@ -90,12 +91,12 @@ class mLSTMLayer(nn.Module):
                 dense_fn=partial(
                     nn.Dense,
                     dtype=self.config.dtype,
-                    use_bias=self.config.bias,
                     features=2 * self.config._inner_embedding_dim // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
                 kernel_init=up_proj_init,
+                use_bias=self.config.bias,
                 name="proj_up",
             )(x)
         else:
@@ -111,6 +112,7 @@ class mLSTMLayer(nn.Module):
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
                 kernel_init=up_proj_init,
+                use_bias=self.config.bias,
                 skip_communication=True,
                 name="proj_up_mlstm",
             )(x)
@@ -118,12 +120,12 @@ class mLSTMLayer(nn.Module):
                 dense_fn=partial(
                     nn.Dense,
                     dtype=self.config.dtype,
-                    use_bias=self.config.bias,
                     features=self.config._inner_embedding_dim // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
                 kernel_init=up_proj_init,
+                use_bias=self.config.bias,
                 skip_communication=True,
                 name="proj_up_z",
             )(x)
@@ -172,7 +174,6 @@ class mLSTMLayer(nn.Module):
             dense_fn=partial(
                 nn.Dense,
                 dtype=self.config.dtype,
-                use_bias=self.config.bias,
                 features=self.config.embedding_dim // tp_size
                 if self.config.parallel.tp_async_dense
                 else self.config.embedding_dim,
@@ -185,6 +186,7 @@ class mLSTMLayer(nn.Module):
                 num_blocks=self.config._num_blocks,
                 distribution=self.config.init_distribution,
             ),
+            use_bias=self.config.bias,
             name="proj_down",
         )(h_state)
         y = nn.Dropout(rate=self.config.dropout, deterministic=not train)(y)

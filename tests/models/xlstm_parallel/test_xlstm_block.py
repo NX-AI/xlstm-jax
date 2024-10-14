@@ -67,13 +67,20 @@ def test_norm_variants(add_post_norm: bool, add_qk_norm: bool, norm_type: str, l
     y = jax.device_get(y.astype(jnp.float32))
     params = jax.device_get(params)
     params = flatten_dict(params)
+    param_keys = sorted(list(params.keys()))
 
     if add_qk_norm:
-        assert any(key.endswith("q_norm.scale") for key in params), "Q norm scale should be present."
-        assert any(key.endswith("k_norm.scale") for key in params), "K norm scale should be present."
+        assert any(
+            key.endswith("q_norm.scale") for key in params
+        ), f"Q norm scale should be present, keys present: {param_keys}."
+        assert any(
+            key.endswith("k_norm.scale") for key in params
+        ), f"K norm scale should be present, keys present: {param_keys}."
 
     if add_post_norm:
-        assert any(key.endswith("post_norm.scale") for key in params), "Post norm scale should be present."
+        assert any(
+            key.endswith("post_norm.sharded.scale") for key in params
+        ), f"Post norm scale should be present, keys present: {param_keys}."
         if norm_type == "layernorm":
             np.testing.assert_allclose(
                 y.mean(axis=-1), 0.0, atol=1e-5, err_msg="LayerNorm applied to post norm should have zero mean."

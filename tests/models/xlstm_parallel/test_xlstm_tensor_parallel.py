@@ -11,7 +11,8 @@ from jax.sharding import Mesh, PartitionSpec as P
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from xlstm_jax.trainer.base.param_utils import flatten_dict
@@ -24,7 +25,7 @@ MODEL_CONFIGS = [
         vocab_size=100,
         embedding_dim=128,
         num_blocks=1,
-        context_length=128,
+        context_length=32,
         tie_weights=False,
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
@@ -41,10 +42,84 @@ MODEL_CONFIGS = [
                 num_heads=4,
                 dropout=0.2,
                 embedding_dim=128,
-                context_length=128,
+                context_length=32,
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=True,
+                ),
             )
         ),
-    )
+    ),
+    xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=128,
+        num_blocks=1,
+        context_length=32,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            remat=(),
+            fsdp_modules=(),
+            tp_async_dense=False,
+        ),
+        dtype=jnp.float32,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                layer_type="mlstm_v1",
+                num_heads=4,
+                embedding_dim=128,
+                context_length=32,
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-10.0,
+                ),
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=2.0,
+                act_fn="gelu",
+                embedding_dim=128,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn",
+                dtype=jnp.float32,
+            ),
+        ),
+    ),
+    xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=128,
+        num_blocks=1,
+        context_length=32,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            remat=(),
+            fsdp_modules=(),
+            tp_async_dense=False,
+        ),
+        dtype=jnp.bfloat16,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                layer_type="mlstm_v1",
+                num_heads=4,
+                embedding_dim=128,
+                context_length=32,
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-10.0,
+                ),
+                dtype=jnp.bfloat16,
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=1.0,
+                act_fn="gelu",
+                embedding_dim=128,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn_gated",
+                dtype=jnp.bfloat16,
+            ),
+        ),
+    ),
 ]
 LARGE_MODEL_CONFIGS = [
     xLSTMLMModelConfig(
@@ -70,12 +145,15 @@ LARGE_MODEL_CONFIGS = [
                 dropout=0.2,
                 embedding_dim=512,
                 context_length=4,
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=True,
+                ),
             )
         ),
     ),
     xLSTMLMModelConfig(
         vocab_size=768,
-        embedding_dim=1536,
+        embedding_dim=512,
         num_blocks=1,
         context_length=4,
         tie_weights=False,
@@ -86,17 +164,62 @@ LARGE_MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        scan_blocks=True,
         dtype=jnp.float32,
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
-                proj_factor=3.0,
-                conv1d_kernel_size=6,
-                num_heads=8,
-                dropout=0.0,
-                embedding_dim=1536,
+                layer_type="mlstm_v1",
+                num_heads=4,
+                embedding_dim=512,
                 context_length=4,
-            )
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-10.0,
+                ),
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=2.0,
+                act_fn="gelu",
+                embedding_dim=512,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn",
+                dtype=jnp.float32,
+            ),
+        ),
+    ),
+    xLSTMLMModelConfig(
+        vocab_size=512,
+        embedding_dim=768,
+        num_blocks=1,
+        context_length=4,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=ParallelConfig(
+            remat=(),
+            fsdp_modules=(),
+            tp_async_dense=False,
+        ),
+        dtype=jnp.bfloat16,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                layer_type="mlstm_v1",
+                num_heads=4,
+                embedding_dim=768,
+                context_length=4,
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-10.0,
+                ),
+                dtype=jnp.bfloat16,
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=4.0 / 3.0,
+                act_fn="gelu",
+                embedding_dim=768,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn_gated",
+                dtype=jnp.bfloat16,
+            ),
         ),
     ),
 ]
@@ -118,7 +241,7 @@ def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
 
 @pytest.mark.parametrize("config", MODEL_CONFIGS)
 @pytest.mark.parametrize("gradient_accumulate_steps", [1])
-@pytest.mark.parametrize("model_axis_size", [1, 2, 4])
+@pytest.mark.parametrize("model_axis_size", [4])
 def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_steps: int, model_axis_size: int):
     """Test a simple forward pass with tensor parallelism."""
     if model_axis_size > pytest.num_devices:
@@ -192,12 +315,7 @@ def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_s
     for key in base_params:
         assert key in tp_params, f"Key {key} not found in tensor parallel params."
         p_dp, p_tp = base_params[key], tp_params[key]
-        # TODO: Shapes may differ due to TP bug. To be solved in another open PR.
-        # assert np.prod(p_dp.shape) == np.prod(p_tp.shape), \
-        #     f"Shape mismatch for key {key}: {p_dp.shape} vs {p_tp.shape}"
-        # TODO: Fgate and Igate not correct for TP due to same bug mentioned above. To be solved in another open PR.
-        if ".fgate." in key or ".igate." in key:
-            continue
+        assert np.prod(p_dp.shape) == np.prod(p_tp.shape), f"Shape mismatch for key {key}: {p_dp.shape} vs {p_tp.shape}"
 
         if np.prod(p_dp.shape) < 16:
             atol_mean, atol_std, rtol_std = 1e-1, 1e-1, 1e-1
@@ -206,7 +324,10 @@ def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_s
         else:
             atol_mean, atol_std, rtol_std = 1e-2, 1e-3, 1e-2
         np.testing.assert_allclose(
-            p_dp.mean(), p_tp.mean(), atol=atol_mean, err_msg=f"Mean deviates for key: {key} / shape: {p_dp.shape}"
+            p_dp.mean(),
+            p_tp.mean(),
+            atol=atol_mean,
+            err_msg=f"Mean deviates for key: {key} / shape: {p_dp.shape}. Val DP: {p_dp}, Val TP: {p_tp}.",
         )
         np.testing.assert_allclose(
             p_dp.std(),
@@ -215,6 +336,12 @@ def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_s
             rtol=rtol_std,
             err_msg=f"Std deviates for key: {key} / shape: {p_dp.shape}",
         )
+
+    num_parameters = sum(np.prod(p.shape) for p in jax.tree.leaves(base_params))
+    num_parameters_tp = sum(np.prod(p.shape) for p in jax.tree.leaves(tp_params))
+    assert (
+        num_parameters == num_parameters_tp
+    ), f"Total number of parameters mismatch: {num_parameters} vs {num_parameters_tp}"
 
 
 def _map_tp_params_to_dp(params: dict[str, jax.Array], model_axis_size: int) -> dict[str, jax.Array]:

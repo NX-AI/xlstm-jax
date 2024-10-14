@@ -49,6 +49,7 @@ class xLSTMBlockConfig:
             self.slstm.parallel = self.parallel
         if self.feedforward:
             self.feedforward.embedding_dim = embedding_dim
+            self.feedforward.parallel = self.parallel
             self.feedforward._num_blocks = self._num_blocks
             self.feedforward.__post_init__()
 
@@ -73,6 +74,7 @@ class xLSTMBlock(nn.Module):
             axis_name=self.config.parallel.model_axis_name,
             eps=self.config.norm_eps,
             norm_type=self.config.norm_type,
+            model_axis_name=self.config.parallel.model_axis_name,
         )
 
         # mLSTM or sLSTM

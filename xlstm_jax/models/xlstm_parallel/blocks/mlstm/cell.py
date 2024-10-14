@@ -8,6 +8,7 @@ from flax import linen as nn
 
 from xlstm_jax.models.configs import SubModelConfig
 
+from ....configs import ParallelConfig
 from ...components.init import bias_linspace_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...components.normalization import MultiHeadNormLayer, NormLayer
@@ -42,6 +43,8 @@ class mLSTMCellConfig(SubModelConfig):
     If a float, the bias is initialized with the given value. If None, the bias is initialized with normal(0.1)."""
     add_qk_norm: bool = False
     """If True, adds a normalization layer on the query and key vectors before the mLSTM cell."""
+    parallel: ParallelConfig | None = None
+    """Parallel configuration for the mLSTM cell."""
 
 
 class mLSTMCell(nn.Module):
@@ -69,6 +72,8 @@ class mLSTMCell(nn.Module):
             kwargs: Additional arguments for the mLSTM backend.
         """
         B, S, _ = q.shape
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
+        assert tp_size == 1 or self.config.gate_linear_headwise, "Only headwise gate layers are supported with TP > 1."
 
         # Prepare gate input.
         if gate_input is None:
@@ -116,7 +121,7 @@ class mLSTMCell(nn.Module):
                     # Previous default behavior for input gate.
                     init_fn = nn.initializers.normal(stddev=0.1)
                 elif isinstance(init_range, tuple):
-                    init_fn = bias_linspace_init(*init_range)
+                    init_fn = bias_linspace_init(*init_range, axis_name=self.config.parallel.model_axis_name)
                 else:
                     init_fn = nn.initializers.constant(init_range)
                 return init_fn

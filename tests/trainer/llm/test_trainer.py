@@ -13,7 +13,7 @@ from xlstm_jax.distributed import ModelParallelismWrapper, TPDense, shard_module
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
@@ -330,6 +330,10 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
                 dropout=0.2,
                 embedding_dim=128,
                 context_length=context_length,
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=True,
+                    gate_soft_cap=30.0,
+                ),
             )
         ),
     )
