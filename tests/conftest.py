@@ -25,6 +25,9 @@ if os.environ["JAX_PLATFORMS"] == "cpu":
     simulate_CPU_devices(NUM_DEVICES)
 else:
     NUM_DEVICES = len(os.environ["CUDA_VISIBLE_DEVICES"].split(","))
+    # Set XLA flags for deterministic operations on GPU. We do not use this flag for training runs
+    # as it can slow down the training significantly.
+    os.environ["XLA_FLAGS"] = os.environ.get("XLA_FLAGS", "") + " --xla_gpu_deterministic_ops=true"
 
 # Check if grain is available.
 try:
