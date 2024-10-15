@@ -13,7 +13,7 @@ from xlstm_jax.trainer.metrics import Metrics
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class JaxProfilerConfig(CallbackConfig):
     """Configuration for the JaxProfiler callback.
 

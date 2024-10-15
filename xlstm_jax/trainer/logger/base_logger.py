@@ -1,7 +1,7 @@
 import logging
 import time
-from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from collections.abc import Callable
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Literal
 
@@ -16,7 +16,7 @@ from .cmd_logging import setup_logging_multiprocess
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class LoggerConfig(ConfigDict):
     """
     Configuration for the logger.
@@ -31,7 +31,7 @@ class LoggerConfig(ConfigDict):
 
     log_every_n_steps: int = 1
     log_path: Path | None = None
-    log_tools: Sequence["LoggerToolsConfig"] = ()
+    log_tools: list["LoggerToolsConfig"] = field(default_factory=list)
 
     @property
     def log_dir(self) -> str:
@@ -39,7 +39,7 @@ class LoggerConfig(ConfigDict):
         return self.log_path.as_posix()
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class LoggerToolsConfig(ConfigDict):
     """
     Base config class for logger tools.

@@ -8,7 +8,7 @@ from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class CallbackConfig(ConfigDict):
     """Base configuration of a callback."""
 

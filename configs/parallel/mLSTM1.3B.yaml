@@ -1,0 +1,18 @@
+defaults:
+  - parallel_schema
+  - _self_
+
+
+data_axis_name: dp
+fsdp_axis_name: fsdp
+model_axis_name: tp
+pipeline_axis_name: pp
+fsdp_modules: []
+fsdp_gather_dtype: bfloat16
+fsdp_min_weight_size: 262144 # 2**18
+remat:
+  - "mLSTMBlock"
+fsdp_axis_size: 1
+model_axis_size: 1
+data_axis_size: -1
+tp_async_dense: false

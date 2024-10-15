@@ -1,12 +1,11 @@
 from dataclasses import dataclass
-from typing import Literal
 
 import optax
 
 from xlstm_jax.configs import ConfigDict
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class SchedulerConfig(ConfigDict):
     """
     Configuration for learning rate scheduler.
@@ -15,7 +14,8 @@ class SchedulerConfig(ConfigDict):
         lr (float): Initial/peak learning rate of the main scheduler.
         name (Literal): Name of the learning rate schedule. The supported schedules are "constant", "cosine_decay",
             "exponential_decay", and "linear".
-        decay_steps (int): Number of steps for the learning rate schedule, including warmup and cooldown.
+        decay_steps (int | None): Number of steps for the learning rate schedule, including warmup and cooldown. If not
+            provided, it is defined at runtime in the start script.
         end_lr (float | None): Final learning rate before the cooldown. This is mutually exclusive with end_lr_factor.
         end_lr_factor (float | None): Factor to multiply initial learning rate to get final learning rate before the
             cooldown. This is mutually exclusive with end_lr.
@@ -25,13 +25,15 @@ class SchedulerConfig(ConfigDict):
     """
 
     lr: float
-    name: Literal["constant", "cosine_decay", "exponential_decay", "linear"] = "constant"
-    decay_steps: int = 0
+    name: str = "constant"
+    decay_steps: int | None = 0
     end_lr: float | None = None
     end_lr_factor: float | None = None
     cooldown_steps: int = 0
     warmup_steps: int = 0
     cooldown_lr: float = 0.0
+
+    assert name in ["constant", "cosine_decay", "exponential_decay", "linear"], "Unknown learning rate schedule."
 
 
 def build_lr_scheduler(scheduler_config: ConfigDict) -> optax.Schedule:

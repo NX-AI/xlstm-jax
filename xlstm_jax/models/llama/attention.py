@@ -147,7 +147,9 @@ class SelfAttention(nn.Module):
         assert self.config.parallel.model_axis_size == 1, "Feedforward network does not support model parallelism yet."
         _, seqlen, embed_dim = x.shape
         head_dim = self.config.head_dim
-        assert embed_dim % head_dim == 0, "Embedding dimension must be divisible by the head dimension"
+        assert (
+            embed_dim % head_dim == 0
+        ), f"Embedding dimension must be divisible by the head dimension, got {embed_dim=} and {head_dim=}."
         num_heads = embed_dim // head_dim
 
         # QKV Layers

@@ -1,12 +1,10 @@
-from collections.abc import Sequence
-from dataclasses import dataclass
-from typing import Literal
+from dataclasses import dataclass, field
 
 from xlstm_jax.configs import ConfigDict
 
 
-@dataclass(kw_only=True, frozen=True)
-class ParallelConfig(ConfigDict):
+@dataclass(kw_only=True, frozen=False)
+class ParallelConfig:
     """Configuration for parallelism."""
 
     data_axis_size: int = -1
@@ -25,23 +23,31 @@ class ParallelConfig(ConfigDict):
     """Name of the pipeline axis."""
     model_axis_name: str = "tp"
     """Name of the model axis."""
-    remat: Sequence[str] = ()
+    remat: list[str] = field(default_factory=lambda: [])
     """Module names on which we apply activation checkpointing / rematerialization."""
-    fsdp_modules: Sequence[str] = ()
+    fsdp_modules: list[str] = field(default_factory=lambda: [])
     """Module names on which we apply FSDP sharding."""
     fsdp_min_weight_size: int = 2**18
     """Minimum size of a parameter to be sharded with FSDP."""
-    fsdp_gather_dtype: Literal["float32", "bfloat16", "float16"] | None = None
+    fsdp_gather_dtype: str | None = None
     """The dtype to cast the parameters to before gathering with FSDP. If `None`, no casting is performed and parameters
     are gathered in original precision (e.g. `float32`)."""
-    fsdp_grad_scatter_dtype: Literal["float32", "bfloat16", "float16"] | None = None
+    fsdp_grad_scatter_dtype: str | None = None
     """The dtype to cast the gradients to before scattering. If `None`, the dtype of the parameters is used."""
     tp_async_dense: bool = False
     """Whether to use asynchronous tensor parallelism for dense layers. Default to `False`, as on local hardware,
     ppermute communication introduces large overhead."""
 
+    def __post_init__(self):
+        _allowed_fsdp_dtypes = ["float32", "bfloat16", "float16"]
 
-@dataclass(kw_only=True, frozen=True)
+        if self.fsdp_gather_dtype is not None:
+            assert self.fsdp_gather_dtype in _allowed_fsdp_dtypes
+        if self.fsdp_grad_scatter_dtype is not None:
+            assert self.fsdp_grad_scatter_dtype in _allowed_fsdp_dtypes
+
+
+@dataclass(kw_only=True, frozen=False)
 class ModelConfig(ConfigDict):
     """Base class for model configurations."""
 

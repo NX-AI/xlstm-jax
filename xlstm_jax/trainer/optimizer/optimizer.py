@@ -1,8 +1,7 @@
 import logging
 import re
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -19,7 +18,7 @@ LOGGER = logging.getLogger(__name__)
 PyTree = Any
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class OptimizerConfig(ConfigDict):
     """
     Configuration for optimizer.
@@ -35,9 +34,9 @@ class OptimizerConfig(ConfigDict):
             Commonly in the range 5-10, with Mamba models performing best at 8. TODO: Update with xLSTM results.
         eps (float): Epsilon value for numerical stability in Adam-like optimizers.
         weight_decay (float): Weight decay coefficient.
-        weight_decay_exclude (Sequence[re.Pattern] | None): List of regex patterns to exclude from weight decay.
+        weight_decay_exclude (list[str] | None): List of regex patterns of `re.Pattern` to exclude from weight decay.
             Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_include.
-        weight_decay_include (Sequence[re.Pattern] | None): List of regex patterns to include in weight decay.
+        weight_decay_include (list[str] | None): List of regex patterns of `re.Pattern` to include in weight decay.
             Parameter names are flattened and joined with ".". Mutually exclusive with weight_decay_exclude.
             If neither exclude nor include is set, all parameters are included.
         grad_clip_norm (float | None): Global norm to clip gradients.
@@ -48,7 +47,7 @@ class OptimizerConfig(ConfigDict):
         nesterov (bool): Whether to use Nesterov momentum in SGD.
     """
 
-    name: Literal["adam", "adamw", "sgd", "nadam", "adamax", "radam", "nadamw", "adamaxw", "lamb"]
+    name: str
     scheduler: SchedulerConfig
     beta1: float = 0.9
     beta2: float = 0.999
@@ -56,12 +55,29 @@ class OptimizerConfig(ConfigDict):
     alpha: float = 8.0
     eps: float = 1e-8
     weight_decay: float = 0.0
-    weight_decay_exclude: Sequence[re.Pattern] | None = None
-    weight_decay_include: Sequence[re.Pattern] | None = None
+    weight_decay_exclude: list[str] | None = None
+    weight_decay_include: list[str] | None = None
     grad_clip_norm: float | None = None
     use_sharded_clip_norm: bool = True
     grad_clip_value: float | None = None
     nesterov: bool = False
+
+    def __post_init__(self):
+        optimizers = [
+            "adam",
+            "adamw",
+            "sgd",
+            "nadam",
+            "adamax",
+            "radam",
+            "nadamw",
+            "adamaxw",
+            "lamb",
+            "ademamix",
+        ]
+        assert (
+            self.name in optimizers
+        ), f"Unknown optimizer {self.name} provided in config, supported are: {optimizers}."
 
 
 def build_optimizer(optimizer_config: OptimizerConfig) -> tuple[optax.GradientTransformation, optax.Schedule]:
@@ -99,6 +115,18 @@ def build_optimizer_function(
     Returns:
         Callable: Optimizer class function.
     """
+    # Compile incoming strings into regex patterns.  TODO: check if this works in a unit test
+    weight_decay_exclude_re = (
+        [re.compile(pattern) for pattern in optimizer_config.weight_decay_exclude]
+        if optimizer_config.weight_decay_exclude
+        else None
+    )
+    weight_decay_include_re = (
+        [re.compile(pattern) for pattern in optimizer_config.weight_decay_include]
+        if optimizer_config.weight_decay_include
+        else None
+    )
+
     # Build optimizer class
     optimizer_name = optimizer_config.name
     optimizer_name = optimizer_name.lower()
@@ -117,9 +145,7 @@ def build_optimizer_function(
             b2=optimizer_config.beta2,
             eps=optimizer_config.eps,
             weight_decay=optimizer_config.weight_decay,
-            mask=get_param_mask_fn(
-                exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
-            ),
+            mask=get_param_mask_fn(exclude=weight_decay_exclude_re, include=weight_decay_include_re),
         )
     elif optimizer_name == "sgd":
         opt_class = optax.sgd(
@@ -177,6 +203,18 @@ def build_gradient_transformations(
     optimizer_name = optimizer_name.lower()
     pre_trans, post_trans = [], []
 
+    # Compile incoming strings into regex patterns.
+    weight_decay_exclude_re = (
+        [re.compile(pattern) for pattern in optimizer_config.weight_decay_exclude]
+        if optimizer_config.weight_decay_exclude
+        else None
+    )
+    weight_decay_include_re = (
+        [re.compile(pattern) for pattern in optimizer_config.weight_decay_include]
+        if optimizer_config.weight_decay_include
+        else None
+    )
+
     # Gradient clipping by norm.
     if optimizer_config.grad_clip_norm is not None:
         if optimizer_config.use_sharded_clip_norm:
@@ -193,9 +231,7 @@ def build_gradient_transformations(
         post_trans.append(
             optax.add_decayed_weights(
                 optimizer_config.weight_decay,
-                mask=get_param_mask_fn(
-                    exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
-                ),
+                mask=get_param_mask_fn(exclude=weight_decay_exclude_re, include=weight_decay_include_re),
             )
         )
 

@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from pathlib import Path
 
-from xlstm_jax.configs import ConfigDict
 
-
-@dataclass(kw_only=True, frozen=True)
-class DataConfig(ConfigDict):
+@dataclass(kw_only=True, frozen=False)
+class DataConfig:
     """Base data configuration."""
 
+    name: str | None = None
+    """Name of the dataset. Helpful for logging."""
     global_batch_size: int
     """Global batch size for training."""
     max_target_length: int | None = None
@@ -26,7 +26,7 @@ class DataConfig(ConfigDict):
     """Seed for data shuffling."""
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class HFLocalDataConfig(DataConfig):
     """
     HuggingFace dataset configuration for locally preprocessed datasets.
@@ -48,7 +48,7 @@ class HFLocalDataConfig(DataConfig):
     """Maximum number of steps per epoch for evaluation."""
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class HFHubDataConfig(DataConfig):
     """HuggingFace dataset configuration for datasets on HuggingFace."""
 
@@ -95,7 +95,7 @@ class HFHubDataConfig(DataConfig):
     """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class SyntheticDataConfig(DataConfig):
     """Synthetic dataset configuration."""
 

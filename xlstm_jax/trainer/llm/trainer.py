@@ -15,7 +15,7 @@ from xlstm_jax.trainer.metrics import HostMetrics, Metrics
 PyTree = Any
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class LLMTrainerConfig(TrainerConfig):
     """
     Configuration for the LLM trainer.

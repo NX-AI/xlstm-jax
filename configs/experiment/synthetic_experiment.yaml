@@ -1,0 +1,11 @@
+# @package _global_
+defaults:
+  - override /parallel: synthetic
+  - override /data: synthetic
+  - override /model: mLSTMv1_165M
+
+parallel:
+  model_axis_size: 1
+  fsdp_axis_size: 1
+
+task_name: SPECIFY_TASK_NAME

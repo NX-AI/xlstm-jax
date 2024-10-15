@@ -1,0 +1,12 @@
+defaults:
+  - optimizer_schema
+  - _self_
+
+name: adamw
+scheduler: ???  # Will be provided at runtime
+grad_clip_norm: 1.0
+weight_decay: 0.1
+weight_decay_include:
+  - ".*kernel"
+beta2: 0.95
+eps: 1e-5

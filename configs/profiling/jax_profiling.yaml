@@ -1,0 +1,6 @@
+defaults:
+  - jax_profiling_schema
+  - _self_
+
+
+profile_every_n_minutes: 60

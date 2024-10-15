@@ -1,6 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -15,7 +15,10 @@ from .utils import prepare_module
 @dataclass
 class xLSTMBlockStackConfig(SubModelConfig):
     mlstm_block: mLSTMBlockConfig | None = None
-    slstm_block: None = None
+    slstm_block: Any | None = (
+        None  # TODO: this is temporary for hydra, since a pure None type is not supported and
+        #       the sLSTMBlockConfig is not implemented yet
+    )
 
     context_length: int = -1
     num_blocks: int = 1
@@ -24,7 +27,8 @@ class xLSTMBlockStackConfig(SubModelConfig):
     bias: bool = False
     dropout: float = 0.0
     scan_blocks: bool = False
-    dtype: Any = jnp.bfloat16
+    dtype: str | Any = jnp.bfloat16
+
     parallel: ParallelConfig | None = None
     init_distribution_embed: InitDistribution = "normal"
     """Distribution type from which to sample the embeddings."""
@@ -33,12 +37,12 @@ class xLSTMBlockStackConfig(SubModelConfig):
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.
-    slstm_at: list[int] | Literal["all"] = field(default_factory=list)
+    slstm_at: list[int] = field(default_factory=list)
 
     # _block_map is a string that specifies which block is used at which position
     # 0: use the mLSTM block
     # 1: use the sLSTM block
-    _block_map: str = None
+    _block_map: str | None = None
 
     @property
     def block_map(self) -> list[int]:

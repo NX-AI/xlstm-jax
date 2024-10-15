@@ -31,8 +31,12 @@ LOGGER = logging.getLogger(__name__)
 
 try:
     from .hf_data_processing import make_hf_hub_iterator, make_hf_local_iterator
+
+    GRAIN_AVAILABLE = True
 except ImportError:
     LOGGER.warning("Grain not found, multi-host data loading and non-synthetic dataset will be disabled.")
+    # Set variable to remind user of this.
+    GRAIN_AVAILABLE = False
 
     def make_hf_hub_iterator(*args, **kwargs):
         raise NotImplementedError("Grain not found, multi-host data loading and non-synthetic dataset is disabled.")
@@ -87,6 +91,13 @@ def create_data_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataIterator, 
     if isinstance(config, SyntheticDataConfig):
         return SyntheticDataIterator(config, mesh, "train"), SyntheticDataIterator(config, mesh, "val")
     elif isinstance(config, (HFHubDataConfig, HFLocalDataConfig)):
+        # This only works if grain is available. This was checked beforehand but if we get here anyway, the program
+        # will crash. Better to remind the user why it crashed.
+        if not GRAIN_AVAILABLE:
+            raise NotImplementedError(
+                "Grain is not available, multi-host data loading and non-synthetic datasets are disabled.\
+                                       Exiting."
+            )
         return make_mixed_train_iterator(config, mesh)
     else:
         raise NotImplementedError(f"Unknown dataset_type {type(config)}, dataset_type must be synthetic or hf.")

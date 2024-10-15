@@ -1,0 +1,32 @@
+defaults:
+  - model_schema
+  - _self_
+
+name: mLSTMv1_7B
+# xLSTMLMModelConfig
+vocab_size: 50304
+embedding_dim: 4096
+num_blocks: 30
+context_length: ${context_length}
+tie_weights: false
+add_embedding_dropout: false
+add_post_blocks_norm: true
+scan_blocks: true
+norm_eps: 1e-6
+norm_type: rmsnorm
+# mLSTMBlockConfig
+add_post_norm: false
+# mLSTMLayerConfig
+layer_type: mlstm_v1
+num_heads: 8
+# mLSTMCellConfig
+gate_dtype: float32
+igate_bias_init_range: -10.0
+add_qk_norm: false
+cell_norm_type: rmsnorm
+cell_norm_eps: 1e-6
+# FeedForwardConfig
+proj_factor: 4.0
+act_fn: gelu
+ff_type: ffn
+ff_dtype: bfloat16

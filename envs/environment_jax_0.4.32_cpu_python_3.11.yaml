@@ -28,3 +28,5 @@ dependencies:
       - datasets
       - transformers
       - wandb
+      - hydra-core
+      - hydra-submitit-launcher

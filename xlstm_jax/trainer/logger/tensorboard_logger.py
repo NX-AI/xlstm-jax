@@ -12,7 +12,7 @@ from .base_logger import Logger, LoggerTool, LoggerToolsConfig
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class TensorBoardLoggerConfig(LoggerToolsConfig):
     """
     Configuration for the TensorBoard logger tool.

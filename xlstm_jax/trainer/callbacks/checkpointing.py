@@ -3,7 +3,7 @@ import logging
 import pickle
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any
 
 import jax
 import orbax.checkpoint as ocp
@@ -16,7 +16,7 @@ from xlstm_jax.trainer.metrics import Metrics
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class ModelCheckpointConfig(CallbackConfig):
     """
     Configuration for the ModelCheckpoint callback.
@@ -41,11 +41,14 @@ class ModelCheckpointConfig(CallbackConfig):
 
     max_to_keep: int | None = 1
     monitor: str | None = None
-    mode: Literal["min", "max"] = "min"
+    mode: str = "min"
     save_optimizer_state: bool = True
     save_dataloader_state: bool = True
     enable_async_checkpointing: bool = True
     log_path: Path | None = None
+
+    def __post_init__(self):
+        assert self.mode in ["min", "max"], "Mode must be one of {'min', 'max'}."
 
     def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "ModelCheckpoint":
         """

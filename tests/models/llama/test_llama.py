@@ -12,8 +12,8 @@ from xlstm_jax.models.llama import LlamaConfig, LlamaTransformer
 MODEL_CONFIGS = [
     lambda parallel: LlamaConfig(
         vocab_size=64,
-        embed_dim=32,
-        num_layers=3,
+        embedding_dim=32,
+        num_blocks=3,
         head_dim=16,
         parallel=parallel,
         dtype=jnp.bfloat16,
@@ -22,8 +22,8 @@ MODEL_CONFIGS = [
     ),
     lambda parallel: LlamaConfig(
         vocab_size=64,
-        embed_dim=48,
-        num_layers=2,
+        embedding_dim=48,
+        num_blocks=2,
         head_dim=8,
         parallel=parallel,
         dtype=jnp.float32,
@@ -41,6 +41,8 @@ def test_llama_trainer(
     """
     Tests training Llama.
     """
+    if fsdp_size > pytest.num_devices:
+        pytest.skip("FSDP size is greater than the number of devices.")
 
     def config_generator(parallel):
         return ModelConfig(

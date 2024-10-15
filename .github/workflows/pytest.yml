@@ -9,9 +9,9 @@ on:
       - main
 
 env:
-  ENV_NAME: jax0432_cpu
-  ENV_PATH: /usr/share/miniconda3/envs/jax0432_cpu
-  ENV_FILE: envs/environment_jax_0.4.32_cpu_python_3.11.yaml
+  ENV_NAME: python_3.11_jax_0.4.34_cuda_12.6
+  ENV_PATH: /usr/share/miniconda3/envs/python_3.11_jax_0.4.34_cuda_12.6
+  ENV_FILE: envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
   CACHE_NUMBER: 0  # increase to reset cache manually
 
 jobs:

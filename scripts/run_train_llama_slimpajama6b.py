@@ -25,8 +25,8 @@ MODEL_CONFIGS = {
     "165M": {
         "model_config": lambda parallel: LlamaConfig(
             vocab_size=50304,
-            embed_dim=768,
-            num_layers=12,
+            embedding_dim=768,
+            num_blocks=12,
             head_dim=128,
             dtype=jnp.bfloat16,
             parallel=parallel,
@@ -42,8 +42,8 @@ MODEL_CONFIGS = {
     "1.3B": {
         "model_config": lambda parallel: LlamaConfig(
             vocab_size=50304,
-            embed_dim=2048,
-            num_layers=24,
+            embedding_dim=2048,
+            num_blocks=24,
             head_dim=128,
             dtype=jnp.bfloat16,
             parallel=parallel,

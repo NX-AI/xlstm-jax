@@ -56,7 +56,7 @@ class ToyLoggerTool(LoggerTool):
             }, f"Keys {metrics.keys()} do not match expected keys."
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class ToyLoggerToolConfig(LoggerToolsConfig):
     """Toy logger tool config for testing."""
 

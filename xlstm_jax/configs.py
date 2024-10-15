@@ -5,7 +5,7 @@ from pathlib import Path
 from xlstm_jax.import_utils import class_to_name
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class ConfigDict:
     def get(self, key: str, default=None):
         return getattr(self, key, default)

@@ -11,12 +11,12 @@ from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 
 @dataclass
 class UpProjConfigMixin(SubModelConfig):
-    proj_factor: float = None  # will be overridden by subclasses
+    proj_factor: float | None = None  # will be overridden by subclasses
     round_proj_up_dim_up: bool = True
     round_proj_up_to_multiple_of: int = 64
 
     # internal
-    _proj_up_dim: int = None  # will be computed from embedding_dim and proj_factor
+    _proj_up_dim: int | None = None  # will be computed from embedding_dim and proj_factor
 
     def _set_proj_up_dim(self, embedding_dim: int) -> None:
         if self.proj_factor is not None and embedding_dim is not None:

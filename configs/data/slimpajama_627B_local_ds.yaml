@@ -1,0 +1,30 @@
+defaults:
+  - huggingface_local_data_schema
+  - _self_
+
+# Name of the dataset. Used for logging.
+name: spaj627B
+
+# Number of training epochs. Needs to be specified for the shuffling.
+num_train_epochs: ${num_epochs}
+
+# Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
+global_batch_size: ${global_batch_size}
+
+# Path to the dataset directory.
+data_path: /nfs-gpu/xlstm/data/hf_datasets/cerebras_SlimPajama-627B
+
+# Maximum length of the target sequence.
+max_target_length: ${context_length}
+
+# Column name for training data.
+train_data_column: text
+
+# Column name for evaluation data.
+eval_data_column: text
+
+# Whether to shuffle the training data.
+shuffle_train_data: true
+
+# Seed for data shuffling
+data_shuffle_seed: 123

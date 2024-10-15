@@ -1,0 +1,16 @@
+defaults:
+  - parallel_schema
+  - _self_
+
+data_axis_name: dp
+fsdp_axis_name: fsdp
+model_axis_name: tp
+pipeline_axis_name: pp
+fsdp_modules:
+  - Embed
+  - LMHead
+  - mLSTMBlock
+fsdp_min_weight_size: 8
+fsdp_axis_size: 2
+model_axis_size: 2
+data_axis_size: -1

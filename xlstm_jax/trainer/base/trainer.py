@@ -3,7 +3,7 @@ import logging
 import os
 import time
 from collections.abc import Callable, Iterator, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
 from typing import Any
@@ -37,7 +37,7 @@ LOGGER = logging.getLogger(__name__)
 PyTree = Any
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class TrainerConfig(ConfigDict):
     """Configuration for the Trainer module."""
 
@@ -81,15 +81,15 @@ class TrainerConfig(ConfigDict):
     file and a bit of overhead during training, if intermediates are complex to compute. Intermediates can be recorded
     by using the ``self.sow("intermediates", "KEY", VALUE)`` method in the model. The intermediate values are
     automatically registered and logged. Note that the values should be scalars."""
-    default_train_log_modes: Sequence[str] = ("mean",)
+    default_train_log_modes: list[str] = field(default_factory=lambda: ["mean"])
     """Default logging modes for training metrics. Can be `mean`, `mean_nopostfix`, `single`, `max`, or `std`. See
     metrics for more information. Each selected mode will be logged with the corresponding postfix. During validation,
     we only log the `mean` of the metrics."""
-    intermediates_log_modes: Sequence[str] = ("mean",)
+    intermediates_log_modes: list[str] = field(default_factory=lambda: ["mean"])
     """Logging modes for intermediate values. See `default_train_log_modes` for more information."""
-    logger: LoggerConfig = LoggerConfig()
+    logger: LoggerConfig | None = field(default_factory=LoggerConfig)
     """Configuration for the logger."""
-    callbacks: Sequence[CallbackConfig] = ()
+    callbacks: list[CallbackConfig] = field(default_factory=list)
     """List of callbacks to apply."""
     seed_eval: int = 0
     """Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
@@ -123,8 +123,9 @@ class TrainerModule:
         self.model_config = model_config
         self.optimizer_config = optimizer_config
         self.exmp_batch = batch
-        # Init logger first
-        self.init_logger(self.trainer_config.logger)
+        # Init logger first, if a LoggerConfig was supplied
+        if self.trainer_config.logger is not None:
+            self.init_logger(self.trainer_config.logger)
         # Setup parallel mesh
         self.init_mesh(model_config, mesh)
         # Create empty model. Note: no parameters yet

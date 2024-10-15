@@ -1,0 +1,48 @@
+# @package _global_
+defaults:
+  - override /hydra/launcher: submitit_slurm
+
+
+hydra:
+  launcher:
+    submitit_folder: ${hydra.sweep.subdir}/.submitit/%j  # TODO: test if this works and where experiment is logged
+    timeout_min: 60
+    cpus_per_task: 28
+    gpus_per_node: 8
+    tasks_per_node: 8
+    mem_gb: ~
+    nodes: 1
+    name: ${hydra.job.name}
+    _target_: hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher
+    partition: compute
+    qos: null
+    comment: testing_slurmit_launcher
+    additional_parameters: {}
+    setup:
+      - gpu-bind=none
+      - wait-all-nodes=1
+      - time=2-00:00:00
+      - output=${hydra.sweep.dir}/.submitit/%j.out
+      - exclusive
+      - export NCCL_CROSS_NIC=0
+      - export NCCL_SOCKET_NTHREADS=16
+      - export NCCL_DEBUG=WARN
+      - export NCCL_CUMEM_ENABLE=0
+      - export NCCL_IB_SPLIT_DATA_ON_QPS=0
+      - export NCCL_IB_QPS_PER_CONNECTION=16
+      - export NCCL_IB_GID_INDEX=3
+      - export NCCL_IB_TC=41
+      - export NCCL_IB_SL=0
+      - export NCCL_IB_TIMEOUT=22
+      - export NCCL_NET_PLUGIN=none
+      - export NCCL_SOCKET_IFNAME=eth0
+      - export NCCL_IGNORE_CPU_AFFINITY=1
+      - export NCCL_IB_HCA="=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17"
+      - export HCOLL_ENABLE_MCAST_ALL=0
+      - export coll_hcoll_enable=0
+      - export UCX_TLS=tcp
+      - export UCX_NET_DEVICES=eth0
+      - export RX_QUEUE_LEN=8192
+      - export IB_RX_QUEUE_LEN=8192
+      - export OMPI_MCA_coll=^hcoll
+      - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat

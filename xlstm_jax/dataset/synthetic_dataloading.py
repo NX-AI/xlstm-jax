@@ -18,6 +18,7 @@ limitations under the License.
 Synthetic Data Iterator
 """
 
+from functools import partial
 from typing import Literal
 
 import jax
@@ -46,7 +47,8 @@ class SyntheticDataIterator:
         data_pspec = P(mesh.axis_names)
         data_pspec_shardings = jax.tree_util.tree_map(lambda p: NamedSharding(mesh, p), data_pspec)
         self.data_generator = jax.jit(
-            SyntheticDataIterator.raw_generate_synthetic_data, out_shardings=data_pspec_shardings, static_argnums=0
+            partial(SyntheticDataIterator.raw_generate_synthetic_data, config=self.config),
+            out_shardings=data_pspec_shardings,
         )
 
     def __iter__(self):
@@ -58,7 +60,7 @@ class SyntheticDataIterator:
             raise StopIteration
         self.step_counter += 1
         with self.mesh:
-            return self.data_generator(self.config)
+            return self.data_generator()
 
     def __len__(self) -> int:
         return self.num_batches

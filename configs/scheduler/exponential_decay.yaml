@@ -1,0 +1,12 @@
+defaults:
+  - scheduler_schema
+  - _self_
+
+name: exponential_decay
+lr: ${lr}
+decay_steps: ~ # Note that we have so set None here because the default value is 0. When it is None,
+              #  it will be changed in the script to either num_train_steps if provided or to
+              #  len(data_iterator) * num_epochs otherwise
+end_lr_factor: 0.1
+warmup_steps: 750
+cooldown_steps: 2_000

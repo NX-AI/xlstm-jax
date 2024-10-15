@@ -1,0 +1,11 @@
+defaults:
+  - parallel_schema
+  - _self_
+
+
+fsdp_modules: []
+remat:
+  - "TransformerBlock"
+fsdp_axis_size: 1
+model_axis_size: 1
+data_axis_size: -1

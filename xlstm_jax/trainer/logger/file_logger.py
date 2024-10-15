@@ -3,7 +3,6 @@ import logging
 import pickle
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import Literal
 
 import pandas as pd
 import yaml
@@ -16,7 +15,7 @@ from .base_logger import Logger, LoggerTool, LoggerToolsConfig
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class FileLoggerConfig(LoggerToolsConfig):
     """
     Configuration for the file logger tool.
@@ -31,8 +30,12 @@ class FileLoggerConfig(LoggerToolsConfig):
 
     log_step_key: str = "log_step"
     log_epoch_key: str = "log_epoch"
-    config_format: Literal["json", "yaml", "pickle"] = "json"
+    config_format: str = "json"
     log_dir: str = "file_logs"
+
+    def __post_init__(self):
+        allowed_config_formats = ["json", "yaml", "pickle"]
+        assert self.config_format in allowed_config_formats, f"config_format must be one of {allowed_config_formats}"
 
     def create(self, logger: Logger) -> "LoggerTool":
         """Creates the file logger tool."""

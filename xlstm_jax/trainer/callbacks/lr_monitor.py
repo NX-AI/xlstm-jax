@@ -12,7 +12,7 @@ from xlstm_jax.trainer.optimizer import build_lr_scheduler
 LOGGER = logging.getLogger(__name__)
 
 
-@dataclass(kw_only=True, frozen=True)
+@dataclass(kw_only=True, frozen=False)
 class LearningRateMonitorConfig(CallbackConfig):
     """Configuration for the LearningRateMonitor callback."""
 

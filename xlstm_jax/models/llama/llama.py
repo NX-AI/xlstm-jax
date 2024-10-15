@@ -25,10 +25,10 @@ class LlamaConfig(SubModelConfig):
 
     vocab_size: int
     """Vocabulary size."""
-    embed_dim: int
+    embedding_dim: int
     """Embedding dimension."""
-    num_layers: int
-    """Number of transformer layers. 1 layer consists of self-attention and feedforward block."""
+    num_blocks: int
+    """Number of transformer blocks. One block consists of self-attention and feedforward block."""
     head_dim: int = 128
     """Dimension of the attention heads. The number of heads is inferred by `embed_dim // head_dim`."""
     qk_norm: bool = False
@@ -93,7 +93,7 @@ class SelfAttentionBlock(nn.Module):
             qk_norm=self.config.qk_norm,
             use_bias=self.config.use_bias,
             dtype=self.config.dtype,
-            num_layers=self.config.num_layers,
+            num_layers=self.config.num_blocks,
             dropout_rate=self.config.dropout_rate,
         )
         x = SelfAttention(config=attn_config, name="attn")(x, mask, freqs, train=self.train)
@@ -135,7 +135,7 @@ class FFNBlock(nn.Module):
             ffn_dim_multiplier=self.config.ffn_dim_multiplier,
             use_bias=self.config.use_bias,
             dtype=self.config.dtype,
-            num_layers=self.config.num_layers,
+            num_layers=self.config.num_blocks,
             dropout_rate=self.config.dropout_rate,
         )
         x = FeedForward(config=ffn_config, name="ffn")(x, train=self.train)
@@ -228,7 +228,7 @@ class TransformerBlockStack(nn.Module):
         )
 
         if not self.config.scan_blocks:
-            for layer_idx in range(self.config.num_layers):
+            for layer_idx in range(self.config.num_blocks):
                 x = block_fn(name=f"block_{layer_idx}")(x, mask, freqs)
         else:
             block = block_fn(name="block")
@@ -236,7 +236,7 @@ class TransformerBlockStack(nn.Module):
                 lambda module, carry, _: (module(carry, mask, freqs), None),
                 variable_axes={"params": 0, "intermediates": 0},
                 split_rngs={"params": True, "dropout": True},
-                length=self.config.num_layers,
+                length=self.config.num_blocks,
                 metadata_params={
                     "partition_name": None,
                 },
@@ -273,8 +273,8 @@ class LlamaTransformer(nn.Module):
             module_fn=partial(
                 nn.Embed,
                 num_embeddings=self.config.vocab_size,
-                features=self.config.embed_dim // tp_size,
-                embedding_init=small_init(self.config.embed_dim),
+                features=self.config.embedding_dim // tp_size,
+                embedding_init=small_init(self.config.embedding_dim),
                 dtype=self.config.dtype,
                 name="embed",
             ),
@@ -284,7 +284,7 @@ class LlamaTransformer(nn.Module):
         embed_fn = prepare_module(embed_fn, "Embed", config=self.config.parallel)
         x = embed_fn()(idx)
         if self.config.add_embedding_dropout:
-            x = nn.Dropout(rate=self.config.dropout)(x, deterministic=not train)
+            x = nn.Dropout(rate=self.config.dropout_rate)(x, deterministic=not train)
         # BlockStack
         stack_fn = prepare_module(TransformerBlockStack, "BlockStack", config=self.config.parallel)
         x = stack_fn(config=self.config, name="block_stack")(x, train=train)
@@ -337,7 +337,7 @@ class TPOutputLayer(nn.Module):
         )
         x = dense_fn(
             features=self.config.vocab_size,
-            kernel_init=small_init(self.config.embed_dim),
+            kernel_init=small_init(self.config.embedding_dim),
             use_bias=False,
             dtype=jnp.float32,
             name="out_dense",

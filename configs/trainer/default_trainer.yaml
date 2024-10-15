@@ -1,0 +1,17 @@
+defaults:
+  - trainer_schema
+  - _self_
+
+callbacks: ???
+logger: ???
+check_val_every_n_steps: 2_000
+enable_progress_bar: false
+check_for_nan: true
+log_grad_norm: true
+log_grad_norm_per_param: false
+log_param_norm: true
+log_param_norm_per_param: false
+default_train_log_modes:
+  - mean
+  - std
+  - max

@@ -88,6 +88,8 @@ def test_xlstm_trainer(
     """
     Tests training xLSTM.
     """
+    if fsdp_size > pytest.num_devices:
+        pytest.skip("FSDP size is greater than the number of devices.")
 
     def config_generator(parallel):
         return ModelConfig(
