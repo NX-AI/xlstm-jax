@@ -62,9 +62,9 @@ class mLSTMCell(nn.Module):
         """mLSTM cell implementation.
 
         Args:
-            q: Query tensor. Should be of shape (batch_size, context_length, embedding_dim).
-            k: Key tensor. Should be of shape (batch_size, context_length, embedding_dim).
-            v: Value tensor. Should be of shape (batch_size, context_length, embedding_dim).
+            q: Query tensor. Should be of shape (batch_size, context_length, num_heads * key_dim).
+            k: Key tensor. Should be of shape (batch_size, context_length, num_heads * key_dim).
+            v: Value tensor. Should be of shape (batch_size, context_length, num_heads * value_dim).
             gate_input: Input to the gate layers that predict the gate pre-activations. If None, the input
                 is (q, k, v). If a tuple, the inputs are concatenated along the last axis. For linear
                 headwise layers, the inputs are reshaped to (batch_size, context_length, num_heads, -1) and
@@ -150,9 +150,9 @@ class mLSTMCell(nn.Module):
             self.sow("intermediates", "igate_bias", self.get_variable("params", "igate")["bias"].mean())
             self.sow("intermediates", "fgate_bias", self.get_variable("params", "fgate")["bias"].mean())
 
-        q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
-        v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DH)
+        q = q.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DHQK)
+        k = k.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DHQK)
+        v = v.reshape(B, S, self.config.num_heads, -1)  # (B, S, NH, DHV)
         igate_preact = igate_preact[..., None]  # (B, S, NH, 1)
         fgate_preact = fgate_preact[..., None]  # (B, S, NH, 1)
 
@@ -178,9 +178,9 @@ class mLSTMCell(nn.Module):
                 h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
         else:
             # Manual transpose to work over heads.
-            q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-            k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-            v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+            q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
+            k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
+            v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DHV)
             igate_preact = igate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
             fgate_preact = fgate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
             with jax.named_scope("mlstm_backend"):

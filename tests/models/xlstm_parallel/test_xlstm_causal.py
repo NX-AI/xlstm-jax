@@ -15,6 +15,7 @@ from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel, xLSTMLM
 
 # Define configuration
 MODEL_CONFIGS = [
+    # v2 model
     lambda parallel: xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
@@ -44,6 +45,7 @@ MODEL_CONFIGS = [
             )
         ),
     ),
+    # v1 model
     lambda parallel: xLSTMLMModelConfig(
         vocab_size=100,
         embedding_dim=16,
@@ -73,6 +75,74 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn",
+                dtype=jnp.float32,
+            ),
+        ),
+    ),
+    # v2 model with different qk_dim_factor and v_dim_factor
+    lambda parallel: xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=16,
+        logits_soft_cap=30.0,
+        num_blocks=1,
+        context_length=16,
+        tie_weights=False,
+        norm_type="layernorm",
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=parallel,
+        scan_blocks=False,
+        dtype=jnp.float32,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                proj_factor=2.0,
+                conv1d_kernel_size=4,
+                num_heads=2,
+                dropout=0.2,
+                embedding_dim=16,
+                context_length=32,
+                gate_input="qkv",
+                qk_dim_factor=0.5,
+                v_dim_factor=2.0,
+                mlstm_cell=mLSTMCellConfig(
+                    gate_linear_headwise=True,
+                    gate_soft_cap=30.0,
+                ),
+            )
+        ),
+    ),
+    # v1 model with different qk_dim_factor and v_dim_factor
+    lambda parallel: xLSTMLMModelConfig(
+        vocab_size=100,
+        embedding_dim=16,
+        logits_soft_cap=None,
+        num_blocks=1,
+        context_length=16,
+        tie_weights=False,
+        add_embedding_dropout=True,
+        add_post_blocks_norm=True,
+        parallel=parallel,
+        scan_blocks=True,
+        dtype=jnp.float32,
+        mlstm_block=mLSTMBlockConfig(
+            mlstm=mLSTMLayerConfig(
+                layer_type="mlstm_v1",
+                num_heads=2,
+                embedding_dim=16,
+                context_length=32,
+                mlstm_cell=mLSTMCellConfig(
+                    igate_bias_init_range=-3.0,
+                ),
+                qk_dim_factor=0.5,
+                v_dim_factor=2.0,
+            ),
+            feedforward=FeedForwardConfig(
+                proj_factor=8.0 / 3.0,
+                act_fn="swish",
+                embedding_dim=16,
+                dropout=0.0,
+                bias=False,
+                ff_type="ffn_gated",
                 dtype=jnp.float32,
             ),
         ),

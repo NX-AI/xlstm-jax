@@ -28,9 +28,9 @@ def parallel_stabilized_simple(
     ensuring that they are always smaller than 0.0 by subtracting the maximum.
 
     Args:
-        queries (jax.Array): (B, NH, S, DH)
-        keys (jax.Array): (B, NH, S, DH)
-        values (jax.Array): (B, NH, S, DH)
+        queries (jax.Array): (B, NH, S, DHQK)
+        keys (jax.Array): (B, NH, S, DHQK)
+        values (jax.Array): (B, NH, S, DHV)
         igate_preact (jax.Array): (B, NH, S, 1)
         fgate_preact (jax.Array): (B, NH, S, 1)
         lower_triangular_matrix (jax.Array, optional): (S,S). Defaults to None.
@@ -46,7 +46,8 @@ def parallel_stabilized_simple(
         jax.Array: (B, NH, S, DH), h_tilde_state
     """
 
-    B, S, DH = queries.shape
+    B, S, DHQK = queries.shape
+    _, _, DHV = values.shape
     if gate_dtype is None:
         gate_dtype = igate_preact.dtype
         assert gate_dtype == fgate_preact.dtype, (
@@ -67,16 +68,17 @@ def parallel_stabilized_simple(
         keys = keys.astype(qkv_dtype)
         values = values.astype(qkv_dtype)
     assert (
-        queries.shape == keys.shape == values.shape
-    ), f"queries, keys and values must have the same shape: {queries.shape}, {keys.shape}, {values.shape}"
+        queries.shape == keys.shape == (B, S, DHQK)
+    ), f"queries and keys must have shape (B, S, DHQK), got {queries.shape} and {keys.shape}."
+    assert values.shape == (B, S, DHV), f"values must have shape (B, S, DHV), got {values.shape}."
     assert (
         igate_preact.shape == fgate_preact.shape == (B, S, 1)
-    ), f"igate_preact and fgate_preact must have the shape (B, S, 1), got {igate_preact.shape}, {fgate_preact.shape}"
+    ), f"igate_preact and fgate_preact must have shape (B, S, 1), got {igate_preact.shape}, {fgate_preact.shape}."
     if lower_triangular_matrix is not None:
         assert lower_triangular_matrix.shape == (
             S,
             S,
-        ), f"lower_triangular_matrix must have shape (S, S), got {lower_triangular_matrix.shape}"
+        ), f"lower_triangular_matrix must have shape (S, S), got {lower_triangular_matrix.shape}."
 
     # forget gate matrix
     log_fgates = jax.nn.log_sigmoid(fgate_preact)  # (B, NH, S, 1)
@@ -116,7 +118,7 @@ def parallel_stabilized_simple(
     D_matrix = jnp.exp(log_D_matrix_stabilized)  # (B, NH, S, S)
     D_matrix = D_matrix.astype(qkv_dtype)
 
-    keys_scaled = keys / math.sqrt(DH)
+    keys_scaled = keys / math.sqrt(DHQK)
 
     # combination matrix C
     qk_matrix = queries @ keys_scaled.swapaxes(-2, -1)  # (B, NH, S, S)

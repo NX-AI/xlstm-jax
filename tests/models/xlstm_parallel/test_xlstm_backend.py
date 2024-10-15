@@ -158,6 +158,69 @@ def test_parallelize_backend_float32_vs_bfloat16(context_length: int, use_jit: b
     )
 
 
+@pytest.mark.parametrize("vdim", [4, 32, 128])
+def test_parallelize_backend_vdim(vdim: int):
+    """
+    Tests the parallelization of the mLSTM backend with varying v dimensions.
+    """
+    # Prepare the input data.
+    B = 1
+    S = 8
+    DHQK = 64
+    DHV = vdim
+    rng = np.random.default_rng(2)
+    q = rng.normal(size=(B, S, DHQK)).astype(np.float32)
+    k = rng.normal(size=(B, S, DHQK)).astype(np.float32)
+    v = rng.normal(size=(B, S, DHV)).astype(np.float32)
+    igate_preact = rng.normal(size=(B, S, 1)).astype(np.float32)
+    fgate_preact = rng.normal(size=(B, S, 1)).astype(np.float32) + 4.5
+
+    # Run the float32 precision.
+    jax_backend = parallel_stabilized_simple_jax
+    out = jax_backend(
+        jnp.array(q),
+        jnp.array(k),
+        jnp.array(v),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+        eps=1e-5,
+    )
+    out = jax.device_get(out)
+    assert out.shape == v.shape, "Output shape must match the values shape."
+    if DHQK > DHV:
+        v_padded = np.pad(v, ((0, 0), (0, 0), (0, DHQK - DHV)))
+        q_padded, k_padded = q, k
+    else:
+        q_padded = np.pad(q, ((0, 0), (0, 0), (0, DHV - DHQK)))
+        k_padded = np.pad(k, ((0, 0), (0, 0), (0, DHV - DHQK)))
+        k_padded *= np.sqrt(DHV / DHQK)
+        v_padded = v
+    out_padded = jax_backend(
+        jnp.array(q_padded),
+        jnp.array(k_padded),
+        jnp.array(v_padded),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+        eps=1e-5,
+    )
+    out_padded = jax.device_get(out_padded)
+    np.testing.assert_allclose(
+        out,
+        out_padded[:, :, :DHV],
+        atol=1e-5,
+        rtol=1e-2,
+        err_msg="Mismatch between padded and non-padded v dimensions.",
+    )
+    if out_padded.shape[-1] > DHV:
+        np.testing.assert_allclose(
+            out_padded[:, :, DHV:],
+            0.0,
+            atol=1e-5,
+            rtol=1e-2,
+            err_msg="Padded v dimensions are non-zero.",
+        )
+
+
 @pytest.mark.parametrize("context_length", [128, 256])
 @pytest.mark.parametrize("chunk_size", [8, 64])
 @pytest.mark.parametrize("stabilize_correctly", [False, True])

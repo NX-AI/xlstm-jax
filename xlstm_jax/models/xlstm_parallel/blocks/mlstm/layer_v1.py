@@ -37,12 +37,12 @@ class mLSTMLayerV1(nn.Module):
             x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
 
             # Projection up layers
-            def proj_up_layer(name, kernel_init):
+            def proj_up_layer(name, kernel_init, scale: float = 1.0):
                 return TPDense(
                     dense_fn=partial(
                         nn.Dense,
                         dtype=self.config.dtype,
-                        features=embedding_dim // tp_size,
+                        features=int(embedding_dim * scale) // tp_size,
                     ),
                     model_axis_name=self.config.parallel.model_axis_name,
                     tp_mode="gather",
@@ -54,12 +54,12 @@ class mLSTMLayerV1(nn.Module):
 
             # QKV layers
             qkv_init = small_init(embedding_dim, distribution=self.config.init_distribution)
-            q = proj_up_layer(name="dense_q", kernel_init=qkv_init)(x)
-            k = proj_up_layer(name="dense_k", kernel_init=qkv_init)(x)
-            v = proj_up_layer(name="dense_v", kernel_init=qkv_init)(x)
+            q = proj_up_layer(name="dense_q", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
+            k = proj_up_layer(name="dense_k", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
+            v = proj_up_layer(name="dense_v", kernel_init=qkv_init, scale=self.config.v_dim_factor)(x)
 
             # Output layer
-            o = proj_up_layer(name="dense_o", kernel_init=nn.initializers.zeros)(x)
+            o = proj_up_layer(name="dense_o", kernel_init=nn.initializers.zeros, scale=self.config.v_dim_factor)(x)
 
             # Gates
             def gate_layer(name, bias_init):
@@ -104,9 +104,9 @@ class mLSTMLayerV1(nn.Module):
             fgate_preact = soft_cap_logits(fgate_preact, self.config.mlstm_cell.gate_soft_cap)
 
         # mlstm branch
-        q = q.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
-        k = k.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
-        v = v.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DH)
+        q = q.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DHQK)
+        k = k.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DHQK)
+        v = v.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DHV)
         igate_preact = igate_preact[..., None]  # (B, S, NH, 1)
         fgate_preact = fgate_preact[..., None]  # (B, S, NH, 1)
 
@@ -132,9 +132,9 @@ class mLSTMLayerV1(nn.Module):
                 h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
         else:
             # Manual transpose to work over heads.
-            q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-            k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
-            v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DH)
+            q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
+            k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
+            v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DHV)
             igate_preact = igate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
             fgate_preact = fgate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
             with jax.named_scope("mlstm_backend"):

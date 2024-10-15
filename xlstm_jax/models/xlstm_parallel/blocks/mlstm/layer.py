@@ -31,6 +31,12 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     layer_type: Literal["mlstm", "mlstm_v1"] = "mlstm"
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
     """Type of normalization layer to use."""
+    qk_dim_factor: float = 1.0
+    """Factor to scale the qk projection dimension by. By default, the qk projection dimension is the same as the
+    inner embedding dimension, split into num_heads. This factor is applied to this default size."""
+    v_dim_factor: float = 1.0
+    """Factor to scale the v projection dimension by. By default, the v projection dimension is the same as the
+    inner embedding dimension, split into num_heads. This factor is applied to this default size."""
 
     # will be set toplevel config
     embedding_dim: int = -1
@@ -78,6 +84,10 @@ class mLSTMLayer(nn.Module):
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
         embedding_dim = x.shape[-1] * tp_size
+        v_dim = int(self.config._inner_embedding_dim * self.config.v_dim_factor)
+        assert embedding_dim % tp_size == 0, "embedding_dim must be divisible by the number of model replicas"
+        assert v_dim % tp_size == 0, "value dimension must be divisible by the number of model replicas"
+        # qk-factor does not need to tested, as they are solely applied in the LinearHeadwise.
 
         tp_dense_fn = (
             partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
@@ -91,7 +101,7 @@ class mLSTMLayer(nn.Module):
                 dense_fn=partial(
                     nn.Dense,
                     dtype=self.config.dtype,
-                    features=2 * self.config._inner_embedding_dim // tp_size,
+                    features=(v_dim + self.config._inner_embedding_dim) // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
@@ -99,6 +109,7 @@ class mLSTMLayer(nn.Module):
                 use_bias=self.config.bias,
                 name="proj_up",
             )(x)
+            x_inner = (x_inner[..., v_dim // tp_size :], x_inner[..., : v_dim // tp_size])
         else:
             # split projection up into two smaller matrices, as splitting large feature vector costs time.
             x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
@@ -120,7 +131,7 @@ class mLSTMLayer(nn.Module):
                 dense_fn=partial(
                     nn.Dense,
                     dtype=self.config.dtype,
-                    features=self.config._inner_embedding_dim // tp_size,
+                    features=v_dim // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 tp_mode="gather",
@@ -130,25 +141,9 @@ class mLSTMLayer(nn.Module):
                 name="proj_up_z",
             )(x)
             x_inner = (x_mlstm, z)
-            # x_inner = TPDense(
-            #     dense_fn=partial(
-            #         nn.Dense,
-            #         dtype=self.config.dtype,
-            #         use_bias=self.config.bias,
-            #         features=2 * self.config._inner_embedding_dim // tp_size,
-            #     ),
-            #     model_axis_name=self.config.parallel.model_axis_name,
-            #     tp_mode="gather",
-            #     skip_communication=False,
-            #     kernel_init_adjustment=tp_size**-0.5,
-            #     name="proj_up",
-            # )(x)
 
         if self.config.debug_cell:
-            if isinstance(x_inner, tuple):
-                h_state = x_inner[0]
-            else:
-                h_state = x_inner[..., : x_inner.shape[-1] // 2]
+            h_state = x_inner[1]
         else:
             # inner cell
             inner_config = deepcopy(self.config)
@@ -229,6 +224,7 @@ class mLSTMInnerLayer(nn.Module):
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
+                    expand_factor_up=self.config.qk_dim_factor,
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
@@ -241,6 +237,7 @@ class mLSTMInnerLayer(nn.Module):
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
+                    expand_factor_up=self.config.qk_dim_factor,
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
@@ -251,6 +248,7 @@ class mLSTMInnerLayer(nn.Module):
                 config=LinearHeadwiseExpandConfig(
                     in_features=self.config._inner_embedding_dim,
                     num_heads=num_proj_heads,
+                    expand_factor_up=self.config.qk_dim_factor,
                     bias=self.config.bias,
                     dtype=self.config.dtype,
                 ),
@@ -261,6 +259,7 @@ class mLSTMInnerLayer(nn.Module):
             config=LinearHeadwiseExpandConfig(
                 in_features=self.config._inner_embedding_dim,
                 num_heads=num_proj_heads,
+                expand_factor_up=self.config.v_dim_factor,
                 bias=self.config.bias,
                 dtype=self.config.dtype,
             ),
@@ -287,6 +286,22 @@ class mLSTMInnerLayer(nn.Module):
         h_tilde_state = mlstm_cell(config=self.config.mlstm_cell, name="mlstm_cell")(
             q=q, k=k, v=v, gate_input=gate_input
         )
+        if h_tilde_state.shape[-1] != x_mlstm_conv_act.shape[-1]:
+            # Add a linear headwise projection to match the dimensions
+            assert (
+                h_tilde_state.shape[-1] / x_mlstm_conv_act.shape[-1] == self.config.v_dim_factor
+            ), f"Invalid dimensions: {h_tilde_state.shape[-1]} != {x_mlstm_conv_act.shape[-1]}"
+            x_mlstm_conv_act = LinearHeadwiseExpand(
+                config=LinearHeadwiseExpandConfig(
+                    in_features=self.config._inner_embedding_dim,
+                    num_heads=num_proj_heads,
+                    expand_factor_up=self.config.v_dim_factor,
+                    bias=self.config.bias,
+                    dtype=self.config.dtype,
+                ),
+                kernel_init=qkv_init,
+                name="x_mlstm_conv_scaling",
+            )(x_mlstm_conv_act)
         learnable_skip = self.param("learnable_skip", nn.initializers.ones, (x_mlstm_conv_act.shape[-1],))
         learnable_skip = jnp.broadcast_to(learnable_skip, x_mlstm_conv_act.shape)
         h_tilde_state_skip = h_tilde_state + (learnable_skip * x_mlstm_conv_act)
