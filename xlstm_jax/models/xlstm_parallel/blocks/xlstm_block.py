@@ -1,3 +1,4 @@
+from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
 from typing import Literal
@@ -9,6 +10,7 @@ from flax import linen as nn
 from ...configs import ParallelConfig
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.normalization import NormLayer
+from ..utils import prepare_module
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 from .mlstm.layer_v1 import mLSTMLayerV1
 
@@ -54,6 +56,23 @@ class xLSTMBlockConfig:
             self.feedforward.__post_init__()
 
 
+class ResidualBlock(nn.Module):
+    """
+    A residual block that applies a list of modules in sequence and adds the input to the output.
+
+    Modules are created within this block to wrap them as children module of this one.
+    """
+
+    module_fns: list[Callable[..., nn.Module]]
+
+    @nn.compact
+    def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
+        res = x
+        for module_fn in self.module_fns:
+            x = module_fn()(x, **kwargs)
+        return res + x
+
+
 class xLSTMBlock(nn.Module):
     """
     An xLSTM block can be either an sLSTM Block or an mLSTM Block.
@@ -82,24 +101,43 @@ class xLSTMBlock(nn.Module):
             block_class = mLSTMLayer
             if self.config.mlstm.layer_type == "mlstm_v1":
                 block_class = mLSTMLayerV1
-            xlstm = block_class(config=self.config.mlstm, name="xlstm")
+            xlstm_fn = partial(block_class, config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
             # xlstm = sLSTMLayer(config=self.config.slstm)
             raise NotImplementedError("sLSTM not implemented in JAX yet.")
         else:
             raise ValueError("Either mlstm or slstm must be provided")
-        x_norm = norm_fn(name="xlstm_norm")(x)
-        x_xlstm = xlstm(x_norm, **kwargs)
-        if self.config.add_post_norm:
-            x_xlstm = norm_fn(name="xlstm_post_norm")(x_xlstm)
-        x = x + x_xlstm
+
+        # Create Residual Block with mLSTM/sLSTM. Separate block needed for best FSDP/Remat support.
+        xlstm_res_block = partial(
+            ResidualBlock,
+            [
+                partial(norm_fn, name="xlstm_norm"),
+                xlstm_fn,
+            ]
+            + ([partial(norm_fn, name="xlstm_post_norm")] if self.config.add_post_norm else []),
+        )
+        xlstm_res_block = prepare_module(
+            xlstm_res_block,
+            "xLSTMResBlock",
+            config=self.config.parallel,
+        )
+        x = xlstm_res_block(name="xlstm_res_block")(x, **kwargs)
 
         # Feedforward
         if self.config.feedforward is not None:
-            x_norm = norm_fn(name="ffn_norm")(x)
-            ffn = create_feedforward(config=self.config.feedforward)
-            x_ffn = ffn(x_norm, **kwargs)
-            if self.config.add_post_norm:
-                x_ffn = norm_fn(name="ffn_post_norm")(x_ffn)
-            x = x + x_ffn
+            ffn_res_block = partial(
+                ResidualBlock,
+                [
+                    partial(norm_fn, name="ffn_norm"),
+                    partial(create_feedforward, config=self.config.feedforward),
+                ]
+                + ([partial(norm_fn, name="ffn_post_norm")] if self.config.add_post_norm else []),
+            )
+            ffn_res_block = prepare_module(
+                ffn_res_block,
+                "FFNResBlock",
+                config=self.config.parallel,
+            )
+            x = ffn_res_block(name="ffn_res_block")(x, **kwargs)
         return x

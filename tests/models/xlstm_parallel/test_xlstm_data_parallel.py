@@ -283,7 +283,7 @@ def test_fsdp(config: xLSTMLMModelConfig):
             config.parallel,
             fsdp_modules=("Embed", "mLSTMBlock", "LMHead"),
             fsdp_min_weight_size=2**8,  # Reduce for testing.
-            remat=("mLSTMBlock"),
+            remat=("xLSTMResBlock", "FFNResBlock"),
         ),
     )
     rng = jax.random.PRNGKey(123)

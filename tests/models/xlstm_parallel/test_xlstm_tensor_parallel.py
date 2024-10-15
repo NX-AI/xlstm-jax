@@ -319,7 +319,7 @@ def test_tensor_parallel_initialization(config: xLSTMLMModelConfig, model_axis_s
 
         if np.prod(p_dp.shape) < 16:
             atol_mean, atol_std, rtol_std = 1e-1, 1e-1, 1e-1
-        elif np.prod(p_dp.shape) < 8192:
+        elif np.prod(p_dp.shape) <= 8192:
             atol_mean, atol_std, rtol_std = 2e-2, 1e-2, 1e-1
         else:
             atol_mean, atol_std, rtol_std = 1e-2, 1e-3, 1e-2

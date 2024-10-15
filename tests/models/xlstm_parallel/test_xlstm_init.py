@@ -210,17 +210,13 @@ def _map_multi_device_to_single(params: dict[str, jax.Array]) -> dict[str, jax.A
     params["xlstm_block_stack.post_blocks_norm.scale"] = params.pop("lm_head.out_norm.scale")
     params["lm_head.kernel"] = params.pop("lm_head.out_dense.kernel")
     keys = list(params.keys())
+    multi_device_keys = (".sharded.", ".shard_0.", ".inner_layer.", ".Dense_0.", ".xlstm_res_block.", ".ffn_res_block.")
     for key in keys:
         new_key = key
         val = params.pop(key)
-        if ".sharded." in new_key:
-            new_key = new_key.replace(".sharded.", ".")
-        if ".shard_0." in new_key:
-            new_key = new_key.replace(".shard_0.", ".")
-        if ".inner_layer." in new_key:
-            new_key = new_key.replace(".inner_layer.", ".")
-        if ".Dense_0." in new_key:
-            new_key = new_key.replace(".Dense_0.", ".")
+        for md_key in multi_device_keys:
+            if md_key in new_key:
+                new_key = new_key.replace(md_key, ".")
         params[new_key] = val
     keys = list(params.keys())
     for key in keys:
