@@ -29,6 +29,9 @@ class xLSTMLMModelConfig(xLSTMBlockStackConfig):
     """Type of normalization layer to use."""
     logits_soft_cap: float | None = None
     """Soft cap for the LM output logits. If None, no cap is applied."""
+    lm_head_dtype: str = "float32"
+    """Data type to perform the LM Head Dense layer in. The output will always be casted to float32 for numerical
+    stability."""
     parallel: ParallelConfig | None = None
 
 
@@ -102,7 +105,9 @@ class TPOutputLayer(nn.Module):
             features=self.config.vocab_size,
             kernel_init=small_init(self.config.embedding_dim, self.config.init_distribution_out),
             use_bias=False,
-            dtype=jnp.float32,
+            dtype=self.config.lm_head_dtype,
             name="out_dense",
         )(x)
+        # Output will be enforced to be float32.
+        x = x.astype(jnp.float32)
         return x

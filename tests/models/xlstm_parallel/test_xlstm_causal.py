@@ -28,7 +28,8 @@ MODEL_CONFIGS = [
         add_post_blocks_norm=True,
         parallel=parallel,
         scan_blocks=False,
-        dtype=jnp.float32,
+        dtype=jnp.bfloat16,
+        lm_head_dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -57,7 +58,8 @@ MODEL_CONFIGS = [
         add_post_blocks_norm=True,
         parallel=parallel,
         scan_blocks=True,
-        dtype=jnp.float32,
+        dtype=jnp.bfloat16,
+        lm_head_dtype="bfloat16",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -75,7 +77,7 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn",
-                dtype=jnp.float32,
+                dtype=jnp.bfloat16,
             ),
         ),
     ),
