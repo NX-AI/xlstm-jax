@@ -324,22 +324,24 @@ class TPOutputLayer(nn.Module):
         x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
         # Apply norm - Shard parameters over model axis.
         norm_fn = shard_module_params(
-            nn.LayerNorm,
+            nn.RMSNorm,
             axis_name=self.config.parallel.model_axis_name,
             min_weight_size=self.config.parallel.fsdp_min_weight_size,
         )
-        x = norm_fn(use_bias=False, dtype=self.config.dtype, name="out_norm")(x)
+        x = norm_fn(dtype=self.config.dtype, name="out_norm")(x)
         # Apply output layer - Shard parameters over model axis.
         dense_fn = shard_module_params(
             nn.Dense,
             axis_name=self.config.parallel.model_axis_name,
             min_weight_size=self.config.parallel.fsdp_min_weight_size,
         )
+        # In Llama, the output layer is in bfloat16 and only the logits are casted up to float32.
         x = dense_fn(
             features=self.config.vocab_size,
             kernel_init=small_init(self.config.embedding_dim),
             use_bias=False,
-            dtype=jnp.float32,
+            dtype=jnp.bfloat16,
             name="out_dense",
         )(x)
+        x = x.astype(jnp.float32)
         return x
