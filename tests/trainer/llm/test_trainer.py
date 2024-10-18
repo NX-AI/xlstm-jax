@@ -333,6 +333,7 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
                 mlstm_cell=mLSTMCellConfig(
                     gate_linear_headwise=True,
                     gate_soft_cap=30.0,
+                    reset_at_document_boundaries=True,
                 ),
             )
         ),

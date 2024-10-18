@@ -14,10 +14,29 @@ from .layer import mLSTMLayerConfig
 
 
 class mLSTMLayerV1(nn.Module):
+    """
+    mLSTM layer with a Transformer-style projection up and down.
+    """
+
     config: mLSTMLayerConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
+    def __call__(
+        self, x: jax.Array, document_borders: jax.Array | None = None, train: bool = True, **kwargs
+    ) -> jax.Array:
+        """
+        Forward pass of the mLSTM layer.
+
+        Args:
+            x: input tensor of shape (batch_size, context_length, embedding_dim).
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+            train: Whether the model is in training mode. If True, may apply dropout.
+
+        Returns:
+            The output tensor of the mLSTM layer, shape (batch_size, context_length, embedding_dim).
+        """
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
@@ -102,6 +121,13 @@ class mLSTMLayerV1(nn.Module):
             # Apply soft cap to the gate pre-activations.
             igate_preact = soft_cap_logits(igate_preact, self.config.mlstm_cell.gate_soft_cap)
             fgate_preact = soft_cap_logits(fgate_preact, self.config.mlstm_cell.gate_soft_cap)
+
+            # Reset memory at document boundaries.
+            if document_borders is not None and self.config.mlstm_cell.reset_at_document_boundaries:
+                # Set forget gate to 0 at document boundaries.
+                fgate_preact = jnp.where(
+                    document_borders[..., None], self.config.mlstm_cell.reset_fgate_value, fgate_preact
+                )
 
         # mlstm branch
         q = q.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DHQK)

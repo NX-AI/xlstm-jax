@@ -1,7 +1,7 @@
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import Literal
+from typing import Any, Literal
 
 import jax
 import jax.numpy as jnp
@@ -66,10 +66,30 @@ class ResidualBlock(nn.Module):
     module_fns: list[Callable[..., nn.Module]]
 
     @nn.compact
-    def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
+    def __call__(self, x: jax.Array, module_kwargs: list[dict[str, Any] | None] | None = None, **kwargs) -> jax.Array:
+        """
+        Forward pass of residual block.
+
+        Args:
+            x: Input tensor.
+            module_kwargs: List of kwargs to pass to each individual module. If None, empty kwargs are used. If shorter
+                than the number of modules, the last kwargs are set to empty.
+            kwargs: Additional kwargs to pass to *all* modules.
+
+        Returns:
+            Output tensor.
+        """
+        # Prepare module kwargs.
+        if module_kwargs is None:
+            module_kwargs = [{}] * len(self.module_fns)
+        else:
+            module_kwargs = module_kwargs + [{}] * max(0, len(self.module_fns) - len(module_kwargs))
+            module_kwargs = [{} if kws is None else kws for kws in module_kwargs]
+
+        # Forward pass.
         res = x
-        for module_fn in self.module_fns:
-            x = module_fn()(x, **kwargs)
+        for module_fn, module_kws in zip(self.module_fns, module_kwargs):
+            x = module_fn()(x, **module_kws, **kwargs)
         return res + x
 
 
@@ -83,7 +103,22 @@ class xLSTMBlock(nn.Module):
     config: xLSTMBlockConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
+    def __call__(self, x: jax.Array, document_borders: jax.Array | None = None, **kwargs) -> jax.Array:
+        """
+        Forward pass of xLSTM block.
+
+        Includes both mLSTM/sLSTM and feedforward layers if specified.
+
+        Args:
+            x: input tensor of shape (batch_size, context_length, embedding_dim).
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+            kwargs: Additional kwargs to pass to the mLSTM/sLSTM and feedforward layers.
+
+        Returns:
+            The output tensor of the xLSTM block, shape (batch_size, context_length, embedding_dim).
+        """
         # LayerNorm best to do over model axis, not sync beforehand due to costly embedding size.
         norm_fn = partial(
             NormLayer,
@@ -122,7 +157,7 @@ class xLSTMBlock(nn.Module):
             "xLSTMResBlock",
             config=self.config.parallel,
         )
-        x = xlstm_res_block(name="xlstm_res_block")(x, **kwargs)
+        x = xlstm_res_block(name="xlstm_res_block")(x, [{}, {"document_borders": document_borders}], **kwargs)
 
         # Feedforward
         if self.config.feedforward is not None:

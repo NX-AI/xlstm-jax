@@ -41,6 +41,24 @@ class LLMBatch(Batch):
     targets_segmentation: jax.Array
     """Segmentation of the target tokens. 0 to indicate padding."""
 
+    def get_document_borders(self) -> jax.Array:
+        """Get the document borders for the input data.
+
+        A token represents a document border if its previous input token has a different input segmentation.
+        For instance, if the input segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
+        This mask can be useful for processing documents separately in a recurrent model, i.e. when to reset the
+        hidden state.
+
+        Returns:
+            A boolean array indicating the document borders.
+        """
+        return jnp.pad(
+            self.inputs_segmentation[:, :-1] != self.inputs_segmentation[:, 1:],
+            ((0, 0), (1, 0)),
+            mode="constant",
+            constant_values=True,
+        )
+
     @staticmethod
     def from_inputs(inputs: jax.Array, targets: jax.Array | None = None) -> "LLMBatch":
         """Create LLMBatch from inputs.

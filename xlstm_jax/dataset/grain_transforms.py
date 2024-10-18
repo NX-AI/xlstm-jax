@@ -225,6 +225,40 @@ class ShiftData(grain.MapTransform):
 
 
 @dataclasses.dataclass
+class InferSegmentations(grain.MapTransform):
+    """
+    Infer the segmentation, i.e. document numbers, from the inputs.
+
+    Uses the end-of-document token to infer breaks between documents. This is not needed
+    when performing packing, where the segmentations are already set correctly, but is
+    useful for grouped text preprocessed datasets, which do not have the segmentations set.
+
+    Args:
+        eod_token_id: The token ID to use for the end-of-document token.
+    """
+
+    def __init__(
+        self,
+        eod_token_id: int,
+    ):
+        self.eod_token_id = eod_token_id
+
+    def map(self, data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+        """Map to infer segmentations."""
+        # Identify end-of-document tokens.
+        eod_mask = data["inputs"] == self.eod_token_id
+        # Document ID is the cumulative sum of the end-of-document mask. We start at 1,
+        # as the first document is document 1 and 0 is used for padding.
+        doc_id = np.cumsum(eod_mask, axis=-1, dtype=np.int32) + 1
+        # Set the segmentations, respecting the padding.
+        inp_padding_mask = (data["inputs_segmentation"] != 0).astype(np.int32)
+        data["inputs_segmentation"] = doc_id * inp_padding_mask
+        out_padding_mask = (data["targets_segmentation"] != 0).astype(np.int32)
+        data["targets_segmentation"] = doc_id * out_padding_mask
+        return data
+
+
+@dataclasses.dataclass
 class CollateToBatch(grain.MapTransform):
     """Collate data to batch.
 

@@ -112,6 +112,7 @@ MODEL_CONFIGS = {
                         add_qk_norm=False,
                         norm_type="rmsnorm",
                         norm_eps=1e-6,
+                        reset_at_document_boundaries=False,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -186,6 +187,7 @@ MODEL_CONFIGS = {
                         add_qk_norm=False,
                         norm_type="rmsnorm",
                         norm_eps=1e-6,
+                        reset_at_document_boundaries=False,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -260,6 +262,7 @@ MODEL_CONFIGS = {
                         add_qk_norm=False,
                         norm_type="rmsnorm",
                         norm_eps=1e-6,
+                        reset_at_document_boundaries=False,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
@@ -333,6 +336,7 @@ def main_train(args: argparse.Namespace):
         eval_data_column="text",
         shuffle_train_data=True,
         data_shuffle_seed=123,
+        eod_token_id=50256,
     )
     data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
 

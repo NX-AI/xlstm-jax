@@ -104,12 +104,26 @@ class BlockStack(nn.Module):
     config: xLSTMBlockStackConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, *args, **kwargs) -> jax.Array:
+    def __call__(self, x: jax.Array, *args, document_borders: jax.Array | None = None, **kwargs) -> jax.Array:
+        """
+        Forward pass of the block stack.
+
+        Args:
+            x: input tensor of shape (batch_size, context_length, embedding_dim).
+            args: Additional arguments to pass to the mLSTM/sLSTM and feedforward layers.
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+            kwargs: Additional kwargs to pass to the mLSTM/sLSTM and feedforward layers.
+
+        Returns:
+            The output tensor of the mLSTM layer, shape (batch_size, context_length, embedding_dim).
+        """
         if not self.config.scan_blocks:
             blocks = self._create_blocks(config=self.config)
             # TODO: Add train etc. flags, but need to be static for remat.
             for block in blocks:
-                x = block(x)
+                x = block(x, document_borders=document_borders)
         else:
             assert all([v == 0 for v in self.config.block_map]), "scan_blocks only supported for pure mLSTM blocks"
             block_fn = prepare_module(
@@ -119,7 +133,7 @@ class BlockStack(nn.Module):
             )
             block = block_fn(name="block")
             x, _ = nn.scan(
-                lambda module, carry, _: (module(carry), None),
+                lambda module, carry, _: (module(carry, document_borders=document_borders), None),
                 variable_axes={"params": 0, "intermediates": 0},
                 split_rngs={"params": True, "dropout": True},
                 length=self.config.num_blocks,

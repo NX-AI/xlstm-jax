@@ -39,7 +39,20 @@ class xLSTMLMModel(nn.Module):
     config: xLSTMLMModelConfig
 
     @nn.compact
-    def __call__(self, idx: jax.Array, train: bool = False) -> jax.Array:
+    def __call__(self, idx: jax.Array, document_borders: jax.Array | None = None, train: bool = False) -> jax.Array:
+        """
+        Forward pass of the xLSTM language model.
+
+        Args:
+            idx: input token indices of shape (batch_size, context_length).
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+            train: Whether the model is in training mode. If True, may apply dropout.
+
+        Returns:
+            The predicted logits of the language model, shape (batch_size, context_length, vocab_size).
+        """
         # Embedding
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         embed_fn = partial(
@@ -61,7 +74,7 @@ class xLSTMLMModel(nn.Module):
             x = nn.Dropout(rate=self.config.dropout)(x, deterministic=not train)
         # BlockStack
         stack_fn = prepare_module(xLSTMBlockStack, "BlockStack", config=self.config.parallel)
-        x = stack_fn(config=self.config, name="xlstm_block_stack")(x, train=train)
+        x = stack_fn(config=self.config, name="xlstm_block_stack")(x, document_borders=document_borders, train=train)
         # LMHead
         pred_fn = prepare_module(
             partial(TPOutputLayer, config=self.config, name="lm_head"), "LMHead", config=self.config.parallel

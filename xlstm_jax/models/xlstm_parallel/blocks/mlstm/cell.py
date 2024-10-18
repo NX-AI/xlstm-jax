@@ -43,6 +43,10 @@ class mLSTMCellConfig(SubModelConfig):
     If a float, the bias is initialized with the given value. If None, the bias is initialized with normal(0.1)."""
     add_qk_norm: bool = False
     """If True, adds a normalization layer on the query and key vectors before the mLSTM cell."""
+    reset_at_document_boundaries: bool = False
+    """If True, the memory is reset at the beginning of each document."""
+    reset_fgate_value: float = -25.0
+    """Value to set the forget gate to at document boundaries."""
     parallel: ParallelConfig | None = None
     """Parallel configuration for the mLSTM cell."""
 
@@ -57,6 +61,7 @@ class mLSTMCell(nn.Module):
         k: jax.Array,
         v: jax.Array,
         gate_input: jax.Array | tuple[jax.Array, ...] | None = None,
+        document_borders: jax.Array | None = None,
         **kwargs,
     ):
         """mLSTM cell implementation.
@@ -69,6 +74,9 @@ class mLSTMCell(nn.Module):
                 is (q, k, v). If a tuple, the inputs are concatenated along the last axis. For linear
                 headwise layers, the inputs are reshaped to (batch_size, context_length, num_heads, -1) and
                 concatenated along the last axis.
+            document_borders: Boolean mask tensor indicating the document boundaries. If provided, the forget
+                gate is set to 0 at the document boundaries, i.e. the memory is reset at the beginning of each
+                document.
             kwargs: Additional arguments for the mLSTM backend.
         """
         B, S, _ = q.shape
@@ -139,6 +147,13 @@ class mLSTMCell(nn.Module):
             # Apply soft cap to the gate pre-activations.
             igate_preact = soft_cap_logits(igate_preact, self.config.gate_soft_cap)
             fgate_preact = soft_cap_logits(fgate_preact, self.config.gate_soft_cap)
+
+            # Reset memory at document boundaries.
+            if document_borders is not None and self.config.reset_at_document_boundaries:
+                # Set forget gate to 0 at document boundaries.
+                # NOTE: If a convolution was applied to QKV, the state may not be fully independent of the
+                # previous documents. This is a limitation of the v2 mLSTM implementation.
+                fgate_preact = jnp.where(document_borders[..., None], self.config.reset_fgate_value, fgate_preact)
 
             # Log intermediate statistics of the gates.
             self.sow("intermediates", "max_igate_preact", jnp.max(igate_preact))

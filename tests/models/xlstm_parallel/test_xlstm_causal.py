@@ -174,12 +174,18 @@ def test_xlstm_trainer(
 
 
 @pytest.mark.parametrize("xlstm_config_generator", MODEL_CONFIGS)
-def test_xlstm_causal_masking(llm_trainer: Any, xlstm_config_generator: Callable[[ParallelConfig], xLSTMLMModelConfig]):
+def test_xlstm_causal_masking_document_borders(
+    llm_trainer: Any, xlstm_config_generator: Callable[[ParallelConfig], xLSTMLMModelConfig]
+):
     """
     Tests causal masking in xLSTM.
     """
 
     def model_generator(parallel):
-        return xLSTMLMModel(xlstm_config_generator(parallel))
+        config = xlstm_config_generator(parallel)
+        config.mlstm_block.mlstm.mlstm_cell.reset_at_document_boundaries = True
+        # In the v2 cell, the convolution may still look across document borders. We set it to 1 to avoid this.
+        config.mlstm_block.mlstm.conv1d_kernel_size = 1
+        return xLSTMLMModel(config)
 
-    llm_trainer.causal_masking_test(model_generator, vocab_size=100, context_length=16)
+    llm_trainer.causal_masking_test(model_generator, vocab_size=100, context_length=16, test_document_borders=True)

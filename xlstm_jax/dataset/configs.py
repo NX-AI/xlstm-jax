@@ -46,6 +46,8 @@ class HFLocalDataConfig(DataConfig):
     """Split to use for evaluation. Should be a subdirectory of data_dir."""
     eval_max_steps_per_epoch: int | None = None
     """Maximum number of steps per epoch for evaluation."""
+    eod_token_id: int = 0
+    """End of document token ID. Used for identifying the document segmentations."""
 
 
 @dataclass(kw_only=True, frozen=False)

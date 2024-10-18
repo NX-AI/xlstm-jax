@@ -1,6 +1,7 @@
 from pathlib import Path
 
 import datasets
+import jax.numpy as jnp
 import numpy as np
 import pytest
 import transformers
@@ -66,6 +67,9 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
     train_batch = next(train_iterator)
     assert train_batch.inputs.shape == (global_batch_size, context_length)
     assert train_batch.inputs.sharding.spec == P(mesh.axis_names)
+    assert not jnp.all(
+        train_batch.inputs_segmentation == 1
+    ), "Not all segmentations should not be 1, indicates the end-of-document tokens are missing."
 
     # Get batches from evaluation iterator and make sure that the batch size is correct,
     # and that the batches are the same for each epoch.

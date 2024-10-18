@@ -112,6 +112,7 @@ def make_grain_llm_iterator(
         operations.append(
             grain.Batch(batch_size=global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
         )
+        operations.append(grain_transforms.InferSegmentations(eod_token_id=eod_token_id))
 
     if shift:
         operations.append(grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id))

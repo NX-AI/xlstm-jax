@@ -122,10 +122,19 @@ class LLMTrainerHelper:
         batch_size: int = 8,
         context_length: int = 32,
         vocab_size: int = 50,
+        test_document_borders: bool = False,
     ):
         """
         Tests the causal masking in autoregressive language models.
+
+        Args:
+            model_generator: A function that generates the model given a parallel configuration.
+            batch_size: The batch size.
+            context_length: The context length. Should be larger than 8 to test causal masking.
+            vocab_size: The vocabulary size.
+            test_document_borders: Whether to test that documents are independent.
         """
+        assert context_length > 8, "Context length should be larger than 8 to test causal masking."
         parallel = ParallelConfig(
             data_axis_size=-1,
             model_axis_size=1,
@@ -172,25 +181,31 @@ class LLMTrainerHelper:
         )
         variables = init_model_fn(init_rng, exmp_input)
 
-        def _forward(batch_input: jax.Array, variables: Any) -> jax.Array:
-            return model.apply(variables, batch_input, train=True, rngs={"dropout": jax.random.PRNGKey(42)})
+        def _forward(batch_input: jax.Array, variables: Any, batch_borders: jax.Array | None) -> jax.Array:
+            return model.apply(
+                variables,
+                batch_input,
+                document_borders=batch_borders,
+                train=True,
+                rngs={"dropout": jax.random.PRNGKey(42)},
+            )
 
         forward_fn = jax.jit(
             shard_map(
                 _forward,
                 mesh,
-                in_specs=(P(), variables_partition_specs),
+                in_specs=(P(), variables_partition_specs, P()),
                 out_specs=P(),
                 check_rep=False,
             ),
         )
         # Run forward function.
-        logits = forward_fn(exmp_input, variables)
+        logits = forward_fn(exmp_input, variables, None)
         logits = jax.device_get(logits)
         assert logits.shape == (batch_size, context_length, vocab_size), f"Logits shape: {logits.shape}"
         # Check that the model is causal.
         exmp_input_perturbed = exmp_input.at[0, 4].set((exmp_input[0, 4] + 1) % vocab_size)
-        logits_perturbed = forward_fn(exmp_input_perturbed, variables)
+        logits_perturbed = forward_fn(exmp_input_perturbed, variables, None)
         logits_perturbed = jax.device_get(logits_perturbed)
         np.testing.assert_array_equal(
             logits[1:],
@@ -208,6 +223,49 @@ class LLMTrainerHelper:
         assert not np.allclose(
             logits[0, 5:], logits_perturbed[0, 5:]
         ), "Perturbing a token should change the output for future tokens."
+
+        if test_document_borders:
+            # Create document borders that are spaced over sequences.
+            border_idx = jnp.linspace(1, context_length, batch_size, dtype=jnp.int32)
+            document_borders = jnp.arange(context_length)[None] == border_idx[:, None]
+            document_borders = document_borders.at[:, 0].set(True)
+            # Run forward function with document borders.
+            logits = forward_fn(exmp_input, variables, document_borders)
+            logits = jax.device_get(logits)
+            assert logits.shape == (batch_size, context_length, vocab_size), f"Logits shape: {logits.shape}"
+            # Check that the model is causal.
+            pert_idx = context_length // 2
+            exmp_input_perturbed = exmp_input.at[:, pert_idx].set((exmp_input[:, pert_idx] + 1) % vocab_size)
+            logits_perturbed = forward_fn(exmp_input_perturbed, variables, document_borders)
+            logits_perturbed = jax.device_get(logits_perturbed)
+            for i in range(batch_size):
+                postfix = f" Failed for idx={i}, border={border_idx[i]}, pert={pert_idx}."
+                np.testing.assert_array_equal(
+                    logits[i, :pert_idx],
+                    logits_perturbed[i, :pert_idx],
+                    err_msg="Causal masking failed, earlier tokens should not be affected." + postfix,
+                )
+                assert not np.allclose(logits[i, pert_idx], logits_perturbed[i, pert_idx]), (
+                    "Perturbing a token should change the output for the perturbed token." + postfix
+                )
+                if border_idx[i] <= pert_idx:
+                    assert not np.allclose(logits[i, pert_idx + 1 :], logits_perturbed[i, pert_idx + 1 :]), (
+                        "Perturbing a token should change the output for future tokens." + postfix
+                    )
+                else:
+                    if pert_idx + 1 < border_idx[i] - 1:
+                        assert not np.allclose(
+                            logits[i, pert_idx + 1 : border_idx[i] - 1],
+                            logits_perturbed[i, pert_idx + 1 : border_idx[i] - 1],
+                        ), "Perturbing a token should change the output for future tokens." + postfix
+                    np.testing.assert_allclose(
+                        logits[i, border_idx[i] :],
+                        logits_perturbed[i, border_idx[i] :],
+                        atol=1e-6,
+                        rtol=1e-6,
+                        err_msg="Document border masking failed, tokens from future documents should not be affected."
+                        + postfix,
+                    )
 
 
 @pytest.fixture

@@ -76,10 +76,29 @@ class mLSTMLayerConfig(UpProjConfigMixin):
 
 
 class mLSTMLayer(nn.Module):
+    """
+    The mLSTM layer with Mamba block style.
+    """
+
     config: mLSTMLayerConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, train: bool = True, **kwargs) -> jax.Array:
+    def __call__(
+        self, x: jax.Array, document_borders: jax.Array | None = None, train: bool = True, **kwargs
+    ) -> jax.Array:
+        """
+        Forward pass of the mLSTM layer.
+
+        Args:
+            x: input tensor of shape (batch_size, context_length, embedding_dim).
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+            train: Whether the model is in training mode. If True, may apply dropout.
+
+        Returns:
+            The output tensor of the mLSTM layer, shape (batch_size, context_length, embedding_dim).
+        """
         B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
@@ -87,7 +106,7 @@ class mLSTMLayer(nn.Module):
         v_dim = int(self.config._inner_embedding_dim * self.config.v_dim_factor)
         assert embedding_dim % tp_size == 0, "embedding_dim must be divisible by the number of model replicas"
         assert v_dim % tp_size == 0, "value dimension must be divisible by the number of model replicas"
-        # qk-factor does not need to tested, as they are solely applied in the LinearHeadwise.
+        # qk-factor does not need to be tested, as they are solely applied in the LinearHeadwise.
 
         tp_dense_fn = (
             partial(TPAsyncDense, use_bidirectional_gather=True, use_bidirectional_scatter=True)
@@ -162,7 +181,7 @@ class mLSTMLayer(nn.Module):
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
                 name="inner_layer",
-            )(x_inner)
+            )(x_inner, document_borders)
 
         # down-projection
         y = tp_dense_fn(
@@ -189,10 +208,33 @@ class mLSTMLayer(nn.Module):
 
 
 class mLSTMInnerLayer(nn.Module):
+    """
+    The inner mLSTM layer with Mamba block style.
+
+    Applies a convolutional layer followed by a mLSTM cell.
+    """
+
     config: mLSTMLayerConfig
 
     @nn.compact
-    def __call__(self, x_inner: jax.Array | tuple[jax.Array, jax.Array]) -> jax.Array:
+    def __call__(
+        self, x_inner: jax.Array | tuple[jax.Array, jax.Array], document_borders: jax.Array | None = None
+    ) -> jax.Array:
+        """
+        Forward pass of the inner mLSTM layer.
+
+        Args:
+            x_inner: input tensor of shape (batch_size, context_length, embedding_dim + v_dim) or a tuple of two
+                tensors (x_mlstm, z) with shapes (batch_size, context_length, embedding_dim) and
+                (batch_size, context_length, v_dim). Represent the up-projected features that are mapped to query, key
+                and value vectors, as well as skip connection z.
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). For document border tokens, the mLSTM memory will be reset if selected in
+                config (see mlstm_cell). Shape (batch_size, context_length).
+
+        Returns:
+            The output tensor of the inner mLSTM layer, shape (batch_size, context_length, v_dim).
+        """
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         if isinstance(x_inner, tuple):
             x_mlstm, z = x_inner
@@ -284,7 +326,7 @@ class mLSTMInnerLayer(nn.Module):
         else:
             raise ValueError(f"Invalid gate_inputs: {self.config.gate_input}")
         h_tilde_state = mlstm_cell(config=self.config.mlstm_cell, name="mlstm_cell")(
-            q=q, k=k, v=v, gate_input=gate_input
+            q=q, k=k, v=v, gate_input=gate_input, document_borders=document_borders
         )
         if h_tilde_state.shape[-1] != x_mlstm_conv_act.shape[-1]:
             # Add a linear headwise projection to match the dimensions

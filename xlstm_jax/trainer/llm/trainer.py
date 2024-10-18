@@ -59,6 +59,7 @@ class LLMTrainer(TrainerModule):
         logits, mutable_variables = apply_fn(
             {"params": params},
             batch.inputs,
+            document_borders=batch.get_document_borders(),
             train=train,
             rngs={"dropout": dropout_rng},
             mutable="intermediates",

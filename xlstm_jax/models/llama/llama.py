@@ -255,7 +255,7 @@ class LlamaTransformer(nn.Module):
     config: LlamaConfig
 
     @nn.compact
-    def __call__(self, idx: jax.Array, train: bool = False) -> jax.Array:
+    def __call__(self, idx: jax.Array, train: bool = False, **kwargs) -> jax.Array:
         """
         Apply LLAMA transformer model to the input tensor.
 
