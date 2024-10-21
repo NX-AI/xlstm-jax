@@ -167,6 +167,7 @@ dependencies:
       - dill==0.3.8
       - dm-tree==0.1.8
       - docker-pycreds==0.4.0
+      - einops==0.8.0
       - etils==1.9.4
       - flatbuffers==24.3.25
       - flax==0.9.0
