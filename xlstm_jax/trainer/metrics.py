@@ -163,7 +163,7 @@ def get_metrics(
                 elif log_mode == "std":
                     mean = mode_metrics["value"] / mode_metrics["count"]
                     mean2 = mode_metrics["value2"] / mode_metrics["count"]
-                    std = np.sqrt(mean2 - mean**2)
+                    std = np.sqrt(np.clip(mean2 - mean**2, a_min=0.0, a_max=None))
                     metrics[out_key] = std
                 else:
                     metrics[out_key] = mode_metrics["value"] / mode_metrics["count"]
