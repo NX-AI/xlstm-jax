@@ -85,6 +85,7 @@ class LLMTrainerHelper:
         assert final_metrics is not None
         assert all(f"val_epoch_{i}" in final_metrics for i in range(1, 4))
         assert "perplexity" in final_metrics["val_epoch_1"]
+        assert not np.any(np.isnan(final_metrics["val_epoch_1"]["perplexity"]))
         assert (
             final_metrics["val_epoch_3"]["perplexity"] < final_metrics["val_epoch_2"]["perplexity"]
         ), "Validation perplexity should decrease over epochs."

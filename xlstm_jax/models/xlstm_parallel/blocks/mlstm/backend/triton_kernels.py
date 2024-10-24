@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.kernels import mlstm_chunkwise_max_triton
+from xlstm_jax.kernels import mlstm_chunkwise_max_triton, mlstm_chunkwise_triton_stablef
 
 from .config import mLSTMBackend
 
@@ -19,6 +20,14 @@ class mLSTMBackendTritonConfig:
     """Whether to reduce slicing operations before the kernel computation.
     Speeds up computation during training, but may limit initial states and
     forwarding states during inference."""
+    backend_name: Literal["max_triton", "triton_stablef"] = "max_triton"
+    """Backend name for the kernel type used"""
+    eps: float = 1e-6
+    """Epsilon value used in the kernel"""
+    norm_val: float = 1.0
+    """Normalizer upper bound value - max(norm_val e^-m, |n q|)"""
+    stabilize_correctly: bool = True
+    """Whether to stabilize correctly, i.e. scale norm_val with the maximizer state - see above"""
 
     def assign_model_config_params(self, *args, **kwargs):
         pass
@@ -49,16 +58,32 @@ class mLSTMBackendTriton(mLSTMBackend):
             # Squeeze input and forget gate on last axis.
             i = i[..., 0]
             f = f[..., 0]
-        return mlstm_chunkwise_max_triton(
-            q,
-            k,
-            v,
-            i,
-            f,
-            chunk_size=self.config.chunk_size,
-            autocast_kernel_dtype=autocast_kernel_dtype,
-            reduce_slicing=self.config.reduce_slicing,
-        )
+        if self.config.backend_name == "triton_stablef":
+            return mlstm_chunkwise_triton_stablef(
+                q,
+                k,
+                v,
+                i,
+                f,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
+                norm_val=self.config.norm_val,
+                eps=self.config.eps,
+                stabilize_correctly=self.config.stabilize_correctly,
+            )
+        elif self.config.backend_name == "max_triton":
+            return mlstm_chunkwise_max_triton(
+                q,
+                k,
+                v,
+                i,
+                f,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
+                reduce_slicing=self.config.reduce_slicing,
+            )
+        else:
+            raise ValueError(f"Bad kernels backend name {self.config.backend_name}")
 
     @property
     def can_vmap_over_heads(self) -> bool:

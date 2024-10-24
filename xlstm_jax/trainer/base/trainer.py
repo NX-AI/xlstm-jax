@@ -763,7 +763,7 @@ class TrainerModule:
             LOGGER.info("Training finished successfully.")
         elif self.trainer_config.check_for_nan and self.logger.found_nans:
             finalize_status = "nan"
-            LOGGER.error("Training stopped due to NaN values in the loss.")
+            LOGGER.error("Training stopped due to NaN values.")
         else:
             finalize_status = "error"
             LOGGER.error("Training stopped due to an error.")
