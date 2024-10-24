@@ -3,6 +3,7 @@ import pickle
 from pathlib import Path
 
 import jax.numpy as jnp
+import numpy as np
 import pytest
 from hydra import compose, initialize
 
@@ -194,7 +195,10 @@ def test_configs_equivalence(tmpdir):
     # First, compare 2 intra-branch runs.
     metrics_hydra = train_with_hydra(Path(tmpdir / "hydra"))
     metrics_nonhydra = train_without_hydra(Path(tmpdir / "nonhydra"))
-    assert metrics_hydra["val_epoch_1"]["loss"] == metrics_nonhydra["val_epoch_1"]["loss"]
+    # Only check rough equivalence as JAX is non-deterministic
+    np.testing.assert_allclose(
+        metrics_hydra["val_epoch_1"]["loss"], metrics_nonhydra["val_epoch_1"]["loss"], rtol=1e-3, atol=1e-3
+    )
 
     # Now, also compare with the main branch, that was still using the old typing system.
     # The train_without_hydra() was run on the main branch and the final_metrics dict was saved to a file.
@@ -203,7 +207,13 @@ def test_configs_equivalence(tmpdir):
         try:
             with open("/nfs-gpu/xlstm/shared_tests/hydra_test_comparison/metrics_nonhydra-main_branch.pkl", "rb") as f:
                 metrics_main_branch = pickle.load(f)
-                assert metrics_hydra["val_epoch_1"]["loss"] == metrics_main_branch["val_epoch_1"]["loss"]
+                # Only check rough equivalence as JAX is non-deterministic
+                np.testing.assert_allclose(
+                    metrics_hydra["val_epoch_1"]["loss"],
+                    metrics_main_branch["val_epoch_1"]["loss"],
+                    rtol=1e-3,
+                    atol=1e-3,
+                )
 
         except FileNotFoundError:
             # If we are not on the sever, skip this test.

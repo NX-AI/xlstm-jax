@@ -24,6 +24,10 @@ def initialize_mesh(
     """
     if init_distributed_on_slurm and "SLURM_STEP_NODELIST" in os.environ:
         # Initializes one process per device, using the SLURM environment variables.
+        # TODO: We may need to do this already before data loading, so very early in the run script.
+        # To be checked once the framework is more mature.
+        # This should also NOT be called for tests, as it was called already before the test.
+        # If you run a test, unset this SLURM variable as a workaround.
         jax.distributed.initialize()
     # Save axis names to trainer for easier usage.
     data_axis_name = parallel_config.data_axis_name

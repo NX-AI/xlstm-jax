@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -14,8 +15,6 @@ from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
-
-from ..helpers.mse_trainer import MSETrainer, ToyModel
 
 
 class DataLoader:
@@ -65,13 +64,16 @@ class DataLoader:
 
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2)])
-def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
+def test_checkpointing_per_epoch(mse_trainer: Any, toy_model: Any, tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     Tests checkpointing with ModelCheckpoint callback with per-epoch eval.
 
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     if pytest.num_devices < tp_size * fsdp_size:
         pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing_per_epoch" / f"tp_{tp_size}_fsdp_{fsdp_size}"
@@ -165,13 +167,16 @@ def test_checkpointing_per_epoch(tmp_path: Path, tp_size: int, fsdp_size: int):
 
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2)])
-def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
+def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     Tests checkpointing with ModelCheckpoint callback with per-step eval.
 
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     if pytest.num_devices < tp_size * fsdp_size:
         pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing_per_step" / f"tp_{tp_size}_fsdp_{fsdp_size}"
@@ -259,13 +264,16 @@ def test_checkpointing_per_step(tmp_path: Path, tp_size: int, fsdp_size: int):
     ), "Loss should be the same."
 
 
-def test_checkpointing_per_epoch_and_step(tmp_path: Path):
+def test_checkpointing_per_epoch_and_step(mse_trainer: Any, toy_model: Any, tmp_path: Path):
     """
     Tests checkpointing with ModelCheckpoint callback with both per-epoch and per-step eval.
 
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
     """
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     tp_size = 1
     fsdp_size = 1
     log_path = tmp_path / "test_checkpointing_per_epoch_and_step" / f"tp_{tp_size}_fsdp_{fsdp_size}"
@@ -345,13 +353,16 @@ def test_checkpointing_per_epoch_and_step(tmp_path: Path):
         assert (checkpoint_path / f"checkpoint_{step}").exists()
 
 
-def test_loading_to_new_topology(tmp_path: Path):
+def test_loading_to_new_topology(mse_trainer: Any, toy_model: Any, tmp_path: Path):
     """
     Tests checkpointing and loading to new topology.
 
     We hereby consider a scenario where we train a model with FSDP, and want to load it to a new topology with no FSDP.
     We check that the model can be loaded and achieves the same validation performance.
     """
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     if pytest.num_devices < 8:
         pytest.skip("Test requires more devices than available.")
     log_path = tmp_path / "test_checkpointing" / "fsdp_to_dp"

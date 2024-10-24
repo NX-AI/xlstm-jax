@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -12,12 +13,12 @@ from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel
-
 
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
-def test_mse_trainer(tp_size: int, fsdp_size: int):
+def test_mse_trainer(mse_trainer: Any, toy_model: Any, tp_size: int, fsdp_size: int):
     """Tests training a simple model with MSE loss under different mesh configs."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
     if pytest.num_devices < tp_size * fsdp_size:
         pytest.skip("Test requires more devices than available.")
     trainer = MSETrainer(
@@ -94,8 +95,10 @@ def test_mse_trainer(tp_size: int, fsdp_size: int):
     assert new_metrics["l1_dist"] == final_metrics[epoch_keys[1]]["l1_dist"], "L1 distance should be the same."
 
 
-def test_nan_checks(tmp_path: Path):
+def test_nan_checks(mse_trainer: Any, toy_model: Any, tmp_path: Path):
     """Tests training a simple model with MSE loss under different mesh configs."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
     log_path = tmp_path / "logs"
     fl_dir = "file_logs"
     trainer = MSETrainer(
@@ -170,8 +173,12 @@ def test_nan_checks(tmp_path: Path):
 
 @pytest.mark.parametrize("gradient_accumulate_scan", [False, True])
 @pytest.mark.parametrize("gradient_accumulate_steps", [1, 2])
-def test_log_intermediates(tmp_path: Path, gradient_accumulate_scan: bool, gradient_accumulate_steps: int):
+def test_log_intermediates(
+    mse_trainer: Any, toy_model: Any, tmp_path: Path, gradient_accumulate_scan: bool, gradient_accumulate_steps: int
+):
     """Tests logging intermediates during the training."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
     log_path = tmp_path / "logs"
     fl_dir = "file_logs"
     trainer = MSETrainer(

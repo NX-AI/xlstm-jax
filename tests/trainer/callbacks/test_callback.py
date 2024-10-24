@@ -14,8 +14,6 @@ from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.metrics import Metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel
-
 
 class ToyCallback(Callback):
     """Toy callback for testing purposes."""
@@ -85,10 +83,15 @@ class ToyCallbackConfig(CallbackConfig):
 @pytest.mark.parametrize("every_n_epochs", [-1, 1, 2, 7])
 @pytest.mark.parametrize("every_n_steps", [-1, 1, 2, 7])
 @pytest.mark.parametrize("main_process_only", [True, False])
-def test_callback_filtered_methods(tmp_path: Path, every_n_epochs: int, every_n_steps: int, main_process_only: bool):
+def test_callback_filtered_methods(
+    mse_trainer: Any, toy_model: Any, tmp_path: Path, every_n_epochs: int, every_n_steps: int, main_process_only: bool
+):
     """
     Tests callback if filtered methods are running at expected epochs and steps.
     """
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     log_path = (
         tmp_path
         / "test_callback_filtered_methods"

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -14,8 +15,6 @@ from xlstm_jax.trainer.callbacks import LearningRateMonitorConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_lr_scheduler
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel
-
 SCHEDULERS = [
     SchedulerConfig(name="constant", lr=0.1),
     SchedulerConfig(name="exponential_decay", lr=0.1, end_lr=0.01, decay_steps=400, warmup_steps=20, cooldown_steps=20),
@@ -26,8 +25,12 @@ SCHEDULERS = [
 
 @pytest.mark.parametrize("scheduler_config", SCHEDULERS)
 @pytest.mark.parametrize("step_freq", [20, 50])
-def test_lr_monitor(tmp_path: Path, scheduler_config: SchedulerConfig, step_freq: int):
+def test_lr_monitor(
+    mse_trainer: Any, toy_model: Any, tmp_path: Path, scheduler_config: SchedulerConfig, step_freq: int
+):
     """Tests logging the learning rate with the callback."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
     log_path = tmp_path / "test_lr_monitor" / f"scheduler_{scheduler_config.name}"
     fl_dir = "file_logs"
     trainer = MSETrainer(

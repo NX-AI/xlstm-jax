@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import jax
 import jax.numpy as jnp
@@ -15,15 +15,18 @@ from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel
-
 LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("fl_dir", ["file_logs", "loggings_files"])
 @pytest.mark.parametrize("config_format", ["json", "yaml", "pickle"])
-def test_file_logging_mse_trainer(tmp_path: Path, fl_dir: str, config_format: Literal["json", "yaml", "pickle"]):
+def test_file_logging_mse_trainer(
+    mse_trainer: Any, toy_model: Any, tmp_path: Path, fl_dir: str, config_format: Literal["json", "yaml", "pickle"]
+):
     """Tests logging for example trainer."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+
     log_path = tmp_path / "logs"
     trainer = MSETrainer(
         TrainerConfig(

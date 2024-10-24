@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -13,14 +14,14 @@ from xlstm_jax.trainer.callbacks import JaxProfilerConfig
 from xlstm_jax.trainer.logger import LoggerConfig, TensorBoardLoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel
-
 LOGGER = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize("profile_dir", ["tensorboard", "profiler_logs"])
-def test_profiler_mse_trainer(tmp_path: Path, profile_dir: str):
+def test_profiler_mse_trainer(mse_trainer: Any, toy_model: Any, tmp_path: Path, profile_dir: str):
     """Tests logging for example trainer."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
     log_path = tmp_path / "logs"
     trainer = MSETrainer(
         TrainerConfig(

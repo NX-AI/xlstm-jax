@@ -45,7 +45,9 @@ def make_grain_llm_iterator(
     eod_token_id: int = 0,
     worker_count: int = 1,
     worker_buffer_size: int = 1,
+    apply_padding: bool = True,
     drop_remainder: bool = True,
+    batch_class: type = LLMBatch,
     reset_after_epoch: bool = False,
 ) -> MultiHostDataLoadIterator:
     """Create a multi-host dataloader with grain for LLM training.
@@ -86,10 +88,12 @@ def make_grain_llm_iterator(
         worker_count: The number of workers to use. In `grain`, a single worker is usually
             sufficient, as the data loading is done in parallel across hosts.
         worker_buffer_size: The buffer size for the workers.
+        apply_padding:  Pad sequence to the maximum target length.
         drop_remainder: Whether to drop the remainder of the dataset. Note that in case of
             providing a number of epochs, the last batch of all epochs together will be
             dropped if this is set to `True`. If set to `False`, the last batch of all epochs
             together will be included in the iterator.
+        batch_class: Batch class used to collate data to batch.
         reset_after_epoch: Whether to reset the iterator after each epoch. If set to `True`,
             the iterator will start from the beginning of the dataset after each epoch. If set
             to `False`, the iterator will continue from where it left off in the dataset. Note
@@ -108,7 +112,8 @@ def make_grain_llm_iterator(
         )
         operations.append(grain_transforms.ReformatPacking())
     else:
-        operations.append(grain_transforms.PadToMaxLength(max_target_length))
+        if apply_padding:
+            operations.append(grain_transforms.PadToMaxLength(max_target_length))
         operations.append(
             grain.Batch(batch_size=global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
         )
@@ -117,7 +122,7 @@ def make_grain_llm_iterator(
     if shift:
         operations.append(grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id))
 
-    operations.append(grain_transforms.CollateToBatch(batch_class=LLMBatch))
+    operations.append(grain_transforms.CollateToBatch(batch_class=batch_class))
 
     index_sampler = grain.IndexSampler(
         num_records=len(dataset),

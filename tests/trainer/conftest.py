@@ -5,6 +5,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+import pytest
 from flax import linen as nn
 
 from xlstm_jax.dataset import Batch
@@ -14,6 +15,80 @@ from xlstm_jax.trainer.base.trainer import TrainerModule
 from xlstm_jax.trainer.metrics import Metrics
 
 PyTree = Any
+
+
+class LLMToyModel(nn.Module):
+    """
+    LLM toy model for testing purposes.
+
+    Contains one TP, one FSDP+TP, and one pure FSDP layer.
+    """
+
+    config: ModelConfig
+    vocab_size: int = 50257  # GPT-2 Tokenizer for testing LMEval Harness
+    num_blocks: int = 2
+
+    @nn.compact
+    def __call__(self, x: jax.Array, train: bool = False, **kwargs) -> jax.Array:
+        """Forward pass of the model."""
+        tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
+        # Input layer with TP. All devices share the same input already (hence skip_communication),
+        # but each will have a different output. We split the output features over the TP axis.
+        x = ModelParallelismWrapper(
+            module_fn=partial(nn.Embed, num_embeddings=self.vocab_size, features=32 // tp_size),
+            model_axis_name=self.config.parallel.model_axis_name,
+        )(x)
+        x = nn.Dropout(rate=0.1)(x, deterministic=not train)
+        for block_idx in range(self.num_blocks):
+            # Example LayerNorm with model parallelism. Uses the model axis for parameter sharding and reduction of
+            # statistics.
+            x = ModelParallelismWrapper(
+                module_fn=partial(nn.LayerNorm, axis_name=self.config.parallel.model_axis_name),
+                model_axis_name=self.config.parallel.model_axis_name,
+            )(x)
+            dense_fn = partial(
+                TPDense,
+                dense_fn=partial(nn.Dense, features=64 // tp_size),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+            )
+            dense_fn = shard_module_params(
+                dense_fn,
+                axis_name=self.config.parallel.fsdp_axis_name,
+                min_weight_size=pytest.num_devices,
+            )
+            x = dense_fn(name=f"block_{block_idx}_in")(x)
+            x = nn.Dropout(rate=0.1)(x, deterministic=not train)
+            x = nn.swish(x)
+            # Intermediate layer with FSDP+TP. Each device has a different input and need to gather first, and the
+            # output is split over the TP axis.
+            dense_fn = partial(
+                TPDense,
+                dense_fn=partial(nn.Dense, features=32),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="scatter",
+            )
+            dense_fn = shard_module_params(
+                dense_fn,
+                axis_name=self.config.parallel.fsdp_axis_name,
+                min_weight_size=pytest.num_devices,
+            )
+            x = dense_fn(name=f"block_{block_idx}_out")(x)
+        x = ModelParallelismWrapper(
+            module_fn=partial(nn.LayerNorm, axis_name=self.config.parallel.model_axis_name),
+            model_axis_name=self.config.parallel.model_axis_name,
+        )(x)
+        # For the output layer, we only use FSDP. We first gather all inputs, split them over the model and pipeline
+        # axis over the batch dimension. Then, we apply the layer and calculate the outputs.
+        x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
+        x = split_array_over_mesh(x, axis_name=self.config.parallel.pipeline_axis_name, split_axis=1)
+        x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
+        x = shard_module_params(
+            partial(nn.Dense, features=self.vocab_size),
+            self.config.parallel.fsdp_axis_name,
+            min_weight_size=pytest.num_devices,
+        )(name="out")(x)
+        return x
 
 
 class ToyModel(nn.Module):
@@ -78,6 +153,10 @@ class ToyModel(nn.Module):
 
 
 class MSETrainer(TrainerModule):
+    """
+    MSE Trainer for testing purposes
+    """
+
     def loss_function(
         self, params: Any, apply_fn: Any, batch: Batch, rng: jax.Array, train: bool = True
     ) -> tuple[jax.Array, tuple[Metrics, PyTree]]:
@@ -108,3 +187,18 @@ class MSETrainer(TrainerModule):
         }
         loss = loss.mean()
         return loss, (step_metrics, mutable_vars)
+
+
+@pytest.fixture
+def llm_toy_model() -> type:
+    return LLMToyModel
+
+
+@pytest.fixture
+def mse_trainer() -> type:
+    return MSETrainer
+
+
+@pytest.fixture
+def toy_model() -> type:
+    return ToyModel

@@ -17,6 +17,7 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
+from xlstm_jax.trainer.metrics import _update_single_metric, get_metrics
 
 PyTree = Any
 
@@ -224,10 +225,19 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         atol=1e-4 if jax.default_backend() == "cpu" else 1e-2,
     )
     metrics_single_device = jax.device_get(metrics_single_device)
+
+    host_metrics, host_metrics_single_device = {}, {}
+    for key, (value, count) in metrics.items():
+        _update_single_metric(host_metrics, key=key, value=value, count=count)
+    for key, (value, count) in metrics_single_device.items():
+        _update_single_metric(host_metrics_single_device, key=key, value=value, count=count)
+
+    _, host_metrics = get_metrics(host_metrics)
+    _, host_metrics_single_device = get_metrics(host_metrics_single_device)
     for key in metrics:
         np.testing.assert_allclose(
-            np.array(metrics[key]),
-            np.array(metrics_single_device[key]),
+            np.array(host_metrics[key]),
+            np.array(host_metrics_single_device[key]),
             err_msg=f"[Metrics Key {key}] Value mismatch",
             atol=1e-2,  # Higher because values are >1000.
             rtol=1e-5 if jax.default_backend() == "cpu" else 1e-4,

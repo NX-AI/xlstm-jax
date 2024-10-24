@@ -124,4 +124,4 @@ class WandBLogger(LoggerTool):
             status: The status of the training run (e.g. success, failure).
         """
         LOGGER.info("Finishing WandB logging.")
-        self.wandb_run.finish(exit_code=status)
+        self.wandb_run.finish(exit_code=int(status != "success"))

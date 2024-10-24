@@ -65,6 +65,7 @@ dependencies:
       - keras==3.5.0
       - kiwisolver==1.4.7
       - libclang==18.1.1
+      - lm_eval==0.4.5
       - markdown==3.7
       - markdown-it-py==3.0.0
       - markupsafe==2.1.5

@@ -1078,6 +1078,8 @@ class TrainerModule:
     def restore_model(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
         """
         Restore the state of the trainer from a state dictionary.
+        Only if the current trainer state has a tx and opt_state attribute, update these.
+        Re-use the class of the current trainer state to allow such a pruned one.
 
         Args:
             state_dict: State dictionary to restore from. Must contain the key "params" with the model parameters.
@@ -1088,14 +1090,19 @@ class TrainerModule:
         state_dict = freeze(state_dict)
 
         # Transfer state dict into train state.
-        self.state = TrainState(
+        kwargs = {}
+        # This should be replace-able upon correct fixing of Issue #158
+        if hasattr(self.state, "tx"):
+            kwargs["tx"] = self.state.tx if self.state.tx else self.init_optimizer(self.optimizer_config)
+        if hasattr(self.state, "opt_state"):
+            kwargs["opt_state"] = state_dict.get("opt_state", None)
+        self.state = self.state.__class__(
             step=state_dict.get("step", 0),
             apply_fn=self.model.apply,
             params=state_dict["params"],
-            tx=self.state.tx if self.state.tx else self.init_optimizer(self.optimizer_config),
-            opt_state=state_dict.get("opt_state", None),
             mutable_variables=state_dict.get("mutable_variables", None),
             rng=state_dict.get("rng", self.state.rng),
+            **kwargs,
         )
         self.global_step = jax.device_get(self.state.step).item()
 
@@ -1138,6 +1145,7 @@ class TrainerModule:
         checkpoint_path: Path,
         step_idx: int = -1,
         load_best: bool = False,
+        load_optimizer: bool = True,
         train_loader: Iterator | None = None,
         val_loader: Iterator | None = None,
         test_loader: Iterator | None = None,
@@ -1149,14 +1157,14 @@ class TrainerModule:
             checkpoint_path: Path to the checkpoint directory.
             step_idx: Step index to load the model from. If -1, the latest model is loaded.
             load_best: If True, loads the best model instead of the latest model.
-            raise_if_not_found: If True, raises an error if no model is found. If False, logs a warning instead.
+            load_optimizer: If True, load the optimizer state with the pretrained model.
             train_loader: If given, the training data loader is set to the state of the pretrained model.
             val_loader: If given, the validation data loader is set to the state of the pretrained model.
             test_loader: If given, the test data loader is set to the state of the pretrained model.
         """
         LOGGER.info(f"Loading pretrained model from {checkpoint_path}")
         state_dict, data_module_state = load_pretrained_model(
-            checkpoint_path, trainer=self, step_idx=step_idx, load_best=load_best
+            checkpoint_path, trainer=self, step_idx=step_idx, load_best=load_best, load_optimizer=load_optimizer
         )
         assert len(state_dict) > 0, "No model checkpoint found in the directory."
         self.restore_model(state_dict)
@@ -1204,7 +1212,7 @@ class TrainerModule:
 
         # Create trainer and load model.
         trainer = cls(
-            exmp_input=exmp_input,
+            batch=exmp_input,
             trainer_config=config.trainer,
             model_config=config.model,
             optimizer_config=config.optimizer,

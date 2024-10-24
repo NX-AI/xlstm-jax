@@ -73,7 +73,7 @@ class ModelCheckpoint(Callback):
 
     Args:
         config: The configuration for the ModelCheckpoint callback.
-        trainer: The trainer object.
+        trainer: The trainer object. If the trainer has no optimizer attribute, the optimizer part will not be loaded.
         data_module: The data module object.
     """
 
@@ -87,7 +87,8 @@ class ModelCheckpoint(Callback):
             ), "Log directory must be set in the trainer if using ModelCheckpoint."
             self.log_path: Path = self.trainer.log_path
         self.checkpoint_path = self.log_path / "checkpoints"
-        self.checkpoint_path.mkdir(parents=True, exist_ok=True)
+        if not self.checkpoint_path.exists():
+            self.checkpoint_path.mkdir(parents=True, exist_ok=True)
         self.dataloader_path = self.log_path / "checkpoints_dataloaders"
         if self.config.save_dataloader_state:
             self.dataloader_path.mkdir(parents=True, exist_ok=True)
@@ -327,6 +328,7 @@ def load_pretrained_model(
     checkpoint_path: Path,
     trainer: Any,
     step_idx: int = -1,
+    load_optimizer: bool = True,
     load_best: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """
@@ -337,13 +339,14 @@ def load_pretrained_model(
         trainer: Trainer object.
         data_module (optional): Data module object.
         step_idx: Index of the step to load. If -1, loads the latest step by default.
+        load_optimizer: If True the optimizer state is loaded from the checkpoint.
         load_best: If True and step_idx is -1, loads the best checkpoint
             based on the monitored metric instead of the latest checkpoint.
 
     Returns:
         Dictionary of loaded model parameters and additional variables, as well as the dataloader state.
     """
-    config = ModelCheckpointConfig(log_path=checkpoint_path)
+    config = ModelCheckpointConfig(log_path=checkpoint_path, save_optimizer_state=load_optimizer)
     callback = ModelCheckpoint(config, trainer, None)
     step_idx = callback.resolve_step_idx(step_idx, load_best)
     state_dict = callback.load_model(step_idx)

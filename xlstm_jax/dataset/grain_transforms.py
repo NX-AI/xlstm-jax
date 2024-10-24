@@ -44,6 +44,88 @@ class HFNormalizeFeatures(grain.MapTransform):
         }
 
 
+@dataclasses.dataclass
+class HFPrefixTokenize(grain.MapTransform):
+    """Merge prefix and predicted text"""
+
+    def __init__(
+        self,
+        tokenizer,
+        prefix_tokenizer,
+        prefix_column_name: str = "prefix",
+        text_column_name: str = "text",
+        add_bos_token: bool = True,
+        max_length: int | None = None,
+        max_length_prefix: int | None = None,
+    ):
+        """
+        Args:
+            tokenizer: HuggingFace tokenizer
+            prefix_tokenizer: HuggingFace prefix tokenizer
+            prefix_column_name: Column Name in the dataframe for the prefix
+            text_column_name: Column Name in the dataframe for the text
+            add_bos_toke: If to add a bos token.
+            max_length: Maximal total length (context_length)
+            max_length_prefix: Maximal length of the prefix - all prefixes are added+padded such that
+                the texts start at the same position
+        """
+        self.tokenizer = tokenizer
+        self.prefix_tokenizer = prefix_tokenizer
+        self.prefix_column_name = prefix_column_name
+        self.text_column_name = text_column_name
+        self.max_length = max_length
+        self.max_length_prefix = max_length_prefix if max_length_prefix is not None else max_length // 2
+        self.add_bos_token = add_bos_token
+
+    def map(self, features: dict[str, str]) -> dict[str, np.ndarray]:
+        """
+        Map prefix / text string to fully padded and tokenized sequence.
+        Prefixes are aligned in the array.
+
+        Args:
+            features: Dictionary of inputs
+
+        Returns:
+            Dictionary of the outputs
+        """
+        prefix = self.prefix_tokenizer(
+            features[self.prefix_column_name],
+            return_attention_mask=True,
+            return_token_type_ids=False,
+            truncation=True,
+            max_length=self.max_length_prefix,
+            return_tensors="np",
+        )
+        inputs = self.tokenizer(
+            features[self.text_column_name],
+            return_attention_mask=True,
+            return_token_type_ids=False,
+            truncation=True,
+            max_length=self.max_length - self.max_length_prefix,
+            return_tensors="np",
+        )
+        output_tokens = np.concatenate([prefix.input_ids, inputs.input_ids], axis=1)
+        if self.add_bos_token:
+            bos_tokens = np.full((output_tokens.shape[0], 1), self.tokenizer.bos_token_id, dtype=np.int32)
+            input_tokens = np.concatenate([bos_tokens, output_tokens[:, :-1]], axis=1)
+            bos_mask = int(self.add_bos_token) * np.ones_like(prefix.attention_mask[:, :1])
+            input_mask = np.concatenate([bos_mask, prefix.attention_mask, inputs.attention_mask[:, :-1]], axis=1)
+            output_mask = np.concatenate([np.zeros_like(prefix.attention_mask), inputs.attention_mask], axis=1)
+
+        else:
+            input_tokens = output_tokens[:, :-1]
+            output_tokens = output_tokens[:, 1:]
+            input_mask = np.concatenate([prefix.attention_mask, inputs.attention_mask[:, :-1]], axis=1)
+            output_mask = np.concatenate([np.zeros_like(prefix.attention_mask), inputs.attention_mask], axis=1)[1:]
+
+        return {
+            "inputs": input_tokens,
+            "targets": output_tokens,
+            "inputs_segmentation": input_mask,
+            "output_segmentation": output_mask,
+        }
+
+
 # Functions used by Grain pipeline
 @dataclasses.dataclass
 class ParseFeatures(grain.MapTransform):

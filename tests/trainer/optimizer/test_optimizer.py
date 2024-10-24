@@ -17,8 +17,6 @@ from xlstm_jax.trainer import TrainerConfig
 from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_optimizer
 
-from ..helpers.mse_trainer import MSETrainer, ToyModel as MSEToyModel
-
 SCHEDULERS = [
     SchedulerConfig(name="constant", lr=0.1),
     SchedulerConfig(name="exponential_decay", lr=0.1, end_lr=0.01, decay_steps=100, warmup_steps=20, cooldown_steps=20),
@@ -33,7 +31,7 @@ class ToyModel(nn.Module):
     features: int
 
     @nn.compact
-    def __call__(self, x):
+    def __call__(self, x, train: bool = True):
         """Forward pass with two dense layers and a layer norm."""
         x = nn.Dense(self.features, name="in", bias_init=jax.nn.initializers.normal())(x)
         x = nn.LayerNorm(name="ln", bias_init=jax.nn.initializers.normal())(x)
@@ -44,6 +42,7 @@ class ToyModel(nn.Module):
 
 def _init_model(optimizer: optax.GradientTransformation) -> TrainState:
     """Helper function to initialize the model state."""
+    # ToyModel = toy_model
     model = ToyModel(features=32)
     params = model.init(jax.random.PRNGKey(0), jnp.ones((8, 32)))
     return TrainState.create(apply_fn=model.apply, params=params, tx=optimizer)
@@ -357,7 +356,9 @@ def test_weight_decay(weight_decay: float, optimizer_name: str, exclude: list[st
 @pytest.mark.parametrize("grad_clip_norm", [1.0, 0.01])
 @pytest.mark.parametrize("fsdp_size", [4, 8])
 @pytest.mark.parametrize("use_sharded_clip_norm", [False, True])
-def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_sharded_clip_norm: bool):
+def test_grad_clip_norm_sharded_fsdp(
+    mse_trainer: Any, toy_model: Any, grad_clip_norm: float, fsdp_size: int, use_sharded_clip_norm: bool
+):
     """Tests that the sharded grad norm is correctly calculated in FSDP and clipped."""
     if pytest.num_devices < fsdp_size:
         pytest.skip("Test requires more devices than available.")
@@ -378,8 +379,8 @@ def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_
         inputs=jax.random.normal(rng, (8, 32)),
         targets=jax.random.normal(rng, (8, 1)) * 100.0,
     )
-    trainer_sd = _get_trainer(optimizer_config_single_device, batch, 1, 1)
-    trainer_md = _get_trainer(optimizer_config_multi_device, batch, 1, fsdp_size)
+    trainer_sd = _get_trainer(mse_trainer, toy_model, optimizer_config_single_device, batch, 1, 1)
+    trainer_md = _get_trainer(mse_trainer, toy_model, optimizer_config_multi_device, batch, 1, fsdp_size)
     _assert_pytree_equal(trainer_sd.state.params, trainer_md.state.params)
 
     # Single train step invokes the gradient computation and clipping.
@@ -401,7 +402,9 @@ def test_grad_clip_norm_sharded_fsdp(grad_clip_norm: float, fsdp_size: int, use_
 
 @pytest.mark.parametrize("grad_clip_norm", [1.0, 0.01])
 @pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
-def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_size: int):
+def test_grad_clip_norm_sharded_tp(
+    mse_trainer: Any, toy_model: Any, grad_clip_norm: float, tp_size: int, fsdp_size: int
+):
     """Tests that the sharded grad norm is correctly calculated in TP+FSDP and clipped."""
     if pytest.num_devices < tp_size * fsdp_size:
         pytest.skip("Test requires more devices than available.")
@@ -419,7 +422,7 @@ def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_siz
         inputs=jax.random.normal(rng, (8, 32)),
         targets=jax.random.normal(rng, (8, 1)) * 100.0,
     )
-    trainer_md = _get_trainer(optimizer_config_multi_device, batch, tp_size, fsdp_size)
+    trainer_md = _get_trainer(mse_trainer, toy_model, optimizer_config_multi_device, batch, tp_size, fsdp_size)
     orig_params = jax.device_get(flatten_dict(trainer_md.state.params))
     orig_params = {
         key: value.value if isinstance(value, nn.Partitioned) else value for key, value in orig_params.items()
@@ -437,8 +440,13 @@ def test_grad_clip_norm_sharded_tp(grad_clip_norm: float, tp_size: int, fsdp_siz
     )
 
 
-def _get_trainer(optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, fsdp_size: int) -> MSETrainer:
+def _get_trainer(
+    mse_trainer: Any, toy_model: Any, optimizer_config: OptimizerConfig, batch: Batch, tp_size: int, fsdp_size: int
+) -> Any:
     """Helper function to create a trainer for testing."""
+    MSETrainer = mse_trainer
+    MSEToyModel = toy_model
+
     trainer = MSETrainer(
         TrainerConfig(
             log_grad_norm=False,
