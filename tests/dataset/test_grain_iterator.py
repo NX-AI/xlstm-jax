@@ -1,3 +1,5 @@
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -53,6 +55,7 @@ def test_grain_dataloader_process_split(
             data_shuffle_seed=42,
             num_epochs=1,
             drop_remainder=drop_remainder,
+            worker_count=0,
         )
         all_batches[host_index] = [batch for batch in dataloader]
 
@@ -68,14 +71,17 @@ def test_grain_dataloader_process_split(
         elements_per_host = all_data.shape[0] // dataloading_host_count
         dataset_size_per_host = num_elements // dataloading_host_count
         for host_index in range(dataloading_host_count):
+            host_data = all_data[host_index * elements_per_host : (host_index + 1) * elements_per_host]
+            size_remainder = num_elements % dataloading_host_count
+            start_index = host_index * dataset_size_per_host + min(host_index, size_remainder)
             np.testing.assert_array_equal(
-                all_data[host_index * elements_per_host : (host_index + 1) * elements_per_host],
-                np.arange(host_index * dataset_size_per_host, host_index * dataset_size_per_host + elements_per_host),
+                host_data,
+                np.arange(start_index, start_index + elements_per_host),
                 f"Host index {host_index} did not load the expected data.",
             )
     else:
         # Check number of loaded elements.
-        assert len(all_data) == num_elements
+        assert len(all_data) == num_elements, f"Expected {num_elements} elements, but got {len(all_data)}."
         np.testing.assert_array_equal(all_data, np.arange(num_elements))
         # Check that each host has loaded the same number of batches.
         num_batches = len(all_batches[0])
@@ -138,6 +144,7 @@ def test_grain_dataloader_shuffling_over_epochs(num_elements: int, global_batch_
         data_shuffle_seed=42,
         num_epochs=4,
         drop_remainder=True,
+        worker_count=0,
     )
 
     # Load all batches across epochs.
@@ -170,7 +177,8 @@ def test_grain_dataloader_shuffling_over_epochs(num_elements: int, global_batch_
 
 @pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
 @pytest.mark.parametrize("switch_after_num_batches", [5, 15, 30])
-def test_grain_dataloader_states(switch_after_num_batches: int):
+@pytest.mark.parametrize("use_packing", [True, False])
+def test_grain_dataloader_states(switch_after_num_batches: int, use_packing: bool):
     """Test that we can get and set states as expected."""
     num_elements = 500
     global_batch_size = 32
@@ -193,18 +201,22 @@ def test_grain_dataloader_states(switch_after_num_batches: int):
     ]
 
     # Create iterator.
-    dataloader = make_grain_llm_iterator(
+    make_dataloader_fn = partial(
+        make_grain_llm_iterator,
         dataloading_host_index=0,
         dataloading_host_count=1,
         global_mesh=mesh,
         dataset=dataset,
         global_batch_size=global_batch_size,
         max_target_length=context_length,
+        grain_packing=use_packing,
+        grain_packing_bin_count=global_batch_size * 4,  # Test stopping within a packed batch.
         shuffle=True,
         data_shuffle_seed=42,
         num_epochs=4,
         drop_remainder=True,
     )
+    dataloader = make_dataloader_fn()
 
     # Load couple of batches and save the state.
     batch_idx = 0
@@ -223,18 +235,7 @@ def test_grain_dataloader_states(switch_after_num_batches: int):
             break
 
     # Create a new iterator and set the state.
-    new_dataloader = make_grain_llm_iterator(
-        dataloading_host_index=0,
-        dataloading_host_count=1,
-        global_mesh=mesh,
-        dataset=dataset,
-        global_batch_size=global_batch_size,
-        max_target_length=context_length,
-        shuffle=True,
-        data_shuffle_seed=42,
-        num_epochs=4,
-        drop_remainder=True,
-    )
+    new_dataloader = make_dataloader_fn()
     new_dataloader.set_state(save_state)
 
     # Load the next batches from the new iterator.

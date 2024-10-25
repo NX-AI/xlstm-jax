@@ -17,15 +17,20 @@ limitations under the License.
 LLM Data Iterator with Grain
 """
 
+import logging
 import math
 from typing import Any
 
 import grain.python as grain
+from grain._src.python.dataset.transformations.packing import FirstFitPackIterDataset
+from grain._src.python.dataset.transformations.prefetch import ThreadPrefetchIterDataset
 from jax.sharding import Mesh
 
 from . import grain_transforms
 from .batch import LLMBatch
 from .multihost_dataloading import MultiHostDataLoadIterator
+
+LOGGER = logging.getLogger(__name__)
 
 
 def make_grain_llm_iterator(
@@ -37,9 +42,10 @@ def make_grain_llm_iterator(
     max_target_length: int,
     shuffle: bool,
     data_shuffle_seed: int,
-    num_epochs: int,
+    num_epochs: int | None = None,
     operations: list[grain.MapTransform] | None = None,
     grain_packing: bool = False,
+    grain_packing_bin_count: int | None = None,
     shift: bool = True,
     shift_target: bool = True,
     eod_token_id: int = 0,
@@ -49,8 +55,9 @@ def make_grain_llm_iterator(
     drop_remainder: bool = True,
     batch_class: type = LLMBatch,
     reset_after_epoch: bool = False,
+    use_thread_prefetch: bool = False,
 ) -> MultiHostDataLoadIterator:
-    """Create a multi-host dataloader with grain for LLM training.
+    """Create a multi-host dataloader for LLM training.
 
     The dataloader will perform batch packing, padding, and shifting of the data to create
     a batch of LLMBatch objects. The LLMBatch object will contain the input and target data
@@ -72,13 +79,17 @@ def make_grain_llm_iterator(
             many epochs, and the shuffle order will be different for each epoch. Note that
             batches of an epoch can spill over into the first batch of the next epoch, to
             avoid dropping data. The argument `drop_remainder` controls whether the very last
-            batch of all epochs together is dropped.
+            batch of all epochs together is dropped. If num_epochs is None, will set to
+            sys.maxsize, ie infinite epochs.
         operations: A list of `grain` operations to apply to the dataset before batching.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
             with a lot of padding, as batch elements will be packed together in a sequence
             to reduce the amount of padding. This can improve throughput efficiency. NOTE:
             if packing is enabled, the length of the iterator cannot be determined in advance
             and is likely incorrect in the iterator (will be set to maximum number of batches).
+        grain_packing_bin_count: The number of packing bins to use. If not provided, the
+            bin count will be set to the batch size. It can be beneficial to increase the packing
+            bins to reduce padding.
         shift: Whether to shift the input data to create the target data.
         shift_target: Whether to shift the targets left (True) or inputs right (False).
         eod_token_id: The token ID to use for the end-of-document token. Used if shifting the
@@ -99,48 +110,93 @@ def make_grain_llm_iterator(
             to `False`, the iterator will continue from where it left off in the dataset. Note
             that resetting the iterator can be expensive in a multi-host setup and can fail if
             the multi-processing pool could not be set up.
-    """
-    if operations is None:
-        operations = []
+        use_thread_prefetch: Whether to use thread prefetching instead of multi-processing.
 
+    Returns:
+        A :class:`MultiHostDataLoadIterator` object that can be used to iterate over the dataset.
+    """
+    # Convert dataset to MapDataset.
+    grain_dataset = grain.MapDataset.source(dataset)
+    # Shard dataset. We do this by slicing the dataset into the correct shard for the host.
+    # If the dataset is not evenly divisible by the number of hosts, the first N hosts should
+    # have one more element than the rest. This is to ensure that the dataset is evenly divided
+    # across all hosts.
+    dataset_size = len(grain_dataset)
+    slice_size = dataset_size // dataloading_host_count
+    slice_remainder = dataset_size % dataloading_host_count
+    host_slice_start = dataloading_host_index * slice_size + min(dataloading_host_index, slice_remainder)
+    host_slice_end = host_slice_start + slice_size + (1 if dataloading_host_index < slice_remainder else 0)
+    host_slice = slice(host_slice_start, host_slice_end)
+    grain_dataset = grain_dataset.slice(host_slice)
+    LOGGER.info(f"Host {dataloading_host_index} has slice {host_slice} with global dataset size {dataset_size}.")
+    # Set seed. This includes the seed for the shuffling and random operations. We add the host index to the seed to
+    # ensure different seeds for different hosts.
+    grain_dataset = grain_dataset.seed(data_shuffle_seed + dataloading_host_index)
+    # Shuffle dataset. This shuffling already supports different seeds for different epochs.
+    if shuffle:
+        grain_dataset = grain_dataset.shuffle()
+    # Repeat the dataset for the number of epochs. Note that this simply forwards the index to the parent dataset.
+    if num_epochs is None or num_epochs > 0:
+        grain_dataset = grain_dataset.repeat(num_epochs)
+    # Apply operations.
+    if operations is not None:
+        for operation in operations:
+            grain_dataset = grain_dataset.map(operation)
+    # Convert dataset to iter dataset. Most operations work on either map and iter, except for packing, which requires
+    # iter.
+    LOGGER.info(f"Host {dataloading_host_index} has dataset length {len(grain_dataset)}.")
+    grain_dataset = grain_dataset.to_iter_dataset()
+    # Pack or batch dataset.
     if grain_packing:
-        operations.append(
-            grain.experimental.PackAndBatchOperation(
-                batch_size=global_batch_size // dataloading_host_count,
-                length_struct={"inputs": max_target_length, "targets": max_target_length},
-            )
+        # Number of packing bins is independent of batch size in lazy API.
+        if grain_packing_bin_count is None:
+            grain_packing_bin_count = global_batch_size // dataloading_host_count
+        grain_dataset = FirstFitPackIterDataset(
+            grain_dataset,
+            length_struct={"inputs": max_target_length, "targets": max_target_length},
+            num_packing_bins=grain_packing_bin_count,
+            shuffle_bins=shuffle,
         )
-        operations.append(grain_transforms.ReformatPacking())
+        LOGGER.info(f"Packing dataset with {grain_packing_bin_count} bins.")
+        # Packing returns each element one by one. We batch them together separately.
+        grain_dataset = grain_dataset.batch(global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
+        # The output is already in the correct structure, but some keys need renamings to be consistent with the
+        # old API.
+        grain_dataset = grain_dataset.map(grain_transforms.ReformatLazyPacking())
     else:
         if apply_padding:
-            operations.append(grain_transforms.PadToMaxLength(max_target_length))
-        operations.append(
-            grain.Batch(batch_size=global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
-        )
-        operations.append(grain_transforms.InferSegmentations(eod_token_id=eod_token_id))
+            grain_dataset = grain_dataset.map(grain_transforms.PadToMaxLength(max_target_length))
+        grain_dataset = grain_dataset.batch(global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
+        grain_dataset = grain_dataset.map(grain_transforms.InferSegmentations(eod_token_id=eod_token_id))
 
+    # Create targets by shifting.
     if shift:
-        operations.append(grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id))
+        grain_dataset = grain_dataset.map(
+            grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id)
+        )
 
-    operations.append(grain_transforms.CollateToBatch(batch_class=batch_class))
+    # Create LLMBatch objects.
+    grain_dataset = grain_dataset.map(grain_transforms.CollateToBatch(batch_class=batch_class))
 
-    index_sampler = grain.IndexSampler(
-        num_records=len(dataset),
-        num_epochs=num_epochs,
-        shard_options=grain.ShardOptions(
-            shard_index=dataloading_host_index, shard_count=dataloading_host_count, drop_remainder=drop_remainder
-        ),
-        shuffle=shuffle,
-        seed=data_shuffle_seed,
-    )
+    # Setup prefetching with thread or multiprocessing.
+    multiprocessing_options = None
+    if use_thread_prefetch:
+        LOGGER.info("Using thread prefetching.")
+        grain_dataset = ThreadPrefetchIterDataset(
+            grain_dataset,
+            prefetch_buffer_size=int(worker_buffer_size * worker_count),
+        )
+    elif worker_count > 0:
+        LOGGER.info(f"Using multiprocessing with {worker_count} workers.")
+        multiprocessing_options = grain.MultiprocessingOptions(
+            num_workers=worker_count,
+            per_worker_buffer_size=worker_buffer_size,
+        )
+        # NOTE: At the moment this gives a warning about being deprecated. In the nightly version of
+        # grain, this will be under the name `grain_dataset.mp_prefetch`.
+        grain_dataset = grain_dataset.prefetch(multiprocessing_options)
 
-    dataloader = grain.DataLoader(
-        data_source=dataset,
-        operations=operations,
-        sampler=index_sampler,
-        worker_count=worker_count,
-        worker_buffer_size=worker_buffer_size,
-    )
+    LOGGER.info(f"Final grain dataset: {grain_dataset}")
 
     if drop_remainder:
         iterator_length = len(dataset) // global_batch_size
@@ -148,7 +204,7 @@ def make_grain_llm_iterator(
         iterator_length = int(math.ceil(len(dataset) / global_batch_size))
 
     multihost_gen = MultiHostDataLoadIterator(
-        dataloader,
+        grain_dataset,
         global_mesh,
         iterator_length=iterator_length,
         dataset_size=len(dataset),

@@ -182,6 +182,21 @@ class ReformatPacking(grain.MapTransform):
 
 
 @dataclasses.dataclass
+class ReformatLazyPacking(grain.MapTransform):
+    """Reformat packing outputs for the lazy API."""
+
+    def map(self, data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+        for old_key, new_key in [
+            ("inputs_segment_ids", "inputs_segmentation"),
+            ("targets_segment_ids", "targets_segmentation"),
+            ("inputs_positions", "inputs_position"),
+            ("targets_positions", "targets_position"),
+        ]:
+            data[new_key] = data.pop(old_key)
+        return data
+
+
+@dataclasses.dataclass
 class PadToMaxLength(grain.MapTransform):
     """Pads each input to the specified length."""
 
@@ -219,6 +234,9 @@ def shift_right(x: np.ndarray, axis: int = 1, padding_value: int = 0, pad_by_fir
     Returns:
         Shifted array.
     """
+    if axis < 0:
+        axis = x.ndim + axis
+    assert axis < x.ndim, f"Axis {axis} is out of bounds for array of shape {x.shape}."
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (1, 0)
     slices = [
@@ -244,6 +262,9 @@ def shift_left(x: np.ndarray, axis: int = 1, padding_value: int = 0) -> np.ndarr
     Returns:
         Shifted array.
     """
+    if axis < 0:
+        axis = x.ndim + axis
+    assert axis < x.ndim, f"Axis {axis} is out of bounds for array of shape {x.shape}."
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (0, 1)
     slices = [

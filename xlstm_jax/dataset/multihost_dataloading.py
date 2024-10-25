@@ -146,9 +146,11 @@ class MultiHostDataLoadIterator:
         state = {"step": self.step_counter, "iterator_length": self.iterator_length}
         if hasattr(self.local_iterator, "get_state"):
             state["iterator"] = self.local_iterator.get_state()
+        LOGGER.info(f"Getting Dataloader State: {state}")
         return state
 
     def set_state(self, state: dict[str, Any]):
+        LOGGER.info(f"Setting Dataloader State: {state}")
         assert (
             self.iterator_length == state["iterator_length"]
         ), "The iterator length in the state differs from the current iterator length. Cannot load state."
