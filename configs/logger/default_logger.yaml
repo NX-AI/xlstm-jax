@@ -4,7 +4,7 @@ defaults:
 
 # General LoggerConf parameters
 log_path: ${hydra:runtime.output_dir}
-log_every_n_steps: 20
+log_every_n_steps: 50
 
 loggers_to_use:
   - file_logger
@@ -26,3 +26,4 @@ wb_entity: xlstm
 wb_name: ${logging_name}_gbs${global_batch_size}
 wb_tags:
   - ${task_name}
+  - ${logging_name}

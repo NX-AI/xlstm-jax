@@ -3,11 +3,8 @@ defaults:
   - override /parallel: synthetic
   - override /data: synthetic
 
-parallel:
-  model_axis_size: 1
-  fsdp_axis_size: 1
-
 task_name: SPECIFY_TASK_NAME
+num_train_steps: 2
 
 hydra:
   mode: MULTIRUN
@@ -15,5 +12,13 @@ hydra:
     params:
       lr: 0.1, 0.01, 0.001
 
-num_train_steps: 2
+parallel:
+  model_axis_size: 1
+  fsdp_axis_size: 1
+
+scheduler:
+  decay_steps: 0
+  warmup_steps: 0
+  cooldown_steps: 0
+
 base_dir: /tmp/hydra_sweep

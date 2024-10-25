@@ -108,6 +108,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                 embedding_dim=cfg.model.embedding_dim,
                 num_blocks=cfg.model.num_blocks,
                 head_dim=cfg.model.head_dim,
+                qk_norm=cfg.model.add_qk_norm,
                 add_embedding_dropout=cfg.model.add_embedding_dropout,
                 scan_blocks=cfg.model.scan_blocks,
                 dtype=getattr(jnp, cfg.model.dtype),
@@ -127,11 +128,19 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
             scan_blocks=cfg.model.scan_blocks,
             norm_eps=cfg.model.norm_eps,
             norm_type=cfg.model.norm_type,
+            init_distribution_out=cfg.model.init_distribution,
+            init_distribution_embed=cfg.model.init_distribution_embed,
+            logits_soft_cap=cfg.model.logits_soft_cap,
+            lm_head_dtype=getattr(jnp, cfg.model.lm_head_dtype),
             dtype=getattr(jnp, cfg.model.dtype),
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type=cfg.model.layer_type,
                     num_heads=cfg.model.num_heads,
+                    init_distribution=cfg.model.init_distribution,
+                    output_init_fn=cfg.model.output_init_fn,
+                    qk_dim_factor=cfg.model.qk_dim_factor,
+                    v_dim_factor=cfg.model.v_dim_factor,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=getattr(jnp, cfg.model.gate_dtype),
                         backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
@@ -139,13 +148,17 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         add_qk_norm=cfg.model.add_qk_norm,
                         norm_type=cfg.model.cell_norm_type,
                         norm_eps=cfg.model.cell_norm_eps,
+                        gate_soft_cap=cfg.model.gate_soft_cap,
+                        reset_at_document_boundaries=cfg.model.reset_at_document_boundaries,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
                     proj_factor=cfg.model.proj_factor,
                     act_fn=cfg.model.act_fn,
                     ff_type=cfg.model.ff_type,
-                    dtype=getattr(jnp, cfg.model.ff_dtype),
+                    dtype=getattr(jnp, cfg.model.dtype),
+                    output_init_fn=cfg.model.output_init_fn,
+                    init_distribution=cfg.model.init_distribution,
                 ),
                 add_post_norm=cfg.model.add_post_norm,
             ),
@@ -162,13 +175,34 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
             add_embedding_dropout=cfg.model.add_embedding_dropout,
             add_post_blocks_norm=cfg.model.add_post_blocks_norm,
             scan_blocks=cfg.model.scan_blocks,
-            dtype=getattr(jnp, cfg.model.dtype),
             parallel=parallel,
+            norm_eps=cfg.model.norm_eps,
+            norm_type=cfg.model.norm_type,
+            init_distribution_out=cfg.model.init_distribution,
+            init_distribution_embed=cfg.model.init_distribution_embed,
+            logits_soft_cap=cfg.model.logits_soft_cap,
+            lm_head_dtype=getattr(jnp, cfg.model.lm_head_dtype),
+            dtype=getattr(jnp, cfg.model.dtype),
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
+                    layer_type=cfg.model.layer_type,
                     num_heads=cfg.model.num_heads,
-                    mlstm_cell=mLSTMCellConfig(gate_dtype=getattr(jnp, cfg.model.gate_dtype)),
-                )
+                    init_distribution=cfg.model.init_distribution,
+                    output_init_fn=cfg.model.output_init_fn,
+                    qk_dim_factor=cfg.model.qk_dim_factor,
+                    v_dim_factor=cfg.model.v_dim_factor,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_dtype=getattr(jnp, cfg.model.gate_dtype),
+                        backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
+                        igate_bias_init_range=cfg.model.igate_bias_init_range,
+                        add_qk_norm=cfg.model.add_qk_norm,
+                        norm_type=cfg.model.cell_norm_type,
+                        norm_eps=cfg.model.cell_norm_eps,
+                        gate_soft_cap=cfg.model.gate_soft_cap,
+                        reset_at_document_boundaries=cfg.model.reset_at_document_boundaries,
+                    ),
+                ),
+                add_post_norm=cfg.model.add_post_norm,
             ),
         )
         model_config = ModelConfig(model_class=xLSTMLMModel, parallel=parallel, model_config=xlstm_config)
@@ -196,18 +230,23 @@ def init_logger_config(cfg: DictConfig) -> LoggerConfig:
         )
         log_tools.append(file_logger_conig)
 
-    if "tensorboard_logger" in cfg.logger.loggers_to_use:
+    if "tb_logger" in cfg.logger.loggers_to_use:
         tensorboard_logger_config = TensorBoardLoggerConfig(
-            log_dir=cfg.logger.tensorboard_log_dir, tb_flush_secs=cfg.logger.tensorboard_tb_flush_secs
+            log_dir=cfg.logger.tb_log_dir, tb_flush_secs=cfg.logger.tb_flush_secs
         )
         log_tools.append(tensorboard_logger_config)
 
-    if "wandb_logger" in cfg.logger.loggers_to_use:
+    if "wb_logger" in cfg.logger.loggers_to_use:
+        tags = cfg.logger.wb_tags
+        if tags is None:
+            tags = []
+        if os.getenv("SLURM_JOB_ID"):
+            tags.append(f"slurm_{os.getenv('SLURM_JOB_ID')}")
         wandb_logger_config = WandBLoggerConfig(
-            wb_project=cfg.logger.wandb_project,
-            wb_entity=cfg.logger.wandb_entity,
-            wb_name=cfg.logger.wandb_name,
-            wb_tags=cfg.logger.wandb_tags,
+            wb_project=cfg.logger.wb_project,
+            wb_entity=cfg.logger.wb_entity,
+            wb_name=cfg.logger.wb_name,
+            wb_tags=tags,
         )
         log_tools.append(wandb_logger_config)
 
@@ -394,10 +433,15 @@ def main_train(cfg: DictConfig):
 
     # Start training
     log_info("Training model.")
+    train_kwargs = {}
+    if cfg.get("num_train_steps", None):
+        train_kwargs["num_train_steps"] = cfg.num_train_steps
+    elif cfg.get("num_epochs", None):
+        train_kwargs["num_epochs"] = cfg.num_epochs
     final_metrics = trainer.train_model(
         train_loader=data_iterator,
         val_loader=eval_data_iterator,
-        num_epochs=cfg.num_epochs,
+        **train_kwargs,
     )
     log_info(f"Final metrics: {final_metrics}")
 

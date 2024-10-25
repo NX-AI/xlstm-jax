@@ -1,0 +1,35 @@
+defaults:
+  - model_schema
+  - _self_
+
+# xLSTMLMModelConfig
+vocab_size: 50304
+context_length: ${context_length}
+tie_weights: false
+add_embedding_dropout: false
+add_post_blocks_norm: true
+dtype: bfloat16
+scan_blocks: true
+norm_eps: 1e-6
+norm_type: rmsnorm
+init_distribution: normal
+init_distribution_embed: normal
+output_init_fn: wang
+logits_soft_cap: 30.0
+lm_head_dtype: bfloat16
+# mLSTMBlockConfig
+add_post_norm: false
+# mLSTMLayerConfig
+layer_type: mlstm
+num_heads: 4
+qk_dim_factor: 1.0
+v_dim_factor: 1.0
+# mLSTMCellConfig
+gate_dtype: float32
+backend: triton_kernels
+igate_bias_init_range: 0.0
+add_qk_norm: false
+cell_norm_type: rmsnorm
+cell_norm_eps: 1e-6
+gate_soft_cap: 15.0
+reset_at_document_boundaries: false

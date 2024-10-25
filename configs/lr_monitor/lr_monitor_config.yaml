@@ -2,6 +2,6 @@ defaults:
   - lr_monitor_config_schema
   - _self_
 
-every_n_steps: 20
+every_n_steps: 50
 every_n_epochs: -1
 main_process_only: true

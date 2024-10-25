@@ -1,12 +1,10 @@
 defaults:
   - model_schema
+  - llama_default
   - _self_
 
 name: llama1.3B
 # LlamaConfig
-vocab_size: 50304
 embedding_dim: 2048
 num_blocks: 24
 head_dim: 128
-scan_blocks: true
-dtype: bfloat16

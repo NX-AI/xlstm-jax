@@ -17,6 +17,10 @@ register_configs()
 
 @hydra.main(config_path="../configs", config_name="config", version_base="1.3")
 def check_config(cfg: DictConfig):
+    # Compute global batch size.
+    global_batch_size = cfg.batch_size_per_device * len(jax.devices())
+    cfg.global_batch_size = global_batch_size
+    # Try to resolve the config.
     if jax.process_index() == 0:
         LOGGER.info(f"Config:\n{OmegaConf.to_yaml(cfg, resolve=True)}")
 

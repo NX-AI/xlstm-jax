@@ -1,19 +1,11 @@
 defaults:
   - model_schema
+  - mLSTM_default
   - _self_
 
 name: mLSTM165M
 # xLSTMLMModelConfig
-vocab_size: 50304
 embedding_dim: 768
 num_blocks: 24
-context_length: ${context_length}
-tie_weights: false
-add_embedding_dropout: false
-add_post_blocks_norm: true
-scan_blocks: true
-dtype: bfloat16
 # mLSTMLayerConfig
 num_heads: 4
-# mLSTMCellConfig
-gate_dtype: float32

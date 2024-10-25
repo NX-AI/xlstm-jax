@@ -27,7 +27,10 @@ The configuration files are organized in the `configs` directory. For now, the s
 
 The principal entry point for hydra is the script `scripts/train_with_hydra.py`. On the command line, you can start a run locally by executing
 
-```python scripts/train_with_hydra.py```.
+```PYTHONPATH=. python scripts/train_with_hydra.py```.
+
+Note that currently, in order for the Triton kernels to work, the xlstm root folder must be added to
+your `PYTHONPATH`.
 
 The `main_train()` function in that file is decorated with:
 
@@ -120,7 +123,7 @@ trainer:
 
 To use this file, you execute the following:
 
-```python scripts/train_with_hydra.py +experiment=train_mLSTM7B_slimpajama6b.yaml ```
+```PYTHONPATH=. python scripts/train_with_hydra.py +experiment=train_mLSTM7B_slimpajama6b.yaml ```
 
 Note the + before experiment, that's not a typo!
 Hydra now checks the defaults list of the experiment file and replaces the respective fields from the general
@@ -153,13 +156,13 @@ default configuration is provided in `configs/hydra/launcher/slurm_launcher.yaml
 defaults:
   - override /hydra/launcher: submitit_slurm
 
-
 hydra:
   launcher:
     submitit_folder: ${hydra.sweep.dir}/.submitit/%j
     timeout_min: 60
     cpus_per_task: 28
     gpus_per_node: 8
+    gres: gpu:8
     tasks_per_node: 8
     mem_gb: ~
     nodes: 1
@@ -168,13 +171,13 @@ hydra:
     partition: compute
     qos: null
     comment: testing_slurmit_launcher
-    additional_parameters: {}
+    additional_parameters: {
+      "gpu-bind": "none",
+      "wait-all-nodes": "1",
+      "time": "2-00:00:00",
+      "exclusive": "",
+    }
     setup:
-      - gpu-bind=none
-      - wait-all-nodes=1
-      - time=2-00:00:00
-      - output=${hydra.sweep.dir}/.submitit/%j.out
-      - exclusive
       - export NCCL_CROSS_NIC=0
       - export NCCL_SOCKET_NTHREADS=16
       - export NCCL_DEBUG=WARN
@@ -196,12 +199,13 @@ hydra:
       - export RX_QUEUE_LEN=8192
       - export IB_RX_QUEUE_LEN=8192
       - export OMPI_MCA_coll=^hcoll
+      - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat
 ```
 
 Here, you can supply (or rather overwrite in an experment file!) the things you would normally put into a SLURM run
 script. To use the `submitit_launcher` you have to execute the following with the conda env
 activated that you want to use for the experiment:
 
-```python scripts/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
+```PYTHONPATH=. python scripts/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
 
 So the only thing you have to add is ```--multirun hydra/launcher=slurm_launcher``` (and to overwrite SLURM-specific parameters as the number of nodes, for example, in your experiment file).

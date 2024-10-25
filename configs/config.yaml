@@ -20,6 +20,9 @@ defaults:
 device: gpu
 device_count: 1   # note: this is only used when using device=cpu and specifies the number of devices
                   #       that jax simulates on a CPU. Useful for multi-process debugging.
+n_gpus: 8
+# TODO: having device_count and n_gpus is confusing. We have to decide on a naming scheme that encompasses
+#       both jax-simulated CPU and GPU devices.
 
 # Training-related
 batch_size_per_device: 8  # will be multiplied by the number of devices used to obtain the global batch size
@@ -39,5 +42,5 @@ hydra:
   run:
     dir: ${base_dir}/${task_name}/${logging_name}_${now:%Y-%m-%dT%H:%M:%S}
   sweep:
-    dir: ''
-    subdir: ${hydra.run.dir}_${hydra.job.num}
+    dir: ${hydra.run.dir}
+    subdir: ${hydra.job.num}

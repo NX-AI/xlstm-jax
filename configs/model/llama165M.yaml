@@ -4,9 +4,6 @@ defaults:
 
 name: llama165M
 # LlamaConfig
-vocab_size: 50304
 embedding_dim: 768
 num_blocks: 12
 head_dim: 128
-scan_blocks: true
-dtype: bfloat16

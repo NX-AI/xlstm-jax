@@ -54,6 +54,7 @@ def test_hydra_trainer(tmp_path: Path, model_name: str):
                 "model.num_heads=4",
                 "model.head_dim=8",
                 "model.gate_dtype=float32",
+                "model.backend=parallel_stabilized",
                 "checkpointing.monitor=perplexity",
                 "checkpointing.max_to_keep=1",
                 "checkpointing.save_optimizer_state=True",

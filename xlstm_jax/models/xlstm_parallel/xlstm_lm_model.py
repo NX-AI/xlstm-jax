@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Literal
+from typing import Any, Literal
 
 import jax
 import jax.numpy as jnp
@@ -29,7 +29,7 @@ class xLSTMLMModelConfig(xLSTMBlockStackConfig):
     """Type of normalization layer to use."""
     logits_soft_cap: float | None = None
     """Soft cap for the LM output logits. If None, no cap is applied."""
-    lm_head_dtype: str = "float32"
+    lm_head_dtype: str | Any = jnp.float32
     """Data type to perform the LM Head Dense layer in. The output will always be casted to float32 for numerical
     stability."""
     parallel: ParallelConfig | None = None

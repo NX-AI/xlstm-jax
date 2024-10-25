@@ -2,14 +2,14 @@
 defaults:
   - override /hydra/launcher: submitit_slurm
 
-
 hydra:
   launcher:
-    submitit_folder: ${hydra.sweep.subdir}/.submitit/%j  # TODO: test if this works and where experiment is logged
+    submitit_folder: ${hydra.sweep.dir}/.submitit/%j
     timeout_min: 60
     cpus_per_task: 28
-    gpus_per_node: 8
-    tasks_per_node: 8
+    gpus_per_node: ${n_gpus}
+    gres: gpu:${n_gpus}
+    tasks_per_node: ${n_gpus}
     mem_gb: ~
     nodes: 1
     name: ${hydra.job.name}
@@ -17,13 +17,13 @@ hydra:
     partition: compute
     qos: null
     comment: testing_slurmit_launcher
-    additional_parameters: {}
+    additional_parameters: {
+      "gpu-bind": "none",
+      "wait-all-nodes": "1",
+      "time": "2-00:00:00",
+      "exclusive": "",
+    }
     setup:
-      - gpu-bind=none
-      - wait-all-nodes=1
-      - time=2-00:00:00
-      - output=${hydra.sweep.dir}/.submitit/%j.out
-      - exclusive
       - export NCCL_CROSS_NIC=0
       - export NCCL_SOCKET_NTHREADS=16
       - export NCCL_DEBUG=WARN

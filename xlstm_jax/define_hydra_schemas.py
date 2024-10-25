@@ -1,12 +1,16 @@
 """Register all config dataclasses in the project to Hydra's ConfigStore and define hydra config schemas."""
 
 import pathlib
+import typing
 from dataclasses import MISSING, dataclass
 
 from hydra.core.config_store import ConfigStore
 
 from xlstm_jax.dataset.configs import DataConfig, HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
 from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import BackendType
+from xlstm_jax.models.xlstm_parallel.components.init import InitDistribution, InitFnName
+from xlstm_jax.models.xlstm_parallel.components.normalization import NormType
 from xlstm_jax.trainer.base.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.callbacks.lr_monitor import LearningRateMonitorConfig
@@ -31,6 +35,9 @@ class QuickHackModelConfig:
     scan_blocks: bool
     norm_eps: float
     norm_type: str
+    init_distribution_embed: str
+    logits_soft_cap: float
+    lm_head_dtype: str
     dtype: str
 
     # mlstm_block_config
@@ -39,6 +46,10 @@ class QuickHackModelConfig:
     # mlstm_layer_config
     layer_type: str
     num_heads: int
+    output_init_fn: str
+    init_distribution: str
+    qk_dim_factor: float
+    v_dim_factor: float
 
     # mlstm_cell_config
     gate_dtype: str
@@ -47,6 +58,8 @@ class QuickHackModelConfig:
     add_qk_norm: bool
     cell_norm_type: str
     cell_norm_eps: float
+    gate_soft_cap: float
+    reset_at_document_boundaries: bool
 
     # feedforward_config
     proj_factor: float
@@ -60,8 +73,17 @@ class QuickHackModelConfig:
     def __post_init__(self):
         """Once this class is removed due to Hydra instantiate or our own Registry, make sure that the
         allowed backends are checked, similar to this"""
-        allowed_backends = ["parallel_stabilized", "fwbw_stabilized", "triton_kernels", "attention"]
-        assert self.backend in allowed_backends
+        # Do the same for other parameters.
+        assert self.backend in typing.get_args(BackendType)
+        assert self.output_init_fn in typing.get_args(InitFnName)
+        assert self.init_distribution in typing.get_args(InitDistribution)
+        assert self.init_distribution_embed in typing.get_args(InitDistribution)
+        assert self.norm_type in typing.get_args(NormType)
+        # If the soft caps are set to 0.0, set them to None.
+        if self.logits_soft_cap <= 0.0:
+            self.logits_soft_cap = None
+        if self.gate_soft_cap <= 0.0:
+            self.gate_soft_cap = None
 
 
 @dataclass
@@ -117,6 +139,7 @@ class Config:
 
     device: str = MISSING
     device_count: int = MISSING
+    n_gpus: int = MISSING
     batch_size_per_device: int = MISSING
     global_batch_size: int = MISSING
     lr: float = MISSING

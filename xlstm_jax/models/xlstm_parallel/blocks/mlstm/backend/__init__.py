@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from functools import partial
+from typing import Literal
 
 from .attention import mLSTMBackendAttention
 from .config import mLSTMBackend
@@ -15,6 +16,7 @@ _mlstm_backend_registry = {
     "triton_kernels": mLSTMBackendTriton,
     "attention": mLSTMBackendAttention,
 }
+BackendType = Literal["parallel_stabilized", "fwbw_stabilized", "triton_kernels", "attention"]
 
 
 @dataclass

@@ -8,13 +8,15 @@ from xlstm_jax.distributed import ModelParallelismWrapper
 
 LOGGER = logging.getLogger(__name__)
 
+NormType = Literal["layernorm", "rmsnorm"]
+
 
 def NormLayer(
     weight: bool = True,
     bias: bool = False,
     eps: float = 1e-5,
     dtype: jnp.dtype = jnp.float32,
-    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm",
+    norm_type: NormType = "layernorm",
     model_axis_name: str | None = None,
     **kwargs,
 ) -> nn.Module:
@@ -52,7 +54,7 @@ def MultiHeadNormLayer(
     eps: float = 1e-5,
     dtype: jnp.dtype = jnp.float32,
     axis: int = 1,
-    norm_type: Literal["layernorm", "rmsnorm"] = "layernorm",
+    norm_type: NormType = "layernorm",
     model_axis_name: str | None = None,
     **kwargs,
 ) -> nn.Module:
@@ -96,7 +98,7 @@ def MultiHeadNormLayer(
 
 
 def resolve_norm(
-    norm_type: Literal["layernorm", "rmsnorm"],
+    norm_type: NormType,
     weight: bool = True,
     bias: bool = False,
     eps: float = 1e-5,

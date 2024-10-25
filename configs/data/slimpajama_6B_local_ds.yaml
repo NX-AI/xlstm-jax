@@ -12,7 +12,7 @@ num_train_epochs: ${num_epochs}
 global_batch_size: ${global_batch_size}
 
 # Path to the dataset directory.
-data_path: /nfs-gpu/xlstm/data/hf_datasets/DKYoon_SlimPajama-6B
+data_path: /nfs-gpu/xlstm/data/hf_datasets/DKYoon_SlimPajama-6B/ctx${context_length}
 
 # Maximum length of the target sequence.
 max_target_length: ${context_length}
@@ -28,3 +28,6 @@ shuffle_train_data: true
 
 # Seed for data shuffling
 data_shuffle_seed: 123
+
+# End of document token ID. Used for identifying the document segmentations.
+eod_token_id: 50256

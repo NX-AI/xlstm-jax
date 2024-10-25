@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
-  - override /parallel: mLSTM165M
-  - override /model: mLSTM165M
-  - override /data: slimpajama_6B_local_ds
+  - override /parallel: mLSTMv1_1.3B
+  - override /model: mLSTMv1_1.3B
+  - override /data: slimpajama_627B_local_ds
   - override /optimizer: adamw
   - _self_
 
@@ -12,7 +12,7 @@ batch_size_per_device: 16
 context_length: 2048
 num_epochs: 1000
 num_train_steps: 95_000
-lr: 1e-3
+lr: 7e-4
 
 trainer:
   gradient_accumulate_steps: 1

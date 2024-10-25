@@ -1,0 +1,9 @@
+defaults:
+  - model_schema
+  - _self_
+
+# LlamaConfig
+vocab_size: 50304
+add_qk_norm: false
+scan_blocks: true
+dtype: bfloat16

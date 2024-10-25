@@ -1,16 +1,16 @@
 # @package _global_
 defaults:
-  - override /parallel: mLSTM120M
-  - override /model: mLSTM120M
-  - override /data: slimpajama_6B_local_ds
+  - override /parallel: llama165M
+  - override /model: llama165M
+  - override /data: slimpajama_627B_local_ds
   - override /optimizer: adamw
+  - override /scheduler: cosine_decay
   - _self_
 
 # specify the deltas from the defaults:
 task_name: SPECIFY_TASK_NAME
 batch_size_per_device: 16
 context_length: 2048
-num_epochs: 1000
 num_train_steps: 95_000
 lr: 1e-3
 
