@@ -5,7 +5,7 @@ from transformers import AutoTokenizer
 from xlstm_jax.dataset.lmeval_dataset import HFTokenizeLogLikelihoodRolling
 
 
-# TODO add parametrics tests for tokenization and preprocessing for lm_eval
+# TODO add parametric tests for tokenization and preprocessing for lm_eval
 def test_lmeval_preprocessing():
     max_length = 8
     tokenizer = AutoTokenizer.from_pretrained("gpt2", use_fast=True, legacy=False, clean_up_tokenization_spaces=False)

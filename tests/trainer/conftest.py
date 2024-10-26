@@ -26,7 +26,7 @@ def _llm_toy_model(inject_debug_print: bool = False):
         """
 
         config: ModelConfig
-        vocab_size: int = 50257  # GPT-2 Tokenizer for testing LMEval Harness
+        vocab_size: int = 256  # ByT5-small Tokenizer with only bytes
         num_blocks: int = 2
 
         @nn.compact

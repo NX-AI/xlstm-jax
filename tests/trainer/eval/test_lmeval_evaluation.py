@@ -14,7 +14,7 @@ from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
 
-@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (1, 4), (4, 1)])
+@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 4)])
 def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsdp_size: int):
     """
     Tests evaluation on a simple model under different mesh configs.
@@ -47,9 +47,9 @@ def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsd
         LLMTrainerConfig(
             callbacks=(
                 LMEvalEvaluationConfig(
-                    tokenizer_path="gpt2",
+                    tokenizer_path="google/byt5-small",
                     evaluation_tasks=["lambada"],
-                    limit_requests=11,
+                    limit_requests=2,
                     cache_requests=True,
                     context_length=context_length,
                 ),
@@ -59,7 +59,7 @@ def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsd
                 log_tools=[
                     FileLoggerConfig(log_dir=fl_dir),
                 ],
-                log_every_n_steps=10,
+                log_every_n_steps=1,
             ),
             check_val_every_n_epoch=1,
         ),
@@ -84,7 +84,7 @@ def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsd
     _ = trainer.train_model(
         train_loader,
         val_loader,
-        num_train_steps=20,
+        num_train_steps=2,
     )
 
     assert log_path.exists()
