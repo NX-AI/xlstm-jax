@@ -69,6 +69,10 @@ class LLMBatch(Batch):
             inputs (jax.Array): The input data.
             targets (jax.Array, optional): The target data. If not provided, the inputs are used as targets and the
                 inputs are shifted right by one.
+
+
+        Returns:
+            An LLMBatch with respective inputs and targets.
         """
         if targets is None:
             targets = inputs
@@ -93,6 +97,9 @@ class LLMBatch(Batch):
         Args:
             batch_size (int): The size of the batch.
             max_length (int): The maximum length of the sequences.
+
+        Returns:
+            An LLMBatch with :class:`jax.ShapeDtypeStruct` typed components.
         """
         return LLMBatch(
             inputs=jax.ShapeDtypeStruct((batch_size, max_length), jnp.int32),
@@ -102,6 +109,17 @@ class LLMBatch(Batch):
             targets_position=jax.ShapeDtypeStruct((batch_size, max_length), jnp.int32),
             targets_segmentation=jax.ShapeDtypeStruct((batch_size, max_length), jnp.int32),
         )
+
+    @classmethod
+    def get_sample(cls, batch_size: int, max_length: int) -> "LLMBatch":
+        """Get a real sample of an LLMBatch. Needed for compilation when using
+        jax.debug.* in the model or anywhere else in the pipeline.
+
+        Args:
+            batch_size (int): The size of the batch.
+            max_length (int): The maximum length of the sequences.
+        """
+        return jax.tree.map(jnp.zeros_like, cls.get_dtype_struct(batch_size, max_length))
 
 
 @dataclass
@@ -119,6 +137,21 @@ class LLMIndexedBatch(LLMBatch):
     def from_inputs(
         inputs: jax.Array, document_idx: jax.Array, sequence_idx: jax.Array, targets: jax.Array | None = None
     ) -> "LLMIndexedBatch":
+        """Create LLMBatch from inputs.
+
+        Helper function for quickly creating a default LLM Batch.
+
+        Args:
+            inputs (jax.Array): The input data.
+            targets (jax.Array): The target data.
+            sequence_idx (jax.Array): The sequence idx for each sample.
+            document_idx (jax.Array): The document idx for each sample. A document might be composed of multiple
+                sequences.
+
+        Returns:
+            An LLMBatch with respective inputs and targets.
+
+        """
         batch = LLMBatch.from_inputs(inputs=inputs, targets=targets)
 
         return LLMIndexedBatch(
@@ -139,6 +172,9 @@ class LLMIndexedBatch(LLMBatch):
         Args:
             batch_size (int): The size of the batch.
             max_length (int): The maximum length of the sequences.
+
+        Returns:
+            An LLMBatch with :class:`jax.ShapeDtypeStruct` typed components.
         """
         return LLMIndexedBatch(
             inputs=jax.ShapeDtypeStruct((batch_size, max_length), jnp.int32),

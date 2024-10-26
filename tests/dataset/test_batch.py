@@ -2,7 +2,7 @@ import jax
 import jax.numpy as jnp
 import pytest
 
-from xlstm_jax.dataset.batch import LLMBatch
+from xlstm_jax.dataset.batch import LLMBatch, LLMIndexedBatch
 
 
 @pytest.mark.parametrize("batch_size", [4, 16])
@@ -36,3 +36,31 @@ def test_llm_batch_document_borders(batch_size: int, context_length: int):
     ), "The document borders should have the same shape as the input."
     assert jnp.all(document_borders[:, 0]), "The first token should always be a document border."
     assert jnp.all(document_borders[:, 1:] == eod_mask[:, 1:]), "The document borders should match the EOD mask."
+
+
+def test_llm_batch_sample():
+    """
+    Test an LLMBatch for sampling
+    """
+    batch_size, context_length = 4, 8
+    sample = LLMBatch.get_sample(batch_size=batch_size, max_length=context_length)
+    sample_shapes = LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length)
+
+    for sample_leaf, sample_shape_leaf in zip(jax.tree.leaves(sample), jax.tree.leaves(sample_shapes)):
+        assert isinstance(sample_leaf, jax.Array)
+        assert isinstance(sample_shape_leaf, jax.ShapeDtypeStruct)
+        assert sample_leaf.shape == sample_shape_leaf.shape
+
+
+def test_llm_indexed_batch_sample():
+    """
+    Test an LLMBatch for sampling
+    """
+    batch_size, context_length = 4, 8
+    sample = LLMIndexedBatch.get_sample(batch_size=batch_size, max_length=context_length)
+    sample_shapes = LLMIndexedBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length)
+
+    for sample_leaf, sample_shape_leaf in zip(jax.tree.leaves(sample), jax.tree.leaves(sample_shapes)):
+        assert isinstance(sample_leaf, jax.Array)
+        assert isinstance(sample_shape_leaf, jax.ShapeDtypeStruct)
+        assert sample_leaf.shape == sample_shape_leaf.shape

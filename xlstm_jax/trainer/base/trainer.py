@@ -106,7 +106,8 @@ class TrainerModule:
         model_config: A dictionary containing the model configuration.
         optimizer_config: A dictionary containing the optimizer configuration.
         batch: An input to the model with which the shapes are inferred. Can be a :class:`jax.ShapeDtypeStruct` instead
-            of actual full arrays for efficiency.
+            of actual full arrays for efficiency. Must NOT be a jax.ShapeDtypeStruct if jax.debug.* statements are used
+            inside the model code.
         mesh: A mesh object to use for parallel training. If `None`, a new mesh will be created.
     """
 

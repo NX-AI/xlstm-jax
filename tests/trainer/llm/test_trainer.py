@@ -340,3 +340,65 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
         "Perplexity should match the loaded pretrained model, but got "
         f"{new_final_metrics['val_epoch_5']['perplexity']} versus {final_metrics['val_epoch_5']['perplexity']}."
     )
+
+
+@pytest.mark.parametrize("tp_size,fsdp_size", [(1, 1), (2, 2), (1, 8), (8, 1)])
+def test_llm_debug_print_trainer(llm_toy_model_debug: Any, tmp_path: Path, tp_size: int, fsdp_size: int):
+    """
+    Tests training a simple model with LLM loss under different mesh configs.
+
+    Also reproduces the checkpointing test from the checkpointing test file for this new trainer.
+    """
+    LLMToyModel = llm_toy_model_debug
+    if pytest.num_devices < tp_size * fsdp_size:
+        pytest.skip("Test requires more devices than available.")
+    batch_size = 8
+    context_length = 16
+    model_config = ModelConfig(
+        model_class=LLMToyModel,
+        parallel=ParallelConfig(
+            data_axis_size=-1,
+            model_axis_size=tp_size,
+            fsdp_axis_size=fsdp_size,
+            fsdp_min_weight_size=pytest.num_devices,
+        ),
+    )
+    optimizer_config = OptimizerConfig(
+        name="adam",
+        scheduler=SchedulerConfig(
+            name="constant",
+            lr=1e-4,
+        ),
+    )
+    trainer = LLMTrainer(
+        LLMTrainerConfig(
+            callbacks=(
+                ModelCheckpointConfig(
+                    monitor="perplexity",
+                    max_to_keep=4,
+                    save_optimizer_state=True,
+                    enable_async_checkpointing=True,
+                ),
+            ),
+            logger=LoggerConfig(log_path=tmp_path),
+            check_val_every_n_epoch=1,
+        ),
+        model_config,
+        optimizer_config,
+        # Use get_sample here instead of get_dtype struct - this enables debugging
+        batch=LLMBatch.get_sample(batch_size=batch_size, max_length=context_length),
+    )
+
+    def data_gen_fn(idx: int) -> LLMBatch:
+        inputs = jax.random.randint(jax.random.PRNGKey(idx), (batch_size, context_length), minval=0, maxval=50)
+        targets = jnp.mod(inputs + 1, 50)
+        return LLMBatch.from_inputs(inputs=inputs, targets=targets)
+
+    train_loader = [data_gen_fn(idx) for idx in range(100)]
+    val_loader = train_loader[:20]
+    final_metrics = trainer.train_model(
+        train_loader,
+        val_loader,
+        num_epochs=5,
+    )
+    assert final_metrics is not None
