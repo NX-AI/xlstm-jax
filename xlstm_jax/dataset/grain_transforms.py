@@ -148,6 +148,28 @@ class ParseFeatures(grain.MapTransform):
         return _parse(features)
 
 
+class ParseArrayRecords(grain.MapTransform):
+    """Parse serialized example from array_records dataset."""
+
+    def __init__(self, column_name: str):
+        """
+        Args:
+            column_name: Column name to be used as key in the output dictionary.
+        """
+        self.column_name = column_name
+
+    def map(self, data: bytes) -> dict[str, str]:
+        """Map to parse array records.
+
+        Args:
+            data: The bytestring-serialized example.
+
+        Returns:
+            Parsed data, a dictionary mapping the column_name to the deserialized string (text).
+        """
+        return {self.column_name: data.decode()}
+
+
 @dataclasses.dataclass
 class NormalizeFeatures(grain.MapTransform):
     """Normalize text feature keys."""

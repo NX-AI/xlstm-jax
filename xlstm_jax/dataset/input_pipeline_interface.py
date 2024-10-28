@@ -23,13 +23,14 @@ import logging
 import jax
 from jax.sharding import Mesh, PartitionSpec as P
 
-from .configs import DataConfig, HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
+from .configs import DataConfig, GrainArrayRecordsDataConfig, HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
 from .multihost_dataloading import MultiHostDataLoadIterator
 from .synthetic_dataloading import SyntheticDataIterator
 
 LOGGER = logging.getLogger(__name__)
 
 try:
+    from .grain_data_processing import make_grain_iterator
     from .hf_data_processing import make_hf_hub_iterator, make_hf_local_iterator
 
     GRAIN_AVAILABLE = True
@@ -39,6 +40,12 @@ except ImportError:
     GRAIN_AVAILABLE = False
 
     def make_hf_hub_iterator(*args, **kwargs):
+        raise NotImplementedError("Grain not found, multi-host data loading and non-synthetic dataset is disabled.")
+
+    def make_hf_local_iterator(*args, **kwargs):
+        raise NotImplementedError("Grain not found, multi-host data loading and non-synthetic dataset is disabled.")
+
+    def make_grain_iterator(*args, **kwargs):
         raise NotImplementedError("Grain not found, multi-host data loading and non-synthetic dataset is disabled.")
 
 
@@ -78,6 +85,8 @@ def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataItera
             return make_hf_hub_iterator(config, mesh, process_indices)
         elif isinstance(config, HFLocalDataConfig):
             return make_hf_local_iterator(config, mesh, process_indices)
+        elif isinstance(config, GrainArrayRecordsDataConfig):
+            return make_grain_iterator(config, mesh, process_indices)
         else:
             raise NotImplementedError(f"Data loading for dataset type {type(config)} not implemented yet.")
     else:
@@ -90,13 +99,12 @@ def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataItera
 def create_data_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataIterator, DataIterator | None]:
     if isinstance(config, SyntheticDataConfig):
         return SyntheticDataIterator(config, mesh, "train"), SyntheticDataIterator(config, mesh, "val")
-    elif isinstance(config, (HFHubDataConfig, HFLocalDataConfig)):
+    elif isinstance(config, (HFHubDataConfig, HFLocalDataConfig, GrainArrayRecordsDataConfig)):
         # This only works if grain is available. This was checked beforehand but if we get here anyway, the program
         # will crash. Better to remind the user why it crashed.
         if not GRAIN_AVAILABLE:
             raise NotImplementedError(
-                "Grain is not available, multi-host data loading and non-synthetic datasets are disabled.\
-                                       Exiting."
+                "Grain is not available, multi-host data loading and non-synthetic datasets are disabled. Exiting."
             )
         return make_mixed_train_iterator(config, mesh)
     else:

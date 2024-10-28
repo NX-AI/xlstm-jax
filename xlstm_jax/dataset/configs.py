@@ -105,3 +105,39 @@ class SyntheticDataConfig(DataConfig):
     """Number of samples to generate for synthetic training data."""
     num_val_batches: int = 10
     """Number of samples to generate for synthetic validation data."""
+
+
+@dataclass(kw_only=True, frozen=False)
+class GrainArrayRecordsDataConfig(DataConfig):
+    """Grain dataset configuration for ArrayRecords datasets."""
+
+    num_train_epochs: int
+    """Number of training epochs. Needs to be specified for the shuffling."""
+    data_path: Path
+    """Path to the dataset directory."""
+    train_data_column: str = "text"
+    """Column name for training data."""
+    eval_data_column: str = "text"
+    """Column name for evaluation data."""
+    train_split: str = "train"
+    """Split to use for training. Should be a subdirectory of data_dir."""
+    eval_split: str = "validation"
+    """Split to use for evaluation. Should be a subdirectory of data_dir."""
+    eval_max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch for evaluation."""
+    tokenize_train_data: bool = True
+    """Whether to tokenize training data."""
+    tokenize_eval_data: bool = True
+    """Whether to tokenize evaluation data."""
+    tokenizer_path: str = "gpt2"
+    """Path to the tokenizer."""  # TODO: is this really a path or rather a name?
+    add_bos: bool = False
+    """Whether to add `beginning of sequence` token."""
+    add_eos: bool = False
+    """Whether to add `end of sequence` token."""
+    add_eod: bool = True
+    """Whether to add an end of document token."""
+    grain_packing: bool = False
+    """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
+    hf_cache_dir: Path | None = None
+    """Directory to cache the dataset. Used to get the HF tokenizer."""
