@@ -24,7 +24,7 @@ from xlstm_jax.distributed.common_types import PRNGKeyArray
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint, load_pretrained_model
-from xlstm_jax.trainer.data_module import DataloaderModule
+from xlstm_jax.trainer.data_module import DataIterator, DataloaderModule
 from xlstm_jax.trainer.logger import Logger, LoggerConfig
 from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
@@ -611,9 +611,9 @@ class TrainerModule:
 
     def train_model(
         self,
-        train_loader: Iterator,
-        val_loader: Iterator,
-        test_loader: Iterator | None = None,
+        train_loader: DataIterator,
+        val_loader: DataIterator | dict[str, DataIterator],
+        test_loader: DataIterator | dict[str, DataIterator] | None = None,
         num_epochs: int | None = None,
         num_train_steps: int | None = None,
         steps_per_epoch: int | None = None,
@@ -621,13 +621,18 @@ class TrainerModule:
         """
         Start a training loop for the given number of epochs.
 
-        Inside the training loop, we use an epoch index and a global step index. Both indices are starting to count at 1
-        (i.e. first epoch is "epoch 1", not "epoch 0").
+        Inside the training loop, we use an epoch index and a global step index. Both indices are starting to count
+        at 1 (i.e. first epoch is "epoch 1", not "epoch 0").
 
         Args:
             train_loader: Data loader of the training set.
-            val_loader: Data loader of the validation set.
-            test_loader: If given, best model will be evaluated on the test set.
+            val_loader: Data loader of the validation set. If a dictionary is given, the model is evaluated on all
+                datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics
+                (`DATAKEY_METRICKEY`). Note that these naming differences also need to be considered for the callbacks,
+                such as the Model Checkpoint with tracking the best metric if used.
+            test_loader: If given, best model will be evaluated on the test set. Similar to val_loader, if a dictionary
+                is given, the model is evaluated on all datasets in the dictionary, and the key of the dataset is used
+                as a prefix for the metrics.
             num_epochs: Number of epochs for which to train the model. If None, will use num_train_steps.
             num_train_steps: Number of training steps for which to train the model. If None, will use num_epochs.
             steps_per_epoch: Number of steps per epoch. If None, will use the length of the train_loader.
@@ -776,12 +781,15 @@ class TrainerModule:
 
         return all_eval_metrics
 
-    def _eval_model_in_train_loop(self, val_loader: Iterator, epoch_idx: int) -> HostMetrics:
+    def _eval_model_in_train_loop(
+        self, val_loader: DataIterator | dict[str, DataIterator], epoch_idx: int
+    ) -> HostMetrics:
         """
         Evaluate the model on the validation set during the training loop.
 
         Args:
-            val_loader: Data loader of the validation set.
+            val_loader: Data loader of the validation set. If a dictionary is given, the model is evaluated on all
+                datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics.
             epoch_idx: Current epoch index.
 
         Returns:
@@ -792,21 +800,27 @@ class TrainerModule:
         self.on_validation_epoch_end(eval_metrics, epoch_idx, self.global_step)
         return eval_metrics
 
-    def test_model(self, test_loader: Iterator, apply_callbacks: bool = False, epoch_idx: int = 0) -> dict[str, Any]:
+    def test_model(
+        self, test_loader: DataIterator | dict[str, DataIterator], apply_callbacks: bool = False, epoch_idx: int = 0
+    ) -> HostMetrics:
         """
         Tests the model on the given test set.
 
         Args:
-            test_loader: Data loader of the test set.
+            test_loader: Data loader of the test set. If a dictionary is given, the model is evaluated on all datasets
+                in the dictionary, and the key of the dataset is used as a prefix for the metrics.
             apply_callbacks: If True, the callbacks will be applied.
             epoch_idx: The epoch index to use for the callbacks and logging.
+
+        Returns:
+            A dictionary of the evaluation metrics.
         """
         test_metrics = self.eval_model(test_loader, mode="test", epoch_idx=epoch_idx)
         if apply_callbacks:
             self.on_test_epoch_end(test_metrics, epoch_idx=epoch_idx)
         return test_metrics
 
-    def test_eval_function(self, val_loader: Iterator) -> None:
+    def test_eval_function(self, val_loader: DataIterator | dict[str, DataIterator]) -> None:
         """
         Test the evaluation function on a single batch.
 
@@ -822,6 +836,8 @@ class TrainerModule:
             val_loader: Data loader of the validation set.
         """
         LOGGER.info("Verifying evaluation function...")
+        if isinstance(val_loader, dict):
+            val_loader = val_loader[next(iter(val_loader.keys()))]
         val_batch = next(iter(val_loader))
         eval_metrics = self.init_eval_metrics(val_batch)
         start_time = time.time()
@@ -829,20 +845,49 @@ class TrainerModule:
         _ = self.eval_step(self.state, val_batch, eval_metrics)
         LOGGER.info(f"Successfully completed in {time.time() - start_time:.2f} seconds.")
 
-    def eval_model(self, data_loader: Iterator, mode: str, epoch_idx: int) -> HostMetrics:
+    def eval_model(self, data_loader: DataIterator | dict[str, DataIterator], mode: str, epoch_idx: int) -> HostMetrics:
         """
         Evaluate the model on a dataset.
 
+        If multiple datasets are given, the evaluation is performed on all datasets and the metrics are prefixed with
+        the dataset key (i.e. `DATAKEY_METRICKEY`). The evaluation metrics are logged and returned as host metrics.
+
         Args:
-            data_loader: Data loader of the dataset to evaluate on.
-            mode: Whether 'val' or 'test'
+            data_loader: Data loader of the dataset to evaluate on. If a dictionary is given, the model is evaluated on
+                all datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics.
+            mode: The mode to use for logging, commonly "val" or "test".
             epoch_idx: Current epoch index.
 
         Returns:
-            A dictionary of the evaluation metrics, averaged over data points in the dataset.
+            A dictionary of the evaluation metrics on the host, averaged over data points in the dataset.
         """
         # Test model on all batches of a data loader and return avg loss
         self.logger.start_epoch(epoch=epoch_idx, step=self.global_step, mode=mode)
+        if isinstance(data_loader, dict):
+            eval_metrics = {}
+            for data_key, loader in data_loader.items():
+                data_metrics = self._run_model_eval(loader, mode, epoch_idx)
+                eval_metrics.update({f"{data_key}_{k}": v for k, v in data_metrics.items()})
+        else:
+            eval_metrics = self._run_model_eval(data_loader, mode, epoch_idx)
+        _, metrics = self.logger.end_epoch(eval_metrics, step=self.global_step)
+        return metrics
+
+    def _run_model_eval(self, data_loader: DataIterator, mode: str = "", epoch_idx: int = -1) -> Metrics:
+        """
+        Evaluate the model on a single dataset.
+
+        In contrast to eval_model, this function does not log the metrics and returns the on-device metrics. It also
+        does not support evaluation on multiple datasets. For this, use eval_model.
+
+        Args:
+            data_loader: Data loader of the dataset to evaluate on.
+            mode: Mode to show in the progress bar and logging. Default is empty string.
+            epoch_idx: Current epoch index. Only used for logging, default is -1.
+
+        Returns:
+            The on-device metrics after the full evaluation epoch.
+        """
         eval_metrics = self.init_eval_metrics()
         step_count = 0
         for batch in self.tracker(data_loader, desc=mode.capitalize(), leave=False):
@@ -850,8 +895,7 @@ class TrainerModule:
             step_count += 1
         if step_count == 0:
             LOGGER.warning(f"No batches in {mode} loader at epoch {epoch_idx}.")
-        _, metrics = self.logger.end_epoch(eval_metrics, step=self.global_step)
-        return metrics
+        return eval_metrics
 
     def tracker(self, iterator: Iterator, **kwargs) -> Iterator:
         """
@@ -874,9 +918,9 @@ class TrainerModule:
         num_epochs: int | None,
         num_train_steps: int,
         steps_per_epoch: int | None,
-        train_loader: Iterator,
-        val_loader: Iterator,
-        test_loader: Iterator | None,
+        train_loader: DataIterator,
+        val_loader: DataIterator,
+        test_loader: DataIterator | None,
     ):
         """
         Log the general training information.
@@ -1044,9 +1088,9 @@ class TrainerModule:
     def load_data_loaders(
         self,
         step_idx: int = -1,
-        train_loader: Iterator | None = None,
-        val_loader: Iterator | None = None,
-        test_loader: Iterator | None = None,
+        train_loader: DataIterator | dict[str, DataIterator] | None = None,
+        val_loader: DataIterator | dict[str, DataIterator] | None = None,
+        test_loader: DataIterator | dict[str, DataIterator] | None = None,
     ):
         """
         Load states of the data loaders from the logging directory.
@@ -1072,9 +1116,7 @@ class TrainerModule:
         if state_dict is None:
             LOGGER.warning("No data loader checkpoint callback found in callbacks.")
         else:
-            for key, loader in [("train", train_loader), ("val", val_loader), ("test", test_loader)]:
-                if key in state_dict and loader is not None and hasattr(loader, "set_state"):
-                    loader.set_state(state_dict[key])
+            self.restore_data_loaders(state_dict, train_loader, val_loader, test_loader)
 
     def restore_model(self, state_dict: dict[str, Any] | FrozenDict[str, Any]):
         """
@@ -1110,9 +1152,9 @@ class TrainerModule:
     def restore_data_loaders(
         self,
         state_dict: dict[str, Any],
-        train_loader: Iterator | None = None,
-        val_loader: Iterator | None = None,
-        test_loader: Iterator | None = None,
+        train_loader: DataIterator | dict[str, DataIterator] | None = None,
+        val_loader: DataIterator | dict[str, DataIterator] | None = None,
+        test_loader: DataIterator | dict[str, DataIterator] | None = None,
     ):
         """
         Restore the state of the data loaders from a state dictionary.
@@ -1124,9 +1166,10 @@ class TrainerModule:
             val_loader: If given, the validation data loader is set to this value.
             test_loader: If given, the test data loader is set to this value.
         """
-        LOGGER.info("Restoring data loaders with keys " + str(state_dict.keys()))
+        LOGGER.info(f"Restoring data loaders with keys {list(state_dict.keys())}.")
         # Restore data loaders from state dict.
-        for key, loader in [("train", train_loader), ("val", val_loader), ("test", test_loader)]:
+        loaders = flatten_dict({"train": train_loader, "val": val_loader, "test": test_loader}, separator="_")
+        for key, loader in loaders.items():
             if key in state_dict:
                 if loader is None:
                     LOGGER.warning(
@@ -1147,9 +1190,9 @@ class TrainerModule:
         step_idx: int = -1,
         load_best: bool = False,
         load_optimizer: bool = True,
-        train_loader: Iterator | None = None,
-        val_loader: Iterator | None = None,
-        test_loader: Iterator | None = None,
+        train_loader: DataIterator | dict[str, DataIterator] | None = None,
+        val_loader: DataIterator | dict[str, DataIterator] | None = None,
+        test_loader: DataIterator | dict[str, DataIterator] | None = None,
     ):
         """
         Load a pretrained model from a checkpoint directory.

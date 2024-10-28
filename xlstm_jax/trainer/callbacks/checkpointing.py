@@ -9,6 +9,7 @@ import jax
 import orbax.checkpoint as ocp
 
 from xlstm_jax.import_utils import class_to_name
+from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
@@ -186,6 +187,16 @@ class ModelCheckpoint(Callback):
         checkpoint_path = self.dataloader_path / f"checkpoint_{step_idx}"
         checkpoint_path.mkdir(parents=True, exist_ok=True)
 
+        # Collect dataloaders.
+        loaders = flatten_dict(
+            {
+                "train": self.data_module.train_dataloader,
+                "val": self.data_module.val_dataloader,
+                "test": self.data_module.test_dataloader,
+            },
+            separator="_",
+        )
+
         # Save metadata for dataloaders.
         if jax.process_index() == 0:
             metadata = {
@@ -195,14 +206,19 @@ class ModelCheckpoint(Callback):
                 "train_exists": self.data_module.train_dataloader is not None,
                 "val_exists": self.data_module.val_dataloader is not None,
                 "test_exists": self.data_module.test_dataloader is not None,
+                "loader_names": sorted(list(loaders.keys())),
             }
             metadata_path = checkpoint_path / "metadata.json"
             with open(metadata_path, "w") as f:
                 json.dump(metadata, f)
+            LOGGER.info(f"Saved metadata for dataloader state at step {step_idx}: {metadata}.")
 
         # Save state for each dataloader.
-        for loader, name in [(self.data_module.train_dataloader, "train"), (self.data_module.val_dataloader, "val")]:
-            if loader is not None and hasattr(loader, "get_state"):
+        for name, loader in loaders.items():
+            if loader is None:
+                # Test loader might be None.
+                continue
+            elif hasattr(loader, "get_state"):
                 state_dict = loader.get_state()
                 # Save with pickle to support custom objects.
                 dir_path = checkpoint_path / name
@@ -270,6 +286,7 @@ class ModelCheckpoint(Callback):
         metadata_path = checkpoint_path / "metadata.json"
         with open(metadata_path) as f:
             metadata = json.load(f)
+        LOGGER.info(f"Loaded metadata for dataloader state at step {step_idx}: {metadata}.")
         if metadata["process_count"] != jax.process_count():
             LOGGER.warning(
                 f"Process count mismatch. Expected {metadata['process_count']} but got {jax.process_count()}."
@@ -278,7 +295,7 @@ class ModelCheckpoint(Callback):
 
         # Load state for each dataloader.
         state_dict = {}
-        for name in ["train", "val", "test"]:
+        for name in metadata["loader_names"]:
             dir_path = checkpoint_path / name
             if not dir_path.exists():
                 LOGGER.info(f"No dataloader state found for {name}.")

@@ -3,9 +3,11 @@ from dataclasses import dataclass
 
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 
+DataIterator = Iterator | MultiHostDataLoadIterator
+
 
 @dataclass
 class DataloaderModule:
-    train_dataloader: Iterator | MultiHostDataLoadIterator | None = None
-    val_dataloader: Iterator | MultiHostDataLoadIterator | None = None
-    test_dataloader: Iterator | MultiHostDataLoadIterator | None = None
+    train_dataloader: DataIterator | None = None
+    val_dataloader: DataIterator | dict[str, DataIterator] | None = None
+    test_dataloader: DataIterator | dict[str, DataIterator] | None = None

@@ -173,6 +173,8 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
 
     The test trains a simple model with MSE loss under different mesh configs. We then check whether the checkpoints
     have been created as expected, load an older model, and reproduce the training and validation metrics.
+
+    Additionally, we test a dictionary of validation dataloaders.
     """
     MSETrainer = mse_trainer
     ToyModel = toy_model
@@ -184,7 +186,7 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
         TrainerConfig(
             callbacks=(
                 ModelCheckpointConfig(
-                    monitor="loss",
+                    monitor="first_loss",
                     max_to_keep=2,
                     save_optimizer_state=True,
                     enable_async_checkpointing=False,
@@ -224,8 +226,13 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
         labels = inputs[:, 0:1]
         return Batch(inputs=inputs, targets=labels)
 
-    train_loader = DataLoader([data_gen_fn(idx) for idx in range(100)] * 10)
-    val_loader = DataLoader(train_loader.data[:20], shuffle=False)
+    data = [data_gen_fn(idx) for idx in range(100)]
+    train_loader = DataLoader(data * 10)
+    val_loader = {
+        "first": DataLoader(data[:20], shuffle=False),
+        "last": DataLoader(data[-10:], shuffle=False),
+        "shuffled": DataLoader(data, shuffle=True),
+    }
     # train_loader = itertools.cycle(train_loader)
     final_metrics = trainer.train_model(
         train_loader,
@@ -236,9 +243,13 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
     assert all(
         f"val_step_{i * 100}" in final_metrics for i in range(1, 5)
     ), f"Validation metrics should be present for all steps, got {final_metrics}."
-    assert (
-        final_metrics["val_step_400"]["loss"] < final_metrics["val_step_300"]["loss"]
-    ), "Validation loss should decrease over epochs."
+    for data_key in val_loader:
+        assert all(
+            f"{data_key}_loss" in final_metrics[f"val_step_{i * 100}"] for i in range(1, 5)
+        ), f"Loss should be present for all validation loaders for all steps, got {final_metrics}."
+        assert (
+            final_metrics["val_step_400"][f"{data_key}_loss"] < final_metrics["val_step_300"][f"{data_key}_loss"]
+        ), f"Validation loss should decrease over epochs, but failed for validation loader {data_key}."
     # Check that checkpoints have been created.
     assert log_path.exists()
     checkpoint_path = log_path / "checkpoints"
@@ -249,9 +260,15 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
     # Load an older model and reproduce the validation metric at this point.
     trainer.load_model(step_idx=300)
     trainer.load_data_loaders(step_idx=300, train_loader=train_loader, val_loader=val_loader)
-    new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=3)
+    # For validation loaders that are shuffled, we would get a different shuffle order due to rerunning it.
+    # Hence, we exclude them here, but are tested in the full training continuation below.
+    unshuffled_val_loaders = {k: v for k, v in val_loader.items() if k != "shuffled"}
+    new_metrics = trainer.eval_model(unshuffled_val_loaders, "val", epoch_idx=3)
     assert new_metrics is not None
-    assert new_metrics["loss"] == final_metrics["val_step_300"]["loss"], "Loss should be the same."
+    for data_key in unshuffled_val_loaders:
+        assert (
+            new_metrics[f"{data_key}_loss"] == final_metrics["val_step_300"][f"{data_key}_loss"]
+        ), f"Loss should be the same when evaluating saved model for validation loader {data_key}."
     # Train the model from this point and check that the previous training can be reproduced.
     new_final_metrics = trainer.train_model(
         train_loader,
@@ -259,9 +276,10 @@ def test_checkpointing_per_step(mse_trainer: Any, toy_model: Any, tmp_path: Path
         num_train_steps=400,
     )
     assert new_final_metrics is not None
-    assert (
-        new_final_metrics["val_step_400"]["loss"] == final_metrics["val_step_400"]["loss"]
-    ), "Loss should be the same."
+    for data_key in val_loader:
+        assert (
+            new_final_metrics["val_step_400"][f"{data_key}_loss"] == final_metrics["val_step_400"][f"{data_key}_loss"]
+        ), f"Loss should be the same when resuming training for validation loader {data_key}."
 
 
 def test_checkpointing_per_epoch_and_step(mse_trainer: Any, toy_model: Any, tmp_path: Path):

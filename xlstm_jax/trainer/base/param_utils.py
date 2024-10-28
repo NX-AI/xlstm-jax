@@ -15,7 +15,7 @@ from .train_state import TrainState
 PyTree = Any
 
 
-def flatten_dict(d: dict | FrozenDict | list | tuple, flatten_sequences: bool = False) -> dict:
+def flatten_dict(d: dict | FrozenDict | list | tuple, flatten_sequences: bool = False, separator: str = ".") -> dict:
     """Flattens a nested dictionary."""
     if not isinstance(d, (dict, FrozenDict)):
         assert flatten_sequences, "If flatten_sequences is False, only dicts and FrozenDicts are supported."
@@ -23,7 +23,10 @@ def flatten_dict(d: dict | FrozenDict | list | tuple, flatten_sequences: bool = 
     flat_dict = {}
     for k, v in d.items():
         if isinstance(v, (dict, FrozenDict)) or (isinstance(v, (list, tuple)) and flatten_sequences):
-            sub_dict = {f"{k}.{k2}": v2 for k2, v2 in flatten_dict(v, flatten_sequences=flatten_sequences).items()}
+            sub_dict = {
+                f"{k}{separator}{k2}": v2
+                for k2, v2 in flatten_dict(v, flatten_sequences=flatten_sequences, separator=separator).items()
+            }
             # Verify that there are no overlapping keys.
             assert (
                 len(set(sub_dict.keys()).intersection(set(flat_dict.keys()))) == 0

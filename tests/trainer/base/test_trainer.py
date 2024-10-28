@@ -241,3 +241,83 @@ def test_log_intermediates(
     assert (
         "last_activations.0_0_mean" in df.columns
     ), f"Expected 'last_activations.0_0_mean' column in the metrics file, but got {df.columns}."
+
+
+def test_validation_dictionary(mse_trainer: Any, toy_model: Any):
+    """Tests using a dictionary of validation data loaders."""
+    MSETrainer = mse_trainer
+    ToyModel = toy_model
+    trainer = MSETrainer(
+        TrainerConfig(
+            check_val_every_n_epoch=1,
+            check_val_every_n_steps=100,
+            logger=LoggerConfig(
+                log_every_n_steps=10,
+            ),
+        ),
+        ModelConfig(
+            model_class=ToyModel,
+            parallel=ParallelConfig(
+                data_axis_size=-1,
+                model_axis_size=1,
+                fsdp_axis_size=1,
+                fsdp_min_weight_size=pytest.num_devices,
+            ),
+        ),
+        OptimizerConfig(
+            name="adam",
+            scheduler=SchedulerConfig(
+                name="constant",
+                lr=1e-3,
+            ),
+        ),
+        batch=Batch(
+            inputs=jax.ShapeDtypeStruct((8, 64), jnp.float32),
+            targets=jax.ShapeDtypeStruct((8, 1), jnp.float32),
+        ),
+    )
+
+    def data_gen_fn(idx: int) -> Batch:
+        inputs = jax.random.normal(jax.random.PRNGKey(idx), (8, 64))
+        labels = inputs[:, 0:1]
+        return Batch(inputs=inputs, targets=labels)
+
+    train_loader = [data_gen_fn(idx) for idx in range(250)]
+    val_loader = {
+        "first": train_loader[:20],
+        "last": train_loader[-10:],
+        "middle": train_loader[100:120],
+        "all": train_loader,
+    }
+    final_metrics = trainer.train_model(
+        train_loader,
+        val_loader,
+        num_epochs=2,
+    )
+    assert final_metrics is not None
+    epoch_keys = [f"val_epoch_{i}" for i in range(1, 3)]
+    step_keys = [f"val_step_{i}" for i in range(100, 501, 100)]
+    assert all(
+        k in final_metrics for k in epoch_keys
+    ), f"Validation metrics should be logged at the end of each epoch, instead got keys: {final_metrics.keys()}."
+    assert all(
+        k in final_metrics for k in step_keys
+    ), f"Validation metrics should be logged at the end of each step, instead got keys: {final_metrics.keys()}."
+    expected_keys = {f"{dkey}_{mkey}" for dkey in val_loader for mkey in ["loss", "l1_dist"]}
+    expected_keys.add("epoch_time")
+    assert set(final_metrics[epoch_keys[0]].keys()) == expected_keys, (
+        f"Keys should be the same as specified in the loss function for each dataset ({expected_keys}), "
+        f"but got {final_metrics[epoch_keys[0]].keys()}."
+    )
+    assert set(final_metrics[epoch_keys[0]].keys()) == set(
+        final_metrics[epoch_keys[1]].keys()
+    ), f"Keys should be the same for all validation metrics, but got {final_metrics[epoch_keys[1]].keys()}."
+    assert set(final_metrics[epoch_keys[0]].keys()) == set(
+        final_metrics[step_keys[1]].keys()
+    ), f"Keys should be the same for all validation metrics, but got {final_metrics[step_keys[1]].keys()}."
+    new_metrics = trainer.eval_model(val_loader, "eval", epoch_idx=2)
+    assert new_metrics is not None
+    for key in expected_keys:
+        if key == "epoch_time":
+            continue
+        assert new_metrics[key] == final_metrics[epoch_keys[1]][key], f"Key {key} should be the same."
