@@ -42,8 +42,11 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
     batch_size_per_device = 8
     context_length = 128
 
+    # Can test equality between hf and grain api currently only for grain_packing=True, eval_max_steps_per_epoch=False
     _, _, grain_train_ds, grain_eval_ds, grain_train_iterator, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
         data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
+        grain_packing=True,
+        eval_max_steps_per_epoch=None,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
     )
@@ -88,8 +91,63 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
             assert np.all(getattr(grain_batch, field) == getattr(hf_batch, field)), f"{field} is different in batch {i}"
 
 
+# TODO: make fixture for dataset creation.
+@pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
+def test_array_records_eval_loader(tmp_path: Path):
+    """Test eval loader flags packing=False and max_steps for some integer value (not None)."""
+    # Convert Wiki dataset to ArrayRecords.
+    shard_size = 2000  # Small shard size such that even wiki is stored in multiple files (for testing).
+    hf_path = "Salesforce/wikitext"
+    hf_data_dir = "wikitext-2-v1"
+    base_out_path = tmp_path / "array_records" / f"shardsize_{shard_size}"
+
+    convert_dataset(
+        hf_path=hf_path,
+        hf_data_name=None,
+        hf_data_dir=hf_data_dir,
+        hf_cache_dir=tmp_path / "hf_cache",
+        splits=["train", "validation"],
+        num_processes=2,
+        base_out_path=base_out_path,
+        shard_size=shard_size,
+    )
+
+    # Next, get dataset and iterators for both grain and hf.
+    batch_size_per_device = 8
+    context_length = 128
+
+    # eval loader for eval_max_steps_per_epoch=None vs. eval_max_steps_per_epoch=20
+    _, _, _, grain_eval_ds, _, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
+        data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
+        grain_packing=False,
+        eval_max_steps_per_epoch=None,
+        batch_size_per_device=batch_size_per_device,
+        context_length=context_length,
+    )
+    eval_batches = _load_n_batches(grain_eval_iterator, max_batches=10000)  # the entire eval dataset
+
+    _, _, _, grain_eval_ds, _, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
+        data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
+        grain_packing=False,
+        eval_max_steps_per_epoch=20,
+        batch_size_per_device=batch_size_per_device,
+        context_length=context_length,
+    )
+    eval_batches_20 = _load_n_batches(grain_eval_iterator, max_batches=10000)  # the entire eval dataset (here 20 steps)
+    assert len(eval_batches_20) == 20
+    for i in range(20):
+        for field in eval_batches[i].__dict__.keys():
+            assert np.all(
+                getattr(eval_batches[i], field) == getattr(eval_batches_20[i], field)
+            ), f"{field} is different in batch {i}"
+
+
 def _grain_setup_data(
-    data_path, batch_size_per_device: int = 2, context_length: int = 128
+    data_path: Path,
+    grain_packing: bool,
+    eval_max_steps_per_epoch: int | None,
+    batch_size_per_device: int = 2,
+    context_length: int = 128,
 ) -> tuple[
     ParallelConfig,
     Mesh,
@@ -145,7 +203,8 @@ def _grain_setup_data(
         add_bos=False,
         add_eos=False,
         add_eod=True,
-        grain_packing=True,
+        grain_packing=grain_packing,
+        eval_max_steps_per_epoch=eval_max_steps_per_epoch,
     )
 
     train_path = data_config.data_path / data_config.train_split

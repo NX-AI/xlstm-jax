@@ -1,8 +1,9 @@
 import glob
 import logging
+import math
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, SupportsIndex
 
 import grain.python as grain
 import jax
@@ -87,11 +88,6 @@ def preprocessing_pipeline(
     Returns:
         MultiHostDataLoadIterator: The multi-host data loading iterator.
     """
-    #  TODO: address the following assertions in a future PR after merging lazy API (issue #178)
-    assert tokenize is True, "Only tokenized data is supported for now."
-    assert drop_remainder is True, "Only drop remainder is supported for now."
-    assert max_steps_per_epoch is None, "max_steps_per_epoch is not supported for now."
-
     assert global_batch_size % global_mesh.size == 0, "Batch size should be divisible number of global devices."
 
     # Load tokenizer if provided and set eod_token_id.
@@ -111,20 +107,48 @@ def preprocessing_pipeline(
     if tokenize:
         assert tokenizer_path is not None, "Tokenizer path must be provided if tokenize is True."
 
-    # Create initial operations before those from make_grain_llm_iterator.
-    shift_target = False
-    operations = [
-        grain_transforms.ParseArrayRecords(column_name=data_column_name),
-        grain_transforms.HFTokenize(
-            tokenizer=tokenizer,
-            column_name=data_column_name,
-            max_length=max_target_length,
-            add_eod=add_eod,
-            eod_token_id=eod_token_id,
-        ),
-        grain_transforms.HFNormalizeFeatures("input_ids"),
-    ]
-    LOGGER.info(f"Dataset size: {len(dataset)}")
+        # Create initial operations before those from make_grain_llm_iterator.
+        shift_target = False
+        operations = [
+            grain_transforms.ParseArrayRecords(column_name=data_column_name),
+            grain_transforms.HFTokenize(
+                tokenizer=tokenizer,
+                column_name=data_column_name,
+                max_length=max_target_length,
+                add_eod=add_eod,
+                eod_token_id=eod_token_id,
+            ),
+            grain_transforms.HFNormalizeFeatures("input_ids"),
+        ]
+        LOGGER.info(f"Dataset size: {len(dataset)}")
+    else:
+        raise NotImplementedError("Offline tokenization is not supported with ArrayRecords yet.")
+
+    if not drop_remainder:
+        if grain_packing:
+            LOGGER.warning(
+                "drop_remainder is set to False, but grain_packing is enabled. This is currently incompatible. "
+                "With online-packing, we cannot determine the number of batches beforehand."
+            )
+        else:
+            dataset = pad_arrayrecord_dataset(dataset, global_batch_size, data_column_name)
+
+    if max_steps_per_epoch is not None:
+        LOGGER.info(f"Limiting number of steps per epoch to {max_steps_per_epoch}.")
+        if grain_packing:
+            LOGGER.warning(
+                "Trying to use max_steps_per_epoch, but grain_packing is enabled. Will limit number of examples to "
+                "max_steps_per_epoch * global_batch_size, but this may lead to fewer batches than max_steps_per_epoch."
+            )
+        if len(dataset) <= max_steps_per_epoch * global_batch_size:
+            LOGGER.info(
+                f"Dataset size is {len(dataset)}, which is smaller than max_steps_per_epoch * global_batch_size "
+                f"{max_steps_per_epoch * global_batch_size}. Skipping limiting the number of steps per epoch."
+            )
+        elif isinstance(dataset, PaddedDataset):
+            dataset.full_dataset_length = max_steps_per_epoch * global_batch_size
+        else:
+            dataset = PaddedDataset(dataset, max_steps_per_epoch * global_batch_size, data_column_name)
 
     multihost_gen = make_grain_llm_iterator(
         dataloading_host_index,
@@ -232,7 +256,7 @@ def make_grain_iterator(
         add_eos=config.add_eos,
         add_eod=config.add_eod,
         grain_packing=config.grain_packing,
-        drop_remainder=True,  # TODO: we currently do not support False. But we want it False for eval.
+        drop_remainder=False,
         tokenizer_cache_dir=config.hf_cache_dir,
         max_steps_per_epoch=config.eval_max_steps_per_epoch,
     )
@@ -262,3 +286,62 @@ def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord
     sorted_files = sorted(data_files, key=lambda x: int(re.search(r"_(\d+)" + escaped_extension + r"$", x).group(1)))
     dataset = grain.ArrayRecordDataSource(sorted_files)
     return dataset
+
+
+class PaddedDataset(grain.RandomAccessDataSource):
+    """Dataset wrapper to pad the dataset to be a multiple of the global batch
+    size."""
+
+    def __init__(self, dataset: grain.ArrayRecordDataSource, full_dataset_length: int, column_name: str):
+        """Initializes the PaddedDataset.
+
+        Args:
+            dataset: The dataset to pad.
+            full_dataset_length: The full dataset length, including padding. Should be a multiple of the global
+                batch size with which the dataset is loaded. Also lengths smaller than the dataset are supported
+                and will return the smaller length.
+            column_name: The column name in the dataset that is returned.
+        """
+        self.dataset = dataset
+        self.full_dataset_length = full_dataset_length
+        self.column_name = column_name
+
+    def __len__(self):
+        """Returns the full dataset length."""
+        return self.full_dataset_length
+
+    def __getitem__(self, record_key: SupportsIndex) -> Any:
+        """Returns padding if the record key is out of bounds, otherwise
+        returns the dataset record."""
+        if record_key >= len(self.dataset):
+            return b""  # empty bytestring for padding (padding here refers to dataset padding, i.e. an empty sequence)
+        else:
+            return self.dataset[record_key]
+
+    def __repr__(self):
+        return (
+            f"PaddedDataset({self.dataset}, full_dataset_length={self.full_dataset_length}, "
+            f"column_name={self.column_name})"
+        )
+
+
+def pad_arrayrecord_dataset(
+    dataset: grain.ArrayRecordDataSource,
+    global_batch_size: int,
+    column_name: str,
+) -> PaddedDataset:
+    """Pads the dataset to match a multiple of the global batch size.
+
+    Args:
+        dataset: The dataset to pad.
+        global_batch_size: The global batch size.
+        column_name: The column name in the dataset.
+
+    Returns:
+        The padded dataset.
+    """
+    dataset_length = len(dataset)
+    padded_length = int(math.ceil(dataset_length / global_batch_size)) * global_batch_size
+    padded_dataset = PaddedDataset(dataset, padded_length, column_name)
+    LOGGER.info(f"Padding dataset to length {padded_length}.")
+    return padded_dataset
