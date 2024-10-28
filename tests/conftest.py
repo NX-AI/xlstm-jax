@@ -37,6 +37,18 @@ try:
 except ImportError:
     GRAIN_AVAILABLE = False
 
+# Check if triton is available.
+try:
+    import jax_triton
+
+    jt_version = jax_triton.__version__
+
+    # If we run on GPU environments with jax triton installed, but with JAX_PLATFORMS
+    # set to CPU, we need to disable the triton tests.
+    TRITON_AVAILABLE = os.environ.get("JAX_PLATFORMS", "") != "cpu"
+except ImportError:
+    TRITON_AVAILABLE = False
+
 # Set W&B offline for tests.
 os.environ["WANDB_MODE"] = "offline"
 
@@ -47,5 +59,6 @@ if "XLSTM_JAX_TEST_DATA" not in os.environ:
 
 # Share environment variables with pytest.
 def pytest_configure():
-    pytest.grain_available = GRAIN_AVAILABLE
     pytest.num_devices = NUM_DEVICES
+    pytest.grain_available = GRAIN_AVAILABLE
+    pytest.triton_available = TRITON_AVAILABLE

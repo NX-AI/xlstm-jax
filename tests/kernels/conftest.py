@@ -26,23 +26,6 @@ if cuda_compat_installed:
         os.environ["LD_LIBRARY_PATH"] = f"{cuda_compat_folder}"
 
 
-try:
-    import jax_triton
-
-    jt_version = jax_triton.__version__
-
-    # If we run on GPU environments with jax triton installed, but with JAX_PLATFORMS
-    # set to CPU, we need to disable the triton tests.
-    TRITON_AVAILABLE = os.environ.get("JAX_PLATFORMS", "") != "cpu"
-except ImportError:
-    TRITON_AVAILABLE = False
-
-
-# Share environment variables with pytest.
-def pytest_configure():
-    pytest.triton_available = TRITON_AVAILABLE
-
-
 @pytest.fixture
 def default_qkvif() -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     B = 1

@@ -5,7 +5,7 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from .init import small_init
+from xlstm_jax.models.shared import small_init
 
 
 @dataclass

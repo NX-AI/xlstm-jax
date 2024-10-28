@@ -4,10 +4,8 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.models.configs import ParallelConfig
-from xlstm_jax.models.xlstm_parallel.components.init import small_init, wang_init
-
-from ..configs import SubModelConfig
+from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
+from xlstm_jax.models.shared import small_init, wang_init
 
 
 @dataclass

@@ -9,9 +9,9 @@ from flax import linen as nn
 
 from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
 from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import InitDistribution, InitFnName, create_common_init_fn, small_init
 
 from ..utils import UpProjConfigMixin
-from .init import InitDistribution, InitFnName, create_common_init_fn, small_init
 
 _act_fn_registry = {
     "gelu": nn.gelu,

@@ -8,8 +8,8 @@ from hydra.core.config_store import ConfigStore
 
 from xlstm_jax.dataset.configs import DataConfig, HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
 from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import InitDistribution, InitFnName
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import BackendType
-from xlstm_jax.models.xlstm_parallel.components.init import InitDistribution, InitFnName
 from xlstm_jax.models.xlstm_parallel.components.normalization import NormType
 from xlstm_jax.trainer.base.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig

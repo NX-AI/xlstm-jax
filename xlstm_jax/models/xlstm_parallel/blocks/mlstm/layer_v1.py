@@ -5,10 +5,10 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from xlstm_jax.distributed.tensor_parallel import TPAsyncDense, TPDense
+from xlstm_jax.models.shared import create_common_init_fn, small_init, soft_cap_logits
 
-from ...components.init import bias_linspace_init, create_common_init_fn, small_init
+from ...components.init import bias_linspace_init
 from ...components.normalization import MultiHeadNormLayer, NormLayer
-from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend
 from .layer import mLSTMLayerConfig
 

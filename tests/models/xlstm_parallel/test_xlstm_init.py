@@ -9,12 +9,12 @@ from flax import linen as nn
 from jax.sharding import Mesh, PartitionSpec as P
 
 from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import create_common_init_fn
 from xlstm_jax.models.xlstm_clean.xlstm_lm_model import xLSTMLMModel as xLSTMLMModelClean
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
-from xlstm_jax.models.xlstm_parallel.components.init import create_common_init_fn
 from xlstm_jax.models.xlstm_parallel.training import init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from xlstm_jax.trainer.base.param_utils import flatten_dict

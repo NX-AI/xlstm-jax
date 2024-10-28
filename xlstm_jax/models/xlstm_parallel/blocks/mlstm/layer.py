@@ -8,12 +8,12 @@ import jax.numpy as jnp
 from flax import linen as nn
 
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper, TPAsyncDense, TPDense
+from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import InitDistribution, InitFnName, create_common_init_fn, prepare_module, small_init
 
-from ....configs import ParallelConfig
 from ...components.conv import CausalConv1d, CausalConv1dConfig
-from ...components.init import InitDistribution, InitFnName, create_common_init_fn, small_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
-from ...utils import UpProjConfigMixin, prepare_module
+from ...utils import UpProjConfigMixin
 from .cell import mLSTMCell, mLSTMCellConfig
 
 

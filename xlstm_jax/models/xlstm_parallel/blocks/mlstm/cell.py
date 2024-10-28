@@ -6,13 +6,12 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.models.configs import SubModelConfig
+from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
+from xlstm_jax.models.shared import soft_cap_logits
 
-from ....configs import ParallelConfig
 from ...components.init import bias_linspace_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...components.normalization import MultiHeadNormLayer, NormLayer
-from ...utils import soft_cap_logits
 from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
 
 

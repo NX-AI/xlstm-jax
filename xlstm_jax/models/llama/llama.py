@@ -5,13 +5,12 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.distributed import ModelParallelismWrapper, shard_module_params, split_array_over_mesh
-from xlstm_jax.models.xlstm_parallel.components.init import small_init
+from xlstm_jax.distributed import ModelParallelismWrapper
+from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
+from xlstm_jax.models.shared import TPLMHead, prepare_module, small_init
 
-from ..configs import ParallelConfig, SubModelConfig
 from .attention import SelfAttention, SelfAttentionConfig, create_causal_mask, precompute_freqs
 from .feedforward import FeedForward, FeedForwardConfig
-from .utils import prepare_module
 
 
 @dataclass
@@ -290,58 +289,17 @@ class LlamaTransformer(nn.Module):
         x = stack_fn(config=self.config, name="block_stack")(x, train=train)
         # LMHead
         pred_fn = prepare_module(
-            partial(TPOutputLayer, config=self.config, name="lm_head"), "LMHead", config=self.config.parallel
+            partial(
+                TPLMHead,
+                parallel=self.config.parallel,
+                vocab_size=self.config.vocab_size,
+                kernel_init=small_init(self.config.embedding_dim),
+                norm_fn=partial(nn.RMSNorm, dtype=self.config.dtype, name="out_norm"),
+                lm_head_dtype=self.config.dtype,
+                name="lm_head",
+            ),
+            "LMHead",
+            config=self.config.parallel,
         )
         logits = pred_fn()(x)
         return logits
-
-
-class TPOutputLayer(nn.Module):
-    """
-    Output layer for the LLAMA model.
-
-    Supports Tensor Parallelism.
-
-    Args:
-        config: Configuration for the LLAMA model.
-    """
-
-    config: LlamaConfig
-
-    @nn.compact
-    def __call__(self, x: jax.Array) -> jax.Array:
-        """
-        Apply output layer to the input tensor.
-
-        Args:
-            x: Input tensor.
-
-        Returns:
-            Logits of the output layer.
-        """
-        # Gather outputs over feature dimension and split over sequence length.
-        x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
-        x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
-        # Apply norm - Shard parameters over model axis.
-        norm_fn = shard_module_params(
-            nn.RMSNorm,
-            axis_name=self.config.parallel.model_axis_name,
-            min_weight_size=self.config.parallel.fsdp_min_weight_size,
-        )
-        x = norm_fn(dtype=self.config.dtype, name="out_norm")(x)
-        # Apply output layer - Shard parameters over model axis.
-        dense_fn = shard_module_params(
-            nn.Dense,
-            axis_name=self.config.parallel.model_axis_name,
-            min_weight_size=self.config.parallel.fsdp_min_weight_size,
-        )
-        # In Llama, the output layer is in bfloat16 and only the logits are casted up to float32.
-        x = dense_fn(
-            features=self.config.vocab_size,
-            kernel_init=small_init(self.config.embedding_dim),
-            use_bias=False,
-            dtype=jnp.bfloat16,
-            name="out_dense",
-        )(x)
-        x = x.astype(jnp.float32)
-        return x

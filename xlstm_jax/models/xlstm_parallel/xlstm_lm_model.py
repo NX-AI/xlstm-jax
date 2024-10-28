@@ -6,14 +6,11 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from xlstm_jax.distributed.array_utils import split_array_over_mesh
-from xlstm_jax.distributed.data_parallel import shard_module_params
 from xlstm_jax.distributed.tensor_parallel import ModelParallelismWrapper
+from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import TPLMHead, prepare_module, small_init
 
-from ..configs import ParallelConfig
-from .components.init import small_init
 from .components.normalization import resolve_norm
-from .utils import prepare_module, soft_cap_logits
 from .xlstm_block_stack import xLSTMBlockStack, xLSTMBlockStackConfig
 
 
@@ -76,51 +73,27 @@ class xLSTMLMModel(nn.Module):
         stack_fn = prepare_module(xLSTMBlockStack, "BlockStack", config=self.config.parallel)
         x = stack_fn(config=self.config, name="xlstm_block_stack")(x, document_borders=document_borders, train=train)
         # LMHead
+        norm_class, norm_kwargs = resolve_norm(
+            self.config.norm_type,
+            weight=True,
+            bias=False,
+            eps=self.config.norm_eps,
+            dtype=self.config.dtype,
+            name="out_norm",
+        )
         pred_fn = prepare_module(
-            partial(TPOutputLayer, config=self.config, name="lm_head"), "LMHead", config=self.config.parallel
+            partial(
+                TPLMHead,
+                parallel=self.config.parallel,
+                vocab_size=self.config.vocab_size,
+                kernel_init=small_init(self.config.embedding_dim, self.config.init_distribution_out),
+                norm_fn=partial(norm_class, **norm_kwargs),
+                lm_head_dtype=self.config.lm_head_dtype,
+                logits_soft_cap=self.config.logits_soft_cap,
+                name="lm_head",
+            ),
+            "LMHead",
+            config=self.config.parallel,
         )
         logits = pred_fn()(x)
-        logits = soft_cap_logits(logits, self.config.logits_soft_cap)
         return logits
-
-
-class TPOutputLayer(nn.Module):
-    config: xLSTMLMModelConfig
-
-    @nn.compact
-    def __call__(self, x: jax.Array) -> jax.Array:
-        # Gather outputs over feature dimension and split over sequence length.
-        x = jax.lax.all_gather(x, axis_name=self.config.parallel.model_axis_name, axis=-1, tiled=True)
-        x = split_array_over_mesh(x, axis_name=self.config.parallel.model_axis_name, split_axis=1)
-        # Apply norm - Shard parameters over model axis.
-        if self.config.add_post_blocks_norm:
-            norm_class, norm_kwargs = resolve_norm(
-                self.config.norm_type,
-                weight=True,
-                bias=False,
-                eps=self.config.norm_eps,
-                dtype=self.config.dtype,
-                name="out_norm",
-            )
-            norm_class = shard_module_params(
-                norm_class,
-                axis_name=self.config.parallel.model_axis_name,
-                min_weight_size=self.config.parallel.fsdp_min_weight_size,
-            )
-            x = norm_class(**norm_kwargs)(x)
-        # Apply output layer - Shard parameters over model axis.
-        dense_fn = shard_module_params(
-            nn.Dense,
-            axis_name=self.config.parallel.model_axis_name,
-            min_weight_size=self.config.parallel.fsdp_min_weight_size,
-        )
-        x = dense_fn(
-            features=self.config.vocab_size,
-            kernel_init=small_init(self.config.embedding_dim, self.config.init_distribution_out),
-            use_bias=False,
-            dtype=self.config.lm_head_dtype,
-            name="out_dense",
-        )(x)
-        # Output will be enforced to be float32.
-        x = x.astype(jnp.float32)
-        return x

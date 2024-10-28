@@ -6,10 +6,10 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from ..configs import ParallelConfig, SubModelConfig
+from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
+from xlstm_jax.models.shared import InitDistribution, prepare_module
+
 from .blocks.mlstm.block import get_partial_mLSTMBlock, mLSTMBlockConfig
-from .components.init import InitDistribution
-from .utils import prepare_module
 
 
 @dataclass

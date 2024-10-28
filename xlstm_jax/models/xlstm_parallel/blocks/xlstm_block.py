@@ -7,10 +7,11 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from ...configs import ParallelConfig
+from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.shared import prepare_module
+
 from ..components.feedforward import FeedForwardConfig, create_feedforward
 from ..components.normalization import NormLayer
-from ..utils import prepare_module
 from .mlstm.layer import mLSTMLayer, mLSTMLayerConfig
 from .mlstm.layer_v1 import mLSTMLayerV1
 

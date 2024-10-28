@@ -1,5 +1,6 @@
 from collections.abc import Callable
 
+import jax
 from flax import linen as nn
 
 from xlstm_jax.distributed import shard_module_params
@@ -38,3 +39,23 @@ def prepare_module(
     if config.remat is not None and layer_name in config.remat:
         layer = nn.remat(layer, prevent_cse=False)
     return layer
+
+
+def soft_cap_logits(logits: jax.Array, cap_value: float | jax.Array) -> jax.Array:
+    """
+    Soft caps logits to a value.
+
+    Performs a tanh operation on the logits and scales the result to the cap value. Common technique in attention
+    and output language heads to prevent large logits from dominating the softmax. See for example Gemma2:
+    https://arxiv.org/abs/2408.00118
+
+    Args:
+        logits: The logits to cap.
+        cap_value: The value to cap logits to. If None, no cap is applied.
+
+    Returns:
+        The capped logits.
+    """
+    if cap_value is None:
+        return logits
+    return cap_value * nn.tanh(logits / cap_value)
