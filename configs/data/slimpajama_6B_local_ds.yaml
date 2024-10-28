@@ -5,9 +5,6 @@ defaults:
 # Name of the dataset. Used for logging.
 name: spaj6B
 
-# Number of training epochs. Needs to be specified for the shuffling.
-num_train_epochs: ${num_epochs}
-
 # Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
 global_batch_size: ${global_batch_size}
 

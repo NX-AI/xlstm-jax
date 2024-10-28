@@ -132,7 +132,6 @@ def _grain_setup_data(
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     data_config = GrainArrayRecordsDataConfig(
-        num_train_epochs=2,
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         data_path=data_path,

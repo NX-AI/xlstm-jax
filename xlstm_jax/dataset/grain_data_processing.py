@@ -29,7 +29,6 @@ def preprocessing_pipeline(
     max_target_length: int,
     shuffle: bool,
     data_shuffle_seed: int,
-    num_epochs: int,
     tokenizer_path: str | None = None,
     hf_access_token: str | None = None,
     add_bos: bool = True,
@@ -57,14 +56,8 @@ def preprocessing_pipeline(
         tokenize: Whether to tokenize the data.
         global_batch_size: The global batch size.
         max_target_length: The maximum target length.
-        shuffle: Whether to shuffle the dataset. If you want a different shuffle order each
-            epoch, you need to provide the number of epochs in `num_epochs`.
+        shuffle: Whether to shuffle the dataset.
         data_shuffle_seed: The shuffle seed.
-        num_epochs: The number of epochs to train for. The dataset will be repeated for so
-            many epochs, and the shuffle order will be different for each epoch. Note that
-            batches of an epoch can spill over into the first batch of the next epoch, to
-            avoid dropping data. The argument `drop_remainder` controls whether the very last
-            batch of all epochs together is dropped.
         tokenizer_path: The path to the tokenizer.
         hf_access_token: The access token for HuggingFace.
         add_bos: Whether to add the beginning of sequence token.
@@ -142,7 +135,7 @@ def preprocessing_pipeline(
         max_target_length,
         shuffle,
         data_shuffle_seed,
-        num_epochs,
+        num_epochs=None,  # Infinite epochs
         operations=operations,
         grain_packing=grain_packing,
         shift=shift,
@@ -151,7 +144,6 @@ def preprocessing_pipeline(
         worker_count=worker_count,
         worker_buffer_size=worker_buffer_size,
         drop_remainder=True,  # remainder is padded up if not dropped
-        reset_after_epoch=(num_epochs == 1),  # only reset if we go over a single epoch
     )
 
     # Return multi-host jax.Array prep iterator
@@ -202,7 +194,6 @@ def make_grain_iterator(
         tokenizer_path=config.tokenizer_path,
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
-        num_epochs=config.num_train_epochs,
         shuffle=config.shuffle_train_data,
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
@@ -235,7 +226,6 @@ def make_grain_iterator(
         tokenizer_path=config.tokenizer_path,
         global_batch_size=eval_batch_size,
         max_target_length=config.max_target_length,
-        num_epochs=1_000_000,  # Infinite epochs for evals
         shuffle=False,
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,

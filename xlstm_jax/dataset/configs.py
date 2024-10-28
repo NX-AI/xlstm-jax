@@ -32,8 +32,6 @@ class HFLocalDataConfig(DataConfig):
     HuggingFace dataset configuration for locally preprocessed datasets.
     """
 
-    num_train_epochs: int
-    """Number of training epochs. Needs to be specified for the shuffling."""
     data_path: Path
     """Path to the dataset directory."""
     train_data_column: str = "text"
@@ -54,9 +52,6 @@ class HFLocalDataConfig(DataConfig):
 class HFHubDataConfig(DataConfig):
     """HuggingFace dataset configuration for datasets on HuggingFace."""
 
-    num_train_epochs: int
-    """Number of epochs to train on. The data iterator for training data needs to know how many epochs to iterate over
-    because of the way `grain` implements shuffling."""
     hf_path: Path | str
     """Path to the dataset on HuggingFace."""
     hf_cache_dir: Path | str | None = None
@@ -111,8 +106,6 @@ class SyntheticDataConfig(DataConfig):
 class GrainArrayRecordsDataConfig(DataConfig):
     """Grain dataset configuration for ArrayRecords datasets."""
 
-    num_train_epochs: int
-    """Number of training epochs. Needs to be specified for the shuffling."""
     data_path: Path
     """Path to the dataset directory."""
     train_data_column: str = "text"

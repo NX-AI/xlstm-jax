@@ -1,5 +1,6 @@
 defaults:
   - model_schema
+  - llama_default
   - _self_
 
 name: llama165M

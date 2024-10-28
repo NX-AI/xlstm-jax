@@ -60,7 +60,6 @@ def main_train(args: argparse.Namespace):
     # Create data iterator.
     log_info("Creating data iterator.")
     data_config = HFHubDataConfig(
-        num_train_epochs=num_epochs,
         global_batch_size=batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",

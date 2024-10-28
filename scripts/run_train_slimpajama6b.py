@@ -316,7 +316,6 @@ def main_train(args: argparse.Namespace):
     # General hyperparameters.
     batch_size = global_model_config["batch_size_per_device"] * len(jax.devices())
     context_length = 2048
-    num_epochs = 1000
     num_train_steps = 95_000
     lr = global_model_config.get("lr", 1e-3)
     log_path = Path(args.log_dir)
@@ -328,7 +327,6 @@ def main_train(args: argparse.Namespace):
     data_path = base_data_path / ("cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B")
     data_path = data_path / f"ctx{context_length}"
     data_config = HFLocalDataConfig(
-        num_train_epochs=num_epochs,
         global_batch_size=batch_size,
         data_path=data_path,
         max_target_length=context_length,

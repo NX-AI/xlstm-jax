@@ -41,7 +41,6 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
     global_batch_size = 64
     context_length = 128
     data_config = HFHubDataConfig(
-        num_train_epochs=2,
         global_batch_size=global_batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",
@@ -109,7 +108,6 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
     # Test max steps per epoch and a continuous validation iterator.
     eval_max_steps_per_epoch = len(eval_iterator) // 2
     data_config = HFHubDataConfig(
-        num_train_epochs=2,
         global_batch_size=global_batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",
@@ -338,7 +336,6 @@ def _setup_data(
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     data_config = HFHubDataConfig(
-        num_train_epochs=2,
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",

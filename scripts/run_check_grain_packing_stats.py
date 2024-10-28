@@ -153,7 +153,6 @@ def _setup_data(
     mesh = initialize_mesh(parallel_config=parallel)
 
     data_config = HFHubDataConfig(
-        num_train_epochs=2,
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         hf_path="DKYoon/SlimPajama-6B",

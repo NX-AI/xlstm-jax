@@ -43,7 +43,6 @@ def preprocess_dataset(
     LOGGER.info(f"Preprocessing dataset {hf_path}.")
     # Dataset Configuration
     config = HFHubDataConfig(
-        num_train_epochs=1,
         global_batch_size=1,
         max_target_length=context_length,
         hf_path=hf_path,

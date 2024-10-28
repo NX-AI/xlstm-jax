@@ -72,15 +72,14 @@ def make_grain_llm_iterator(
         dataset: The dataset to load. Should provide a `__getitem__` method to access elements.
         global_batch_size: The global batch size.
         max_target_length: The maximum target length.
-        shuffle: Whether to shuffle the dataset. If you want a different shuffle order each
-            epoch, you need to provide the number of epochs in `num_epochs`.
+        shuffle: Whether to shuffle the dataset.
         data_shuffle_seed: The shuffle seed.
         num_epochs: The number of epochs to train for. The dataset will be repeated for so
-            many epochs, and the shuffle order will be different for each epoch. Note that
-            batches of an epoch can spill over into the first batch of the next epoch, to
-            avoid dropping data. The argument `drop_remainder` controls whether the very last
-            batch of all epochs together is dropped. If num_epochs is None, will set to
-            sys.maxsize, ie infinite epochs.
+            many epochs, and the shuffle order will be different for each epoch. If None,
+            the dataset will be repeated infinitely. Note that batches of an epoch can
+            spill over into the first batch of the next epoch, to avoid dropping data.
+            The argument `drop_remainder` controls whether the very last batch of all epochs
+            together is dropped.
         operations: A list of `grain` operations to apply to the dataset before batching.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
             with a lot of padding, as batch elements will be packed together in a sequence

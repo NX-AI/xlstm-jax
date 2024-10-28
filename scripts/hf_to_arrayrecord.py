@@ -101,7 +101,6 @@ def convert_dataset(
     LOGGER.info(f"Converting to array_records with {num_processes} workers")
     # Dataset Configuration
     config = HFHubDataConfig(
-        num_train_epochs=1,
         global_batch_size=1,
         max_target_length=-1,
         hf_path=hf_path,

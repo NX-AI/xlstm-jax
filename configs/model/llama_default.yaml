@@ -6,4 +6,5 @@ defaults:
 vocab_size: 50304
 add_qk_norm: false
 scan_blocks: true
+add_embedding_dropout: false
 dtype: bfloat16
