@@ -42,14 +42,15 @@ def train_without_hydra(tmpdir):
     num_epochs = 1
 
     # Create data iterator.
-    data_config = SyntheticDataConfig(
+    train_config, eval_config = SyntheticDataConfig.create_train_eval_configs(
+        train_kwargs=dict(num_batches=252),
+        eval_kwargs=dict(num_batches=53),
         global_batch_size=batch_size,
         max_target_length=context_length,
         data_shuffle_seed=42,
-        num_train_batches=252,
-        num_val_batches=53,
     )
-    data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    data_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Define model config - tiny xLSTM.
     xlstm_config = xLSTMLMModelConfig(

@@ -6,7 +6,6 @@ from tests.dataset.test_hf_data_processing import _load_n_batches, _setup_data a
 import grain.python as grain
 import numpy as np
 import pytest
-import transformers
 from jax.sharding import Mesh
 
 from xlstm_jax.dataset import grain_data_processing
@@ -43,15 +42,15 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
     context_length = 128
 
     # Can test equality between hf and grain api currently only for grain_packing=True, eval_max_steps_per_epoch=False
-    _, _, grain_train_ds, grain_eval_ds, grain_train_iterator, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
+    _, _, grain_train_ds, grain_eval_ds, grain_train_iterator, grain_eval_iterator = _grain_setup_data(
         data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
-        grain_packing=True,
+        eval_grain_packing=True,  # using grain packing in hf pipeline
         eval_max_steps_per_epoch=None,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
     )
 
-    _, _, hf_train_ds, hf_eval_ds, hf_train_iterator, hf_eval_iterator, hf_tokenizer = _hf_setup_data(
+    _, _, hf_train_ds, hf_eval_ds, hf_train_iterator, hf_eval_iterator, _ = _hf_setup_data(
         tmp_path=tmp_path,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
@@ -115,20 +114,21 @@ def test_array_records_eval_loader(tmp_path: Path):
     # Next, get dataset and iterators for both grain and hf.
     batch_size_per_device = 8
     context_length = 128
+    data_path = base_out_path / hf_path.replace("/", "_") / hf_data_dir
 
     # eval loader for eval_max_steps_per_epoch=None vs. eval_max_steps_per_epoch=20
-    _, _, _, grain_eval_ds, _, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
-        data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
-        grain_packing=False,
+    _, _, _, grain_eval_ds, _, grain_eval_iterator = _grain_setup_data(
+        data_path=data_path,
+        eval_grain_packing=False,
         eval_max_steps_per_epoch=None,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
     )
     eval_batches = _load_n_batches(grain_eval_iterator, max_batches=10000)  # the entire eval dataset
 
-    _, _, _, grain_eval_ds, _, grain_eval_iterator, grain_tokenizer = _grain_setup_data(
-        data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
-        grain_packing=False,
+    _, _, _, grain_eval_ds, _, grain_eval_iterator = _grain_setup_data(
+        data_path=data_path,
+        eval_grain_packing=False,
         eval_max_steps_per_epoch=20,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
@@ -144,7 +144,7 @@ def test_array_records_eval_loader(tmp_path: Path):
 
 def _grain_setup_data(
     data_path: Path,
-    grain_packing: bool,
+    eval_grain_packing: bool,
     eval_max_steps_per_epoch: int | None,
     batch_size_per_device: int = 2,
     context_length: int = 128,
@@ -155,7 +155,6 @@ def _grain_setup_data(
     grain.ArrayRecordDataSource,
     MultiHostDataLoadIterator,
     MultiHostDataLoadIterator,
-    transformers.AutoTokenizer,
 ]:
     """Helper function to get data iterators, datasets, mesh, and tokenizer for
     testing.
@@ -166,11 +165,13 @@ def _grain_setup_data(
 
     Args:
         data_path: path to the dataset folder, which contains train and validation subfolder with .arecord files.
+        eval_grain_packing: Whether to use grain packing for evaluation dataset.
+        eval_max_steps_per_epoch: Maximum number of steps per epoch for evaluation.
         batch_size_per_device: The (local) batch size per device.
         context_length: The context/sequence length.
 
     Returns:
-        Tuple of parallel config, mesh, train_ds, eval_ds, train_iterator, eval_iterator, tokenizer.
+        Tuple of parallel config, mesh, train_ds, eval_ds, train_iterator, eval_iterator.
     """
 
     # Define data configuration.
@@ -189,42 +190,47 @@ def _grain_setup_data(
     # Initialize mesh.
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
-    data_config = GrainArrayRecordsDataConfig(
+    train_data_config = GrainArrayRecordsDataConfig(
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         data_path=data_path,
-        train_data_column="text",
-        eval_data_column="text",
-        train_split="train",
-        eval_split="validation",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
+        data_column="text",
+        split="train",
+        tokenize_data=True,
         tokenizer_path="gpt2",
         add_bos=False,
         add_eos=False,
         add_eod=True,
-        grain_packing=grain_packing,
-        eval_max_steps_per_epoch=eval_max_steps_per_epoch,
+        shuffle_data=True,
+        grain_packing=True,
+        max_steps_per_epoch=None,
+        drop_remainder=True,
+    )
+    eval_data_config = GrainArrayRecordsDataConfig(
+        global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
+        max_target_length=context_length,
+        data_path=data_path,
+        data_column="text",
+        split="validation",
+        tokenize_data=True,
+        tokenizer_path="gpt2",
+        add_bos=False,
+        add_eos=False,
+        add_eod=True,
+        shuffle_data=False,
+        grain_packing=eval_grain_packing,
+        max_steps_per_epoch=eval_max_steps_per_epoch,
+        drop_remainder=False,
     )
 
-    train_path = data_config.data_path / data_config.train_split
-    train_ds = grain_data_processing.load_array_record_dataset(dataset_path=train_path)
+    train_path = train_data_config.data_path / train_data_config.split
+    eval_path = eval_data_config.data_path / eval_data_config.split
 
-    eval_path = data_config.data_path / data_config.eval_split
+    train_ds = grain_data_processing.load_array_record_dataset(dataset_path=train_path)
     eval_ds = grain_data_processing.load_array_record_dataset(dataset_path=eval_path)
 
     # Define iterators
-    train_iterator, eval_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    train_iterator = create_data_iterator(config=train_data_config, mesh=mesh)
+    eval_iterator = create_data_iterator(config=eval_data_config, mesh=mesh)
 
-    # Get the tokenizer that is used for the train_iterator and eval_iterator. We need it for testing.
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        data_config.tokenizer_path,
-        clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
-        legacy=False,
-        token=None,
-        use_fast=True,
-        add_bos=data_config.add_bos,
-        add_eos=data_config.add_eos,
-        cache_dir=data_config.hf_cache_dir,
-    )
-    return parallel, mesh, train_ds, eval_ds, train_iterator, eval_iterator, tokenizer
+    return parallel, mesh, train_ds, eval_ds, train_iterator, eval_iterator

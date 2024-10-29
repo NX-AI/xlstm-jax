@@ -100,16 +100,15 @@ def main_train(args: argparse.Namespace):
     data_name = "600B" if args.use_full_dataset else "6B"
     data_path = base_data_path / ("cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B")
     data_path = data_path / f"ctx{context_length}"
-    data_config = HFLocalDataConfig(
+    train_config, eval_config = HFLocalDataConfig.create_train_eval_configs(
         global_batch_size=batch_size,
         data_path=data_path,
         max_target_length=context_length,
-        train_data_column="text",
-        eval_data_column="text",
-        shuffle_train_data=True,
+        data_column="text",
         data_shuffle_seed=123,
     )
-    data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Define model config.
     llama_config = global_model_config["model_config"](parallel=parallel)
@@ -192,13 +191,13 @@ def main_train(args: argparse.Namespace):
             Path(args.load_checkpoint_from),
             step_idx=-1,
             load_best=False,
-            train_loader=data_iterator,
+            train_loader=train_data_iterator,
             val_loader=eval_data_iterator,
         )
 
     log_info("Training model.")
     final_metrics = trainer.train_model(
-        train_loader=data_iterator,
+        train_loader=train_data_iterator,
         val_loader=eval_data_iterator,
         num_train_steps=num_train_steps,
     )

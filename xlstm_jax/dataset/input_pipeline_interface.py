@@ -64,7 +64,9 @@ def get_process_loading_real_data(config: DataConfig, mesh: Mesh) -> list[int]:
     """
     sharding = jax.sharding.NamedSharding(mesh, P(mesh.axis_names))
     devices_indices_map = sharding.devices_indices_map((config.global_batch_size, config.max_target_length))
-    if config.global_batch_size_to_train_on > 0:
+    # Note: we removed the field global_batch_size_to_train_on from the config. Functionality for
+    # expansion_factor_real_data != -1 is currently not used in the codebase.
+    if getattr(config, "global_batch_size_to_train_on", -1) > 0:
         batch_cutoff = config.global_batch_size_to_train_on
     else:
         batch_cutoff = config.global_batch_size
@@ -75,11 +77,14 @@ def get_process_loading_real_data(config: DataConfig, mesh: Mesh) -> list[int]:
     return list(process_loading_real_data)
 
 
-def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataIterator, DataIterator | None]:
+def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
     """Return iterators according to dataset_type"""
     process_indices = get_process_loading_real_data(config, mesh)
     if config.expansion_factor_real_data != -1:  # assert number of hosts loading real data
-        assert len(process_indices) == jax.process_count() // config.expansion_factor_real_data
+        # If using expansion_factor_real_data for TP, we need to ensure that process_indices is set correctly, after
+        # using separate train and eval configs. This exception is here until this is checked.
+        raise NotImplementedError("expansion_factor_real_data != -1 is currently not supported.")
+        # assert len(process_indices) == jax.process_count() // config.expansion_factor_real_data
     if jax.process_index() in process_indices:
         if isinstance(config, HFHubDataConfig):
             return make_hf_hub_iterator(config, mesh, process_indices)
@@ -96,9 +101,9 @@ def make_mixed_train_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataItera
         )
 
 
-def create_data_iterator(config: DataConfig, mesh: Mesh) -> tuple[DataIterator, DataIterator | None]:
+def create_data_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
     if isinstance(config, SyntheticDataConfig):
-        return SyntheticDataIterator(config, mesh, "train"), SyntheticDataIterator(config, mesh, "val")
+        return SyntheticDataIterator(config, mesh)
     elif isinstance(config, (HFHubDataConfig, HFLocalDataConfig, GrainArrayRecordsDataConfig)):
         # This only works if grain is available. This was checked beforehand but if we get here anyway, the program
         # will crash. Better to remind the user why it crashed.

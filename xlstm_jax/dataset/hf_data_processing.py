@@ -470,8 +470,8 @@ def make_hf_hub_iterator(
     process_indices: list[int],
     dataloading_host_index: int | None = None,
     dataloading_host_count: int | None = None,
-) -> tuple[MultiHostDataLoadIterator, MultiHostDataLoadIterator]:
-    """Load, preprocess dataset and return iterators for huggingface datasets.
+) -> MultiHostDataLoadIterator:
+    """Load, preprocess dataset and return data-loading iterator for huggingface datasets.
 
     Args:
         config: HFHubDataConfig object with dataset configuration.
@@ -484,86 +484,49 @@ def make_hf_hub_iterator(
             provided, determined from `process_indices`.
 
     Returns:
-        Tuple of training and evaluation iterators.
+        data-loading iterator (for training or evaluation).
     """
     if dataloading_host_index is None:
         dataloading_host_index = process_indices.index(jax.process_index())
     if dataloading_host_count is None:
         dataloading_host_count = len(process_indices)
-    LOGGER.info(f"Loading training data of path {config.hf_path}.")
-    train_ds = datasets.load_dataset(
+
+    LOGGER.info(f"Loading {config.split} data of path {config.hf_path}.")
+    dataset = datasets.load_dataset(
         config.hf_path,
         data_dir=config.hf_data_dir,
-        data_files=config.hf_train_files,
+        data_files=config.hf_data_files,
         cache_dir=config.hf_cache_dir,
-        split="train",
+        split=config.split,
         streaming=False,
         token=config.hf_access_token,
         num_proc=config.hf_num_data_processes,
     )
-    train_iter = preprocessing_pipeline(
+
+    # Create data-loading iterator.
+    iterator = preprocessing_pipeline(
         dataloading_host_index=dataloading_host_index,
         dataloading_host_count=dataloading_host_count,
         global_mesh=global_mesh,
-        dataset=train_ds,
-        data_column_name=config.train_data_column,
-        tokenize=config.tokenize_train_data,
+        dataset=dataset,
+        data_column_name=config.data_column,
+        tokenize=config.tokenize_data,
         tokenizer_path=config.tokenizer_path,
         hf_access_token=config.hf_access_token,
         hf_num_map_processes=config.hf_num_map_processes,
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
-        shuffle=config.shuffle_train_data,
+        shuffle=config.shuffle_data,
         data_shuffle_seed=config.data_shuffle_seed,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
         add_eod=config.add_eod,
         grain_packing=config.grain_packing,
-        drop_remainder=True,
+        drop_remainder=config.drop_remainder,
         tokenizer_cache_dir=config.hf_cache_dir,
+        max_steps_per_epoch=config.max_steps_per_epoch,
     )
-
-    LOGGER.info(f"Loading evaluation data of path {config.hf_path}.")
-    eval_ds = datasets.load_dataset(
-        config.hf_path,
-        data_dir=config.hf_data_dir,
-        data_files=config.hf_eval_files,
-        cache_dir=config.hf_cache_dir,
-        split=config.hf_eval_split,
-        streaming=False,
-        token=config.hf_access_token,
-        num_proc=config.hf_num_data_processes,
-    )
-    if config.global_batch_size_for_eval > 0:
-        eval_batch_size = config.global_batch_size_for_eval
-    else:
-        eval_batch_size = config.global_batch_size
-
-    eval_iter = preprocessing_pipeline(
-        dataloading_host_index=dataloading_host_index,
-        dataloading_host_count=dataloading_host_count,
-        global_mesh=global_mesh,
-        dataset=eval_ds,
-        data_column_name=config.eval_data_column,
-        tokenize=config.tokenize_eval_data,
-        tokenizer_path=config.tokenizer_path,
-        hf_access_token=config.hf_access_token,
-        hf_num_map_processes=config.hf_num_map_processes,
-        global_batch_size=eval_batch_size,
-        max_target_length=config.max_target_length,
-        shuffle=False,
-        data_shuffle_seed=config.data_shuffle_seed,
-        add_bos=config.add_bos,
-        add_eos=config.add_eos,
-        add_eod=config.add_eod,
-        grain_packing=config.grain_packing,
-        drop_remainder=False,
-        tokenizer_cache_dir=config.hf_cache_dir,
-        max_steps_per_epoch=config.eval_max_steps_per_epoch,
-    )
-    # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
-
-    return train_iter, eval_iter
+    return iterator
 
 
 def make_hf_local_iterator(
@@ -572,9 +535,8 @@ def make_hf_local_iterator(
     process_indices: list[int],
     dataloading_host_index: int | None = None,
     dataloading_host_count: int | None = None,
-) -> tuple[MultiHostDataLoadIterator, MultiHostDataLoadIterator]:
-    """Load a preprocessed dataset from disk and return iterators for
-    huggingface datasets.
+) -> MultiHostDataLoadIterator:
+    """Load a preprocessed dataset from disk and return data-loading iterator for huggingface datasets.
 
     Args:
         config: HFLocalDataConfig object with dataset configuration.
@@ -588,61 +550,33 @@ def make_hf_local_iterator(
             shard size. If not provided, determined from process_indices.
 
     Returns:
-        Tuple of training and evaluation iterators.
+        data-loading iterator (for training or evaluation).
     """
     if dataloading_host_index is None:
         dataloading_host_index = process_indices.index(jax.process_index())
     if dataloading_host_count is None:
         dataloading_host_count = len(process_indices)
 
-    # Load training data from disk.
-    train_path = config.data_path / config.train_split
-    LOGGER.info(f"Loading training data from local path {train_path}.")
-    assert train_path.exists(), f"Training data path {train_path} does not exist."
-    train_ds = datasets.load_from_disk(train_path.absolute().as_posix())
+    # Load dataset from disk.
+    split_path = config.data_path / config.split
+    LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
+    assert split_path.exists(), f"Training data path {split_path} does not exist."
+    dataset = datasets.load_from_disk(split_path.absolute().as_posix())
 
-    # Create training iterator.
-    train_iter = preprocessing_pipeline(
+    # Create data-loading iterator.
+    iterator = preprocessing_pipeline(
         dataloading_host_index=dataloading_host_index,
         dataloading_host_count=dataloading_host_count,
         global_mesh=global_mesh,
-        dataset=train_ds,
-        data_column_name=config.train_data_column,
+        dataset=dataset,
+        data_column_name=config.data_column,
         tokenize=False,
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
-        shuffle=config.shuffle_train_data,
+        shuffle=config.shuffle_data,
         data_shuffle_seed=config.data_shuffle_seed,
-        drop_remainder=True,
+        drop_remainder=config.drop_remainder,
+        max_steps_per_epoch=config.max_steps_per_epoch,
         eod_token_id=config.eod_token_id,
     )
-
-    # Load evaluation data from disk.
-    eval_path = config.data_path / config.eval_split
-    LOGGER.info(f"Loading evaluation data from local path {eval_path}.")
-    assert eval_path.exists(), f"Evaluation data path {eval_path} does not exist."
-    eval_ds = datasets.load_from_disk(eval_path.absolute().as_posix())
-
-    # Create evaluation iterator.
-    if config.global_batch_size_for_eval > 0:
-        eval_batch_size = config.global_batch_size_for_eval
-    else:
-        eval_batch_size = config.global_batch_size
-    eval_iter = preprocessing_pipeline(
-        dataloading_host_index=dataloading_host_index,
-        dataloading_host_count=dataloading_host_count,
-        global_mesh=global_mesh,
-        dataset=eval_ds,
-        data_column_name=config.eval_data_column,
-        tokenize=False,
-        global_batch_size=eval_batch_size,
-        max_target_length=config.max_target_length,
-        shuffle=False,
-        data_shuffle_seed=config.data_shuffle_seed,
-        drop_remainder=False,
-        max_steps_per_epoch=config.eval_max_steps_per_epoch,
-        eod_token_id=config.eod_token_id,
-    )
-    # We also drop the remainder for evals as in multi-host settings, we need to have the same batch size for all hosts.
-
-    return train_iter, eval_iter
+    return iterator

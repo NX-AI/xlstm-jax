@@ -45,7 +45,7 @@ def write_array_record(
     ds = datasets.load_dataset(
         config.hf_path,
         data_dir=config.hf_data_dir,
-        data_files=config.hf_train_files,
+        data_files=config.hf_data_files,
         cache_dir=config.hf_cache_dir,
         split=process_split,
         streaming=False,
@@ -101,13 +101,13 @@ def convert_dataset(
     LOGGER.info(f"Converting to array_records with {num_processes} workers")
     # Dataset Configuration
     config = HFHubDataConfig(
+        shuffle_data=False,  # unused
         global_batch_size=1,
         max_target_length=-1,
         hf_path=hf_path,
         hf_data_dir=hf_data_dir,
         hf_cache_dir=hf_cache_dir,
-        train_data_column="text",
-        eval_data_column="text",
+        data_column="text",
         tokenizer_path="gpt2",
         add_bos=True,
         add_eos=False,
@@ -123,7 +123,7 @@ def convert_dataset(
             config.hf_path,
             name=hf_data_name,
             data_dir=config.hf_data_dir,
-            data_files=config.hf_train_files,
+            data_files=config.hf_data_files,
             cache_dir=config.hf_cache_dir,
             split=split,
             streaming=False,

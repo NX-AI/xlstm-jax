@@ -40,17 +40,14 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
     # Define data configuration.
     global_batch_size = 64
     context_length = 128
-    data_config = HFHubDataConfig(
+    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
         global_batch_size=global_batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",
         hf_data_dir="wikitext-2-v1",
-        hf_eval_split="validation",
         hf_cache_dir=tmp_path / "hf_cache",
-        train_data_column="text",
-        eval_data_column="text",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
+        data_column="text",
+        tokenize_data=True,
         tokenizer_path="gpt2",
         data_shuffle_seed=42,
         add_bos=True,
@@ -60,7 +57,8 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
     )
 
     # Define iterators
-    train_iterator, eval_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    train_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Get batch from training iterator and make sure that the batch size is correct.
     train_batch = next(train_iterator)
@@ -107,27 +105,10 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
 
     # Test max steps per epoch and a continuous validation iterator.
     eval_max_steps_per_epoch = len(eval_iterator) // 2
-    data_config = HFHubDataConfig(
-        global_batch_size=global_batch_size,
-        max_target_length=context_length,
-        hf_path="Salesforce/wikitext",
-        hf_data_dir="wikitext-2-v1",
-        hf_eval_split="validation",
-        hf_cache_dir=tmp_path / "hf_cache",
-        train_data_column="text",
-        eval_data_column="text",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
-        tokenizer_path="gpt2",
-        data_shuffle_seed=42,
-        add_bos=True,
-        add_eos=True,
-        add_eod=True,
-        eval_max_steps_per_epoch=eval_max_steps_per_epoch,
-    )
+    eval_config.max_steps_per_epoch = eval_max_steps_per_epoch
 
     # Define iterators
-    _, eval_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    eval_iterator = create_data_iterator(config=eval_config, mesh=mesh)
     assert len(eval_iterator) == eval_max_steps_per_epoch, "Eval dataset have the specified number of steps."
     for epoch_idx in range(3):
         batch_idx = 0
@@ -335,17 +316,15 @@ def _setup_data(
     # Initialize mesh.
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
-    data_config = HFHubDataConfig(
-        global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
+    global_batch_size = batch_size_per_device * mesh.shape[parallel.data_axis_name]
+    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
+        global_batch_size=global_batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",
         hf_data_dir="wikitext-2-v1",
         hf_cache_dir=tmp_path / "hf_cache",
-        hf_eval_split="validation",
-        train_data_column="text",
-        eval_data_column="text",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
+        data_column="text",
+        tokenize_data=True,
         tokenizer_path="gpt2",
         data_shuffle_seed=42,
         add_bos=False,
@@ -357,38 +336,39 @@ def _setup_data(
 
     # Load the train and validation datasets.
     train_ds = datasets.load_dataset(
-        data_config.hf_path,
-        data_dir=data_config.hf_data_dir,
-        data_files=data_config.hf_train_files,
-        cache_dir=data_config.hf_cache_dir,
-        split="train",
+        train_config.hf_path,
+        data_dir=train_config.hf_data_dir,
+        data_files=train_config.hf_data_files,
+        cache_dir=train_config.hf_cache_dir,
+        split=train_config.split,
         streaming=False,
-        token=data_config.hf_access_token,
-        num_proc=data_config.hf_num_data_processes,
+        token=train_config.hf_access_token,
+        num_proc=train_config.hf_num_data_processes,
     )
     eval_ds = datasets.load_dataset(
-        data_config.hf_path,
-        data_dir=data_config.hf_data_dir,
-        data_files=data_config.hf_train_files,
-        cache_dir=data_config.hf_cache_dir,
+        eval_config.hf_path,
+        data_dir=eval_config.hf_data_dir,
+        data_files=eval_config.hf_data_files,
+        cache_dir=eval_config.hf_cache_dir,
         split="validation",
         streaming=False,
-        token=data_config.hf_access_token,
-        num_proc=data_config.hf_num_data_processes,
+        token=eval_config.hf_access_token,
+        num_proc=eval_config.hf_num_data_processes,
     )
 
     # Define iterators
-    train_iterator, eval_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    train_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Get the tokenizer that is used for the train_iterator and eval_iterator. We need it for testing.
     tokenizer = transformers.AutoTokenizer.from_pretrained(
-        data_config.tokenizer_path,
+        train_config.tokenizer_path,
         clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
         legacy=False,
-        token=data_config.hf_access_token,
+        token=train_config.hf_access_token,
         use_fast=True,
-        add_bos=data_config.add_bos,
-        add_eos=data_config.add_eos,
-        cache_dir=data_config.hf_cache_dir,
+        add_bos=train_config.add_bos,
+        add_eos=train_config.add_eos,
+        cache_dir=train_config.hf_cache_dir,
     )
     return parallel, mesh, train_ds, eval_ds, train_iterator, eval_iterator, tokenizer

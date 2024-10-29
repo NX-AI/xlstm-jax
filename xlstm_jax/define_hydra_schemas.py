@@ -94,6 +94,8 @@ class QuickHackModelConfig:
 
 @dataclass
 class BaseSyntheticDataConfig(SyntheticDataConfig):
+    num_train_batches: int = MISSING
+    num_val_batches: int = MISSING
     data_config_type: str = "synthetic"
 
 

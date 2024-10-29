@@ -181,8 +181,8 @@ def make_grain_iterator(
     process_indices: list[int],
     dataloading_host_index: int | None = None,
     dataloading_host_count: int | None = None,
-):
-    """Load, preprocess dataset and return iterators for pure grain ArrayRecords datasets.
+) -> MultiHostDataLoadIterator:
+    """Load, preprocess dataset and return iterator for pure grain ArrayRecords dataset.
 
     Args:
         config: GrainArrayRecordsDataConfig object with dataset configuration.
@@ -204,65 +204,33 @@ def make_grain_iterator(
         dataloading_host_count = len(process_indices)
 
     # Load training data from disk.
-    train_path = config.data_path / config.train_split
-    LOGGER.info(f"Loading training data from local path {train_path}.")
-    assert train_path.exists(), f"Training data path {train_path} does not exist."
-    train_ds = load_array_record_dataset(dataset_path=train_path)
+    split_path = config.data_path / config.split
+    LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
+    assert split_path.exists(), f"{config.split} data path {split_path} does not exist."
+    dataset = load_array_record_dataset(dataset_path=split_path)
 
-    train_iter = preprocessing_pipeline(
+    iterator = preprocessing_pipeline(
         dataloading_host_index=dataloading_host_index,
         dataloading_host_count=dataloading_host_count,
         global_mesh=global_mesh,
-        dataset=train_ds,
-        data_column_name=config.train_data_column,
-        tokenize=config.tokenize_train_data,
-        tokenizer_path=config.tokenizer_path,
+        dataset=dataset,
+        data_column_name=config.data_column,
+        tokenize=config.tokenize_data,
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
-        shuffle=config.shuffle_train_data,
+        shuffle=config.shuffle_data,
         data_shuffle_seed=config.data_shuffle_seed,
-        add_bos=config.add_bos,
-        add_eos=config.add_eos,
-        add_eod=config.add_eod,
-        grain_packing=config.grain_packing,
-        drop_remainder=True,
-        tokenizer_cache_dir=config.hf_cache_dir,
-    )
-
-    # Load evaluation data from disk.
-    eval_path = config.data_path / config.eval_split
-    LOGGER.info(f"Loading evaluation data from local path {eval_path}.")
-    assert eval_path.exists(), f"Evaluation data path {eval_path} does not exist."
-    eval_ds = load_array_record_dataset(dataset_path=eval_path)
-
-    # Create evaluation iterator.
-    if config.global_batch_size_for_eval > 0:
-        eval_batch_size = config.global_batch_size_for_eval
-    else:
-        eval_batch_size = config.global_batch_size
-
-    eval_iter = preprocessing_pipeline(
-        dataloading_host_index=dataloading_host_index,
-        dataloading_host_count=dataloading_host_count,
-        global_mesh=global_mesh,
-        dataset=eval_ds,
-        data_column_name=config.train_data_column,
-        tokenize=config.tokenize_train_data,
         tokenizer_path=config.tokenizer_path,
-        global_batch_size=eval_batch_size,
-        max_target_length=config.max_target_length,
-        shuffle=False,
-        data_shuffle_seed=config.data_shuffle_seed,
+        hf_access_token=config.hf_access_token,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
         add_eod=config.add_eod,
         grain_packing=config.grain_packing,
-        drop_remainder=False,
+        drop_remainder=config.drop_remainder,
         tokenizer_cache_dir=config.hf_cache_dir,
-        max_steps_per_epoch=config.eval_max_steps_per_epoch,
+        max_steps_per_epoch=config.max_steps_per_epoch,
     )
-
-    return train_iter, eval_iter
+    return iterator
 
 
 def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord"):

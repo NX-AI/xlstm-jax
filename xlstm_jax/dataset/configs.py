@@ -1,29 +1,66 @@
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any, TypeVar
+
+# Create a generic variable that can be 'DataConfig', or any subclass.
+T = TypeVar("T", bound="DataConfig")
+
+
+def _update_dict_default(d: dict, key: Any, value: Any) -> None:
+    """Update a dictionary with a default value."""
+    if key not in d:
+        d[key] = value
 
 
 @dataclass(kw_only=True, frozen=False)
 class DataConfig:
     """Base data configuration."""
 
+    shuffle_data: bool = False
+    """Whether to shuffle the data. Usually True for training and False for validation."""
     name: str | None = None
     """Name of the dataset. Helpful for logging."""
     global_batch_size: int
     """Global batch size for training."""
     max_target_length: int | None = None
     """Maximum length of the target sequence."""
-    global_batch_size_to_train_on: int = -1
-    """Global batch size to train on. If -1, it will be set to :attr:`global_batch_size`. Otherwise, should be smaller
-    than :attr:`global_batch_size` to indicate a reduced batch size for training."""
-    global_batch_size_for_eval: int = -1
-    """Global batch size for evaluation. If -1, it will be set to :attr:`global_batch_size`. Can be larger or smaller
-    than :attr:`global_batch_size`, but at least 1 per device."""
     expansion_factor_real_data: int = -1
     """Expansion factor for real data. If -1, all hosts will load real data."""
-    shuffle_train_data: bool = True
-    """Whether to shuffle the training data."""
     data_shuffle_seed: int = 42
     """Seed for data shuffling."""
+
+    @classmethod
+    def create_train_eval_configs(
+        cls: type[T], train_kwargs: dict | None = None, eval_kwargs: dict | None = None, **kwargs
+    ) -> tuple[T, T]:
+        """Create training and evaluation configurations.
+
+        Args:
+            train_kwargs: Training-exclusive keyword arguments.
+            eval_kwargs: Evaluation-exclusive keyword arguments.
+            **kwargs: Shared keyword arguments.
+
+        Returns:
+            Tuple[DataConfig, DataConfig]: Training and evaluation configurations.
+        """
+        if train_kwargs is None:
+            train_kwargs = {}
+        if eval_kwargs is None:
+            eval_kwargs = {}
+        train_kwargs.update(kwargs)
+        eval_kwargs.update(kwargs)
+        # Shuffle
+        _update_dict_default(train_kwargs, "shuffle_data", True)
+        _update_dict_default(eval_kwargs, "shuffle_data", False)
+        # Drop remainder
+        if hasattr(cls, "drop_remainder"):
+            _update_dict_default(train_kwargs, "drop_remainder", True)
+            _update_dict_default(eval_kwargs, "drop_remainder", False)
+        # Split
+        if hasattr(cls, "split"):
+            _update_dict_default(train_kwargs, "split", "train")
+            _update_dict_default(eval_kwargs, "split", "validation")
+        return cls(**train_kwargs), cls(**eval_kwargs)
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -34,18 +71,16 @@ class HFLocalDataConfig(DataConfig):
 
     data_path: Path
     """Path to the dataset directory."""
-    train_data_column: str = "text"
-    """Column name for training data."""
-    eval_data_column: str = "text"
-    """Column name for evaluation data."""
-    train_split: str = "train"
-    """Split to use for training. Should be a subdirectory of data_dir."""
-    eval_split: str = "validation"
-    """Split to use for evaluation. Should be a subdirectory of data_dir."""
-    eval_max_steps_per_epoch: int | None = None
-    """Maximum number of steps per epoch for evaluation."""
+    data_column: str = "text"
+    """Column name for (training or evaluation) data."""
+    split: str = "train"
+    """Split to use (for training or evaluation). Should be a subdirectory of data_dir."""
+    max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch (for training or evaluation)."""
     eod_token_id: int = 0
     """End of document token ID. Used for identifying the document segmentations."""
+    drop_remainder: bool = False
+    """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -60,26 +95,20 @@ class HFHubDataConfig(DataConfig):
     """Access token for HuggingFace"""
     hf_data_dir: Path | str | None = None
     """Directory for additional data files."""
-    hf_train_files: str | None = None
-    """Specific training files to use"""
-    hf_eval_files: str | None = None
-    """Specific evaluation files to use"""
-    hf_eval_split: str | None = "validation"
-    """Split to use for evaluation."""
+    hf_data_files: str | None = None
+    """Specific (training or evaluation) files to use"""
+    split: str | None = "train"
+    """Split to use (for training or evaluation)."""
     hf_num_data_processes: int | None = None
     """Number of processes to use for downloading the dataset."""
     hf_num_map_processes: int | None = None
     """Number of processes to use for mapping."""
-    train_data_column: str = "text"
-    """Column name for training data."""
-    eval_data_column: str = "text"
-    """Column name for evaluation data."""
-    eval_max_steps_per_epoch: int | None = None
-    """Maximum number of steps per epoch for evaluation."""
-    tokenize_train_data: bool = True
-    """Whether to tokenize training data."""
-    tokenize_eval_data: bool = True
-    """Whether to tokenize evaluation data."""
+    data_column: str = "text"
+    """Column name for (training or evaluation) data."""
+    max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch (for training or evaluation)."""
+    tokenize_data: bool = True
+    """Whether to tokenize the data data. If False, the data is assumed to be already tokenized."""
     tokenizer_path: str = "gpt2"
     """Path to the tokenizer."""  # TODO: is this really a path or rather a name?
     add_bos: bool = False
@@ -89,17 +118,17 @@ class HFHubDataConfig(DataConfig):
     add_eod: bool = True
     """Whether to add an end of document token."""
     grain_packing: bool = False
-    """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
+    """Whether to perform packing via grain FirstFitPackIterDataset."""
+    drop_remainder: bool = False
+    """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
 
 
 @dataclass(kw_only=True, frozen=False)
 class SyntheticDataConfig(DataConfig):
     """Synthetic dataset configuration."""
 
-    num_train_batches: int = 100
-    """Number of samples to generate for synthetic training data."""
-    num_val_batches: int = 10
-    """Number of samples to generate for synthetic validation data."""
+    num_batches: int = 100
+    """Number of samples to generate for synthetic (training or evaluation) data."""
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -108,20 +137,16 @@ class GrainArrayRecordsDataConfig(DataConfig):
 
     data_path: Path
     """Path to the dataset directory."""
-    train_data_column: str = "text"
-    """Column name for training data."""
-    eval_data_column: str = "text"
-    """Column name for evaluation data."""
-    train_split: str = "train"
-    """Split to use for training. Should be a subdirectory of data_dir."""
-    eval_split: str = "validation"
-    """Split to use for evaluation. Should be a subdirectory of data_dir."""
-    eval_max_steps_per_epoch: int | None = None
-    """Maximum number of steps per epoch for evaluation."""
-    tokenize_train_data: bool = True
-    """Whether to tokenize training data."""
-    tokenize_eval_data: bool = True
-    """Whether to tokenize evaluation data."""
+    data_column: str = "text"
+    """Column name for (training or evaluation) data."""
+    split: str = "train"
+    """Dataset split to use, e.g. 'train' or 'validation'. Should be a subdirectory of data_dir."""
+    drop_remainder: bool = False
+    """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
+    max_steps_per_epoch: int | None = None
+    """Maximum number of steps per epoch."""
+    tokenize_data: bool = True  # TODO: in data_processing API just called tokenize. Better to have identical names.
+    """Whether to tokenize the data data. If False, the data is assumed to be already tokenized."""
     tokenizer_path: str = "gpt2"
     """Path to the tokenizer."""  # TODO: is this really a path or rather a name?
     add_bos: bool = False
@@ -131,7 +156,7 @@ class GrainArrayRecordsDataConfig(DataConfig):
     add_eod: bool = True
     """Whether to add an end of document token."""
     grain_packing: bool = False
-    """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
+    """Whether to perform packing via grain FirstFitPackIterDataset."""
     hf_cache_dir: Path | None = None
     """Directory to cache the dataset. Used to get the HF tokenizer."""
     hf_access_token: str | None = None

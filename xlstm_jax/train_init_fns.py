@@ -62,14 +62,24 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
     """
 
     # create data iterator TODO: this is not working since we have no instantiated SyntheticDataConfig here.
+    # create data iterator TODO: this is not working since we have no instantiated SyntheticDataConfig here.
     # explicit data config here. maybe that will be solved by richard?
     if cfg.data.data_config_type == "synthetic":
         # Delete the data_config_type key from the config since it's not needed anymore
         # and would cause an error when creating the SyntheticDataConfig.
         del cfg.data.data_config_type
+        # Take out the train and val batches.
+        num_train_batches = cfg.data.num_train_batches
+        num_val_batches = cfg.data.num_val_batches
+        del cfg.data.num_train_batches
+        del cfg.data.num_val_batches
 
         # Create the data config object.
-        data_config = SyntheticDataConfig(**cfg.data)
+        train_config, eval_config = SyntheticDataConfig.create_train_eval_configs(
+            train_kwargs=dict(num_batches=num_train_batches),
+            eval_kwargs=dict(num_batches=num_val_batches),
+            **cfg.data,
+        )
 
     elif cfg.data.data_config_type == "huggingface_hub":
         # Delete the data_config_type key from the config since it's not needed anymore
@@ -77,7 +87,7 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
         del cfg.data.data_config_type
 
         # Create the data config object.
-        data_config = HFHubDataConfig(**cfg.data)
+        train_config, eval_config = HFHubDataConfig.create_train_eval_configs(**cfg.data)
 
     elif cfg.data.data_config_type == "huggingface_local":
         # Delete the data_config_type key from the config since it's not needed anymore
@@ -85,7 +95,7 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
         del cfg.data.data_config_type
 
         # Create the data config object.
-        data_config = HFLocalDataConfig(**cfg.data)
+        train_config, eval_config = HFLocalDataConfig.create_train_eval_configs(**cfg.data)
 
     elif cfg.data.data_config_type == "grain_arrayrecord":
         # Delete the data_config_type key from the config since it's not needed anymore
@@ -93,15 +103,17 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
         del cfg.data.data_config_type
 
         # Create the data config object.
-        data_config = GrainArrayRecordsDataConfig(**cfg.data)
+        train_config, eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(**cfg.data)
 
     else:
         raise NotImplementedError("Only synthetic, Huggingface, and ArrayRecord datasets are implemented.")
+        raise NotImplementedError("Only synthetic, Huggingface, and ArrayRecord datasets are implemented.")
 
     # Create data iterators
-    data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh) if eval_config is not None else None
 
-    return data_iterator, eval_data_iterator
+    return train_data_iterator, eval_data_iterator
 
 
 def get_tokenizer_vocab_size(cfg: DictConfig, next_multiple_of: int = 1) -> int:
@@ -119,10 +131,10 @@ def get_tokenizer_vocab_size(cfg: DictConfig, next_multiple_of: int = 1) -> int:
     ), "Tokenizer path is not defined in the config, cannot determine vocab size."
     tokenizer = load_tokenizer(
         cfg.data.tokenizer_path,
-        add_bos=cfg.data.add_bos,
-        add_eos=cfg.data.add_eos,
-        hf_access_token=cfg.data.hf_access_token,
-        cache_dir=cfg.data.hf_cache_dir,
+        add_bos=cfg.data.get("add_bos", False),
+        add_eos=cfg.data.get("add_eos", False),
+        hf_access_token=cfg.data.get("hf_access_token", None),
+        cache_dir=cfg.data.get("hf_cache_dir", None),
     )
     vocab_size = tokenizer.vocab_size
     log_info(f"Tokenizer {cfg.data.tokenizer_path} has vocabulary size: {vocab_size}.")
@@ -143,6 +155,11 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
     Returns:
         Initialized model configuration.
     """
+    # Update the model config with the vocabulary size.
+    if cfg.model.vocab_size <= 0:
+        log_info("Vocabulary size not set in config. Determining vocabulary size from tokenizer.")
+        cfg.model.vocab_size = get_tokenizer_vocab_size(cfg, next_multiple_of=64)
+        log_info(f"Vocabulary size: {cfg.model.vocab_size}.")
     # Update the model config with the vocabulary size.
     if cfg.model.vocab_size <= 0:
         log_info("Vocabulary size not set in config. Determining vocabulary size from tokenizer.")
@@ -461,6 +478,7 @@ def main_train(cfg: DictConfig):
     log_info("Mesh initialized.")
 
     log_info(f"Devices: {jax.devices()}.")
+    log_info(f"Devices: {jax.devices()}.")
 
     # Compute global batch size.
     global_batch_size = cfg.batch_size_per_device * len(jax.devices())
@@ -494,6 +512,7 @@ def main_train(cfg: DictConfig):
         val_loader=eval_data_iterator,
         **train_kwargs,
     )
+    log_info(f"Final metrics: {final_metrics}.")
     log_info(f"Final metrics: {final_metrics}.")
 
     return final_metrics

@@ -59,22 +59,22 @@ def main_train(args: argparse.Namespace):
 
     # Create data iterator.
     log_info("Creating data iterator.")
-    data_config = HFHubDataConfig(
+    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
         global_batch_size=batch_size,
         max_target_length=context_length,
         hf_path="Salesforce/wikitext",
         hf_data_dir="wikitext-103-raw-v1",
         hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
-        train_data_column="text",
-        eval_data_column="text",
-        tokenize_train_data=True,
-        tokenize_eval_data=True,
+        data_column="text",
+        tokenize_data=True,
         tokenizer_path="gpt2",
         data_shuffle_seed=42,
         add_bos=True,
         add_eos=True,
     )
-    data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+
+    train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
+    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Define model config - 120M parameters.
     xlstm_config = xLSTMLMModelConfig(
@@ -151,7 +151,7 @@ def main_train(args: argparse.Namespace):
             scheduler=SchedulerConfig(
                 name="exponential_decay",
                 lr=lr,
-                decay_steps=len(data_iterator) * num_epochs,
+                decay_steps=len(train_data_iterator) * num_epochs,
                 end_lr_factor=0.1,
                 warmup_steps=1_000,
                 cooldown_steps=1_000,
@@ -168,7 +168,7 @@ def main_train(args: argparse.Namespace):
 
     log_info("Training model.")
     final_metrics = trainer.train_model(
-        train_loader=data_iterator,
+        train_loader=train_data_iterator,
         val_loader=eval_data_iterator,
         num_epochs=num_epochs,
     )

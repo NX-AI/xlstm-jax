@@ -50,22 +50,22 @@ def preprocess_dataset(
         hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
         hf_num_map_processes=num_map_processes,
         hf_num_data_processes=num_data_processes,
-        train_data_column="text",
-        eval_data_column="text",
+        data_column="text",
         tokenizer_path="gpt2",
         add_bos=True,
         add_eos=False,
         add_eod=True,
+        shuffle_data=False,  # unused
     )
     LOGGER.info(f"Dataset configuration: {config}")
 
     for split in splits:
         # Load dataset from hub/cache.
         LOGGER.info(f"Loading {split} dataset.")
-        train_ds = datasets.load_dataset(
+        dataset = datasets.load_dataset(
             config.hf_path,
             data_dir=config.hf_data_dir,
-            data_files=config.hf_train_files,
+            data_files=config.hf_data_files,
             cache_dir=config.hf_cache_dir,
             split=split,
             streaming=False,
@@ -75,10 +75,10 @@ def preprocess_dataset(
 
         # Preprocess dataset.
         LOGGER.info(f"Preprocessing {split} dataset.")
-        train_ds = preprocess_hf_dataset(
-            train_ds,
+        dataset = preprocess_hf_dataset(
+            dataset,
             tokenizer_path=config.tokenizer_path,
-            column_name=config.train_data_column,
+            column_name=config.data_column,
             max_target_length=config.max_target_length,
             add_bos=config.add_bos,
             add_eos=config.add_eos,
@@ -97,10 +97,7 @@ def preprocess_dataset(
         LOGGER.info(f"Saving to {out_path}.")
 
         # Save dataset to disk.
-        train_ds.save_to_disk(
-            out_path / split,
-            num_proc=min(64, num_map_processes),
-        )
+        dataset.save_to_disk(out_path / split, num_proc=min(64, num_map_processes))
         LOGGER.info("Finished saving train dataset.")
 
     # Load dataset from disk.
@@ -124,7 +121,7 @@ def preprocess_dataset(
         add_eos=config.add_eos,
         cache_dir=config.hf_cache_dir,
     )
-    LOGGER.info(f"Example text: {tokenizer.decode(train_ds[0]['text'])}")
+    LOGGER.info(f"Example text: {tokenizer.decode(dataset[0]['text'])}")
     LOGGER.info("Finished preprocessing.")
 
 

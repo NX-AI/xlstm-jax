@@ -19,7 +19,6 @@ Synthetic Data Iterator
 """
 
 from functools import partial
-from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -36,14 +35,12 @@ class SyntheticDataIterator:
     Args:
         config: Configuration for the synthetic data.
         mesh: Global device mesh for sharding.
-        mode: Mode of the iterator, either `train` or `val`.
     """
 
-    def __init__(self, config: SyntheticDataConfig, mesh: Mesh, mode: Literal["train", "val"] = "train"):
+    def __init__(self, config: SyntheticDataConfig, mesh: Mesh):
         self.config = config
         self.mesh = mesh
-        self.mode = mode
-        self.num_batches = config.num_train_batches if mode == "train" else config.num_val_batches
+        self.num_batches = config.num_batches
         data_pspec = P(mesh.axis_names)
         data_pspec_shardings = jax.tree_util.tree_map(lambda p: NamedSharding(mesh, p), data_pspec)
         self.data_generator = jax.jit(

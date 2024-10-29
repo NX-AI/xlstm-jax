@@ -14,17 +14,8 @@ data_path: /nfs-gpu/xlstm/data/hf_datasets/DKYoon_SlimPajama-6B/ctx${context_len
 # Maximum length of the target sequence.
 max_target_length: ${context_length}
 
-# Column name for training data.
-train_data_column: text
-
-# Column name for evaluation data.
-eval_data_column: text
-
-# Whether to shuffle the training data.
-shuffle_train_data: true
-
-# Seed for data shuffling
-data_shuffle_seed: 123
+# Column name for data.
+data_column: text
 
 # End of document token ID. Used for identifying the document segmentations.
 eod_token_id: 50256
