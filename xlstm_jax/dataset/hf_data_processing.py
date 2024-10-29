@@ -353,6 +353,7 @@ def preprocessing_pipeline(
     # Load tokenizer if provided and set eod_token_id.
     if tokenizer_path is not None:
         tokenizer = load_tokenizer(tokenizer_path, add_bos, add_eos, hf_access_token, tokenizer_cache_dir)
+        LOGGER.info(f"Loaded tokenizer from {tokenizer_path} with vocab size {tokenizer.vocab_size}.")
         if eod_token_id is not None and eod_token_id != tokenizer.eos_token_id:
             LOGGER.warning(
                 "EOD token ID has been set explicitly and differs from the tokenizer's EOD token ID: "

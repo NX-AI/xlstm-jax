@@ -2,7 +2,7 @@
 defaults:
   - override /parallel: mLSTM165M
   - override /model: mLSTM165M
-  - override /data: slimpajama_6B_local_ds
+  - override /data: slimpajama_6B_arrayrecord
   - override /optimizer: adamw
   - _self_
 
@@ -25,3 +25,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
+
+model:
+  # Negative value means we infer the vocab size from the tokenizer.
+  vocab_size: -1

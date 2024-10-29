@@ -159,18 +159,18 @@ def convert_dataset(
             # Since the number of shards is in general not divisible by the number of processes, we distribute the
             # residual shards among the first 'num_residuals' processes.
             num_shards = math.ceil(dataset_size / shard_size)
-            num_processes = num_processes if num_processes <= num_shards else num_shards  # avoid empty processes
-            min_shards_per_process = num_shards // num_processes
-            num_residuals = num_shards % num_processes
+            num_split_processes = num_processes if num_processes <= num_shards else num_shards  # avoid empty processes
+            min_shards_per_process = num_shards // num_split_processes
+            num_residuals = num_shards % num_split_processes
 
-            num_shards_per_process = np.full(num_processes, min_shards_per_process, dtype=np.int32)
+            num_shards_per_process = np.full(num_split_processes, min_shards_per_process, dtype=np.int32)
             num_shards_per_process[:num_residuals] += 1
             assert num_shards_per_process.sum() == num_shards, "shards per process does not sum to total shards."
             shard_start_indices = np.cumsum(num_shards_per_process) - num_shards_per_process
             example_start_indices = shard_size * shard_start_indices
             example_end_indices = example_start_indices + shard_size * num_shards_per_process
             example_end_indices[-1] = dataset_size
-            with Pool(num_processes) as pool:
+            with Pool(num_split_processes) as pool:
                 pool.starmap(
                     write_array_record,
                     [
@@ -184,7 +184,7 @@ def convert_dataset(
                             example_end_indices[process_idx],
                             shard_size,
                         )
-                        for process_idx in range(num_processes)
+                        for process_idx in range(num_split_processes)
                     ],
                 )
 
@@ -206,6 +206,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument(
         # "--hf_path", type=str, default="DKYoon/SlimPajama-6B", help="Huggingface dataset path."
+        # "--hf_path",
+        # type=str,
+        # default="cerebras/SlimPajama-627B",
+        # help="Huggingface dataset path.",
         "--hf_path",
         type=str,
         default="mlfoundations/dclm-baseline-1.0-parquet",

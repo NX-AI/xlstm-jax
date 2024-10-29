@@ -6,7 +6,13 @@ from dataclasses import MISSING, dataclass
 
 from hydra.core.config_store import ConfigStore
 
-from xlstm_jax.dataset.configs import DataConfig, HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
+from xlstm_jax.dataset.configs import (
+    DataConfig,
+    GrainArrayRecordsDataConfig,
+    HFHubDataConfig,
+    HFLocalDataConfig,
+    SyntheticDataConfig,
+)
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.shared import InitDistribution, InitFnName
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import BackendType
@@ -102,6 +108,11 @@ class BaseHFLocalDataConfig(HFLocalDataConfig):
 
 
 @dataclass
+class BaseGrainArrayRecordsDataConfig(GrainArrayRecordsDataConfig):
+    data_config_type: str = "grain_arrayrecord"
+
+
+@dataclass
 class BaseLoggerConfig(LoggerConfig):
     # For now, the parameters for the sub-configs are also defined here.
     # Will very likely be changed once we use Hydra instantiate or our own Registry.
@@ -162,6 +173,7 @@ def register_configs() -> None:
     cs.store(name="synthetic_data_schema", group="data", node=BaseSyntheticDataConfig)
     cs.store(name="huggingface_hub_data_schema", group="data", node=BaseHFHubDataConfig)
     cs.store(name="huggingface_local_data_schema", group="data", node=BaseHFLocalDataConfig)
+    cs.store(name="grain_arrayrecord_data_schema", group="data", node=BaseGrainArrayRecordsDataConfig)
     cs.store(name="model_schema", group="model", node=QuickHackModelConfig)
     cs.store(name="scheduler_schema", group="scheduler", node=SchedulerConfig)
     cs.store(name="optimizer_schema", group="optimizer", node=OptimizerConfig)

@@ -1,4 +1,5 @@
 import logging
+import math
 import os
 
 import jax
@@ -6,9 +7,16 @@ import jax.numpy as jnp
 from jax.sharding import Mesh
 from omegaconf import DictConfig, OmegaConf
 
-from xlstm_jax.dataset import LLMBatch, create_data_iterator
-from xlstm_jax.dataset.configs import HFHubDataConfig, HFLocalDataConfig, SyntheticDataConfig
-from xlstm_jax.dataset.input_pipeline_interface import DataIterator
+from xlstm_jax.dataset import (
+    DataIterator,
+    GrainArrayRecordsDataConfig,
+    HFHubDataConfig,
+    HFLocalDataConfig,
+    LLMBatch,
+    SyntheticDataConfig,
+    create_data_iterator,
+    load_tokenizer,
+)
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
@@ -53,7 +61,7 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
         Training and validation data iterators.
     """
 
-    # create data iterator TODO: this is not working sice we have no instantiated SyntheticDataConfig here.
+    # create data iterator TODO: this is not working since we have no instantiated SyntheticDataConfig here.
     # explicit data config here. maybe that will be solved by richard?
     if cfg.data.data_config_type == "synthetic":
         # Delete the data_config_type key from the config since it's not needed anymore
@@ -78,13 +86,51 @@ def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataI
 
         # Create the data config object.
         data_config = HFLocalDataConfig(**cfg.data)
+
+    elif cfg.data.data_config_type == "grain_arrayrecord":
+        # Delete the data_config_type key from the config since it's not needed anymore
+        # and would cause an error when instantiating the GrainArrayRecordsDataConfig.
+        del cfg.data.data_config_type
+
+        # Create the data config object.
+        data_config = GrainArrayRecordsDataConfig(**cfg.data)
+
     else:
-        raise NotImplementedError("Only synthetic and Huggingface datasets are implemented.")
+        raise NotImplementedError("Only synthetic, Huggingface, and ArrayRecord datasets are implemented.")
 
     # Create data iterators
     data_iterator, eval_data_iterator = create_data_iterator(config=data_config, mesh=mesh)
 
     return data_iterator, eval_data_iterator
+
+
+def get_tokenizer_vocab_size(cfg: DictConfig, next_multiple_of: int = 1) -> int:
+    """Get the vocabulary size from the tokenizer.
+
+    Args:
+        cfg: Config assembled by Hydra.
+        next_multiple_of: The vocabulary size will be increased to the next multiple of this number.
+
+    Returns:
+        The vocabulary size, increased to the next multiple of `next_multiple_of`.
+    """
+    assert hasattr(
+        cfg.data, "tokenizer_path"
+    ), "Tokenizer path is not defined in the config, cannot determine vocab size."
+    tokenizer = load_tokenizer(
+        cfg.data.tokenizer_path,
+        add_bos=cfg.data.add_bos,
+        add_eos=cfg.data.add_eos,
+        hf_access_token=cfg.data.hf_access_token,
+        cache_dir=cfg.data.hf_cache_dir,
+    )
+    vocab_size = tokenizer.vocab_size
+    log_info(f"Tokenizer {cfg.data.tokenizer_path} has vocabulary size: {vocab_size}.")
+    # Round up to the next multiple.
+    if next_multiple_of > 1:
+        vocab_size = int(math.ceil(vocab_size / next_multiple_of) * next_multiple_of)
+        log_info(f"Rounded up to next multiple of {next_multiple_of}: {vocab_size}.")
+    return vocab_size
 
 
 def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
@@ -97,6 +143,11 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
     Returns:
         Initialized model configuration.
     """
+    # Update the model config with the vocabulary size.
+    if cfg.model.vocab_size <= 0:
+        log_info("Vocabulary size not set in config. Determining vocabulary size from tokenizer.")
+        cfg.model.vocab_size = get_tokenizer_vocab_size(cfg, next_multiple_of=64)
+        log_info(f"Vocabulary size: {cfg.model.vocab_size}.")
     # Define model config
     model_name = cfg.model.name.lower()
     if model_name.startswith("llama"):
@@ -409,7 +460,7 @@ def main_train(cfg: DictConfig):
     mesh = initialize_mesh(parallel_config=parallel)
     log_info("Mesh initialized.")
 
-    log_info(f"Devices: {jax.devices()}")
+    log_info(f"Devices: {jax.devices()}.")
 
     # Compute global batch size.
     global_batch_size = cfg.batch_size_per_device * len(jax.devices())
@@ -443,6 +494,6 @@ def main_train(cfg: DictConfig):
         val_loader=eval_data_iterator,
         **train_kwargs,
     )
-    log_info(f"Final metrics: {final_metrics}")
+    log_info(f"Final metrics: {final_metrics}.")
 
     return final_metrics

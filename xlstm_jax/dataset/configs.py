@@ -134,3 +134,5 @@ class GrainArrayRecordsDataConfig(DataConfig):
     """Whether to perform packing via grain PackAndBatchOperation. If False, use apply group_texts via map instead."""
     hf_cache_dir: Path | None = None
     """Directory to cache the dataset. Used to get the HF tokenizer."""
+    hf_access_token: str | None = None
+    """Access token for HuggingFace. Used to get the HF tokenizer."""
