@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import datasets
@@ -9,7 +10,6 @@ from datasets import Dataset
 from jax.sharding import Mesh, PartitionSpec as P
 
 from xlstm_jax.dataset import HFHubDataConfig, create_data_iterator
-from xlstm_jax.dataset.batch import LLMBatch
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
@@ -147,8 +147,8 @@ def test_hf_dataset_with_packing(tmp_path: Path):
 
     # Load a few batches from the iterators.
     loaded_batches = {
-        "train": _load_n_batches(train_iterator, max_batches=20),
-        "validation": _load_n_batches(eval_iterator, max_batches=20),
+        "train": list(itertools.islice(train_iterator, 20)),
+        "validation": list(itertools.islice(eval_iterator, 20)),
     }
     padding_token_id = 0  # hard-coded to the default value 0 for now
 
@@ -253,24 +253,6 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     assert (
         max(n_batches_per_epoch) - min(n_batches_per_epoch) <= 2
     ), f"Difference in number of batches is too large. Got {n_batches_per_epoch} batches per epoch."
-
-
-def _load_n_batches(iterator: MultiHostDataLoadIterator, max_batches: int = 20) -> list[LLMBatch]:
-    """Loads a given number of batches from an iterator.
-
-    Args:
-        iterator: MultiHostDataLoadIterator from which to load batches.
-        max_batches: Maximum number of batches to load.
-
-    Returns:
-        List of loaded batches.
-    """
-    batches = []
-    for batch in iterator:
-        if len(batches) >= max_batches:
-            break
-        batches.append(batch)
-    return batches
 
 
 def _setup_data(

@@ -1,7 +1,8 @@
+import itertools
 from pathlib import Path
 
 from scripts.hf_to_arrayrecord import convert_dataset
-from tests.dataset.test_hf_data_processing import _load_n_batches, _setup_data as _hf_setup_data
+from tests.dataset.test_hf_data_processing import _setup_data as _hf_setup_data
 
 import grain.python as grain
 import numpy as np
@@ -76,10 +77,10 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
 
     # Check dataloaders (using preprocessing pipeline) load identical batches.
     max_batches = 100  # validation has less than 100 batches for wiki v2. So we also test loading entire eval iterator.
-    grain_train_batches = _load_n_batches(grain_train_iterator, max_batches=max_batches)
-    grain_eval_batches = _load_n_batches(grain_eval_iterator, max_batches=max_batches)
-    hf_train_batches = _load_n_batches(hf_train_iterator, max_batches=max_batches)
-    hf_eval_batches = _load_n_batches(hf_eval_iterator, max_batches=max_batches)
+    grain_train_batches = list(itertools.islice(grain_train_iterator, max_batches))
+    grain_eval_batches = list(itertools.islice(grain_eval_iterator, max_batches))
+    hf_train_batches = list(itertools.islice(hf_train_iterator, max_batches))
+    hf_eval_batches = list(itertools.islice(hf_eval_iterator, max_batches))
     assert len(grain_train_batches) == len(hf_train_batches), "Different number of train batches loaded."
     assert len(grain_eval_batches) == len(hf_eval_batches), "Different number of eval batches loaded."
 
@@ -99,7 +100,8 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
     )
-    eval_batches = _load_n_batches(grain_eval_iterator, max_batches=10000)  # the entire eval dataset
+    eval_batches = list(itertools.islice(grain_eval_iterator, 1000))  # the entire eval dataset
+    assert len(eval_batches) < 1000, "Eval iterator should stop after less than 1000 batches for wiki v2 dataset."
 
     _, _, _, grain_eval_ds, _, grain_eval_iterator = _grain_setup_data(
         data_path=data_path,
@@ -108,7 +110,7 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
     )
-    eval_batches_20 = _load_n_batches(grain_eval_iterator, max_batches=10000)  # the entire eval dataset (here 20 steps)
+    eval_batches_20 = list(itertools.islice(grain_eval_iterator, 1000))  # the entire eval dataset (here 20 steps)
     assert len(eval_batches_20) == 20
     for i in range(20):
         for field in eval_batches[i].__dict__.keys():
