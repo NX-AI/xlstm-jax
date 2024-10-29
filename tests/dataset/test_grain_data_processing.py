@@ -25,6 +25,7 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
     hf_path = "Salesforce/wikitext"
     hf_data_dir = "wikitext-2-v1"
     base_out_path = tmp_path / "array_records" / f"shardsize_{shard_size}"
+    data_path = base_out_path / hf_path.replace("/", "_") / hf_data_dir
 
     convert_dataset(
         hf_path=hf_path,
@@ -41,9 +42,10 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
     batch_size_per_device = 8
     context_length = 128
 
+    # Test eval loader flags packing=False and max_steps for some integer value (not None).
     # Can test equality between hf and grain api currently only for grain_packing=True, eval_max_steps_per_epoch=False
     _, _, grain_train_ds, grain_eval_ds, grain_train_iterator, grain_eval_iterator = _grain_setup_data(
-        data_path=base_out_path / hf_path.replace("/", "_") / hf_data_dir,
+        data_path=data_path,
         eval_grain_packing=True,  # using grain packing in hf pipeline
         eval_max_steps_per_epoch=None,
         batch_size_per_device=batch_size_per_device,
@@ -88,33 +90,6 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
     for i, (grain_batch, hf_batch) in enumerate(zip(grain_eval_batches, hf_eval_batches)):
         for field in hf_batch.__dict__.keys():  # inputs, targets, input_segmentation, etc.
             assert np.all(getattr(grain_batch, field) == getattr(hf_batch, field)), f"{field} is different in batch {i}"
-
-
-# TODO: make fixture for dataset creation.
-@pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
-def test_array_records_eval_loader(tmp_path: Path):
-    """Test eval loader flags packing=False and max_steps for some integer value (not None)."""
-    # Convert Wiki dataset to ArrayRecords.
-    shard_size = 2000  # Small shard size such that even wiki is stored in multiple files (for testing).
-    hf_path = "Salesforce/wikitext"
-    hf_data_dir = "wikitext-2-v1"
-    base_out_path = tmp_path / "array_records" / f"shardsize_{shard_size}"
-
-    convert_dataset(
-        hf_path=hf_path,
-        hf_data_name=None,
-        hf_data_dir=hf_data_dir,
-        hf_cache_dir=tmp_path / "hf_cache",
-        splits=["train", "validation"],
-        num_processes=2,
-        base_out_path=base_out_path,
-        shard_size=shard_size,
-    )
-
-    # Next, get dataset and iterators for both grain and hf.
-    batch_size_per_device = 8
-    context_length = 128
-    data_path = base_out_path / hf_path.replace("/", "_") / hf_data_dir
 
     # eval loader for eval_max_steps_per_epoch=None vs. eval_max_steps_per_epoch=20
     _, _, _, grain_eval_ds, _, grain_eval_iterator = _grain_setup_data(
