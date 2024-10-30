@@ -1,8 +1,10 @@
 # @package _global_
 defaults:
+  - /data@data_eval.val1: slimpajama_6B_arrayrecord_eval
+  - /data@data_eval.val2: synthetic_eval
   - override /parallel: mLSTM165M
   - override /model: mLSTM165M
-  - override /data: slimpajama_6B_arrayrecord
+  - override /data: slimpajama_6B_arrayrecord_train
   - override /optimizer: adamw
   - _self_
 
@@ -17,6 +19,8 @@ n_gpus: 1
 
 logger:
   log_every_n_steps: 2
+  loggers_to_use:
+    - file_logger
 
 scheduler:
   decay_steps: 0

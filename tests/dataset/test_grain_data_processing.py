@@ -167,37 +167,19 @@ def _grain_setup_data(
     # Initialize mesh.
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
-    train_data_config = GrainArrayRecordsDataConfig(
+    train_data_config, eval_data_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
+        train_kwargs=dict(grain_packing=True, max_steps_per_epoch=None),
+        eval_kwargs=dict(grain_packing=eval_grain_packing, max_steps_per_epoch=eval_max_steps_per_epoch),
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         data_path=data_path,
         data_column="text",
-        split="train",
         tokenize_data=True,
         tokenizer_path="gpt2",
         add_bos=False,
         add_eos=False,
         add_eod=True,
-        shuffle_data=True,
-        grain_packing=True,
-        max_steps_per_epoch=None,
-        drop_remainder=True,
-    )
-    eval_data_config = GrainArrayRecordsDataConfig(
-        global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
-        max_target_length=context_length,
-        data_path=data_path,
-        data_column="text",
-        split="validation",
-        tokenize_data=True,
-        tokenizer_path="gpt2",
-        add_bos=False,
-        add_eos=False,
-        add_eod=True,
-        shuffle_data=False,
-        grain_packing=eval_grain_packing,
-        max_steps_per_epoch=eval_max_steps_per_epoch,
-        drop_remainder=False,
+        worker_count=0,
     )
 
     train_path = train_data_config.data_path / train_data_config.split

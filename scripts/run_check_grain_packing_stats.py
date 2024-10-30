@@ -169,6 +169,7 @@ def _create_data_config(
         add_eos=False,
         add_eod=True,
         grain_packing=True,
+        worker_count=0,  # Preprocessing can be done in main process.
     )
     if use_array_records:
         train_config, eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(

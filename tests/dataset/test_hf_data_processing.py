@@ -54,6 +54,7 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
         add_eos=True,
         add_eod=True,
         grain_packing=False,
+        worker_count=0,
     )
 
     # Define iterators
@@ -314,6 +315,7 @@ def _setup_data(
         add_eod=True,
         grain_packing=True,
         hf_num_data_processes=2,
+        worker_count=0,
     )
 
     # Load the train and validation datasets.

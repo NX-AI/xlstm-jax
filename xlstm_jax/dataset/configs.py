@@ -20,6 +20,9 @@ class DataConfig:
     """Whether to shuffle the data. Usually True for training and False for validation."""
     name: str | None = None
     """Name of the dataset. Helpful for logging."""
+    data_config_type: str | None = None
+    """Type of data configuration. Used for initialization via Hydra. Can be 'synthetic',
+    'huggingface_hub', 'huggingface_local', or 'grain_arrayrecord'."""
     global_batch_size: int
     """Global batch size for training."""
     max_target_length: int | None = None
@@ -79,6 +82,10 @@ class HFLocalDataConfig(DataConfig):
     """Maximum number of steps per epoch (for training or evaluation)."""
     eod_token_id: int = 0
     """End of document token ID. Used for identifying the document segmentations."""
+    worker_count: int = 1
+    """Number of workers for data processing."""
+    worker_buffer_size: int = 1
+    """Buffer size for workers."""
     drop_remainder: bool = False
     """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
 
@@ -119,6 +126,13 @@ class HFHubDataConfig(DataConfig):
     """Whether to add an end of document token."""
     grain_packing: bool = False
     """Whether to perform packing via grain FirstFitPackIterDataset."""
+    grain_packing_bin_count: int | None = None
+    """Number of bins for grain packing. If None, use the local batch size. Higher values may improve packing
+    efficiency but may also increase memory usage and pre-processing times."""
+    worker_count: int = 1
+    """Number of workers for data processing."""
+    worker_buffer_size: int = 1
+    """Buffer size for workers."""
     drop_remainder: bool = False
     """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
 
@@ -157,6 +171,13 @@ class GrainArrayRecordsDataConfig(DataConfig):
     """Whether to add an end of document token."""
     grain_packing: bool = False
     """Whether to perform packing via grain FirstFitPackIterDataset."""
+    grain_packing_bin_count: int | None = None
+    """Number of bins for grain packing. If None, use the local batch size. Higher values may improve packing
+    efficiency but may also increase memory usage and pre-processing times."""
+    worker_count: int = 1
+    """Number of workers for data processing."""
+    worker_buffer_size: int = 1
+    """Buffer size for workers."""
     hf_cache_dir: Path | None = None
     """Directory to cache the dataset. Used to get the HF tokenizer."""
     hf_access_token: str | None = None

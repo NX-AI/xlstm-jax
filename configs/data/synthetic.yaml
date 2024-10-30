@@ -4,8 +4,7 @@ defaults:
 
 # Name of the dataset. Used for logging.
 name: synth
+data_config_type: synthetic
 global_batch_size: 32
 max_target_length: ${context_length}
 data_shuffle_seed: 42
-num_train_batches: 250
-num_val_batches: 50

@@ -1,0 +1,4 @@
+defaults:
+  - slimpajama_6B_arrayrecord
+  - default_arrayrecord_train
+  - _self_

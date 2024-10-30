@@ -43,8 +43,7 @@ def train_without_hydra(tmpdir):
 
     # Create data iterator.
     train_config, eval_config = SyntheticDataConfig.create_train_eval_configs(
-        train_kwargs=dict(num_batches=252),
-        eval_kwargs=dict(num_batches=53),
+        num_batches=53,
         global_batch_size=batch_size,
         max_target_length=context_length,
         data_shuffle_seed=42,
@@ -149,8 +148,7 @@ def train_with_hydra(tmpdir):
                 f"data.global_batch_size={pytest.num_devices * 2}",
                 f"data.max_target_length={context_length}",
                 "data.data_shuffle_seed=42",
-                "data.num_train_batches=252",
-                "data.num_val_batches=53",
+                "data.num_batches=53",
                 "model.vocab_size=20",
                 "model.embedding_dim=128",
                 "model.num_blocks=2",

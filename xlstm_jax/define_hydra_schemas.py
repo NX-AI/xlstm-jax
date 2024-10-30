@@ -93,28 +93,6 @@ class QuickHackModelConfig:
 
 
 @dataclass
-class BaseSyntheticDataConfig(SyntheticDataConfig):
-    num_train_batches: int = MISSING
-    num_val_batches: int = MISSING
-    data_config_type: str = "synthetic"
-
-
-@dataclass
-class BaseHFHubDataConfig(HFHubDataConfig):
-    data_config_type: str = "huggingface_hub"
-
-
-@dataclass
-class BaseHFLocalDataConfig(HFLocalDataConfig):
-    data_config_type: str = "huggingface_local"
-
-
-@dataclass
-class BaseGrainArrayRecordsDataConfig(GrainArrayRecordsDataConfig):
-    data_config_type: str = "grain_arrayrecord"
-
-
-@dataclass
 class BaseLoggerConfig(LoggerConfig):
     # For now, the parameters for the sub-configs are also defined here.
     # Will very likely be changed once we use Hydra instantiate or our own Registry.
@@ -133,6 +111,17 @@ class BaseLoggerConfig(LoggerConfig):
     wb_entity: str = MISSING
     wb_name: str = MISSING
     wb_tags: list[str] = MISSING
+
+
+@dataclass
+class DataEvalConfig:
+    """Supports maximum of 5 data evaluation configurations."""
+
+    val1: DataConfig | None = None
+    val2: DataConfig | None = None
+    val3: DataConfig | None = None
+    val4: DataConfig | None = None
+    val5: DataConfig | None = None
 
 
 @dataclass
@@ -164,6 +153,8 @@ class Config:
     task_name: str = MISSING
     logging_name: str = MISSING
 
+    data_eval: DataEvalConfig | None = None
+
 
 def register_configs() -> None:
     cs = ConfigStore.instance()
@@ -172,10 +163,10 @@ def register_configs() -> None:
 
     # Register main configs
     cs.store(name="parallel_schema", group="parallel", node=ParallelConfig)
-    cs.store(name="synthetic_data_schema", group="data", node=BaseSyntheticDataConfig)
-    cs.store(name="huggingface_hub_data_schema", group="data", node=BaseHFHubDataConfig)
-    cs.store(name="huggingface_local_data_schema", group="data", node=BaseHFLocalDataConfig)
-    cs.store(name="grain_arrayrecord_data_schema", group="data", node=BaseGrainArrayRecordsDataConfig)
+    cs.store(name="synthetic_data_schema", group="data", node=SyntheticDataConfig)
+    cs.store(name="huggingface_hub_data_schema", group="data", node=HFHubDataConfig)
+    cs.store(name="huggingface_local_data_schema", group="data", node=HFLocalDataConfig)
+    cs.store(name="grain_arrayrecord_data_schema", group="data", node=GrainArrayRecordsDataConfig)
     cs.store(name="model_schema", group="model", node=QuickHackModelConfig)
     cs.store(name="scheduler_schema", group="scheduler", node=SchedulerConfig)
     cs.store(name="optimizer_schema", group="optimizer", node=OptimizerConfig)

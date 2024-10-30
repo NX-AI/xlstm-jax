@@ -1,0 +1,8 @@
+defaults:
+  - _self_
+
+shuffle_data: true
+drop_remainder: true
+split: train
+grain_packing: false
+grain_packing_bin_count: 128

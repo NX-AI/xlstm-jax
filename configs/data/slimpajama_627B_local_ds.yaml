@@ -3,7 +3,10 @@ defaults:
   - _self_
 
 # Name of the dataset. Used for logging.
-name: spaj627B
+name: spaj627B_HF
+
+# Data config type.
+data_config_type: huggingface_local
 
 # Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
 global_batch_size: ${global_batch_size}

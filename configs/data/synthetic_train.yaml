@@ -1,0 +1,6 @@
+defaults:
+  - synthetic
+  - _self_
+
+# Name of the dataset. Used for logging.
+num_batches: 250

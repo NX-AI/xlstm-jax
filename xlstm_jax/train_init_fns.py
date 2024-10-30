@@ -1,6 +1,7 @@
 import logging
 import math
 import os
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -8,6 +9,7 @@ from jax.sharding import Mesh
 from omegaconf import DictConfig, OmegaConf
 
 from xlstm_jax.dataset import (
+    DataConfig,
     DataIterator,
     GrainArrayRecordsDataConfig,
     HFHubDataConfig,
@@ -50,70 +52,78 @@ def init_parallel(cfg: DictConfig) -> ParallelConfig:
     return parallel
 
 
-def init_data_iterator(cfg: DictConfig, mesh: Mesh) -> tuple[DataIterator, DataIterator | None]:
-    """Initialize data iterators for training and validation.
+def init_data_iterator(
+    cfg: DictConfig, mesh: Mesh
+) -> tuple[DataIterator, DataIterator | dict[str, DataIterator] | None]:
+    """Initialize data iterators.
 
     Args:
         cfg: Config assembled by Hydra.
         mesh: The jax device mesh.
 
     Returns:
-        Training and validation data iterators.
+        Training and evaluation data iterators.
     """
-
-    # create data iterator TODO: this is not working since we have no instantiated SyntheticDataConfig here.
-    # create data iterator TODO: this is not working since we have no instantiated SyntheticDataConfig here.
-    # explicit data config here. maybe that will be solved by richard?
-    if cfg.data.data_config_type == "synthetic":
-        # Delete the data_config_type key from the config since it's not needed anymore
-        # and would cause an error when creating the SyntheticDataConfig.
-        del cfg.data.data_config_type
-        # Take out the train and val batches.
-        num_train_batches = cfg.data.num_train_batches
-        num_val_batches = cfg.data.num_val_batches
-        del cfg.data.num_train_batches
-        del cfg.data.num_val_batches
-
-        # Create the data config object.
-        train_config, eval_config = SyntheticDataConfig.create_train_eval_configs(
-            train_kwargs=dict(num_batches=num_train_batches),
-            eval_kwargs=dict(num_batches=num_val_batches),
-            **cfg.data,
-        )
-
-    elif cfg.data.data_config_type == "huggingface_hub":
-        # Delete the data_config_type key from the config since it's not needed anymore
-        # and would cause an error when instantiating the HFHubDataConfig.
-        del cfg.data.data_config_type
-
-        # Create the data config object.
-        train_config, eval_config = HFHubDataConfig.create_train_eval_configs(**cfg.data)
-
-    elif cfg.data.data_config_type == "huggingface_local":
-        # Delete the data_config_type key from the config since it's not needed anymore
-        # and would cause an error when instantiating the HFLocalDataConfig.
-        del cfg.data.data_config_type
-
-        # Create the data config object.
-        train_config, eval_config = HFLocalDataConfig.create_train_eval_configs(**cfg.data)
-
-    elif cfg.data.data_config_type == "grain_arrayrecord":
-        # Delete the data_config_type key from the config since it's not needed anymore
-        # and would cause an error when instantiating the GrainArrayRecordsDataConfig.
-        del cfg.data.data_config_type
-
-        # Create the data config object.
-        train_config, eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(**cfg.data)
-
+    if cfg.data_eval is None:
+        # If config eval is None, we use the config class to split the data into train and eval.
+        train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="train")
+        eval_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="eval")
     else:
-        raise NotImplementedError("Only synthetic, Huggingface, and ArrayRecord datasets are implemented.")
-        raise NotImplementedError("Only synthetic, Huggingface, and ArrayRecord datasets are implemented.")
+        # Create train data iterator.
+        train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh)
 
-    # Create data iterators
-    train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
-    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh) if eval_config is not None else None
+        # Create evaluation data iterator.
+        eval_data_iterator = None
+        if cfg.data_eval is not None:
+            eval_data_iterator = {}
+            for data_config in cfg.data_eval.values():
+                if data_config is not None:
+                    assert data_config.name is not None, "Evaluation datasets must have a name."
+                    assert (
+                        data_config.name not in eval_data_iterator
+                    ), f"Duplicate evaluation dataset name: {data_config.name}."
+                    eval_data_iterator[data_config.name] = init_single_data_iterator(cfg=data_config, mesh=mesh)
 
     return train_data_iterator, eval_data_iterator
+
+
+def init_single_data_iterator(
+    cfg: DictConfig, mesh: Mesh, create_split: Literal["train", "eval", None] = None
+) -> DataIterator:
+    """Initialize a single data iterator.
+
+    Args:
+        cfg: Data configuration.
+        mesh: The jax device mesh.
+        create_split: Whether to create a train or eval config from the config class, using the
+            `create_train_eval_configs` method. If None, the config is used as is.
+
+    Returns:
+        Data iterator.
+    """
+
+    # Check data config type.
+    config_classes: dict[str, DataConfig] = {
+        "synthetic": SyntheticDataConfig,
+        "huggingface_hub": HFHubDataConfig,
+        "huggingface_local": HFLocalDataConfig,
+        "grain_arrayrecord": GrainArrayRecordsDataConfig,
+    }
+    if cfg.data_config_type not in config_classes:
+        raise NotImplementedError(
+            "Only synthetic, Huggingface, and ArrayRecord datasets are implemented, "
+            f"got {cfg.data_config_type} in config {cfg}."
+        )
+
+    # Create data iterator.
+    config_class = config_classes[cfg.data_config_type]
+    if create_split is None:
+        data_config = config_class(**cfg)
+    else:
+        train_config, eval_config = config_class.create_train_eval_configs(**cfg)
+        data_config = train_config if create_split == "train" else eval_config
+    data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    return data_iterator
 
 
 def get_tokenizer_vocab_size(cfg: DictConfig, next_multiple_of: int = 1) -> int:

@@ -5,7 +5,7 @@ from pathlib import Path
 import jax
 import jax.numpy as jnp
 
-from xlstm_jax.dataset import HFLocalDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import GrainArrayRecordsDataConfig, HFLocalDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -174,11 +174,14 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
+            lm_head_dtype=jnp.bfloat16,
+            logits_soft_cap=30.0,
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=4,
+                    qk_dim_factor=0.5,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=jnp.float32,
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
@@ -188,12 +191,13 @@ MODEL_CONFIGS = {
                         norm_type="rmsnorm",
                         norm_eps=1e-6,
                         reset_at_document_boundaries=False,
+                        gate_soft_cap=15.0,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
-                    proj_factor=4.0,
-                    act_fn="gelu",
-                    ff_type="ffn",
+                    proj_factor=8.0 / 3.0,
+                    act_fn="swish",
+                    ff_type="ffn_gated",
                     dtype=jnp.bfloat16,
                 ),
                 add_post_norm=False,
@@ -249,11 +253,14 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
+            lm_head_dtype=jnp.bfloat16,
+            logits_soft_cap=30.0,
             dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=8,
+                    qk_dim_factor=0.5,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=jnp.float32,
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
@@ -263,12 +270,13 @@ MODEL_CONFIGS = {
                         norm_type="rmsnorm",
                         norm_eps=1e-6,
                         reset_at_document_boundaries=False,
+                        gate_soft_cap=15.0,
                     ),
                 ),
                 feedforward=FeedForwardConfig(
-                    proj_factor=4.0,
-                    act_fn="gelu",
-                    ff_type="ffn",
+                    proj_factor=8.0 / 3.0,
+                    act_fn="swish",
+                    ff_type="ffn_gated",
                     dtype=jnp.bfloat16,
                 ),
                 add_post_norm=False,
@@ -314,7 +322,8 @@ def main_train(args: argparse.Namespace):
     log_info(f"Devices: {jax.devices()}")
 
     # General hyperparameters.
-    batch_size = global_model_config["batch_size_per_device"] * len(jax.devices())
+    batch_size_per_device = global_model_config["batch_size_per_device"]
+    batch_size = batch_size_per_device * len(jax.devices())
     context_length = 2048
     num_train_steps = 95_000
     lr = global_model_config.get("lr", 1e-3)
@@ -324,9 +333,10 @@ def main_train(args: argparse.Namespace):
     # Create data iterator.
     log_info("Creating data iterator.")
     data_name = "600B" if args.use_full_dataset else "6B"
-    data_path = base_data_path / ("cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B")
+    dataset_name = "cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B"
+    data_path = base_data_path / dataset_name
     data_path = data_path / f"ctx{context_length}"
-    train_config, eval_config = HFLocalDataConfig.create_train_eval_configs(
+    hf_train_config, hf_eval_config = HFLocalDataConfig.create_train_eval_configs(
         global_batch_size=batch_size,
         data_path=data_path,
         max_target_length=context_length,
@@ -334,8 +344,37 @@ def main_train(args: argparse.Namespace):
         data_shuffle_seed=123,
         eod_token_id=50256,
     )
-    train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
-    eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
+    ar_train_config, ar_eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
+        train_kwargs=dict(
+            grain_packing=True,
+            grain_packing_bin_count=batch_size_per_device * 8,
+        ),
+        eval_kwargs=dict(
+            # Packing is deactivated for eval to make it reproducible across epochs.
+            grain_packing=False,
+        ),
+        global_batch_size=batch_size,
+        data_path=Path("/nfs-gpu/xlstm/data/array_records/") / dataset_name,
+        max_target_length=context_length,
+        data_column="text",
+        tokenizer_path=args.tokenizer,
+        data_shuffle_seed=123,
+        worker_buffer_size=8,
+    )
+    if args.train_on_packing:
+        log_info("Using ArrayRecord Packing datasets for training.")
+        train_data_iterator = create_data_iterator(config=ar_train_config, mesh=mesh)
+    else:
+        log_info("Using HuggingFace datasets for training.")
+        train_data_iterator = create_data_iterator(config=hf_train_config, mesh=mesh)
+    eval_data_iterator = {
+        "ar_packing": create_data_iterator(config=ar_eval_config, mesh=mesh),
+    }
+    if args.tokenizer == "gpt2":
+        eval_data_iterator["hf_grouptext"] = create_data_iterator(config=hf_eval_config, mesh=mesh)
+    else:
+        LOGGER.warning("Skipping HF GroupText evaluation dataset as it is not supported for other tokenizer.")
+    log_info(f"Evaluation datasets: {eval_data_iterator.keys()}.")
 
     # Define model config.
     xlstm_config = global_model_config["model_config"](parallel=parallel, context_length=context_length)
@@ -353,7 +392,7 @@ def main_train(args: argparse.Namespace):
         optimizer_kwargs = dict(
             name="adamw",
             beta2=0.95,
-            eps=1e-5,
+            eps=1e-8,
         )
 
     # Create trainer with sub-configs.
@@ -363,7 +402,7 @@ def main_train(args: argparse.Namespace):
             callbacks=(
                 ModelCheckpointConfig(
                     every_n_epochs=1,
-                    monitor="perplexity",
+                    monitor="ar_packing_perplexity",
                     max_to_keep=1,
                     save_optimizer_state=True,
                     enable_async_checkpointing=True,
@@ -454,5 +493,9 @@ if __name__ == "__main__":
     parser.add_argument("--load_checkpoint_from", type=str, default="")
     parser.add_argument("--use_ademamix", action="store_true", help="If True, uses Ademamix optimizer.")
     parser.add_argument("--grad_norm_clip", type=float, default=1.0, help="Gradient norm clipping value.")
+    parser.add_argument("--tokenizer", type=str, choices=["gpt2", "EleutherAI/gpt-neox-20b"], default="gpt2")
+    parser.add_argument(
+        "--train_on_packing", action="store_true", help="If True, uses ArrayRecord Packing datasets for training."
+    )
     args = parser.parse_args()
     main_train(args)

@@ -1,0 +1,4 @@
+defaults:
+  - slimpajama_627B_arrayrecord
+  - default_arrayrecord_eval
+  - _self_

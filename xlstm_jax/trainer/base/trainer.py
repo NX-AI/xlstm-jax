@@ -866,6 +866,7 @@ class TrainerModule:
         if isinstance(data_loader, dict):
             eval_metrics = {}
             for data_key, loader in data_loader.items():
+                LOGGER.info(f"Evaluating model on {data_key} set.")
                 data_metrics = self._run_model_eval(loader, mode, epoch_idx)
                 eval_metrics.update({f"{data_key}_{k}": v for k, v in data_metrics.items()})
         else:

@@ -36,6 +36,7 @@ def preprocessing_pipeline(
     add_eos: bool = True,
     add_eod: bool = True,
     grain_packing: bool = False,
+    grain_packing_bin_count: int | None = None,
     shift: bool = True,
     worker_count: int = 1,
     worker_buffer_size: int = 1,
@@ -69,6 +70,9 @@ def preprocessing_pipeline(
             to reduce the amount of padding. This can improve throughput efficiency. NOTE:
             if packing is enabled, the length of the iterator cannot be determined in advance
             and is likely incorrect in the iterator (will be set to maximum number of batches).
+        grain_packing_bin_count: The number of packing bins to use. If not provided, the
+            bin count will be set to the batch size. It can be beneficial to increase the packing
+            bins to reduce padding.
         shift: Whether to shift the input data to create the target data.
         worker_count: The number of workers to use. In grain, a single worker is usually
             sufficient, as the data loading is done in parallel across hosts.
@@ -163,6 +167,7 @@ def preprocessing_pipeline(
         num_epochs=None,  # Infinite epochs
         operations=operations,
         grain_packing=grain_packing,
+        grain_packing_bin_count=grain_packing_bin_count,
         shift=shift,
         shift_target=shift_target,
         eod_token_id=eod_token_id,
@@ -226,6 +231,9 @@ def make_grain_iterator(
         add_eos=config.add_eos,
         add_eod=config.add_eod,
         grain_packing=config.grain_packing,
+        grain_packing_bin_count=config.grain_packing_bin_count,
+        worker_count=config.worker_count,
+        worker_buffer_size=config.worker_buffer_size,
         drop_remainder=config.drop_remainder,
         tokenizer_cache_dir=config.hf_cache_dir,
         max_steps_per_epoch=config.max_steps_per_epoch,

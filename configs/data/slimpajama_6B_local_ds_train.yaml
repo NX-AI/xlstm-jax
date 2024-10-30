@@ -1,0 +1,4 @@
+defaults:
+  - slimpajama_6B_local_ds
+  - default_hf_local_ds_train
+  - _self_

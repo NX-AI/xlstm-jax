@@ -121,9 +121,13 @@ class LLMTrainer(TrainerModule):
 
         def _postprocess_metrics(metrics: HostMetrics) -> HostMetrics:
             """Add perplexity to the metrics."""
-            for key in ["loss", "loss_mean", "loss_single"]:
-                if key in metrics:
-                    metrics[f"perplexity{key[4:]}"] = np.exp(metrics[key])
+            metric_keys = list(metrics.keys())
+            for key in metric_keys:
+                for key_postfix in ["loss", "loss_mean", "loss_single"]:
+                    if key.endswith(key_postfix):
+                        key_perplexity = f"{key[:-len(key_postfix)]}perplexity{key_postfix[4:]}"
+                        metrics[key_perplexity] = np.exp(metrics[key])
+                        break
             return metrics
 
         return _postprocess_metrics

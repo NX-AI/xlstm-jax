@@ -1,0 +1,7 @@
+defaults:
+  - _self_
+
+shuffle_data: false
+drop_remainder: false
+split: validation
+grain_packing: false
