@@ -2,7 +2,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import jax.numpy as jnp
 import pytest
 
 from xlstm_jax.models import ModelConfig
@@ -16,7 +15,7 @@ MODEL_CONFIGS = [
         num_blocks=3,
         head_dim=16,
         parallel=parallel,
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         ffn_multiple_of=4,
         scan_blocks=True,
     ),
@@ -26,7 +25,7 @@ MODEL_CONFIGS = [
         num_blocks=2,
         head_dim=8,
         parallel=parallel,
-        dtype=jnp.float32,
+        dtype="float32",
         ffn_multiple_of=64,
         scan_blocks=True,
     ),

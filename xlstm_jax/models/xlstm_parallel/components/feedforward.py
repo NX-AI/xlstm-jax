@@ -45,7 +45,7 @@ class FeedForwardConfig(UpProjConfigMixin):
     output_init_fn: InitFnName = "wang"
     """Initialization function for the output projection layer."""
     ff_type: Literal["ffn_gated", "ffn"] = "ffn_gated"
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
     parallel: ParallelConfig | None = None
 
     _num_blocks: int = 1
@@ -53,6 +53,16 @@ class FeedForwardConfig(UpProjConfigMixin):
     def __post_init__(self):
         self._set_proj_up_dim(embedding_dim=self.embedding_dim)
         assert self.act_fn in _act_fn_registry, f"Unknown activation function {self.act_fn}"
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class GatedFeedForward(nn.Module):
@@ -71,7 +81,7 @@ class GatedFeedForward(nn.Module):
             return TPDense(
                 dense_fn=partial(
                     nn.Dense,
-                    dtype=self.config.dtype,
+                    dtype=self.config._dtype,
                     features=self.config._proj_up_dim // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
@@ -98,7 +108,7 @@ class GatedFeedForward(nn.Module):
         out = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 features=embedding_dim // tp_size if self.config.parallel.tp_async_dense else embedding_dim,
             ),
             model_axis_name=self.config.parallel.model_axis_name,
@@ -136,7 +146,7 @@ class FeedForward(nn.Module):
         x = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 features=self.config._proj_up_dim // tp_size,
             ),
             model_axis_name=self.config.parallel.model_axis_name,
@@ -151,7 +161,7 @@ class FeedForward(nn.Module):
         x = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 features=embedding_dim // tp_size if self.config.parallel.tp_async_dense else embedding_dim,
             ),
             model_axis_name=self.config.parallel.model_axis_name,

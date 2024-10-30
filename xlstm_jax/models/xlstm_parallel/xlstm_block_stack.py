@@ -27,7 +27,7 @@ class xLSTMBlockStackConfig(SubModelConfig):
     bias: bool = False
     dropout: float = 0.0
     scan_blocks: bool = False
-    dtype: str | Any = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     parallel: ParallelConfig | None = None
     init_distribution_embed: InitDistribution = "normal"
@@ -87,6 +87,16 @@ class xLSTMBlockStackConfig(SubModelConfig):
             self.slstm_block.__post_init__()
 
         self._block_map = self._create_block_map()
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class xLSTMBlockStack(nn.Module):

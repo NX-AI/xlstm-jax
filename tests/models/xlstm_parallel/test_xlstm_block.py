@@ -34,7 +34,7 @@ def test_norm_variants(add_post_norm: bool, add_qk_norm: bool, norm_type: str, l
             gate_input="qkv",
             layer_type=layer_type,
             norm_type=norm_type,
-            dtype=jnp.float32,
+            dtype="float32",
             mlstm_cell=mLSTMCellConfig(
                 gate_linear_headwise=True,
                 gate_soft_cap=30.0,

@@ -2,7 +2,6 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
-import jax.numpy as jnp
 import pytest
 
 from xlstm_jax.models import ModelConfig
@@ -27,7 +26,7 @@ MODEL_CONFIGS = [
         add_post_blocks_norm=True,
         parallel=parallel,
         scan_blocks=True,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -48,7 +47,7 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn_gated",
-                dtype=jnp.float32,
+                dtype="float32",
             ),
         ),
     ),
@@ -64,7 +63,7 @@ MODEL_CONFIGS = [
         add_post_blocks_norm=True,
         parallel=parallel,
         scan_blocks=True,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -85,7 +84,7 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn_gated",
-                dtype=jnp.float32,
+                dtype="float32",
             ),
         ),
     ),

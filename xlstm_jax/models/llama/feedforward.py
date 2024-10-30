@@ -27,10 +27,20 @@ class FeedForwardConfig(SubModelConfig):
     """Dropout rate for the feedforward network."""
     num_layers: int = 12
     """Number of layers in the whole Llama Transformer model. Used for initialization."""
-    dtype: jnp.dtype = jnp.float32
+    dtype: str = "float32"
     """Data type of the activations in the network."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
     """Parallel configuration."""
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class FeedForward(nn.Module):
@@ -52,14 +62,14 @@ class FeedForward(nn.Module):
             features=hidden_dim,
             use_bias=self.config.use_bias,
             kernel_init=small_init(embed_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="proj_up",
         )(x)
         gate_preact = nn.Dense(
             features=hidden_dim,
             use_bias=self.config.use_bias,
             kernel_init=small_init(embed_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="proj_up_gate",
         )(x)
         feats = up_proj * nn.silu(gate_preact)
@@ -67,7 +77,7 @@ class FeedForward(nn.Module):
             features=embed_dim,
             use_bias=self.config.use_bias,
             kernel_init=wang_init(embed_dim, 2 * self.config.num_layers),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="proj_down",
         )(feats)
         out = nn.Dropout(rate=self.config.dropout_rate)(out, deterministic=not train)

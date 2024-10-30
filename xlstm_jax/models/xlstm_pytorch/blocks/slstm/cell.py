@@ -270,7 +270,7 @@ class sLSTMCellBase(nn.Module):
                     self,
                     name,
                     torch.nn.Parameter(
-                        par.to(dtype=self.config.dtype_r),
+                        par.to(dtype=self.config._dtype_r),
                         requires_grad=par.requires_grad,
                     ),
                 )
@@ -279,7 +279,7 @@ class sLSTMCellBase(nn.Module):
                     self,
                     name,
                     torch.nn.Parameter(
-                        par.to(dtype=self.config.dtype_b),
+                        par.to(dtype=self.config._dtype_b),
                         requires_grad=par.requires_grad,
                     ),
                 )

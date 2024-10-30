@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 import jax
-import jax.numpy as jnp
 
 from xlstm_jax.dataset import GrainArrayRecordsDataConfig, HFLocalDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
@@ -37,12 +36,12 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=False,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32, backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                        gate_dtype="float32", backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 )
             ),
@@ -66,12 +65,12 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype="float32",
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                     ),
                 )
@@ -99,13 +98,13 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype="float32",
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                         # Lowering the input bias init appears to stabilize training.
                         igate_bias_init_range=-10.0,
@@ -119,7 +118,7 @@ MODEL_CONFIGS = {
                     proj_factor=4.0,
                     act_fn="gelu",
                     ff_type="ffn",
-                    dtype=jnp.bfloat16,
+                    dtype="bfloat16",
                 ),
                 add_post_norm=False,
             ),
@@ -143,12 +142,12 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                        gate_dtype="float32",  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 ),
             ),
@@ -174,16 +173,16 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
-            lm_head_dtype=jnp.bfloat16,
+            dtype="bfloat16",
+            lm_head_dtype="bfloat16",
             logits_soft_cap=30.0,
-            dtype=jnp.bfloat16,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=4,
                     qk_dim_factor=0.5,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype="float32",
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                         # Lowering the input bias init appears to stabilize training.
                         igate_bias_init_range=-10.0,
@@ -198,7 +197,7 @@ MODEL_CONFIGS = {
                     proj_factor=8.0 / 3.0,
                     act_fn="swish",
                     ff_type="ffn_gated",
-                    dtype=jnp.bfloat16,
+                    dtype="bfloat16",
                 ),
                 add_post_norm=False,
             ),
@@ -222,12 +221,12 @@ MODEL_CONFIGS = {
             add_post_blocks_norm=True,
             parallel=parallel,
             scan_blocks=True,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=8,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
+                        gate_dtype="float32",  # backend=mLSTMBackendNameAndKwargs(name="triton_kernels")
                     ),
                 )
             ),
@@ -253,16 +252,16 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
-            lm_head_dtype=jnp.bfloat16,
+            lm_head_dtype="bfloat16",
             logits_soft_cap=30.0,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=8,
                     qk_dim_factor=0.5,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype="float32",
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                         # Lowering the input bias init appears to stabilize training.
                         igate_bias_init_range=-10.0,
@@ -277,7 +276,7 @@ MODEL_CONFIGS = {
                     proj_factor=8.0 / 3.0,
                     act_fn="swish",
                     ff_type="ffn_gated",
-                    dtype=jnp.bfloat16,
+                    dtype="bfloat16",
                 ),
                 add_post_norm=False,
             ),
@@ -399,6 +398,7 @@ def main_train(args: argparse.Namespace):
     log_info("Creating trainer.")
     trainer = LLMTrainer(
         LLMTrainerConfig(
+            debug=args.debug,
             callbacks=(
                 ModelCheckpointConfig(
                     every_n_epochs=1,
@@ -460,7 +460,9 @@ def main_train(args: argparse.Namespace):
             weight_decay=0.1,
             weight_decay_include=[r".*kernel"],
         ),
-        batch=LLMBatch.get_dtype_struct(batch_size, context_length),
+        batch=LLMBatch.get_sample(batch_size, context_length)
+        if args.debug
+        else LLMBatch.get_dtype_struct(batch_size, context_length),
         mesh=mesh,
     )
 
@@ -493,6 +495,7 @@ if __name__ == "__main__":
     parser.add_argument("--load_checkpoint_from", type=str, default="")
     parser.add_argument("--use_ademamix", action="store_true", help="If True, uses Ademamix optimizer.")
     parser.add_argument("--grad_norm_clip", type=float, default=1.0, help="Gradient norm clipping value.")
+    parser.add_argument("--debug", type=float, default=1.0, help="If True, go into debug mode.")
     parser.add_argument("--tokenizer", type=str, choices=["gpt2", "EleutherAI/gpt-neox-20b"], default="gpt2")
     parser.add_argument(
         "--train_on_packing", action="store_true", help="If True, uses ArrayRecord Packing datasets for training."

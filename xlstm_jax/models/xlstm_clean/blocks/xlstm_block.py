@@ -15,11 +15,11 @@ class xLSTMBlockConfig:
     slstm: None = None
 
     feedforward: FeedForwardConfig | None = None
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     # we initialize these with None to catch the case where they are not set
-    _num_blocks: int = None
-    _block_idx: int = None
+    _num_blocks: int | None = None
+    _block_idx: int | None = None
 
     def __post_init__(self):
         assert self.mlstm is not None or self.slstm is not None, "Either mlstm or slstm must be provided"
@@ -36,6 +36,16 @@ class xLSTMBlockConfig:
             self.feedforward._num_blocks = self._num_blocks
             self.feedforward.__post_init__()
 
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
+
 
 class xLSTMBlock(nn.Module):
     """
@@ -48,7 +58,7 @@ class xLSTMBlock(nn.Module):
 
     @nn.compact
     def __call__(self, x: jax.Array, **kwargs) -> jax.Array:
-        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="xlstm_norm")
+        xlstm_norm = LayerNorm(weight=True, bias=False, dtype=self.config._dtype, name="xlstm_norm")
         if self.config.mlstm is not None:
             xlstm = mLSTMLayer(config=self.config.mlstm, name="xlstm")
         elif self.config.slstm is not None:
@@ -61,7 +71,7 @@ class xLSTMBlock(nn.Module):
         x = x + x_xlstm
 
         if self.config.feedforward is not None:
-            ffn_norm = LayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="ffn_norm")
+            ffn_norm = LayerNorm(weight=True, bias=False, dtype=self.config._dtype, name="ffn_norm")
             ffn = create_feedforward(config=self.config.feedforward)
             x = x + ffn(ffn_norm(x), **kwargs)
         return x

@@ -247,7 +247,7 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
         parallel=parallel,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,

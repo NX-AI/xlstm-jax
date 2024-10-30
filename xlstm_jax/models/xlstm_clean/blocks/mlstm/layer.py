@@ -27,7 +27,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     bias: bool = False
     dropout: float = 0.0
     context_length: int = -1
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     _num_blocks: int = 1
     _inner_embedding_dim: int = None
@@ -42,6 +42,16 @@ class mLSTMLayerConfig(UpProjConfigMixin):
         self.mlstm_cell.num_heads = self.num_heads
         self.mlstm_cell.dtype = self.dtype
 
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
+
 
 class mLSTMLayer(nn.Module):
     config: mLSTMLayerConfig
@@ -53,7 +63,7 @@ class mLSTMLayer(nn.Module):
         # up-projection
         x_inner = nn.Dense(
             features=2 * self.config._inner_embedding_dim,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             kernel_init=small_init(x.shape[-1]),
             use_bias=self.config.bias,
             name="proj_up",
@@ -134,7 +144,7 @@ class mLSTMLayer(nn.Module):
         # down-projection
         y = nn.Dense(
             features=self.config.embedding_dim,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             kernel_init=wang_init(x.shape[-1], num_blocks=self.config._num_blocks),
             use_bias=self.config.bias,
             name="proj_down",

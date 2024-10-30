@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Literal
 
 import jax
-import jax.numpy as jnp
 from flax import linen as nn
 
 from xlstm_jax.kernels import mlstm_chunkwise_max_triton, mlstm_chunkwise_triton_stablef
@@ -12,7 +11,7 @@ from .config import mLSTMBackend
 
 @dataclass
 class mLSTMBackendTritonConfig:
-    autocast_dtype: jnp.dtype | str | None = None
+    autocast_dtype: str | None = None
     """Dtype to use for the kernel computation. If None, uses the query dtype."""
     chunk_size: int = 64
     """Chunk size for the kernel computation."""
@@ -54,6 +53,8 @@ class mLSTMBackendTriton(mLSTMBackend):
         autocast_kernel_dtype = self.config.autocast_dtype
         if autocast_kernel_dtype is None:
             autocast_kernel_dtype = q.dtype
+        if isinstance(autocast_kernel_dtype, str):
+            autocast_kernel_dtype = getattr(jax.numpy, autocast_kernel_dtype)
         if i.ndim == q.ndim:
             # Squeeze input and forget gate on last axis.
             i = i[..., 0]

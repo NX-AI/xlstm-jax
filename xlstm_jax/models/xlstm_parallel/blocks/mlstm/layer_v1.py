@@ -60,7 +60,7 @@ class mLSTMLayerV1(nn.Module):
                 return TPDense(
                     dense_fn=partial(
                         nn.Dense,
-                        dtype=self.config.dtype,
+                        dtype=self.config._dtype,
                         features=int(embedding_dim * scale) // tp_size,
                     ),
                     model_axis_name=self.config.parallel.model_axis_name,
@@ -143,7 +143,7 @@ class mLSTMLayerV1(nn.Module):
                 weight=True,
                 bias=False,
                 eps=self.config.mlstm_cell.norm_eps,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 norm_type=self.config.norm_type,
             )
             q = norm_fn(name="q_norm")(q)
@@ -171,7 +171,7 @@ class mLSTMLayerV1(nn.Module):
         h_state_norm = MultiHeadNormLayer(
             weight=True,
             bias=False,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="outnorm",
             axis=2,
             eps=self.config.mlstm_cell.norm_eps,
@@ -186,7 +186,7 @@ class mLSTMLayerV1(nn.Module):
         y = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 features=self.config.embedding_dim // tp_size
                 if self.config.parallel.tp_async_dense
                 else self.config.embedding_dim,

@@ -124,22 +124,22 @@ def test_parallelize_backend_float32_vs_bfloat16(context_length: int, use_jit: b
     if use_jit:
         jax_backend = jax.jit(jax_backend)
     out_float32 = jax_backend(
-        jnp.array(q, dtype="bfloat16").astype("float32"),
-        jnp.array(k, dtype="bfloat16").astype("float32"),
-        jnp.array(v, dtype="bfloat16").astype("float32"),
-        jnp.array(igate_preact, dtype="float32"),
-        jnp.array(fgate_preact, dtype="float32"),
+        jnp.array(q, dtype=jnp.bfloat16).astype("float32"),
+        jnp.array(k, dtype=jnp.bfloat16).astype("float32"),
+        jnp.array(v, dtype=jnp.bfloat16).astype("float32"),
+        jnp.array(igate_preact, dtype=jnp.float32),
+        jnp.array(fgate_preact, dtype=jnp.float32),
         eps=1e-5,
     )
     out_float32 = jax.device_get(out_float32)
 
     # Run the bfloat16 precision.
     out_bfloat16 = jax_backend(
-        jnp.array(q, dtype="bfloat16"),
-        jnp.array(k, dtype="bfloat16"),
-        jnp.array(v, dtype="bfloat16"),
-        jnp.array(igate_preact, dtype="float32"),
-        jnp.array(fgate_preact, dtype="float32"),
+        jnp.array(q, dtype=jnp.bfloat16),
+        jnp.array(k, dtype=jnp.bfloat16),
+        jnp.array(v, dtype=jnp.bfloat16),
+        jnp.array(igate_preact, dtype=jnp.float32),
+        jnp.array(fgate_preact, dtype=jnp.float32),
         eps=1e-5,
     )
     out_bfloat16 = out_bfloat16.astype("float32")

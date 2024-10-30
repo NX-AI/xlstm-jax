@@ -114,7 +114,7 @@ def test_xLSTMLMModel(config_torch):
         embedding_dim=config_torch.mlstm_block.mlstm.embedding_dim,
         context_length=config_torch.mlstm_block.mlstm.context_length,
         vmap_qk=False,
-        dtype=jnp.float32,
+        dtype="float32",
     )
     config_jax = mLSTMBlockConfig_jax(
         mlstm=config_jax,
@@ -128,7 +128,7 @@ def test_xLSTMLMModel(config_torch):
         add_embedding_dropout=config_torch.add_embedding_dropout,
         add_post_blocks_norm=config_torch.add_post_blocks_norm,
         mlstm_block=config_jax,
-        dtype=jnp.float32,
+        dtype="float32",
     )
     model_jax = xLSTMLMModel_jax(config_jax)
     params_jax = model_jax.init(jax.random.PRNGKey(0), input_tensor, train=False)["params"]
@@ -207,7 +207,7 @@ def test_xLSTMLMModel_initialization(config_torch):
         embedding_dim=config_torch.mlstm_block.mlstm.embedding_dim,
         context_length=config_torch.mlstm_block.mlstm.context_length,
         vmap_qk=False,
-        dtype=jnp.float32,
+        dtype="float32",
     )
     config_jax = mLSTMBlockConfig_jax(
         mlstm=config_jax,
@@ -221,7 +221,7 @@ def test_xLSTMLMModel_initialization(config_torch):
         add_embedding_dropout=config_torch.add_embedding_dropout,
         add_post_blocks_norm=config_torch.add_post_blocks_norm,
         mlstm_block=config_jax,
-        dtype=jnp.float32,
+        dtype="float32",
     )
     model_jax = xLSTMLMModel_jax(config_jax)
     params_jax = model_jax.init(jax.random.PRNGKey(0), input_tensor, train=False)["params"]

@@ -25,7 +25,7 @@ class xLSTMLMModel(nn.Module):
             num_embeddings=self.config.vocab_size,
             features=self.config.embedding_dim,
             embedding_init=small_init(self.config.embedding_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="token_embedding",
         )(idx)
         if self.config.add_embedding_dropout:

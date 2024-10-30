@@ -34,7 +34,7 @@ MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -62,7 +62,7 @@ MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -80,7 +80,7 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn",
-                dtype=jnp.float32,
+                dtype="float32",
             ),
         ),
     ),
@@ -97,7 +97,7 @@ MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -107,7 +107,7 @@ MODEL_CONFIGS = [
                 mlstm_cell=mLSTMCellConfig(
                     igate_bias_init_range=-10.0,
                 ),
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
             feedforward=FeedForwardConfig(
                 proj_factor=1.0,
@@ -116,7 +116,7 @@ MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn_gated",
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
         ),
     ),
@@ -136,7 +136,7 @@ LARGE_MODEL_CONFIGS = [
             tp_async_dense=True,
         ),
         scan_blocks=True,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -164,7 +164,7 @@ LARGE_MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -182,7 +182,7 @@ LARGE_MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn",
-                dtype=jnp.float32,
+                dtype="float32",
             ),
         ),
     ),
@@ -199,7 +199,7 @@ LARGE_MODEL_CONFIGS = [
             fsdp_modules=(),
             tp_async_dense=False,
         ),
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
@@ -209,7 +209,7 @@ LARGE_MODEL_CONFIGS = [
                 mlstm_cell=mLSTMCellConfig(
                     igate_bias_init_range=-10.0,
                 ),
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
             feedforward=FeedForwardConfig(
                 proj_factor=4.0 / 3.0,
@@ -218,7 +218,7 @@ LARGE_MODEL_CONFIGS = [
                 dropout=0.0,
                 bias=False,
                 ff_type="ffn_gated",
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
         ),
     ),

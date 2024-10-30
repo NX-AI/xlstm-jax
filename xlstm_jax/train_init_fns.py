@@ -4,7 +4,6 @@ import os
 from typing import Literal
 
 import jax
-import jax.numpy as jnp
 from jax.sharding import Mesh
 from omegaconf import DictConfig, OmegaConf
 
@@ -189,7 +188,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                 qk_norm=cfg.model.add_qk_norm,
                 add_embedding_dropout=cfg.model.add_embedding_dropout,
                 scan_blocks=cfg.model.scan_blocks,
-                dtype=getattr(jnp, cfg.model.dtype),
+                dtype=cfg.model.dtype,
                 parallel=parallel,
             ),
         )
@@ -209,8 +208,8 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
             init_distribution_out=cfg.model.init_distribution,
             init_distribution_embed=cfg.model.init_distribution_embed,
             logits_soft_cap=cfg.model.logits_soft_cap,
-            lm_head_dtype=getattr(jnp, cfg.model.lm_head_dtype),
-            dtype=getattr(jnp, cfg.model.dtype),
+            lm_head_dtype=cfg.model.lm_head_dtype,
+            dtype=cfg.model.dtype,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type=cfg.model.layer_type,
@@ -220,7 +219,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     qk_dim_factor=cfg.model.qk_dim_factor,
                     v_dim_factor=cfg.model.v_dim_factor,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=getattr(jnp, cfg.model.gate_dtype),
+                        gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
@@ -234,7 +233,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     proj_factor=cfg.model.proj_factor,
                     act_fn=cfg.model.act_fn,
                     ff_type=cfg.model.ff_type,
-                    dtype=getattr(jnp, cfg.model.dtype),
+                    dtype=cfg.model.dtype,
                     output_init_fn=cfg.model.output_init_fn,
                     init_distribution=cfg.model.init_distribution,
                 ),
@@ -253,14 +252,14 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
             add_embedding_dropout=cfg.model.add_embedding_dropout,
             add_post_blocks_norm=cfg.model.add_post_blocks_norm,
             scan_blocks=cfg.model.scan_blocks,
+            dtype=cfg.model.dtype,
             parallel=parallel,
             norm_eps=cfg.model.norm_eps,
             norm_type=cfg.model.norm_type,
             init_distribution_out=cfg.model.init_distribution,
             init_distribution_embed=cfg.model.init_distribution_embed,
             logits_soft_cap=cfg.model.logits_soft_cap,
-            lm_head_dtype=getattr(jnp, cfg.model.lm_head_dtype),
-            dtype=getattr(jnp, cfg.model.dtype),
+            lm_head_dtype=cfg.model.lm_head_dtype,
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type=cfg.model.layer_type,
@@ -270,7 +269,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     qk_dim_factor=cfg.model.qk_dim_factor,
                     v_dim_factor=cfg.model.v_dim_factor,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=getattr(jnp, cfg.model.gate_dtype),
+                        gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,

@@ -12,7 +12,6 @@ except Exception:
     simulate_CPU_devices(8)
     USE_CPU = True
 
-import jax.numpy as jnp
 import optax
 
 from xlstm_jax.models.configs import ParallelConfig
@@ -41,7 +40,7 @@ MODEL_CONFIGS = {
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
                 fsdp_min_weight_size=2**8,
             ),
-            dtype=jnp.float32,
+            dtype="float32",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     proj_factor=2.0,
@@ -71,7 +70,7 @@ MODEL_CONFIGS = {
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
             ),
-            dtype=jnp.float32,
+            dtype="float32",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     proj_factor=2.0,
@@ -101,7 +100,7 @@ MODEL_CONFIGS = {
                 pipeline_axis_name="pp",
             ),
             scan_blocks=False,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -128,7 +127,7 @@ MODEL_CONFIGS = {
                 fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
             ),
             scan_blocks=False,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -158,7 +157,7 @@ MODEL_CONFIGS = {
                 fsdp_min_weight_size=2**18,
                 remat=(),
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -189,7 +188,7 @@ MODEL_CONFIGS = {
                 fsdp_min_weight_size=2**18,
                 remat=("mLSTMBlock"),
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -218,7 +217,7 @@ MODEL_CONFIGS = {
                 fsdp_min_weight_size=2**18,
                 remat=(),
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -252,7 +251,7 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
@@ -270,7 +269,7 @@ MODEL_CONFIGS = {
                     proj_factor=4.0,
                     act_fn="gelu",
                     ff_type="ffn",
-                    dtype=jnp.bfloat16,
+                    dtype="bfloat16",
                 ),
                 add_post_norm=False,
             ),
@@ -299,7 +298,7 @@ MODEL_CONFIGS = {
                 fsdp_min_weight_size=2**18,
                 remat=(),
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -333,7 +332,7 @@ MODEL_CONFIGS = {
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -377,13 +376,13 @@ MODEL_CONFIGS = {
             scan_blocks=True,
             norm_eps=1e-6,
             norm_type="rmsnorm",
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     layer_type="mlstm_v1",
                     num_heads=8,
                     mlstm_cell=mLSTMCellConfig(
-                        gate_dtype=jnp.float32,
+                        gate_dtype="float32",
                         backend=mLSTMBackendNameAndKwargs(name="triton_kernels"),
                         # Lowering the input bias init appears to stabilize training.
                         igate_bias_init_range=-10.0,
@@ -396,7 +395,7 @@ MODEL_CONFIGS = {
                     proj_factor=4.0,
                     act_fn="gelu",
                     ff_type="ffn",
-                    dtype=jnp.bfloat16,
+                    dtype="bfloat16",
                 ),
                 add_post_norm=False,
             ),
@@ -435,7 +434,7 @@ MODEL_CONFIGS = {
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,
@@ -477,7 +476,7 @@ MODEL_CONFIGS = {
                 remat=("mLSTMBlock"),
                 tp_async_dense=False,
             ),
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
                 mlstm=mLSTMLayerConfig(
                     num_heads=4,

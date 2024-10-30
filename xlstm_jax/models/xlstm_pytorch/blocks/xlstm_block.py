@@ -17,8 +17,8 @@ class xLSTMBlockConfig:
     feedforward: FeedForwardConfig | None = None
 
     # we initialize these with None to catch the case where they are not set
-    _num_blocks: int = None
-    _block_idx: int = None
+    _num_blocks: int | None = None
+    _block_idx: int | None = None
 
     def __post_init__(self):
         assert self.mlstm is not None or self.slstm is not None, "Either mlstm or slstm must be provided"

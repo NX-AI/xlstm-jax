@@ -1,5 +1,7 @@
 import numpy as np
+from grain.python import MapDataset
 from lm_eval.api.instance import Instance
+from tqdm import tqdm
 from transformers import AutoTokenizer
 from transformers.tokenization_utils_base import BatchEncoding
 
@@ -44,7 +46,7 @@ class HFTokenizeLogLikelihoodRolling:
             clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
             legacy=False,
             token=hf_access_token,
-            use_fast=False,  # set this to true possibly with TOKENIZER_PARALLELISM=false
+            use_fast=True,  # set this to true possibly with TOKENIZER_PARALLELISM=false
             add_bos=False,
             add_eos=False,
             cache_dir=tokenizer_cache_dir,
@@ -77,7 +79,7 @@ class HFTokenizeLogLikelihoodRolling:
 
     def simple_array(
         self, *, prefix_tokens: list[int], all_tokens: list[int], doc_idx: int, seq_idx: int
-    ) -> dict[str, np.ndarray | int]:
+    ) -> MapDataset:
         """
         Creates a simple document instance with "standard" padding and masks.
         This is for documents not exceeding the max_length or all sequences
@@ -116,7 +118,7 @@ class HFTokenizeLogLikelihoodRolling:
             "sequence_idx": np.asarray(seq_idx, dtype=np.int32),
         }
 
-    def map(self, requests: list[Instance]) -> list[dict[str, np.ndarray | int]]:
+    def map(self, requests: list[Instance]) -> MapDataset:
         """
         Maps a list of lm_eval Instances to a (potentially longer) list of sequences
         for a language model evaluation. Generated instances are padded to max_length
@@ -131,7 +133,7 @@ class HFTokenizeLogLikelihoodRolling:
         """
         llm_instances = []
 
-        for doc_idx, req in enumerate(requests):
+        for doc_idx, req in tqdm(enumerate(requests)):
             assert len(req.args) in [
                 1,
                 2,
@@ -190,7 +192,7 @@ class HFTokenizeLogLikelihoodRolling:
             for _ in range(self.batch_size - (len(llm_instances) % self.batch_size)):
                 llm_instances.append(self.simple_array(prefix_tokens=[], all_tokens=[], doc_idx=-1, seq_idx=0))
 
-        return llm_instances
+        return MapDataset.source(llm_instances)
 
 
 class HFTokenizeLogLikelihood:
@@ -201,7 +203,7 @@ class HFTokenizeLogLikelihood:
     See: https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/api/model.py
     """
 
-    def map(self, requests: list[Instance]) -> dict[str, np.ndarray]:
+    def map(self, requests: list[Instance]) -> MapDataset:
         """
         Maps a list of lm_eval Instances to a dictionary usable in grain transforms.
 
@@ -222,4 +224,4 @@ class HFTokenizeLogLikelihood:
                 }
             )
 
-        return llm_instances
+        return MapDataset.source(llm_instances)

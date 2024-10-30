@@ -26,7 +26,7 @@ class LinearHeadwiseExpandConfig:
     bias: bool = True
     trainable_weight: bool = True
     trainable_bias: bool = True
-    dtype: Any = jnp.float32
+    dtype: str = "float32"
 
     def __post_init__(self):
         assert self.num_heads > 0, "num_heads must be set"
@@ -35,6 +35,16 @@ class LinearHeadwiseExpandConfig:
 
         if self._out_features < 0:
             self._out_features = round(self.expand_factor_up * self.in_features)
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class LinearHeadwiseExpand(nn.Module):
@@ -68,7 +78,7 @@ class LinearHeadwiseExpand(nn.Module):
         )
         if not self.config.trainable_weight:
             weight = jax.lax.stop_gradient(weight)
-        weight = weight.astype(self.config.dtype)
+        weight = weight.astype(self.config._dtype)
 
         x = x.reshape(*x.shape[:-1], self.config.num_heads, in_features_per_head)
         x = jnp.einsum("...hd,hod->...ho", x, weight)
@@ -77,7 +87,7 @@ class LinearHeadwiseExpand(nn.Module):
             bias = self.param("bias", self.bias_init, (self.config._out_features,))
             if not self.config.trainable_bias:
                 bias = jax.lax.stop_gradient(bias)
-            bias = bias.astype(self.config.dtype)
+            bias = bias.astype(self.config._dtype)
             bias = jnp.broadcast_to(bias, x.shape)
             x = x + bias
         return x

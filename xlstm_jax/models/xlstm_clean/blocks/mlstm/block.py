@@ -11,8 +11,8 @@ class mLSTMBlockConfig:
     mlstm: mLSTMLayerConfig = field(default_factory=mLSTMLayerConfig)
 
     # we initialize these with None to catch the case where they are not set
-    _num_blocks: int = None
-    _block_idx: int = None
+    _num_blocks: int | None = None
+    _block_idx: int | None = None
 
     def __post_init__(self):
         self.mlstm._num_blocks = self._num_blocks

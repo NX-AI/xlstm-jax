@@ -52,6 +52,7 @@ def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsd
                     limit_requests=2,
                     cache_requests=True,
                     context_length=context_length,
+                    debug=True,
                 ),
             ),
             logger=LoggerConfig(

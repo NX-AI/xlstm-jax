@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Literal
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -26,10 +26,20 @@ class xLSTMLMModelConfig(xLSTMBlockStackConfig):
     """Type of normalization layer to use."""
     logits_soft_cap: float | None = None
     """Soft cap for the LM output logits. If None, no cap is applied."""
-    lm_head_dtype: str | Any = jnp.float32
+    lm_head_dtype: str = "float32"
     """Data type to perform the LM Head Dense layer in. The output will always be casted to float32 for numerical
     stability."""
     parallel: ParallelConfig | None = None
+
+    @property
+    def _lm_head_dtype(self) -> jnp.dtype:
+        """
+        Return the real dtype instead of the str in config.
+
+        Returns:
+            Dtype corresponding to the respective str attribute.
+        """
+        return getattr(jnp, self.lm_head_dtype)
 
 
 class xLSTMLMModel(nn.Module):
@@ -59,7 +69,7 @@ class xLSTMLMModel(nn.Module):
                 num_embeddings=self.config.vocab_size,
                 features=self.config.embedding_dim // tp_size,
                 embedding_init=small_init(self.config.embedding_dim, self.config.init_distribution_embed),
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 name="embed",
             ),
             model_axis_name=self.config.parallel.model_axis_name,
@@ -88,7 +98,7 @@ class xLSTMLMModel(nn.Module):
                 vocab_size=self.config.vocab_size,
                 kernel_init=small_init(self.config.embedding_dim, self.config.init_distribution_out),
                 norm_fn=partial(norm_class, **norm_kwargs),
-                lm_head_dtype=self.config.lm_head_dtype,
+                lm_head_dtype=self.config._lm_head_dtype,
                 logits_soft_cap=self.config.logits_soft_cap,
                 name="lm_head",
             ),

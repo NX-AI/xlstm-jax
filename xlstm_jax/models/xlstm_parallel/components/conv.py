@@ -14,10 +14,20 @@ class CausalConv1dConfig:
     causal_conv_bias: bool = True
     channel_mixing: bool = False
     conv1d_kwargs: dict = field(default_factory=dict)
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     def __post_init__(self):
         assert self.kernel_size >= 0, "kernel_size must be >= 0"
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class CausalConv1d(nn.Module):
@@ -54,7 +64,7 @@ class CausalConv1d(nn.Module):
             feature_group_count=groups,
             padding=[(pad, 0)],
             use_bias=self.config.causal_conv_bias,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="conv",
             **self.config.conv1d_kwargs,
         )(x)

@@ -1,6 +1,6 @@
 from copy import deepcopy
 from dataclasses import dataclass, field
-from typing import Any, Literal
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
@@ -21,7 +21,7 @@ class xLSTMBlockStackConfig:
     add_post_blocks_norm: bool = True
     bias: bool = False
     dropout: float = 0.0
-    dtype: Any = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     # The block indices at which sLSTM blocks are placed.
     # Indexing starts from 0.
@@ -47,6 +47,16 @@ class xLSTMBlockStackConfig:
         block_map_str = ",".join(map(str, block_map))
 
         return block_map_str
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
     def __post_init__(self):
         if self.mlstm_block is None:
@@ -84,7 +94,7 @@ class xLSTMBlockStack(nn.Module):
         #     x = block(x, **kwargs)
         x = blocks(x, **kwargs)
         if self.config.add_post_blocks_norm:
-            x = LayerNorm(dtype=self.config.dtype, name="post_blocks_norm")(x)
+            x = LayerNorm(dtype=self.config._dtype, name="post_blocks_norm")(x)
         return x
 
 

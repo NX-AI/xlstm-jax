@@ -13,7 +13,9 @@ from lm_eval.api.model import LM
 from lm_eval.evaluator import evaluate
 
 from xlstm_jax.dataset.batch import LLMBatch, LLMIndexedBatch
+from xlstm_jax.dataset.configs import DataConfig
 from xlstm_jax.dataset.grain_iterator import make_grain_llm_iterator
+from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_real_data
 from xlstm_jax.dataset.lmeval_dataset import HFTokenizeLogLikelihoodRolling
 from xlstm_jax.distributed import split_array_over_mesh
 from xlstm_jax.trainer.callbacks.extended_evaluation import ExtendedEvaluation, ExtendedEvaluationConfig
@@ -61,9 +63,7 @@ def fuse_document_results(
     results = []
     for idx in idxs:
         if didx[idx] != previous_didx and not first:
-            llh /= llh_count
-            acc /= acc_count
-            results.append((llh, bool(acc == 1.0)))
+            results.append((llh, bool(acc == acc_count)))
             llh = 0.0
             acc = 0.0
             llh_count = 0
@@ -78,9 +78,7 @@ def fuse_document_results(
         acc_count += accs_count[idx]
         assert np.allclose(llh_count, acc_count)
     if not first:
-        llh /= llh_count
-        acc /= acc_count
-        results.append((llh, bool(acc == 1.0)))
+        results.append((llh, bool(acc == acc_count)))
     return results
 
 
@@ -90,7 +88,7 @@ class LMEvalEvaluationConfig(ExtendedEvaluationConfig):
     """Tokenizer path"""  # TODO: Check if tokenizer can be seen from trainer / model_config, then re-use it
     evaluation_tasks: list[str]
     """List of evaluation task from LM Evaluation Harness"""
-    cache_requests: bool = False
+    cache_requests: bool = True
     """Whether to cache requests"""
     limit_requests: int | None = None
     """Whether to limit requests to a smaller number for debugging purposes"""
@@ -100,6 +98,12 @@ class LMEvalEvaluationConfig(ExtendedEvaluationConfig):
     """ Override context_length of the model """
     batch_size: int | None = None
     """ Override batch_size of the trainer """
+    worker_buffer_size: int = 1
+    """ Worker buffer size for the grain loader """
+    worker_count: int = 0
+    """ Number of workers for the grain loading """
+    debug: bool = False
+    """ Scale ouputs such that metrics can be computed for a random testing model """
 
     def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "LMEvalEvaluation":
         """
@@ -144,6 +148,34 @@ class LMEvalEvaluation(ExtendedEvaluation):
         self.batch_size = batch_size
         instance = self
 
+        def _make_grain_iterator(dataset):
+            # We have to use the sample distribution as in the training loop,
+            # unless we want a different sharding, which probably doesn't make sense.
+            # However the worker_count is 0 now by default, but should not be a bottleneck.
+            process_indices = get_process_loading_real_data(
+                DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
+            )
+            it = make_grain_llm_iterator(
+                dataloading_host_index=process_indices.index(jax.process_index()),
+                dataloading_host_count=len(process_indices),
+                global_mesh=trainer.mesh,
+                dataset=dataset,
+                global_batch_size=batch_size,
+                max_target_length=2048,  # not actually used without padding
+                worker_count=config.worker_count,
+                shuffle=False,
+                data_shuffle_seed=0,
+                num_epochs=1,
+                shift=False,
+                batch_class=LLMIndexedBatch,
+                reset_after_epoch=True,
+                drop_remainder=False,
+                apply_padding=False,
+                grain_packing=False,
+                worker_buffer_size=config.worker_buffer_size,
+            )
+            return it
+
         class _AdaptedLM(LM):
             """
             LM class for LMEval harness.
@@ -187,39 +219,30 @@ class LMEvalEvaluation(ExtendedEvaluation):
                 Returns:
                     List of loglikelihoods + greedy (boolean accuracy)
                 """
+                LOGGER.info("Start create dataset")
                 dataset = HFTokenizeLogLikelihoodRolling(
                     tokenizer_path=config.tokenizer_path,
                     batch_size=batch_size,
                     max_length=context_length,
                 ).map(requests)
+                LOGGER.info("End create dataset")
                 assert (
                     len(dataset) % batch_size == 0
                 ), f"Dataset size no divisible by batch_size {len(dataset)} % {batch_size}"
-                it = make_grain_llm_iterator(
-                    dataloading_host_index=0,
-                    dataloading_host_count=1,
-                    global_mesh=trainer.mesh,
-                    dataset=dataset,
-                    global_batch_size=batch_size,
-                    max_target_length=2048,  # not actually used without padding
-                    worker_count=0,
-                    shuffle=False,
-                    data_shuffle_seed=0,
-                    num_epochs=1,
-                    shift=False,
-                    batch_class=LLMIndexedBatch,
-                    reset_after_epoch=True,
-                    drop_remainder=False,
-                    apply_padding=False,
-                    grain_packing=False,
-                    worker_buffer_size=1,
-                )
+                LOGGER.info("Start create data iterator")
+                it = _make_grain_iterator(dataset)
+                LOGGER.info("End create data iterator")
+
+                LOGGER.info("Start inference")
                 final_metrics = ExtendedEvaluation.eval_model(instance, it, mode=self.mode)
+                LOGGER.info("End inference")
+                LOGGER.info("Start results postprocessing")
                 res = fuse_document_results(final_metrics)
+                LOGGER.info("End results postprocessing")
                 assert len(res) == len(requests), f"Mis-match of requests and results: {len(requests)} != {len(res)}"
                 return res
 
-            def loglikelihood_rolling(self, requests: list[Instance]) -> list[tuple[float, bool]]:
+            def loglikelihood_rolling(self, requests: list[Instance]) -> list[float]:
                 """
                 Compute loglikelihood of longer sequences that might even be split in case they
                 overflow the maximal context length of a model.
@@ -228,39 +251,10 @@ class LMEvalEvaluation(ExtendedEvaluation):
                     requests: List of LM Eval Instances
 
                 Returns:
-                    List of loglikelihoods + greedy (boolean accuracy)
+                    List of loglikelihoods
                 """
-                dataset = HFTokenizeLogLikelihoodRolling(
-                    tokenizer_path=config.tokenizer_path,
-                    batch_size=batch_size,
-                    max_length=context_length,
-                ).map(requests)
-                assert (
-                    len(dataset) % batch_size == 0
-                ), f"Dataset size no divisible by batch_size {len(dataset)} % {batch_size}"
-                it = make_grain_llm_iterator(
-                    dataloading_host_index=0,
-                    dataloading_host_count=1,
-                    global_mesh=trainer.mesh,
-                    dataset=dataset,
-                    global_batch_size=batch_size,
-                    max_target_length=2048,  # not actually used without padding
-                    worker_count=0,
-                    shuffle=False,
-                    data_shuffle_seed=0,
-                    num_epochs=1,
-                    shift=False,
-                    batch_class=LLMIndexedBatch,
-                    reset_after_epoch=True,
-                    drop_remainder=False,
-                    apply_padding=False,
-                    grain_packing=False,
-                    worker_buffer_size=1,
-                )
-                final_metrics = ExtendedEvaluation.eval_model(instance, it, mode=self.mode)
-                res = fuse_document_results(final_metrics)
-                assert len(res) == len(requests), f"Mis-match of requests and results: {len(res)} != {len(requests)}"
-                return res
+                res = self.loglikelihood(requests=requests)
+                return [r[0] for r in res]
 
         self.lm = _AdaptedLM()
 
@@ -303,6 +297,8 @@ class LMEvalEvaluation(ExtendedEvaluation):
         )["results"]
         for task in res:
             del res[task]["alias"]
+            # convert "N/A" values to NaN values
+            res[task] = {key: val if val != "N/A" else float("NaN") for key, val in res[task].items()}
         return res
 
     def get_metric_postprocess_fn(self) -> Callable[[HostMetrics], HostMetrics]:
@@ -376,7 +372,8 @@ class LMEvalEvaluation(ExtendedEvaluation):
                 "log_modes": ("single_noreduce_wcount",),
             },
             "loglikelihood": {
-                "value": -loss.sum(axis=1),
+                # the factor prevents overflows in the debug case for a random model
+                "value": -loss.sum(axis=1) * (0.0001 if self.config.debug else 1.0),
                 "count": targets_mask.sum(axis=1),
                 "log_modes": ("single_noreduce_wcount",),
             },

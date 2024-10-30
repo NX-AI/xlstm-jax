@@ -43,7 +43,7 @@ class LlamaConfig(SubModelConfig):
     """Whether to use bias in the linear layers."""
     scan_blocks: bool = True
     """Whether to scan the transformer blocks. Recommended for larger models to reduce compilation time."""
-    dtype: jnp.dtype = jnp.float32
+    dtype: str = "float32"
     """Data type to use for the activations."""
     dropout_rate: float = 0.0
     """Dropout rate to apply to the activations."""
@@ -51,6 +51,16 @@ class LlamaConfig(SubModelConfig):
     """Whether to apply dropout to the embeddings."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
     """Parallel configuration."""
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class SelfAttentionBlock(nn.Module):
@@ -86,7 +96,7 @@ class SelfAttentionBlock(nn.Module):
             Output tensor of self-attention with residual connection.
         """
         res = x
-        x = nn.RMSNorm(name="pre_norm", dtype=self.config.dtype)(x)
+        x = nn.RMSNorm(name="pre_norm", dtype=self.config._dtype)(x)
         attn_config = SelfAttentionConfig(
             head_dim=self.config.head_dim,
             qk_norm=self.config.qk_norm,
@@ -128,7 +138,7 @@ class FFNBlock(nn.Module):
             Output tensor of feedforward layer with residual connection.
         """
         res = x
-        x = nn.RMSNorm(name="pre_norm", dtype=self.config.dtype)(x)
+        x = nn.RMSNorm(name="pre_norm", dtype=self.config._dtype)(x)
         ffn_config = FeedForwardConfig(
             multiple_of=self.config.ffn_multiple_of,
             ffn_dim_multiplier=self.config.ffn_dim_multiplier,
@@ -274,7 +284,7 @@ class LlamaTransformer(nn.Module):
                 num_embeddings=self.config.vocab_size,
                 features=self.config.embedding_dim // tp_size,
                 embedding_init=small_init(self.config.embedding_dim),
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 name="embed",
             ),
             model_axis_name=self.config.parallel.model_axis_name,
@@ -295,7 +305,7 @@ class LlamaTransformer(nn.Module):
                 vocab_size=self.config.vocab_size,
                 kernel_init=small_init(self.config.embedding_dim),
                 norm_fn=partial(nn.RMSNorm, dtype=self.config.dtype, name="out_norm"),
-                lm_head_dtype=self.config.dtype,
+                lm_head_dtype=self.config._dtype,
                 name="lm_head",
             ),
             "LMHead",

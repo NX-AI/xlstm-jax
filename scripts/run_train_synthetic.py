@@ -2,8 +2,6 @@ import argparse
 import os
 from pathlib import Path
 
-import jax.numpy as jnp
-
 from xlstm_jax.dataset import LLMBatch, SyntheticDataConfig, create_data_iterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
@@ -67,7 +65,7 @@ def main_train(args: argparse.Namespace):
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
         parallel=parallel,
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,

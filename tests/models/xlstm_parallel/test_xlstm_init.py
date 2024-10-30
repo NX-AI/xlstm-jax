@@ -1,7 +1,6 @@
 from typing import Any
 
 import jax
-import jax.numpy as jnp
 import numpy as np
 import optax
 import pytest
@@ -37,7 +36,7 @@ PYTORCH_JAX_MODEL_CONFIGS = [
             tp_async_dense=True,
         ),
         scan_blocks=False,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -63,7 +62,7 @@ PYTORCH_JAX_MODEL_CONFIGS = [
             tp_async_dense=False,
         ),
         scan_blocks=False,
-        dtype=jnp.float32,
+        dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=3.0,
@@ -85,7 +84,7 @@ INIT_MODEL_CONFIG_FNS = [
         norm_type="layernorm",
         scan_blocks=False,
         parallel=ParallelConfig(),
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         init_distribution_embed=init_distribution,
         init_distribution_out=init_distribution,
         mlstm_block=mLSTMBlockConfig(
@@ -99,7 +98,7 @@ INIT_MODEL_CONFIG_FNS = [
                 mlstm_cell=mLSTMCellConfig(
                     gate_linear_headwise=True,
                 ),
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             )
         ),
     ),
@@ -112,7 +111,7 @@ INIT_MODEL_CONFIG_FNS = [
         norm_type="rmsnorm",
         scan_blocks=True,
         parallel=ParallelConfig(),
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         init_distribution_embed=init_distribution,
         init_distribution_out=init_distribution,
         mlstm_block=mLSTMBlockConfig(
@@ -126,7 +125,7 @@ INIT_MODEL_CONFIG_FNS = [
                 mlstm_cell=mLSTMCellConfig(
                     igate_bias_init_range=-10.0,
                 ),
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
             feedforward=FeedForwardConfig(
                 proj_factor=2.0,
@@ -137,7 +136,7 @@ INIT_MODEL_CONFIG_FNS = [
                 ff_type="ffn",
                 init_distribution=init_distribution,
                 output_init_fn=output_init_fn,
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
         ),
     ),

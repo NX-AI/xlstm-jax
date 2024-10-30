@@ -27,8 +27,8 @@ class mLSTMCellConfig(SubModelConfig):
     """Epsilon value for numerical stability in layer norm."""
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
     """Type of normalization layer to use."""
-    dtype: jnp.dtype = jnp.bfloat16
-    gate_dtype: jnp.dtype = jnp.float32
+    dtype: str = "bfloat16"
+    gate_dtype: str = "float32"
     gate_soft_cap: float | None = None
     """Soft cap for the gate pre-activations. If None, no cap is applied."""
     gate_linear_headwise: bool = False
@@ -48,6 +48,20 @@ class mLSTMCellConfig(SubModelConfig):
     """Value to set the forget gate to at document boundaries."""
     parallel: ParallelConfig | None = None
     """Parallel configuration for the mLSTM cell."""
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
+
+    @property
+    def _gate_dtype(self) -> jnp.dtype:
+        return getattr(jnp, self.gate_dtype)
 
 
 class mLSTMCell(nn.Module):
@@ -116,7 +130,7 @@ class mLSTMCell(nn.Module):
                 else:
                     return nn.Dense(
                         features=self.config.num_heads,
-                        dtype=self.config.gate_dtype,
+                        dtype=self.config._gate_dtype,
                         bias_init=bias_init,
                         kernel_init=nn.initializers.zeros,
                         name=name,
@@ -177,7 +191,7 @@ class mLSTMCell(nn.Module):
                 weight=True,
                 bias=False,
                 eps=self.config.norm_eps,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 norm_type=self.config.norm_type,
             )
             q = norm_fn(name="q_norm")(q)
@@ -204,7 +218,7 @@ class mLSTMCell(nn.Module):
         h_state_norm = MultiHeadNormLayer(
             weight=True,
             bias=False,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="outnorm",
             axis=2,
             eps=self.config.norm_eps,

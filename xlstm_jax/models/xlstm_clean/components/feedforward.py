@@ -36,13 +36,23 @@ class FeedForwardConfig(UpProjConfigMixin):
     dropout: float = 0.0
     bias: bool = False
     ff_type: Literal["ffn_gated"] = "ffn_gated"
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
 
     _num_blocks: int = 1
 
     def __post_init__(self):
         self._set_proj_up_dim(embedding_dim=self.embedding_dim)
         assert self.act_fn in _act_fn_registry, f"Unknown activation function {self.act_fn}"
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class GatedFeedForward(nn.Module):
@@ -54,7 +64,7 @@ class GatedFeedForward(nn.Module):
             features=2 * self.config._proj_up_dim,
             kernel_init=small_init(x.shape[-1]),
             use_bias=self.config.bias,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="proj_up",
         )(x)
         gate_preact, up_proj = jnp.split(up_out, 2, axis=-1)
@@ -63,7 +73,7 @@ class GatedFeedForward(nn.Module):
             features=self.config.embedding_dim,
             kernel_init=wang_init(x.shape[-1], num_blocks=self.config._num_blocks),
             use_bias=self.config.bias,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="proj_down",
         )(gate_act * up_proj)
         out = nn.Dropout(rate=self.config.dropout, deterministic=not train)(out)

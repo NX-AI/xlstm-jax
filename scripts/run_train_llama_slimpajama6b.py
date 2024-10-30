@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 import jax
-import jax.numpy as jnp
 
 from xlstm_jax.dataset import HFLocalDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
@@ -28,7 +27,7 @@ MODEL_CONFIGS = {
             embedding_dim=768,
             num_blocks=12,
             head_dim=128,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             parallel=parallel,
         ),
         "batch_size_per_device": 16,
@@ -45,7 +44,7 @@ MODEL_CONFIGS = {
             embedding_dim=2048,
             num_blocks=24,
             head_dim=128,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
             parallel=parallel,
         ),
         "batch_size_per_device": 16,

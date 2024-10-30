@@ -104,10 +104,20 @@ class SelfAttentionConfig(SubModelConfig):
     """Dropout rate for the self attention module. Only applied during training."""
     num_layers: int = 12
     """Number of layers in the Llama model. Used for initialization."""
-    dtype: jnp.dtype = jnp.float32
+    dtype: str = "float32"
     """Data type of the activations in the network."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
     """Parallel configuration."""
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class SelfAttention(nn.Module):
@@ -155,28 +165,28 @@ class SelfAttention(nn.Module):
             features=(num_heads, head_dim),
             use_bias=self.config.use_bias,
             kernel_init=small_init(embed_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="dense_q",
         )(x)
         k = nn.DenseGeneral(
             features=(num_heads, head_dim),
             use_bias=self.config.use_bias,
             kernel_init=small_init(embed_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="dense_k",
         )(x)
         v = nn.DenseGeneral(
             features=(num_heads, head_dim),
             use_bias=self.config.use_bias,
             kernel_init=small_init(embed_dim),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="dense_v",
         )(x)
 
         # Normalize qk
         if self.config.qk_norm:
-            q = nn.RMSNorm(name="q_norm", dtype=self.config.dtype)(q)
-            k = nn.RMSNorm(name="k_norm", dtype=self.config.dtype)(k)
+            q = nn.RMSNorm(name="q_norm", dtype=self.config._dtype)(q)
+            k = nn.RMSNorm(name="k_norm", dtype=self.config._dtype)(k)
 
         # Apply rotary embeddings
         if freqs is None:
@@ -194,7 +204,7 @@ class SelfAttention(nn.Module):
         if mask is not None:
             attn_logits = jnp.where(mask, attn_logits, jnp.finfo(attn_logits.dtype).min)
         # Upcast softmax precision to float32
-        attn_probs = nn.softmax(attn_logits.astype(jnp.float32), axis=-1).astype(self.config.dtype)
+        attn_probs = nn.softmax(attn_logits.astype(jnp.float32), axis=-1).astype(self.config._dtype)
         attn_out = jnp.einsum("bhqk,bhkd->bhqd", attn_probs, v)
         attn_out = attn_out.swapaxes(1, 2)  # (B, S, H, D)
 
@@ -204,7 +214,7 @@ class SelfAttention(nn.Module):
             axis=(-2, -1),
             use_bias=self.config.use_bias,
             kernel_init=wang_init(embed_dim, 2 * self.config.num_layers),
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             name="dense_out",
         )(attn_out)
         out = nn.Dropout(rate=self.config.dropout_rate)(out, deterministic=not train)

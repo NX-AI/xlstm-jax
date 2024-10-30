@@ -43,7 +43,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     bias: bool = False
     dropout: float = 0.0
     context_length: int = -1
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
     parallel: ParallelConfig | None = None
 
     # For debugging purposes, we allow skipping the mLSTM cell
@@ -73,6 +73,16 @@ class mLSTMLayerConfig(UpProjConfigMixin):
         self.mlstm_cell.dtype = self.dtype
         self.mlstm_cell.norm_type = self.norm_type
         self.mlstm_cell.parallel = self.parallel
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class mLSTMLayer(nn.Module):
@@ -119,7 +129,7 @@ class mLSTMLayer(nn.Module):
             x_inner = tp_dense_fn(
                 dense_fn=partial(
                     nn.Dense,
-                    dtype=self.config.dtype,
+                    dtype=self.config._dtype,
                     features=(v_dim + self.config._inner_embedding_dim) // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
@@ -135,7 +145,7 @@ class mLSTMLayer(nn.Module):
             x_mlstm = TPDense(
                 dense_fn=partial(
                     nn.Dense,
-                    dtype=self.config.dtype,
+                    dtype=self.config._dtype,
                     use_bias=self.config.bias,
                     features=self.config._inner_embedding_dim // tp_size,
                 ),
@@ -149,7 +159,7 @@ class mLSTMLayer(nn.Module):
             z = TPDense(
                 dense_fn=partial(
                     nn.Dense,
-                    dtype=self.config.dtype,
+                    dtype=self.config._dtype,
                     features=v_dim // tp_size,
                 ),
                 model_axis_name=self.config.parallel.model_axis_name,
@@ -187,7 +197,7 @@ class mLSTMLayer(nn.Module):
         y = tp_dense_fn(
             dense_fn=partial(
                 nn.Dense,
-                dtype=self.config.dtype,
+                dtype=self.config._dtype,
                 features=self.config.embedding_dim // tp_size
                 if self.config.parallel.tp_async_dense
                 else self.config.embedding_dim,

@@ -1,6 +1,5 @@
 from pathlib import Path
 
-import jax.numpy as jnp
 import numpy as np
 import pytest
 from hydra import compose, initialize
@@ -61,14 +60,14 @@ def train_without_hydra(tmpdir):
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
         parallel=parallel,
-        dtype=jnp.float32,
+        dtype="float32",
         norm_type="rmsnorm",
         logits_soft_cap=30.0,
-        lm_head_dtype=jnp.float32,
+        lm_head_dtype="float32",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 num_heads=4,
-                mlstm_cell=mLSTMCellConfig(gate_dtype=jnp.float32, gate_soft_cap=15.0, igate_bias_init_range=0.0),
+                mlstm_cell=mLSTMCellConfig(gate_dtype="float32", gate_soft_cap=15.0, igate_bias_init_range=0.0),
             )
         ),
     )

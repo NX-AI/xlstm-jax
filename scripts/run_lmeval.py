@@ -28,9 +28,21 @@ def log_info(msg: str):
 
 
 def main_lmeval(args: argparse.Namespace):
-    # Config
-    global_model_config = MODEL_CONFIGS[args.model]
-    # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
+    if args.load_checkpoint_from:
+        path = Path(args.load_checkpoint_from) / "checkpoints"
+        metadata_path = (
+            sorted(list(filter(lambda x: "checkpoint_" in str(x), path.iterdir())))[-1] / "metadata" / "metadata"
+        )
+        with open(metadata_path, encoding="utf8") as fp:
+            metadata = fp.read()
+        model_config_base = MODEL_CONFIGS[args.model]
+        del model_config_base["model_config"]
+        global_model_config = {"model_config": ModelConfig.from_metadata(metadata).model_config, **model_config_base}
+        LOGGER.info("Loading model config from metadata file.")
+    else:
+        # Config
+        global_model_config = MODEL_CONFIGS[args.model]
+        # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
     parallel = ParallelConfig(
         data_axis_name="dp",
         fsdp_axis_name="fsdp",
@@ -64,7 +76,13 @@ def main_lmeval(args: argparse.Namespace):
     log_path = Path(args.log_dir)
 
     # Define model config - 120M parameters.
-    xlstm_config = global_model_config["model_config"](parallel=parallel, context_length=context_length)
+    if callable(global_model_config["model_config"]):
+        xlstm_config = global_model_config["model_config"](parallel=parallel, context_length=context_length)
+    else:
+        xlstm_config = global_model_config["model_config"]
+        xlstm_config.parallel = parallel
+        xlstm_config.context_length = context_length
+        xlstm_config.__post_init__()
     backend_name = xlstm_config.mlstm_block.mlstm.mlstm_cell.backend.name
     wb_name = f"eval_{args.model}_gbs{int(batch_size)}_ctx{context_length}_{backend_name}"
 
@@ -147,7 +165,44 @@ def main_lmeval(args: argparse.Namespace):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate xLSTM model on LMEval harness.")
-    parser.add_argument("--tasks", type=str, default="lambada,winogrande")
+    parser.add_argument(
+        "--tasks",
+        type=str,
+        nargs="+",
+        default=[
+            "lambada_openai",
+            "lambada_standard",
+            "hellaswag",
+            "piqa",
+            "arc_easy",
+            "arc_challenge",
+            "winogrande",
+            "anli",
+            "arithmetic",
+            "asdiv",
+            "wsc",
+            "crows_pairs_english",
+            "crows_pairs_french",
+            "mmlu",
+            "hendrycks_ethics",
+            "lambada_cloze",
+            "logiqa",
+            "mathqa",
+            "mc_taco",
+            "medmcqa",
+            "medqa_4options",
+            "openbookqa",
+            "prost",
+            "race",
+            "sciq",
+            "social_iqa",
+            "swag",
+            "freebase",
+            "wikitext",
+            "wmdp",
+            "wsc273",
+        ],
+    )
     parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="120M")
     parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs_poeppel/eval_jax")
     parser.add_argument("--load_checkpoint_from", type=str, default="")

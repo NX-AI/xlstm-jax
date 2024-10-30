@@ -17,7 +17,17 @@ class mLSTMCellConfig:
     backend: mLSTMBackendNameAndKwargs = field(
         default_factory=lambda: mLSTMBackendNameAndKwargs(name="parallel_stabilized")
     )
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class mLSTMCell(nn.Module):
@@ -31,14 +41,14 @@ class mLSTMCell(nn.Module):
         # compute input and forget gate pre-activations  - why taking all heads as input?
         igate_preact = nn.Dense(
             features=self.config.num_heads,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             bias_init=nn.initializers.normal(stddev=0.1),
             kernel_init=nn.initializers.zeros,
             name="igate",
         )(qkv)
         fgate_preact = nn.Dense(
             features=self.config.num_heads,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             bias_init=bias_linspace_init(3.0, 6.0),
             kernel_init=nn.initializers.zeros,
             name="fgate",
@@ -58,6 +68,6 @@ class mLSTMCell(nn.Module):
         backend_fn = create_mlstm_backend(self.config)
         h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
 
-        h_state_norm = MultiHeadLayerNorm(weight=True, bias=False, dtype=self.config.dtype, name="outnorm")(h_state)
+        h_state_norm = MultiHeadLayerNorm(weight=True, bias=False, dtype=self.config._dtype, name="outnorm")(h_state)
         h_state_norm = h_state_norm.transpose(0, 2, 1, 3).reshape(B, S, -1)
         return h_state_norm

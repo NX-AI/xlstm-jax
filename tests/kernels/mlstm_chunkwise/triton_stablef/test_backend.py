@@ -1,5 +1,4 @@
 import jax
-import jax.numpy as jnp
 import pytest
 
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels import (
@@ -17,7 +16,7 @@ def test_mlstm_kernel_backend(default_qkvif: tuple[jax.Array, jax.Array, jax.Arr
 
     backend = mLSTMBackendTriton(
         config=mLSTMBackendTritonConfig(
-            autocast_dtype=jnp.float32,
+            autocast_dtype="float32",
             chunk_size=CHUNK_SIZE,
             stabilize_correctly=True,
             eps=1e-5,

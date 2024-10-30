@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 import jax
-import jax.numpy as jnp
 
 from xlstm_jax.dataset import HFHubDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
@@ -87,7 +86,7 @@ def main_train(args: argparse.Namespace):
         add_post_blocks_norm=True,
         parallel=parallel,
         scan_blocks=False,
-        dtype=jnp.dtype(dtype),
+        dtype=dtype,
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 num_heads=4,

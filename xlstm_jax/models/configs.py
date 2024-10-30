@@ -1,3 +1,7 @@
+import importlib
+import inspect
+import json
+import re
 from dataclasses import dataclass, field
 
 from xlstm_jax.configs import ConfigDict
@@ -57,6 +61,42 @@ class ModelConfig(ConfigDict):
     """Parallelism configuration."""
     model_config: ConfigDict | None = None
     """Model configuration."""
+
+    @staticmethod
+    def from_metadata(metadata_content: str) -> "ModelConfig":
+        """
+        Creates a model config from a metadata file content.
+
+        Args:
+            metadata_content: Content of the metadata file, currently in JSON format.
+
+        Returns:
+            Tuple of the model_class and the model configuration parsed into a nested ModelConfig format.
+        """
+        cfg_dict = json.loads(metadata_content)
+        model_class_path = cfg_dict["model"]["model_class"]
+        module_path = ".".join(model_class_path.split(".")[:-1])
+        module = importlib.import_module(module_path)
+        model_class = getattr(module, model_class_path.split(".")[-1])
+        model_class_cfg = inspect.get_annotations(model_class)["config"]
+        model_cfg = ConfigDict.from_dict(model_class_cfg, data=cfg_dict["model"]["model_config"])
+        parallel_args = re.match(r"ParallelConfig\((.*)\)", cfg_dict["model"]["parallel"]).group(1)
+        parallel_args_json = (
+            "{"
+            + re.sub(
+                r"([a-zA-Z_]+)\=",
+                r'"\1": ',
+                parallel_args.replace("'", '"')
+                .replace("(", "[")
+                .replace(")", "]")
+                .replace("None", "null")
+                .replace("True", "true")
+                .replace("False", "false"),
+            )
+            + "}"
+        )
+        parallel = ParallelConfig(**json.loads(parallel_args_json))
+        return ModelConfig(model_class=model_class, parallel=parallel, model_config=model_cfg)
 
 
 @dataclass

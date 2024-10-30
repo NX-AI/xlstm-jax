@@ -23,7 +23,7 @@ class xLSTMBlockConfig:
     parallel: ParallelConfig | None = None
 
     feedforward: FeedForwardConfig | None = None
-    dtype: jnp.dtype = jnp.bfloat16
+    dtype: str = "bfloat16"
     norm_eps: float = 1e-6
     """Epsilon value for numerical stability in layer norm."""
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
@@ -34,8 +34,8 @@ class xLSTMBlockConfig:
     before the residual connection, following e.g. Gemma-2."""
 
     # we initialize these with None to catch the case where they are not set
-    _num_blocks: int = None
-    _block_idx: int = None
+    _num_blocks: int | None = None
+    _block_idx: int | None = None
 
     def __post_init__(self):
         assert self.mlstm is not None or self.slstm is not None, "Either mlstm or slstm must be provided"
@@ -55,6 +55,16 @@ class xLSTMBlockConfig:
             self.feedforward.parallel = self.parallel
             self.feedforward._num_blocks = self._num_blocks
             self.feedforward.__post_init__()
+
+    @property
+    def _dtype(self) -> jnp.dtype:
+        """
+        Returns the real dtype instead of the str from configs.
+
+        Returns:
+            The jnp dtype corresponding to the string value.
+        """
+        return getattr(jnp, self.dtype)
 
 
 class ResidualBlock(nn.Module):
@@ -125,7 +135,7 @@ class xLSTMBlock(nn.Module):
             NormLayer,
             weight=True,
             bias=False,
-            dtype=self.config.dtype,
+            dtype=self.config._dtype,
             axis_name=self.config.parallel.model_axis_name,
             eps=self.config.norm_eps,
             norm_type=self.config.norm_type,

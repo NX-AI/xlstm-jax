@@ -159,18 +159,18 @@ class ExtendedEvaluation(Callback):
         self.eval_step = None
         self.create_jitted_functions()
 
-    def create_modified_exemplary_batch(self, batch: Batch) -> Batch:
+    def create_modified_exemplary_batch(self, exmp_batch: Batch) -> Batch:
         """
         Create a modified exemplary batch for evaluation. Is useful for passing additional
         information / metadata to the batch for post-processing.
 
         Args:
-            batch: "Original" training exemplary batch
+            exmp_batch: "Original" training exemplary batch
 
         Returns:
             Modified exemplary batch for evaluation, might be the unmodified original.
         """
-        return batch
+        return exmp_batch
 
     def eval_function(self, params: Any, apply_fn: Any, batch: Batch, rng: jax.Array) -> tuple[Metrics, PyTree]:
         """

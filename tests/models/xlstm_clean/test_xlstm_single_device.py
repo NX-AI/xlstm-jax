@@ -38,7 +38,7 @@ def test_xLSTMLMModel():
         tie_weights=False,
         add_embedding_dropout=True,
         add_post_blocks_norm=True,
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 proj_factor=2.0,
@@ -48,7 +48,7 @@ def test_xLSTMLMModel():
                 embedding_dim=16,
                 context_length=128,
                 vmap_qk=True,
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             )
         ),
     )
@@ -103,7 +103,7 @@ def test_xLSTMBlockStack():
                 bias=True,
                 dropout=0.0,
                 context_length=128,
-                dtype=jnp.bfloat16,
+                dtype="bfloat16",
             ),
             _num_blocks=8,
             _block_idx=0,
@@ -114,7 +114,7 @@ def test_xLSTMBlockStack():
         add_post_blocks_norm=True,
         bias=True,
         dropout=0.0,
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
         slstm_at=[],
     )
     rng = jax.random.PRNGKey(0)
@@ -216,7 +216,7 @@ def test_feedforward():
         dropout=0.0,
         bias=False,
         ff_type="ffn_gated",
-        dtype=jnp.bfloat16,
+        dtype="bfloat16",
     )
     rng = jax.random.PRNGKey(0)
     inp_rng, model_rng, drp_rng = jax.random.split(rng, 3)
@@ -265,7 +265,7 @@ def test_xLSTMBlock():
             bias=True,
             dropout=0.2,
             context_length=128,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
         ),
         _num_blocks=1,
         _block_idx=0,
@@ -273,7 +273,7 @@ def test_xLSTMBlock():
             proj_factor=4.0,
             embedding_dim=16,
             dropout=0.2,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
         ),
     )
     rng = jax.random.PRNGKey(0)
@@ -326,7 +326,7 @@ def test_mLSTMBlock():
             bias=True,
             dropout=0.0,
             context_length=128,
-            dtype=jnp.bfloat16,
+            dtype="bfloat16",
         ),
         _num_blocks=1,
         _block_idx=0,
