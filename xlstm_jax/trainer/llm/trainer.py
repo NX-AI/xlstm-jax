@@ -87,26 +87,31 @@ class LLMTrainer(TrainerModule):
             "accuracy": {"value": correct_pred.sum(), "count": num_targets},
         }
         # For training, we also log the norm, std, and max of the logits.
-        if train and self.trainer_config.log_logit_stats:
-            logits_norm = jnp.linalg.norm(logits, axis=-1)
-            logits_std = jnp.std(logits, axis=-1)
-            logits_max = jnp.max(logits)
-            step_metrics.update(
-                {
-                    "logits_norm": {
-                        "value": (logits_norm * targets_mask).sum(),
-                        "count": num_targets,
-                        "log_modes": ["mean"],
-                    },
-                    "logits_std": {
-                        "value": (logits_std * targets_mask).sum(),
-                        "count": num_targets,
-                        "log_modes": ["mean"],
-                    },
-                    "logits_max": {"value": logits_max, "count": 1, "log_modes": ["max"]},
-                    "token_utilization": {"value": num_targets, "count": targets_mask.size, "log_modes": ["mean"]},
-                }
-            )
+        if train:
+            step_metrics["token_utilization"] = {
+                "value": num_targets,
+                "count": targets_mask.size,
+                "log_modes": ["mean"],
+            }
+            if self.trainer_config.log_logit_stats:
+                logits_norm = jnp.linalg.norm(logits, axis=-1)
+                logits_std = jnp.std(logits, axis=-1)
+                logits_max = jnp.max(logits)
+                step_metrics.update(
+                    {
+                        "logits_norm": {
+                            "value": (logits_norm * targets_mask).sum(),
+                            "count": num_targets,
+                            "log_modes": ["mean"],
+                        },
+                        "logits_std": {
+                            "value": (logits_std * targets_mask).sum(),
+                            "count": num_targets,
+                            "log_modes": ["mean"],
+                        },
+                        "logits_max": {"value": logits_max, "count": 1, "log_modes": ["max"]},
+                    }
+                )
         return avg_loss, (step_metrics, mutable_variables)
 
     def get_metric_postprocess_fn(self) -> Callable[[HostMetrics], HostMetrics]:

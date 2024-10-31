@@ -4,5 +4,5 @@ defaults:
 shuffle_data: true
 drop_remainder: true
 split: train
-grain_packing: false
+grain_packing: true
 grain_packing_bin_count: 128

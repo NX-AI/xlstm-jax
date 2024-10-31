@@ -10,7 +10,7 @@ defaults:
   - lr_monitor: lr_monitor_config
   - profiling: jax_profiling
   - logger: default_logger
-  - trainer: default_trainer
+  - trainer: default_llm_trainer
   - _self_
 
 

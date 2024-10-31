@@ -21,6 +21,7 @@ from xlstm_jax.trainer.base.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.callbacks.lr_monitor import LearningRateMonitorConfig
 from xlstm_jax.trainer.callbacks.profiler import JaxProfilerConfig
+from xlstm_jax.trainer.llm.trainer import LLMTrainerConfig
 from xlstm_jax.trainer.logger.base_logger import LoggerConfig
 from xlstm_jax.trainer.optimizer.optimizer import OptimizerConfig
 from xlstm_jax.trainer.optimizer.scheduler import SchedulerConfig
@@ -181,3 +182,4 @@ def register_configs() -> None:
 
     # trainer
     cs.store(name="trainer_schema", group="trainer", node=TrainerConfig)
+    cs.store(name="llm_trainer_schema", group="trainer", node=LLMTrainerConfig)

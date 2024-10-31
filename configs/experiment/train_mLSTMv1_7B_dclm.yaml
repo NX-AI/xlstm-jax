@@ -1,0 +1,40 @@
+# @package _global_
+defaults:
+  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval
+  # - /data@data_eval.val2: slimpajama_627B_local_ds_eval
+  - override /parallel: mLSTMv1_7B
+  - override /model: mLSTMv1_7B
+  - override /data: dclm_arrayrecord_train
+  - override /optimizer: adamw
+  - _self_
+
+# specify the deltas from the defaults:
+task_name: DCLM
+batch_size_per_device: 4
+context_length: 8192
+num_epochs: 1000
+num_train_steps: 95_000
+lr: 4e-4
+
+scheduler:
+  warmup_steps: 3000
+
+trainer:
+  gradient_accumulate_steps: 1
+  check_val_every_n_steps: 5_000
+  log_logit_stats: true
+  log_intermediates: true
+
+checkpointing:
+  monitor: spaj627B_AR_perplexity
+
+data:
+  tokenizer_path: EleutherAI/gpt-neox-20b
+
+data_eval:
+  val1:
+    tokenizer_path: EleutherAI/gpt-neox-20b
+
+model:
+  reset_at_document_boundaries: true
+  vocab_size: -1
