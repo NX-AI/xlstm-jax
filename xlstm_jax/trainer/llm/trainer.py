@@ -14,7 +14,7 @@ from jax.sharding import PartitionSpec as P
 from xlstm_jax.dataset import LLMBatch
 from xlstm_jax.distributed import fold_rng_over_axis, split_array_over_mesh
 from xlstm_jax.trainer.base.trainer import TrainerConfig, TrainerModule, TrainState
-from xlstm_jax.trainer.metrics import HostMetrics, Metrics
+from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 
 from .sampling import generate_tokens, temperature_sampling
 
@@ -40,7 +40,13 @@ class LLMTrainer(TrainerModule):
     """Trainer for Autoregressive Language Models."""
 
     def loss_function(
-        self, params: Any, apply_fn: Any, batch: LLMBatch, rng: jax.Array, train: bool = True
+        self,
+        params: Any,
+        apply_fn: Any,
+        batch: LLMBatch,
+        rng: jax.Array,
+        train: bool = True,
+        mutable_variables: dict[str, Any] | None = None,
     ) -> tuple[jax.Array, tuple[Metrics, PyTree]]:
         """
         Calculate the loss function for the model.
@@ -51,6 +57,8 @@ class LLMTrainer(TrainerModule):
             batch: The input batch.
             rng: The random number generator.
             train: Whether the model is in training mode. Defaults to True.
+            mutable_variables: Additional mutable variables which are passed to the model apply function and set to
+                mutable. Defaults to None.
 
         Returns:
             The loss and a tuple of metrics and mutable variables.
@@ -62,13 +70,15 @@ class LLMTrainer(TrainerModule):
             rng, (self.data_axis_name, self.fsdp_axis_name, self.pipeline_axis_name, self.model_axis_name)
         )
         # Remaining computation is the same as before for single device.
+        if mutable_variables is None:
+            mutable_variables = {}
         logits, mutable_variables = apply_fn(
-            {"params": params},
+            {"params": params, **mutable_variables},
             batch.inputs,
             document_borders=batch.get_document_borders(),
             train=train,
             rngs={"dropout": dropout_rng},
-            mutable="intermediates",
+            mutable=["intermediates"] + list(mutable_variables.keys()),
         )
         # Select the targets per device.
         targets = batch.targets
@@ -192,3 +202,158 @@ class LLMTrainer(TrainerModule):
             check_rep=False,
         )
         return generate_fn
+
+    def get_cache_shape_dtype_struct(self, exmp_batch: LLMBatch | None = None) -> PyTree:
+        """
+        Get the shape, dtype, and structure of the cache.
+
+        Args:
+            exmp_batch: An example batch to determine the shape of the cache. Defaults to None, in which case the
+                example batch from the trainer is used.
+
+        Returns:
+            A PyTree with leafs being ShapeDtypeStruct of the cache elements.
+        """
+        if exmp_batch is None:
+            exmp_batch = self.exmp_batch
+
+        def _init_cache(state: TrainState, batch: LLMBatch) -> PyTree:
+            # In our multi-host setup, each local device will have a different batch.
+            # So we first gather the batch across model and pipeline axes.
+            batch = jax.lax.all_gather(
+                batch, axis_name=(self.model_axis_name, self.pipeline_axis_name), axis=0, tiled=True
+            )
+            _, mutable_variables = state.apply_fn(
+                {"params": state.params},
+                batch.inputs,
+                document_borders=batch.get_document_borders(),
+                train=False,
+                mutable="cache",
+            )
+            return mutable_variables.get("cache", {})
+
+        state_partition_specs = nn.get_partition_spec(self.state)
+        init_cache_fn = shard_map(
+            _init_cache,
+            self.mesh,
+            in_specs=(state_partition_specs, self.batch_partition_specs),
+            out_specs=P(),
+            check_rep=False,
+        )
+        cache_shape = jax.eval_shape(init_cache_fn, self.state, exmp_batch)
+        return cache_shape
+
+    def create_recurrent_evaluation_step_function(
+        self,
+        chunk_size: int,
+        exmp_batch: LLMBatch | None = None,
+        cache_init_fn: Callable[[PyTree], PyTree] | None = None,
+    ) -> Callable[[TrainState, LLMBatch, ImmutableMetrics | None], ImmutableMetrics]:
+        """
+        Create and return a function for the evaluation step.
+
+        Compared to the `create_evaluation_step_function`, this evaluation supports much longer sequences by chunking
+        the input and running the model recurrently over the chunks. This is useful for evaluation on long documents.
+        This is enabled by keeping a cache, which is forwarded between evaluation steps.
+
+        Note: do *not* jit this function if you want to support arbitrary input shapes. This function jit's the
+        recurrent function for a single chunk, and adds a python loop around it to handle arbitrary length sequences.
+        Thus, no outer jit is needed.
+
+        Note: this function is explicitly meant for recurrent models like xLSTM. Using this function on a non-recurrent
+        model will lead to unexpected, incorrect results.
+
+        Args:
+            chunk_size: Size of the chunks to split the input into. The slices are performed over the sequence length.
+            exmp_batch: An example batch to determine the shape of the cache. Defaults to None, in which case the
+                example batch from the trainer is used.
+            cache_init_fn: A function to initialize the cache. If not provided, the cache is initialized with zeros.
+                The function should take the shape dtype struct of the cache as input and return the initialized cache.
+
+        Returns:
+            The evaluation step function with support for arbitrary length sequences.
+        """
+        if cache_init_fn is None:
+            cache_init_fn = partial(jax.tree.map, jnp.zeros_like)
+
+        def rec_eval_step(
+            state: TrainState, cache: PyTree, batch: LLMBatch, metrics: ImmutableMetrics | None
+        ) -> tuple[PyTree, ImmutableMetrics]:
+            # In our multi-host setup, each local device will have a different batch.
+            # So we first gather the batch across model and pipeline axes.
+            batch = jax.lax.all_gather(
+                batch, axis_name=(self.model_axis_name, self.pipeline_axis_name), axis=0, tiled=True
+            )
+            # Forward pass and compute metrics.
+            _, (step_metrics, mutable_variables) = self.loss_function(
+                state.params,
+                state.apply_fn,
+                batch,
+                jax.random.PRNGKey(self.trainer_config.seed_eval),
+                train=False,
+                mutable_variables={"cache": cache},
+            )
+            cache = mutable_variables["cache"]
+            with jax.named_scope("sync_metrics"):
+                step_metrics = jax.tree.map(
+                    lambda x: jax.lax.psum(
+                        x,
+                        axis_name=(
+                            self.data_axis_name,
+                            self.fsdp_axis_name,
+                            self.pipeline_axis_name,
+                            self.model_axis_name,
+                        ),
+                    )
+                    if not isinstance(x, str)
+                    else x,
+                    step_metrics,
+                )
+            metrics = update_metrics(metrics, step_metrics, default_log_modes=("mean_nopostfix",))
+            return cache, metrics
+
+        # Determine cache structure.
+        cache_shape = self.get_cache_shape_dtype_struct(exmp_batch=exmp_batch)
+
+        # Shard the single-step recurrent evaluation function.
+        state_partition_specs = nn.get_partition_spec(self.state)
+        cache_partition_specs = nn.get_partition_spec(cache_shape)
+        rec_eval_step_fn = shard_map(
+            rec_eval_step,
+            self.mesh,
+            in_specs=(state_partition_specs, cache_partition_specs, self.batch_partition_specs, P()),
+            out_specs=P(),
+            check_rep=False,
+        )
+
+        # Jit the step function. We donate also the cache to free up memory.
+        rec_eval_step_fn = jax.jit(
+            rec_eval_step_fn,
+            donate_argnames=["cache", "metrics"],
+        )
+
+        # Create the looped evaluation step function.
+        def looped_eval_step_fn(
+            state: TrainState, batch: LLMBatch, metrics: ImmutableMetrics | None
+        ) -> ImmutableMetrics:
+            # Create initial cache.
+            cache = cache_init_fn(cache_shape)
+            # Run the evaluation per chunk with forwarding the cache.
+            num_chunks = (batch.inputs.shape[1] - 1) // chunk_size + 1
+            for i in range(num_chunks):
+                # Get current chunk of batch.
+                chunk_start = i * chunk_size
+                chunk_end = min((i + 1) * chunk_size, batch.inputs.shape[1])
+                chunk_batch = jax.tree.map(lambda x: x[:, chunk_start:chunk_end], batch)
+                if chunk_batch.inputs.shape[1] < chunk_size:
+                    # Pad batch.
+                    pad_size = chunk_size - chunk_batch.inputs.shape[1]
+                    chunk_batch = jax.tree.map(
+                        lambda x: jnp.pad(x, ((0, 0), (0, pad_size)), mode="constant"), chunk_batch
+                    )
+                # Run the evaluation step.
+                cache, metrics = rec_eval_step_fn(state, cache, chunk_batch, metrics)
+            # Return final metrics.
+            return metrics
+
+        return looped_eval_step_fn

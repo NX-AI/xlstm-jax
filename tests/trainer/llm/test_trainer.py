@@ -254,14 +254,11 @@ def test_xlstm_training(tmp_path: Path, tp_size: int, fsdp_size: int):
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
-                proj_factor=2.0,
-                conv1d_kernel_size=4,
                 num_heads=4,
                 dropout=0.2,
                 embedding_dim=64,
                 context_length=context_length,
                 mlstm_cell=mLSTMCellConfig(
-                    gate_linear_headwise=True,
                     gate_soft_cap=30.0,
                     reset_at_document_boundaries=True,
                 ),
@@ -574,15 +571,12 @@ def test_xlstm_sampling(tmp_path: Path):
         mlstm_block=mLSTMBlockConfig(
             mlstm=mLSTMLayerConfig(
                 layer_type="mlstm_v1",
-                proj_factor=2.0,
-                conv1d_kernel_size=4,
                 num_heads=4,
                 dropout=0.0,
                 embedding_dim=64,
                 context_length=context_length,
                 qk_dim_factor=0.5,
                 mlstm_cell=mLSTMCellConfig(
-                    gate_linear_headwise=True,
                     gate_soft_cap=15.0,
                     reset_at_document_boundaries=True,
                     backend=mLSTMBackendNameAndKwargs(name="recurrent"),
@@ -692,3 +686,184 @@ def test_xlstm_sampling(tmp_path: Path):
         )
         assert np.all(is_valid[i, :expseqlen]), "All expected tokens should be valid."
         assert not np.any(is_valid[i, expseqlen:]), "Sequence should have stopped."
+
+
+@pytest.mark.parametrize("fsdp_size", [1])
+@pytest.mark.parametrize("model_type", ["toy", "xlstm"])
+def test_infinite_eval_function(llm_toy_model: Any, tmp_path: Path, fsdp_size: int, model_type: str):
+    """
+    Tests sampling with the LLM trainer.
+    """
+    LLMToyModel = llm_toy_model
+    if pytest.num_devices < fsdp_size:
+        pytest.skip("Test requires more devices than available.")
+    batch_size = 8
+    context_length = 16
+    parallel = ParallelConfig(
+        data_axis_size=-1,
+        model_axis_size=1,
+        fsdp_axis_size=fsdp_size,
+        fsdp_min_weight_size=pytest.num_devices,
+    )
+    if model_type == "toy":
+        model_config = ModelConfig(
+            model_class=partial(LLMToyModel, vocab_size=10),
+            parallel=parallel,
+        )
+    elif model_type == "xlstm":
+        xlstm_config = xLSTMLMModelConfig(
+            vocab_size=10,
+            embedding_dim=64,
+            num_blocks=2,
+            context_length=context_length,
+            tie_weights=False,
+            add_embedding_dropout=False,
+            add_post_blocks_norm=True,
+            parallel=parallel,
+            dtype="float32",
+            mlstm_block=mLSTMBlockConfig(
+                mlstm=mLSTMLayerConfig(
+                    layer_type="mlstm_v1",
+                    num_heads=4,
+                    dropout=0.0,
+                    embedding_dim=64,
+                    context_length=context_length,
+                    qk_dim_factor=0.5,
+                    mlstm_cell=mLSTMCellConfig(
+                        gate_soft_cap=15.0,
+                        reset_at_document_boundaries=False,
+                        backend=mLSTMBackendNameAndKwargs(name="recurrent"),
+                    ),
+                )
+            ),
+        )
+        model_config = ModelConfig(
+            model_class=xLSTMLMModel,
+            parallel=parallel,
+            model_config=xlstm_config,
+        )
+
+    optimizer_config = OptimizerConfig(
+        name="adam",
+        scheduler=SchedulerConfig(
+            name="constant",
+            lr=1e-4,
+        ),
+    )
+    trainer = LLMTrainer(
+        LLMTrainerConfig(
+            callbacks=(),
+            logger=LoggerConfig(log_path=tmp_path),
+            check_val_every_n_epoch=1,
+        ),
+        model_config,
+        optimizer_config,
+        batch=LLMBatch.get_dtype_struct(batch_size=batch_size, max_length=context_length),
+    )
+
+    def data_gen_fn(idx: int) -> LLMBatch:
+        inputs = jax.random.randint(jax.random.PRNGKey(idx), (batch_size, context_length), minval=0, maxval=10)
+        targets = jnp.mod(jnp.cumsum(inputs, axis=-1), 10)
+        # Mask out some tokens to test evaluation with masking.
+        segmentation = jax.random.bernoulli(jax.random.PRNGKey(idx), p=0.85, shape=(batch_size, context_length)).astype(
+            jnp.int32
+        )
+        position = jnp.arange(context_length)[None, :].repeat(batch_size, axis=0)
+        return LLMBatch(
+            inputs=inputs,
+            targets=targets,
+            inputs_position=position,
+            inputs_segmentation=segmentation,
+            targets_position=position,
+            targets_segmentation=segmentation,
+        )
+
+    train_loader = [data_gen_fn(idx) for idx in range(100)]
+    val_loader = train_loader[:20]
+
+    # Run short training to verify sampling function works after training and
+    # give the model already a bit of bias towards function above.
+    final_metrics = trainer.train_model(
+        train_loader,
+        val_loader,
+        num_train_steps=20,
+    )
+    assert final_metrics is not None
+
+    # Get recurrent eval function.
+    recurrent_eval_function = trainer.create_recurrent_evaluation_step_function(
+        chunk_size=context_length,
+    )
+
+    # Create version of evaluation dataset with very long sequences.
+    long_val_loader = []
+    idx = 0
+    elem_in_chunk = 1
+    while idx < len(val_loader):
+        long_val_loader.append(val_loader[idx : idx + elem_in_chunk])
+        idx += elem_in_chunk
+        elem_in_chunk += 1
+    long_val_loader = [
+        LLMBatch(
+            **{
+                key: jnp.concatenate([getattr(batch, key) for batch in chunk], axis=1)
+                for key in LLMBatch.__dataclass_fields__
+            }
+        )
+        for chunk in long_val_loader
+    ]
+
+    trainer.logger.start_epoch(epoch=2, step=50, mode="val")
+    metrics = trainer.init_eval_metrics()
+    for batch in long_val_loader:
+        metrics = recurrent_eval_function(trainer.state, batch, metrics)
+    _, long_metrics = trainer.logger.end_epoch(metrics, step=50)
+
+    final_metrics = final_metrics["val_epoch_1"]
+    for key in final_metrics:
+        if key == "epoch_time":
+            continue
+        assert key in long_metrics, f"Metric missing in long recurrent evaluation: {key}."
+        if model_type == "toy":
+            # The toy one has no cache, so the same results should come out.
+            np.testing.assert_almost_equal(
+                final_metrics[key],
+                long_metrics[key],
+                err_msg=f"Metric {key} does not match between normal and long recurrent eval.",
+            )
+        else:
+            assert not np.all(
+                final_metrics[key] == long_metrics[key]
+            ), f"Metric {key} should not match for xLSTM due to the cache."
+
+    # Test with smaller chunks, should give the same results for all. Uneven chunk sizes
+    # further test the padding.
+    for chunk_size in [context_length // 4, context_length // 3]:
+        # Get recurrent eval function.
+        recurrent_eval_function = trainer.create_recurrent_evaluation_step_function(
+            chunk_size=chunk_size,
+        )
+
+        trainer.logger.start_epoch(epoch=3, step=100, mode="val")
+        metrics = trainer.init_eval_metrics()
+        for batch in val_loader:  # Will be split automatically inside the function.
+            metrics = recurrent_eval_function(trainer.state, batch, metrics)
+        _, short_metrics = trainer.logger.end_epoch(metrics, step=100)
+
+        for key in final_metrics:
+            if key == "epoch_time":
+                continue
+            assert (
+                key in short_metrics
+            ), f"Metric missing in short recurrent evaluation with chunk size {chunk_size}: {key}."
+            # Both xLSTM and toy model should give the same results.
+            np.testing.assert_allclose(
+                final_metrics[key],
+                short_metrics[key],
+                rtol=1e-6,
+                atol=1e-6,
+                err_msg=(
+                    f"Metric {key} does not match between normal and "
+                    f"short recurrent eval with chunk size {chunk_size}.",
+                ),
+            )
