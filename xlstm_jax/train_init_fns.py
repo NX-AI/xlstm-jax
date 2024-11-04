@@ -451,18 +451,16 @@ def init_trainer(cfg: DictConfig, data_iterator: DataIterator, model_config: Mod
 
     # Finally, create the trainer with all sub-configs.
     log_info("Creating trainer.")
+    trainer_hparams = cfg.trainer
+    del trainer_hparams.logger
+    del trainer_hparams.callbacks
+    # Convert lists from omegaconf to tuples for the trainer.
+    trainer_hparams = OmegaConf.to_container(trainer_hparams, resolve=True, enum_to_str=True)
     trainer = LLMTrainer(
         trainer_config=LLMTrainerConfig(
             callbacks=(model_checkpointing, lr_monitor_config, profiler_config),
             logger=logger_config,
-            check_val_every_n_steps=cfg.trainer.check_val_every_n_steps,
-            enable_progress_bar=cfg.trainer.enable_progress_bar,
-            check_for_nan=cfg.trainer.check_for_nan,
-            log_grad_norm=cfg.trainer.log_grad_norm,
-            log_grad_norm_per_param=cfg.trainer.log_grad_norm_per_param,
-            log_param_norm=cfg.trainer.log_param_norm,
-            log_param_norm_per_param=cfg.trainer.log_param_norm_per_param,
-            default_train_log_modes=cfg.trainer.default_train_log_modes,
+            **trainer_hparams,
         ),
         model_config=model_config,
         optimizer_config=optimizer_config,

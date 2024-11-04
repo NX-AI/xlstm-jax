@@ -20,7 +20,7 @@ hydra:
     additional_parameters: {
       "gpu-bind": "none",
       "wait-all-nodes": "1",
-      "time": "2-00:00:00",
+      "time": "7-00:00:00",
       "exclusive": "",
     }
     setup:

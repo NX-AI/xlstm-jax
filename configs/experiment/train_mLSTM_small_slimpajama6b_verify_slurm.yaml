@@ -2,8 +2,8 @@
 defaults:
   - /data@data_eval.val1: slimpajama_6B_arrayrecord_eval
   - /data@data_eval.val2: synthetic_eval
-  - override /parallel: mLSTM165M
-  - override /model: mLSTM165M
+  - override /parallel: mLSTMv1_165M
+  - override /model: mLSTMv1_165M
   - override /data: slimpajama_6B_arrayrecord_train
   - override /optimizer: adamw
   - _self_
@@ -29,6 +29,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
+  log_intermediates: true
 
 model:
   # Negative value means we infer the vocab size from the tokenizer.
