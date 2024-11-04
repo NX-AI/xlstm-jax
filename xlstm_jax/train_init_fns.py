@@ -485,10 +485,9 @@ def main_train(cfg: DictConfig):
     log_info("Mesh initialized.")
 
     log_info(f"Devices: {jax.devices()}.")
-    log_info(f"Devices: {jax.devices()}.")
 
     # Compute global batch size.
-    global_batch_size = cfg.batch_size_per_device * len(jax.devices())
+    global_batch_size = cfg.batch_size_per_device * jax.device_count()
     cfg.global_batch_size = global_batch_size
 
     # Create data iterator.

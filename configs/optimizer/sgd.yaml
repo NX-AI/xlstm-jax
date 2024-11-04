@@ -1,0 +1,6 @@
+defaults:
+  - optimizer_schema
+  - _self_
+
+name: sgd
+scheduler: ???  # Will be provided at runtime

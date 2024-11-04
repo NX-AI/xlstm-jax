@@ -1,0 +1,20 @@
+# @package _global_
+defaults:
+  - override /parallel: mLSTMv1_1.3B  # No need for FSDP, thus selecting smaller model config here.
+  - override /model: mLSTMv1_7B
+  - override /optimizer: sgd
+  - _self_
+
+# specify the deltas from the defaults:
+task_name: benchmark
+batch_size_per_device: 8192  # Max batch size to test.
+context_length: 2048
+num_epochs: 1000
+num_train_steps: 95_000
+lr: 1e-2
+
+trainer:
+  gradient_accumulate_steps: 1
+
+model:
+  backend: recurrent

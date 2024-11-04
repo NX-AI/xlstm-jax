@@ -201,6 +201,7 @@ class LLMTrainer(TrainerModule):
             out_specs=(token_partition_specs, token_partition_specs),
             check_rep=False,
         )
+        generate_fn = jax.jit(generate_fn)
         return generate_fn
 
     def get_cache_shape_dtype_struct(self, exmp_batch: LLMBatch | None = None) -> PyTree:

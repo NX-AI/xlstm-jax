@@ -395,6 +395,15 @@ class TrainerModule:
         """
         return tabulate_params(self.state)
 
+    def get_num_params(self) -> int:
+        """
+        Return the number of parameters in the model.
+
+        Returns:
+            The number of parameters.
+        """
+        return get_num_params(self.state.params)
+
     def create_jitted_functions(self):
         """
         Create jitted versions of the training and evaluation functions.
