@@ -489,9 +489,14 @@ class mLSTMBackendFwbw(mLSTMBackend):
         v: jax.Array,
         i: jax.Array,
         f: jax.Array,
-    ) -> jax.Array:
+        c_initial: jax.Array | None = None,
+        n_initial: jax.Array | None = None,
+        m_initial: jax.Array | None = None,
+        return_last_states: bool = False,
+    ) -> jax.Array | tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
         """Forward pass of the mLSTM fwbw backend."""
-        return mlstm_fwbw_custom_grad(self.config)(q, k, v, i, f)
+        assert not return_last_states, "return_last_states is not supported for the fwbw backend yet."
+        return mlstm_fwbw_custom_grad(self.config)(q, k, v, i, f, c_initial, n_initial, m_initial)
 
     @property
     def can_vmap_over_heads(self) -> bool:

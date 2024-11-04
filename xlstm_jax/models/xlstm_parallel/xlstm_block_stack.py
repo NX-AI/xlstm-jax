@@ -144,7 +144,7 @@ class BlockStack(nn.Module):
             block = block_fn(name="block")
             x, _ = nn.scan(
                 lambda module, carry, _: (module(carry, document_borders=document_borders), None),
-                variable_axes={"params": 0, "intermediates": 0},
+                variable_axes={"params": 0, "intermediates": 0, "cache": 0},
                 split_rngs={"params": True, "dropout": True},
                 length=self.config.num_blocks,
                 metadata_params={

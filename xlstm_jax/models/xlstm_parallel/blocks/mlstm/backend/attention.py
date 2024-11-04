@@ -169,9 +169,22 @@ class mLSTMBackendAttention(mLSTMBackend):
 
     @nn.compact
     def __call__(
-        self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array | None = None, f: jax.Array | None = None
-    ):
+        self,
+        q: jax.Array,
+        k: jax.Array,
+        v: jax.Array,
+        i: jax.Array | None = None,
+        f: jax.Array | None = None,
+        c_initial: jax.Array | None = None,
+        n_initial: jax.Array | None = None,
+        m_initial: jax.Array | None = None,
+        return_last_states: bool = False,
+    ) -> jax.Array:
         """Forward pass of the attention backend."""
+        assert not return_last_states, "return_last_states is not supported for the attention backend yet."
+        assert (
+            c_initial is None or n_initial is None or m_initial is None
+        ), "Initial states are not supported for the attention backend yet."
         del i, f
         causal_mask = jnp.tril(jnp.ones((self.config.context_length, self.config.context_length), dtype=jnp.bool_))
         return attention(

@@ -14,6 +14,10 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.attention import (
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.fwbw import (
     mlstm_fwbw_custom_grad as mlstm_fwbw_custom_grad_jax,
 )
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent import (
+    mLSTMBackendRecurrent,
+    mLSTMBackendRecurrentConfig,
+)
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple as parallel_stabilized_simple_jax,
 )
@@ -496,6 +500,59 @@ def test_fwbw_pytorch_vs_jax_backward(context_length: int, chunk_size: int, use_
             rtol=1e-2,
             err_msg=f"Mismatch between JAX and PyTorch gradient backends in fwbw for {gname}.",
         )
+
+
+@pytest.mark.parametrize("context_length", [8, 128, 256])
+def test_jax_recurrent_vs_parallelized(context_length: int):
+    """
+    Tests the mLSTM recurrent compared to parallelized backend.
+    """
+    # Prepare the input data.
+    B = 1
+    NH = 2
+    S = context_length
+    DH = 64
+    rng = np.random.default_rng(2)
+    q = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    k = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    v = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    igate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32)
+    fgate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32) + 4.5
+
+    # Run the JAX backend.
+    config = mLSTMBackendRecurrentConfig(
+        context_length=S,
+    )
+    recurrent_backend = mLSTMBackendRecurrent(config)
+    out_recurrent = recurrent_backend(
+        jnp.array(q),
+        jnp.array(k),
+        jnp.array(v),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+    )
+    out_recurrent = jax.device_get(out_recurrent)
+
+    # Run parallelized backend.
+    parallel_backend = jax.vmap(parallel_stabilized_simple_jax, in_axes=(1, 1, 1, 1, 1), out_axes=1)
+    out_parallel = parallel_backend(
+        jnp.array(q),
+        jnp.array(k),
+        jnp.array(v),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+    )
+    out_parallel = jax.device_get(out_parallel)
+
+    # Compare the results.
+    assert out_recurrent.shape == out_parallel.shape, "Recurrent output shape must match the parallel output shape."
+    np.testing.assert_allclose(
+        out_recurrent,
+        out_parallel,
+        atol=1e-5 if jax.default_backend() == "cpu" else 1e-2,
+        rtol=1e-2,
+        err_msg="Mismatch between recurrent and parallel backends.",
+    )
 
 
 @pytest.mark.parametrize("context_length", [128, 256])

@@ -12,7 +12,8 @@ from xlstm_jax.models.shared import soft_cap_logits
 from ...components.init import bias_linspace_init
 from ...components.linear_headwise import LinearHeadwiseExpand, LinearHeadwiseExpandConfig
 from ...components.normalization import MultiHeadNormLayer, NormLayer
-from .backend import create_mlstm_backend, mLSTMBackend, mLSTMBackendNameAndKwargs
+from .backend import mLSTMBackendNameAndKwargs
+from .backend_utils import run_backend
 
 
 @dataclass
@@ -197,23 +198,15 @@ class mLSTMCell(nn.Module):
             q = norm_fn(name="q_norm")(q)
             k = norm_fn(name="k_norm")(k)
 
-        backend_fn: mLSTMBackend = create_mlstm_backend(self.config)
-
-        if backend_fn.can_vmap_over_heads:
-            # Vmap over the heads dimension without needing to transpose the input tensors.
-            backend_fn = jax.vmap(backend_fn, in_axes=(2, 2, 2, 2, 2), out_axes=2)
-            with jax.named_scope("mlstm_backend"):
-                h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
-        else:
-            # Manual transpose to work over heads.
-            q = q.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
-            k = k.transpose(0, 2, 1, 3)  # (B, NH, S, DHQK)
-            v = v.transpose(0, 2, 1, 3)  # (B, NH, S, DHV)
-            igate_preact = igate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
-            fgate_preact = fgate_preact.transpose(0, 2, 1, 3)  # (B, NH, S, 1)
-            with jax.named_scope("mlstm_backend"):
-                h_state = backend_fn(q, k, v, igate_preact, fgate_preact)
-            h_state = h_state.transpose(0, 2, 1, 3)
+        h_state = run_backend(
+            parent=self,
+            cell_config=self.config,
+            q=q,
+            k=k,
+            v=v,
+            igate_preact=igate_preact,
+            fgate_preact=fgate_preact,
+        )
 
         h_state_norm = MultiHeadNormLayer(
             weight=True,

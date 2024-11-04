@@ -36,16 +36,31 @@ class mLSTMBackendTriton(mLSTMBackend):
     config_class = mLSTMBackendTritonConfig
 
     @nn.compact
-    def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array, f: jax.Array) -> jax.Array:
+    def __call__(
+        self,
+        q: jax.Array,
+        k: jax.Array,
+        v: jax.Array,
+        i: jax.Array,
+        f: jax.Array,
+        c_initial: jax.Array | None = None,
+        n_initial: jax.Array | None = None,
+        m_initial: jax.Array | None = None,
+        return_last_states: bool = False,
+    ) -> jax.Array:
         """
         Forward pass of the mLSTM cell using triton kernels.
 
         Args:
-            q: Query tensor of shape (B, NH, S, DH).
-            k: Key tensor of shape (B, NH, S, DH).
-            v: Value tensor of shape (B, NH, S, DH).
+            q: Query tensor of shape (B, NH, S, DHQK).
+            k: Key tensor of shape (B, NH, S, DHQK).
+            v: Value tensor of shape (B, NH, S, DHV).
             i: Input gate tensor of shape (B, NH, S, 1) or (B, NH, S).
             f: Forget gate tensor of shape (B, NH, S, 1) or (B, NH, S).
+            c_initial: Initial cell state tensor of shape (B, NH, DHQK, DHV).
+            n_initial: Initial norm state tensor of shape (B, NH, DHQK).
+            m_initial: Initial maximizer state tensor of shape (B, NH).
+            return_last_states: Whether to return the last states.
 
         Returns:
             Output tensor of shape (B, NH, S, DH).
@@ -66,6 +81,10 @@ class mLSTMBackendTriton(mLSTMBackend):
                 v,
                 i,
                 f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                m_initial=m_initial,
+                return_last_states=return_last_states,
                 chunk_size=self.config.chunk_size,
                 autocast_kernel_dtype=autocast_kernel_dtype,
                 norm_val=self.config.norm_val,
@@ -79,6 +98,10 @@ class mLSTMBackendTriton(mLSTMBackend):
                 v,
                 i,
                 f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                m_initial=m_initial,
+                return_last_states=return_last_states,
                 chunk_size=self.config.chunk_size,
                 autocast_kernel_dtype=autocast_kernel_dtype,
                 reduce_slicing=self.config.reduce_slicing,

@@ -147,8 +147,23 @@ class mLSTMBackendParallel(mLSTMBackend):
     config_class = mLSTMBackendParallelConfig
 
     @nn.compact
-    def __call__(self, q: jax.Array, k: jax.Array, v: jax.Array, i: jax.Array, f: jax.Array):
+    def __call__(
+        self,
+        q: jax.Array,
+        k: jax.Array,
+        v: jax.Array,
+        i: jax.Array,
+        f: jax.Array,
+        c_initial: jax.Array | None = None,
+        n_initial: jax.Array | None = None,
+        m_initial: jax.Array | None = None,
+        return_last_states: bool = False,
+    ) -> jax.Array | tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
         """Forward pass of the parallel stabilized backend."""
+        assert not return_last_states, "return_last_states is not supported for the parallel backend yet."
+        assert (
+            c_initial is None or n_initial is None or m_initial is None
+        ), "Initial states are not supported for the parallel backend yet."
         causal_mask = jnp.tril(jnp.ones((self.config.context_length, self.config.context_length), dtype=jnp.bool_))
         return parallel_stabilized_simple(q, k, v, i, f, lower_triangular_matrix=causal_mask)
 
@@ -163,65 +178,3 @@ class mLSTMBackendParallel(mLSTMBackend):
             bool: True
         """
         return True
-
-
-def recurrent_step_stabilized_simple(
-    c_state: jax.Array,
-    n_state: jax.Array,
-    m_state: jax.Array,
-    q: jax.Array,
-    k: jax.Array,
-    v: jax.Array,
-    igate_preact: jax.Array,
-    fgate_preact: jax.Array,
-    eps: float = 1e-6,
-    **kwargs,
-) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
-    """
-    This is a single step of the mLSTM operation in recurrent form.
-
-    Args:
-        c_state (jax.Array): (B, NH, DH, DH)
-        n_state (jax.Array): (B, NH, DH, 1)
-        m_state (jax.Array): (B, NH, 1, 1)
-        q (jax.Array): (B, NH, 1, DH)
-        k (jax.Array): (B, NH, 1, DH)
-        v (jax.Array): (B, NH, 1, DH)
-        igate_preact (jax.Array): (B, NH, 1, 1)
-        fgate_preact (jax.Array): (B, NH, 1, 1)
-
-    Returns:
-        tuple[jax.Array, tuple[jax.Array, jax.Array]]:
-            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new
-            [B, NH, 1, 1]))
-    """
-    B, NH, S, DH = q.shape
-    # projections
-    q, k, v = (
-        q.squeeze(2)[..., None],
-        k.squeeze(2)[..., None],
-        v.squeeze(2)[..., None],
-    )  # (B, NH, DH, 1)
-
-    # gates
-    log_fg_act = jax.nn.log_sigmoid(fgate_preact)  # (B, NH, 1, 1)
-
-    # update rule
-    m_state_new = jnp.maximum(log_fg_act + m_state, igate_preact)  # (B, NH, 1, 1)
-
-    fg_act = jnp.exp(log_fg_act + m_state - m_state_new)  # (B, NH, 1, 1)
-    ig_act = jnp.exp(igate_preact - m_state_new)  # (B, NH, 1, 1)
-
-    k_scaled = k / math.sqrt(DH)
-
-    c_state_new = fg_act * c_state + ig_act * (k_scaled @ v.swapaxes(-1, -2))  # (B, NH, DH, DH)
-    n_state_new = fg_act * n_state + ig_act * k_scaled  # (B, NH, DH, 1)
-
-    h_num = q.swapaxes(-1, -2) @ c_state_new  # (B, NH, 1, DH)
-
-    qn_dotproduct = q.swapaxes(-1, -2) @ n_state_new  # (B, NH, 1, 1)
-    max_val = jnp.exp(-m_state_new)  # (B, NH, 1, 1)
-    h_denom = jnp.maximum(jnp.abs(qn_dotproduct), max_val) + eps
-    h = h_num / h_denom  # (B, NH, 1, DH) / (B, NH, 1, 1) = (B, NH, 1, DH)
-
-    return h, (c_state_new, n_state_new, m_state_new)

@@ -1,16 +1,22 @@
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+from flax import linen as nn
+from jax.experimental.shard_map import shard_map
+from jax.sharding import PartitionSpec as P
 
 from xlstm_jax.dataset import LLMBatch
 from xlstm_jax.distributed import fold_rng_over_axis, split_array_over_mesh
-from xlstm_jax.trainer.base.trainer import TrainerConfig, TrainerModule
+from xlstm_jax.trainer.base.trainer import TrainerConfig, TrainerModule, TrainState
 from xlstm_jax.trainer.metrics import HostMetrics, Metrics
+
+from .sampling import generate_tokens, temperature_sampling
 
 PyTree = Any
 
@@ -136,3 +142,53 @@ class LLMTrainer(TrainerModule):
             return metrics
 
         return _postprocess_metrics
+
+    def get_generate_fn(
+        self,
+        max_length: int = 2048,
+        eod_token_id: int = -1,
+        token_sample_fn: Callable[[jax.Array, jax.Array], jax.Array] = temperature_sampling,
+        gather_params_once: bool = False,
+    ) -> Callable[[TrainState, jax.Array, jax.Array, jax.Array | None, PyTree | None], tuple[jax.Array, jax.Array]]:
+        """
+        Create a function to generate text from the model.
+
+        Args:
+            max_length: The maximum length of the generated text. Defaults to 2048.
+            eod_token_id: The end-of-document token id. If all sequences hit this token, generation will stop. Defaults
+                to -1, ie will not have an effect.
+            token_sample_fn: The token sampler to use for sampling tokens. Defaults to temperature sampling with
+                temperature 1.0.
+            gather_params_once: Whether to gather fsdp-sharded parameters once before generating. This reduces
+                communication overhead between devices, but requires the model to fit on a single device (up to TP
+                parallelism). Defaults to false.
+
+        Returns:
+            The generate function. Takes as input the state, an RNG key, prefix tokens, prefix mask, and an optional
+            cache. It returns the generated tokens and a mask for valid tokens, including the prefix given.
+        """
+        if self.mesh.shape[self.model_axis_name] > 1:
+            raise ValueError("Generation is only supported for models with a single model axis at the moment.")
+
+        # Set static arguments of the generate_tokens function.
+        _generate_fn = partial(
+            generate_tokens,
+            max_length=max_length,
+            eod_token_id=eod_token_id,
+            token_sample_fn=token_sample_fn,
+            gather_params_once=gather_params_once,
+            data_axis_name=self.data_axis_name,
+            fsdp_axis_name=self.fsdp_axis_name,
+        )
+
+        # Shard the generate function.
+        state_partition_specs = nn.get_partition_spec(self.state)
+        token_partition_specs = P((self.data_axis_name, self.fsdp_axis_name))
+        generate_fn = shard_map(
+            _generate_fn,
+            self.mesh,
+            in_specs=(state_partition_specs, P(), token_partition_specs, token_partition_specs),
+            out_specs=(token_partition_specs, token_partition_specs),
+            check_rep=False,
+        )
+        return generate_fn
