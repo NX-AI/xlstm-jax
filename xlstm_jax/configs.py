@@ -107,11 +107,16 @@ def _parsed_string(data: str, cfg_class: type, strict_classname_parsing: bool = 
                 return ConfigDict.from_dict(config_class=cfg_class, data=kwargs)
             return _instantiate_class_empty(cfg_class)
     if "." in class_path:
+        # hacky way to retrieve dtypes as strings
+        if class_path.split(".")[-1] in ["bfloat16", "float32", "float16"]:
+            return class_path.split(".")[-1]
         class_module = importlib.import_module(".".join(class_path.split(".")[:-1]))
         resolved_class = getattr(class_module, class_path.split(".")[-1])
         return resolved_class
-    elif class_path == "None":
+    if class_path == "None":
         return None
+    if cfg_class == str:
+        return data
     raise ValueError(f"Could not parse {data} to {cfg_class}")
 
 

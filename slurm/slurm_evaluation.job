@@ -1,0 +1,113 @@
+#!/bin/bash -l
+#SBATCH --job-name=xlstm-jax
+#SBATCH --nodes=2
+#SBATCH --partition=compute
+#SBATCH --gres=gpu:8
+#SBATCH --gpu-bind=none
+#SBATCH --cpus-per-task=28  # Number of cores per socket on compute nodes
+#SBATCH --ntasks-per-node=8
+#SBATCH --wait-all-nodes=1
+#SBATCH --time=0-04:00:00
+#SBATCH --output=/nfs-gpu/xlstm/logs/outputs/xlstm-jax/evaluation/%j.out
+#SBATCH --exclusive
+
+#-------------------------------------------------------------------------------------------------
+CHECKPOINT_DIR=$1
+
+
+# Change directory (user env not supported in --chdir)
+cd /home/${USER}/xlstm-jax-dev/
+
+# determine log directory
+log_dir="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/evaluation/"
+mkdir -p "${log_dir}"
+# count directories with version_*
+exp_version=$(ls -l $log_dir | grep -c version_)
+echo "Found $exp_version existing experiments"
+exp_version=$((exp_version + 1))
+# do a while loop to make sure we don't overwrite existing experiments
+while [ -d "${log_dir}/version_${exp_version}" ]; do
+    exp_version=$((exp_version + 1))
+done
+echo "Using version_${exp_version} for this experiment"
+export LOG_DIR="${log_dir}/version_${exp_version}"
+
+sleep 5  # wait for all nodes to create the folders
+mkdir -p $LOG_DIR
+
+# Below is from oracle examples. I used the container example, as it uses srun instead of mpirun
+export PMI_DEBUG=1
+
+MACHINEFILE="${LOG_DIR}/hostfile"
+
+scontrol show hostnames $SLURM_JOB_NODELIST > $MACHINEFILE
+echo MACHINEFILE
+cat $MACHINEFILE
+
+source /etc/os-release
+
+# BELOW SNIPPET FROM https://github.com/oracle-quickstart/oci-hpc/blob/master/samples/gpu/nccl_run_allreduce_H100.sbatch
+mpivars_path=`ls /usr/mpi/gcc/openmpi-*/bin/mpivars.sh`
+
+if [[ "$mpivars_path" == "" ]]; then
+    mpivars_path=`ls /opt/openmpi-*/bin/mpivars.sh`
+fi
+
+if [[ "$mpivars_path" == "" ]]; then
+    echo "Could not find MPIPATH"; exit; fi
+
+source $mpivars_path
+
+# Had to remove a part from example sbatch that checks whether the node has H100 GPUs:
+# https://github.com/oracle-quickstart/oci-hpc/blob/master/samples/gpu/nccl_run_allreduce_containers_H100.sbatch#L33-L39
+# It is not necessary (we know we have H100), not useful (does not raise error and stop, just echo), and breaks our code (head node returns VM.Standard.E4.Flex, not BM.GPU.H100.8)
+# The long TIMEOUT value is needed as lm_eval needs some time to post-process some metrics.
+export NCCL_CROSS_NIC=0 \
+       NCCL_SOCKET_NTHREADS=16 \
+       NCCL_DEBUG=WARN \
+       NCCL_CUMEM_ENABLE=0 \
+       NCCL_IB_SPLIT_DATA_ON_QPS=0 \
+       NCCL_IB_QPS_PER_CONNECTION=16 \
+       NCCL_IB_GID_INDEX=3 \
+       NCCL_IB_TC=41 \
+       NCCL_IB_SL=0 \
+       NCCL_IB_TIMEOUT=31 \
+       NCCL_NET_PLUGIN=none \
+       NCCL_SOCKET_IFNAME=eth0 \
+       NCCL_IGNORE_CPU_AFFINITY=1 \
+       NCCL_IB_HCA="=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17" \
+       HCOLL_ENABLE_MCAST_ALL=0 \
+       coll_hcoll_enable=0 \
+       UCX_TLS=tcp \
+       UCX_NET_DEVICES=eth0 \
+       RX_QUEUE_LEN=8192 \
+       IB_RX_QUEUE_LEN=8192 \
+       OMPI_MCA_coll=^hcoll
+    #    NCCL_TOPO_FILE=/nfs/cluster/H100-topology.xml \
+
+# Needed for CUDA compatibility with older drivers on H100
+# TODO: Adjust to shared conda env once set up.
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/xlstmjax0433cu126_poeppel/cuda-compat/
+
+
+# --------------------------------------------------------------------------------------------------
+# Above env variables taken from oracle examples. Below comes our stuff.
+
+# activate specified conda env
+# TODO: Adjust to shared conda env once set up.
+echo "Activating conda env" xlstmjax0433cu126_poeppel
+conda activate xlstmjax0433cu126_poeppel
+
+# set the first node name as master address master port is retrieved in the script
+master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_ADDR=$master_addr
+export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
+
+echo $mpivars_path
+
+# Set Tokenizer!
+# EleutherAI/gpt-neox-20b, gpt2
+# run
+srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
+     --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
+     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --log_dir=$LOG_DIR --fsdp_size=16 --tokenizer=EleutherAI/gpt-neox-20b --load_checkpoint_from '$1

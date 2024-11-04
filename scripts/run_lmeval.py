@@ -1,5 +1,6 @@
 import argparse
 import logging
+from dataclasses import dataclass
 from pathlib import Path
 
 # For now, we load MODEL_CONFIGS from this training script
@@ -8,7 +9,11 @@ from pathlib import Path
 from scripts.run_train_slimpajama6b import MODEL_CONFIGS
 
 import jax
+import jax.numpy as jnp
+from jax.experimental.shard_map import shard_map
+from jax.sharding import PartitionSpec as P
 
+from xlstm_jax.configs import ConfigDict
 from xlstm_jax.dataset import LLMBatch
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -27,7 +32,42 @@ def log_info(msg: str):
         LOGGER.info(msg)
 
 
+@dataclass(kw_only=True, frozen=False)
+class CheckpointConfig(ConfigDict):
+    checkpoint_dir: str = ""
+    checkpoint_step_idx: int = -1
+    checkpoint_load_best: bool = True
+
+
 def main_lmeval(args: argparse.Namespace):
+    parallel = ParallelConfig(
+        data_axis_name="dp",
+        fsdp_axis_name="fsdp",
+        model_axis_name="tp",
+        pipeline_axis_name="pp",
+        fsdp_modules=[],
+        fsdp_gather_dtype="bfloat16",
+        fsdp_min_weight_size=2**18,
+        remat=[],
+        fsdp_axis_size=args.fsdp_size,
+        model_axis_size=args.model_tp_size,
+        data_axis_size=1,
+        tp_async_dense=False,
+    )
+    mesh = initialize_mesh(parallel_config=parallel)
+
+    def global_sync():
+        with jax.named_scope("global_sync"):
+            _ = jax.lax.psum(
+                jnp.array(1.0),
+                axis_name=mesh.axis_names,
+            )
+
+    global_sync_fn = shard_map(global_sync, mesh, in_specs=(P(mesh.axis_names)), out_specs=P(), check_rep=False)
+
+    log_info("Mesh initialized.")
+    assert len(jax.devices(backend="gpu")) > 0, "No devices found. This script should be run on GPU."
+    log_info(f"Devices: {jax.devices()}")
     if args.load_checkpoint_from:
         path = Path(args.load_checkpoint_from) / "checkpoints"
         metadata_path = (
@@ -43,28 +83,17 @@ def main_lmeval(args: argparse.Namespace):
         # Config
         global_model_config = MODEL_CONFIGS[args.model]
         # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
-    parallel = ParallelConfig(
-        data_axis_name="dp",
-        fsdp_axis_name="fsdp",
-        model_axis_name="tp",
-        pipeline_axis_name="pp",
-        fsdp_modules=global_model_config["fsdp_modules"],
-        fsdp_gather_dtype="bfloat16",
-        fsdp_min_weight_size=2**18,
-        remat=global_model_config["remat"],
-        fsdp_axis_size=args.fsdp_size,
-        model_axis_size=args.model_tp_size,
-        data_axis_size=1,
-        tp_async_dense=False,
-    )
-    mesh = initialize_mesh(parallel_config=parallel)
-    log_info("Mesh initialized.")
-    assert len(jax.devices(backend="gpu")) > 0, "No devices found. This script should be run on GPU."
-    log_info(f"Devices: {jax.devices()}")
+    parallel.fsdp_modules = global_model_config["fsdp_modules"]
+    parallel.remat = global_model_config["remat"]
 
     # General hyperparameters.
     # lr = global_model_config.get("lr", 1e-3)
-    log_path = Path(args.log_dir)
+
+    log_path = Path(args.log_dir) / "version_0"
+    version_idx = 0
+    while log_path.exists():
+        log_path = Path(args.log_dir) / f"version_{version_idx}"
+        version_idx += 1
 
     # General hyperparameters.
     batch_size = (
@@ -73,7 +102,6 @@ def main_lmeval(args: argparse.Namespace):
         else args.batch_size_per_device
     ) * len(jax.devices())
     context_length = args.context_length
-    log_path = Path(args.log_dir)
 
     # Define model config - 120M parameters.
     if callable(global_model_config["model_config"]):
@@ -92,8 +120,8 @@ def main_lmeval(args: argparse.Namespace):
         LLMTrainerConfig(
             callbacks=(
                 LMEvalEvaluationConfig(
-                    tokenizer_path="gpt2",
-                    evaluation_tasks=args.tasks.split(","),
+                    tokenizer_path=args.tokenizer,
+                    evaluation_tasks=args.tasks,
                     limit_requests=args.limit_requests,
                     context_length=args.context_length,
                 ),
@@ -113,7 +141,7 @@ def main_lmeval(args: argparse.Namespace):
                 ],
             ),
             check_val_every_n_epoch=1,
-            enable_progress_bar=False,
+            enable_progress_bar=True,
             check_for_nan=True,
             log_grad_norm=True,
             log_grad_norm_per_param=False,
@@ -153,11 +181,29 @@ def main_lmeval(args: argparse.Namespace):
             train_loader=None,
             val_loader=None,
         )
+        # update log config with checkpoint info
+        trainer.logger.log_config(
+            {
+                "trainer": trainer.trainer_config,
+                "model": trainer.model_config,
+                "optimizer": trainer.optimizer_config,
+                "checkpoint_folder": CheckpointConfig(
+                    checkpoint_dir=args.load_checkpoint_from,
+                    checkpoint_load_best=args.checkpoint_load_best,
+                    checkpoint_step_idx=args.checkpoint_step_idx,
+                ),
+            }
+        )
 
     trainer.logger.on_training_start()
     metrics = eval_callback.run_evaluate()
-    for task in metrics:
-        trainer.logger.log_host_metrics(metrics[task], step=trainer.global_step, mode=task)
+
+    # synchronize all GPUs
+    with jax.named_scope("global_sync"):
+        global_sync_fn()
+
+    for task in sorted(metrics):
+        trainer.logger.log_host_metrics(metrics[task], step=trainer.global_step, mode="leh_" + task)
 
     log_info(f"Final metrics: {metrics}")
     trainer.logger.finalize(status="success")
@@ -209,20 +255,15 @@ if __name__ == "__main__":
     parser.add_argument("--checkpoint_step_idx", type=int, default=-1)
     parser.add_argument("--checkpoint_load_best", action="store_true")
     parser.add_argument("--limit_requests", type=int, default=None)
-    parser.add_argument("--context_length", type=int, default=2048)
+    parser.add_argument("--context_length", type=int, default=8192)
     parser.add_argument("--batch_size_per_device", type=int, default=None)
     parser.add_argument("--fsdp_size", type=int, default=1)
     parser.add_argument("--model_tp_size", type=int, default=1)
+    parser.add_argument("--tokenizer", type=str, default="gpt2")
 
     args = parser.parse_args()
 
-    log_info(f"Limit LM Eval samples to {args.limit_requests}")
-
-    if args.load_checkpoint_from:
-        LOGGER.warning(
-            "Loading from a checkpoint currently does not entail using the same model "
-            "configuration. You will have to adapt the configuration in run_train_slimpajama6b.py for the "
-            "specific model for now. Later we want to load the model config from the checkpoint as well."
-        )
+    if args.limit_requests is not None:
+        LOGGER.info(f"Limit LM Eval samples to {args.limit_requests}")
 
     main_lmeval(args)

@@ -19,7 +19,7 @@ class B(ConfigDict):
 @dataclass(kw_only=True, frozen=False)
 class C(ConfigDict):
     c: B = field(default_factory=lambda: B())
-    d: jnp.dtype = jnp.float32
+    d: jnp.dtype | str = jnp.float32
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -29,7 +29,7 @@ class D(ConfigDict):
 
 @dataclass(kw_only=True, frozen=False)
 class E(ConfigDict):
-    e: jnp.dtype = jnp.float32
+    e: jnp.dtype | str = jnp.float32
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -70,7 +70,8 @@ def test_parse_dataclasses_dtype():
     c1 = C(c=B(b=A(a=10)), d=jnp.bfloat16)
     c2 = ConfigDict.from_dict(C, c1.to_dict())
     assert c1.c.b.a == c2.c.b.a
-    assert c2.d == jnp.bfloat16
+    # dtypes should now all be str
+    assert c2.d == "bfloat16"
 
 
 def test_parse_dataclasses_literal():
