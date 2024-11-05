@@ -241,7 +241,7 @@ def make_grain_iterator(
     return iterator
 
 
-def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord"):
+def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord") -> grain.ArrayRecordDataSource:
     """Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.
 
     Assumes that the filenames are multiple shards where the shard idx is in the filename, e.g. train_000001.arecord'.
