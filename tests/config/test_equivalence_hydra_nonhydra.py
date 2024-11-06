@@ -176,11 +176,12 @@ def train_with_hydra(tmpdir):
             return_hydra_config=True,
         )
 
-        # Call main train function. We need to set the output_dir and log_path manually because
-        # Hydra does not fill the hydra configuration when composing the config compared to using
-        # the @hydra.main decorator. Is only relevant for the unit test.
+        # Call main train function. We need to set the output_dir, log_path and cmd_logging_name
+        # manually because Hydra does not fill the hydra configuration when composing the config
+        # compared to using the @hydra.main decorator. Is only relevant for the unit test.
         cfg.hydra.runtime.output_dir = tmpdir
         cfg.logger.log_path = tmpdir
+        cfg.logger.cmd_logging_name = "unit_test"
         final_metrics = main_train(cfg=cfg)
 
         return final_metrics
