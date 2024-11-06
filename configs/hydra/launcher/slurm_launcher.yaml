@@ -7,7 +7,7 @@ hydra:
     submitit_folder: ${hydra.sweep.dir}/.submitit/%j
     timeout_min: 60
     cpus_per_task: 28
-    gpus_per_node: ${n_gpus}
+    gpus_per_task: 1   # each GPU must have its separate task for jax
     gres: gpu:${n_gpus}
     tasks_per_node: ${n_gpus}
     mem_gb: ~
@@ -18,7 +18,7 @@ hydra:
     qos: null
     comment: testing_slurmit_launcher
     additional_parameters: {
-      "gpu-bind": "none",
+      "gpu-bind": "closest",
       "wait-all-nodes": "1",
       "time": "7-00:00:00",
       "exclusive": "",

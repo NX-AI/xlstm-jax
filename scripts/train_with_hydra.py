@@ -1,4 +1,6 @@
 import os
+import sys
+import traceback
 
 import hydra
 from omegaconf import DictConfig
@@ -21,7 +23,16 @@ def init_hydra(cfg: DictConfig):
     if os.environ["JAX_PLATFORMS"] == "cpu" and cfg.device_count > 1:
         simulate_CPU_devices(cfg.device_count)
 
-    main_train(cfg)
+    # The following try-except block is used to circumvent a bug in Hydra. Solution from:
+    # https://github.com/facebookresearch/hydra/issues/2664#issuecomment-1857695600
+    try:
+        main_train(cfg)
+    except BaseException:
+        traceback.print_exc(file=sys.stderr)
+        raise
+    finally:
+        sys.stdout.flush()
+        sys.stderr.flush()
 
 
 if __name__ == "__main__":

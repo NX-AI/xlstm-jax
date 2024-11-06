@@ -1,0 +1,37 @@
+# @package _global_
+defaults:
+  - override /parallel: synthetic
+  - override /data: synthetic
+  - override /model: mLSTMv1_165M
+  - override /hydra/launcher: slurm_launcher
+  - _self_
+
+hydra:
+  mode: MULTIRUN
+
+# specify the deltas from the defaults:
+task_name: slurm_tests
+batch_size_per_device: 2
+context_length: 128
+num_train_steps: 10
+lr: 1e-3
+
+n_gpus: 1
+
+logger:
+  log_every_n_steps: 2
+  loggers_to_use:
+    - file_logger
+
+parallel:
+  model_axis_size: 1
+  fsdp_axis_size: 1
+
+scheduler:
+  decay_steps: 0
+  warmup_steps: 0
+  cooldown_steps: 0
+
+model:
+  # Negative value means we infer the vocab size from the tokenizer.
+  vocab_size: 10
