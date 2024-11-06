@@ -4,9 +4,15 @@ from typing import Literal
 import jax
 from flax import linen as nn
 
-from xlstm_jax.kernels import mlstm_chunkwise_max_triton, mlstm_chunkwise_triton_stablef
+from xlstm_jax.kernels import (
+    mlstm_chunkwise_max_triton,
+    mlstm_chunkwise_max_triton_noslice,
+    mlstm_chunkwise_triton_stablef,
+)
 
 from .config import mLSTMBackend
+
+BackendNameType = Literal["max_triton_noslice", "max_triton", "triton_stablef"]
 
 
 @dataclass
@@ -19,7 +25,7 @@ class mLSTMBackendTritonConfig:
     """Whether to reduce slicing operations before the kernel computation.
     Speeds up computation during training, but may limit initial states and
     forwarding states during inference."""
-    backend_name: Literal["max_triton", "triton_stablef"] = "max_triton"
+    backend_name: BackendNameType = "max_triton_noslice"
     """Backend name for the kernel type used"""
     eps: float = 1e-6
     """Epsilon value used in the kernel"""
@@ -105,6 +111,20 @@ class mLSTMBackendTriton(mLSTMBackend):
                 chunk_size=self.config.chunk_size,
                 autocast_kernel_dtype=autocast_kernel_dtype,
                 reduce_slicing=self.config.reduce_slicing,
+            )
+        elif self.config.backend_name == "max_triton_noslice":
+            return mlstm_chunkwise_max_triton_noslice(
+                q,
+                k,
+                v,
+                i,
+                f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                m_initial=m_initial,
+                return_last_states=return_last_states,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
             )
         else:
             raise ValueError(f"Bad kernels backend name {self.config.backend_name}")

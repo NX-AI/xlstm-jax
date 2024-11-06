@@ -9,8 +9,12 @@ import torch
 
 try:
     from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3.triton_fwbw import mlstm_chunkwise_max_triton
+    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3noslice.triton_fwbw import (
+        mlstm_chunkwise_max_triton as mlstm_chunkwise_max_triton_noslice,
+    )
 except ImportError:
     mlstm_chunkwise_max_triton = None
+    mlstm_chunkwise_max_triton_noslice = None
 from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.fwbw import (
     mLSTMfwbw as mLSTMfwbw_torch,
     mLSTMfwbwConfig as mLSTMfwbwConfig_torch,
@@ -29,13 +33,16 @@ PYTORCH_KERNEL_OUTPUT_FILES = sorted(
 
 
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
-def test_mlstm_chunkwise_fw_full_module(default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]):
+@pytest.mark.parametrize("mlstm_kernel", [mlstm_chunkwise_max_triton, mlstm_chunkwise_max_triton_noslice])
+def test_mlstm_chunkwise_fw_full_module(
+    default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array], mlstm_kernel: callable
+):
     """Test a simple forward pass in the full module."""
     q, k, v, igate_preact, fgate_preact = default_qkvif
     B, NH, S, DH = q.shape
     CHUNK_SIZE = 64
 
-    h_out_triton = mlstm_chunkwise_max_triton(q, k, v, igate_preact, fgate_preact, chunk_size=CHUNK_SIZE)
+    h_out_triton = mlstm_kernel(q, k, v, igate_preact, fgate_preact, chunk_size=CHUNK_SIZE)
     assert h_out_triton.shape == (B, NH, S, DH)
 
 
@@ -50,22 +57,28 @@ COMBINATIONS = [
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
 @pytest.mark.parametrize("seed", [0, 42])
 @pytest.mark.parametrize(["B", "NH", "S", "DH", "CHUNK_SIZE"], COMBINATIONS)
-def test_mlstm_chunkwise_fwbw_vs_pytorch_fwbw(B: int, NH: int, S: int, DH: int, CHUNK_SIZE: int, seed: int):
+@pytest.mark.parametrize("mlstm_kernel", [mlstm_chunkwise_max_triton, mlstm_chunkwise_max_triton_noslice])
+def test_mlstm_chunkwise_fwbw_vs_pytorch_fwbw(
+    B: int, NH: int, S: int, DH: int, CHUNK_SIZE: int, seed: int, mlstm_kernel: callable
+):
     """Test the Triton kernels against the PyTorch fwbw backend."""
     config = mLSTMfwbwConfig_torch(
         chunk_size=CHUNK_SIZE,
         stabilize_correctly=False,
     )
     fwbw_torch_module = mLSTMfwbw_torch(config)
-    _compare_to_pytorch_fn(B, NH, S, DH, CHUNK_SIZE, seed, fwbw_torch_module)
+    _compare_to_pytorch_fn(B, NH, S, DH, CHUNK_SIZE, seed, mlstm_kernel, fwbw_torch_module)
 
 
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
 @pytest.mark.parametrize("seed", [0, 42])
 @pytest.mark.parametrize(["B", "NH", "S", "DH", "CHUNK_SIZE"], COMBINATIONS)
-def test_mlstm_chunkwise_fwbw_vs_pytorch_parallel(B: int, NH: int, S: int, DH: int, CHUNK_SIZE: int, seed: int):
+@pytest.mark.parametrize("mlstm_kernel", [mlstm_chunkwise_max_triton, mlstm_chunkwise_max_triton_noslice])
+def test_mlstm_chunkwise_fwbw_vs_pytorch_parallel(
+    B: int, NH: int, S: int, DH: int, CHUNK_SIZE: int, seed: int, mlstm_kernel: callable
+):
     """Test the Triton kernels against the PyTorch parallel backend."""
-    _compare_to_pytorch_fn(B, NH, S, DH, CHUNK_SIZE, seed, parallel_stabilized_simple_torch)
+    _compare_to_pytorch_fn(B, NH, S, DH, CHUNK_SIZE, seed, mlstm_kernel, parallel_stabilized_simple_torch)
 
 
 def _compare_to_pytorch_fn(
@@ -75,6 +88,7 @@ def _compare_to_pytorch_fn(
     DH: int,
     CHUNK_SIZE: int,
     seed: int,
+    mlstm_kernel: callable,
     pytorch_backend: callable,
     atol: float = 1e-3,
     rtol: float = 1e-3,
@@ -99,7 +113,7 @@ def _compare_to_pytorch_fn(
 
     # Define the loss function for triton kernels.
     def loss_fn(q, k, v, igate_preact, fgate_preact):
-        h_out_triton = mlstm_chunkwise_max_triton(
+        h_out_triton = mlstm_kernel(
             q, k, v, igate_preact, fgate_preact, chunk_size=CHUNK_SIZE, autocast_kernel_dtype=jnp.float32
         )
         # Simulate layer norm.
@@ -170,7 +184,8 @@ def _compare_to_pytorch_fn(
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
 @pytest.mark.skipif(len(PYTORCH_KERNEL_OUTPUT_FILES) == 0, reason="No PyTorch kernel output files found.")
 @pytest.mark.parametrize("file_path", PYTORCH_KERNEL_OUTPUT_FILES)
-def test_mlstm_chunkwise_fw_vs_pytorch_kernel(file_path: Path):
+@pytest.mark.parametrize("mlstm_kernel", [mlstm_chunkwise_max_triton, mlstm_chunkwise_max_triton_noslice])
+def test_mlstm_chunkwise_fw_vs_pytorch_kernel(file_path: Path, mlstm_kernel: callable):
     """Compare JAX kernel to PyTorch kernel output."""
     file_name = file_path.name.split(".")[0]
     int_keys = ["B", "NH", "S", "DH", "CHUNK", "seed"]
@@ -192,7 +207,7 @@ def test_mlstm_chunkwise_fw_vs_pytorch_kernel(file_path: Path):
     fgate_preact = jnp.array(data_torch["fgate_preact"]).astype(jnp.float32)
 
     def loss_fn(q, k, v, igate_preact, fgate_preact):
-        h_out_triton = mlstm_chunkwise_max_triton(
+        h_out_triton = mlstm_kernel(
             q, k, v, igate_preact, fgate_preact, chunk_size=hparams["CHUNK"], autocast_kernel_dtype=hparams["dtype"]
         )
         h_out_triton = h_out_triton.astype(jnp.float32)

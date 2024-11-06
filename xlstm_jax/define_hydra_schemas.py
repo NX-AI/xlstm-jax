@@ -16,6 +16,7 @@ from xlstm_jax.dataset.configs import (
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.shared import InitDistribution, InitFnName
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import BackendType
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels import BackendNameType
 from xlstm_jax.models.xlstm_parallel.components.normalization import NormType
 from xlstm_jax.trainer.base.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
@@ -61,6 +62,7 @@ class QuickHackModelConfig:
     # mlstm_cell_config
     gate_dtype: str
     backend: str
+    backend_name: str
     igate_bias_init_range: float
     add_qk_norm: bool
     cell_norm_type: str
@@ -82,6 +84,7 @@ class QuickHackModelConfig:
         allowed backends are checked, similar to this"""
         # Do the same for other parameters.
         assert self.backend in typing.get_args(BackendType)
+        assert self.backend_name in typing.get_args(BackendNameType)
         assert self.output_init_fn in typing.get_args(InitFnName)
         assert self.init_distribution in typing.get_args(InitDistribution)
         assert self.init_distribution_embed in typing.get_args(InitDistribution)

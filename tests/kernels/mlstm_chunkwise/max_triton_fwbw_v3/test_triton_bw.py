@@ -4,26 +4,40 @@ import pytest
 try:
     from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3._triton_bw import _mlstm_chunkwise_bw
     from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3._triton_fw import _mlstm_chunkwise_fw
+    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3noslice._triton_bw import (
+        _mlstm_chunkwise_bw as _mlstm_chunkwise_bw_noslice,
+    )
+    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3noslice._triton_fw import (
+        _mlstm_chunkwise_fw as _mlstm_chunkwise_fw_noslice,
+    )
 except ImportError:
     _mlstm_chunkwise_fw = None
     _mlstm_chunkwise_bw = None
+    _mlstm_chunkwise_fw_noslice = None
+    _mlstm_chunkwise_bw_noslice = None
 
 
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
-def test_mlstm_chunkwise_bw(default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]) -> None:
+@pytest.mark.parametrize("chunkwise_fw", [_mlstm_chunkwise_fw, _mlstm_chunkwise_fw_noslice])
+@pytest.mark.parametrize("chunkwise_bw", [_mlstm_chunkwise_bw, _mlstm_chunkwise_bw_noslice])
+def test_mlstm_chunkwise_bw(
+    default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array],
+    chunkwise_fw: callable,
+    chunkwise_bw: callable,
+) -> None:
     """Test a simple backward pass with the Triton kernels."""
     q, k, v, igate_preact, fgate_preact = default_qkvif
     B, NH, S, DH = q.shape
     CHUNK_SIZE = 64
 
-    h_out_triton, n_out, m_out, _, _ = _mlstm_chunkwise_fw(
+    h_out_triton, n_out, m_out, _, _ = chunkwise_fw(
         matQ=q, matK=k, matV=v, vecI=igate_preact, vecF=fgate_preact, CHUNK_SIZE=CHUNK_SIZE
     )
     assert h_out_triton.shape == (B, NH, S, DH)
     assert n_out.shape == (B, NH, S)
     assert m_out.shape == (B, NH, S)
 
-    grads = _mlstm_chunkwise_bw(
+    grads = chunkwise_bw(
         matQ=q,
         matK=k,
         matV=v,

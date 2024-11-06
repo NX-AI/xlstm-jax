@@ -220,7 +220,12 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     v_dim_factor=cfg.model.v_dim_factor,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=cfg.model.gate_dtype,
-                        backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
+                        backend=mLSTMBackendNameAndKwargs(
+                            name=cfg.model.backend,
+                            kwargs=dict(backend_name=cfg.model.backend_name)
+                            if cfg.model.backend == "triton_kernels"
+                            else dict(),
+                        ),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
                         norm_type=cfg.model.cell_norm_type,
@@ -270,7 +275,12 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     v_dim_factor=cfg.model.v_dim_factor,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=cfg.model.gate_dtype,
-                        backend=mLSTMBackendNameAndKwargs(name=cfg.model.backend),
+                        backend=mLSTMBackendNameAndKwargs(
+                            name=cfg.model.backend,
+                            kwargs=dict(backend_name=cfg.model.backend_name)
+                            if cfg.model.backend == "triton_kernels"
+                            else dict(),
+                        ),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
                         norm_type=cfg.model.cell_norm_type,
