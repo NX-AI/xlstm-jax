@@ -317,7 +317,8 @@ class TrainerModule:
                 batch = self.exmp_batch
             _, self.train_metric_shapes = jax.eval_shape(self.train_step, self.state, batch, None)
             LOGGER.info(f"Initialized train metrics with keys {self.train_metric_shapes.keys()}.")
-        return jax.tree.map(lambda x: jnp.zeros_like(x), self.train_metric_shapes)
+        metric_sharding = jax.sharding.NamedSharding(self.mesh, P())
+        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self.train_metric_shapes)
 
     def init_eval_metrics(self, batch: Batch | None = None) -> FrozenDict:
         """
@@ -338,7 +339,8 @@ class TrainerModule:
                 batch = self.exmp_batch
             self.eval_metric_shapes = jax.eval_shape(self.eval_step, self.state, batch, None)
             LOGGER.info(f"Initialized eval metrics with keys {self.eval_metric_shapes.keys()}.")
-        return jax.tree.map(lambda x: jnp.zeros_like(x), self.eval_metric_shapes)
+        metric_sharding = jax.sharding.NamedSharding(self.mesh, P())
+        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self.eval_metric_shapes)
 
     def set_dataset(self, dataset: Any):
         """

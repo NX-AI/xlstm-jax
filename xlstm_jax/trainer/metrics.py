@@ -212,6 +212,11 @@ def _update_single_metric(
         else:
             raise ValueError(f"Invalid log mode {log_mode}.")
 
+        if not isinstance(mode_dict["count"], jnp.ndarray):
+            # For scalars, we want to convert them into a full JAX array to have consistent types.
+            dtype = jnp.float32 if isinstance(mode_dict["count"], float) else jnp.int32
+            mode_dict["count"] = jnp.asarray(mode_dict["count"], dtype=dtype)
+
 
 def get_metrics(
     global_metrics: Metrics,
