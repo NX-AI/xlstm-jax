@@ -338,7 +338,10 @@ def init_logger_config(cfg: DictConfig) -> LoggerConfig:
         log_tools.append(wandb_logger_config)
 
     logger_config = LoggerConfig(
-        log_path=cfg.logger.log_path, log_every_n_steps=cfg.logger.log_every_n_steps, log_tools=log_tools
+        log_path=cfg.logger.log_path,
+        log_every_n_steps=cfg.logger.log_every_n_steps,
+        log_tools=log_tools,
+        cmd_logging_name=cfg.logger.cmd_logging_name,
     )
 
     return logger_config
@@ -528,7 +531,6 @@ def main_train(cfg: DictConfig):
         val_loader=eval_data_iterator,
         **train_kwargs,
     )
-    log_info(f"Final metrics: {final_metrics}.")
     log_info(f"Final metrics: {final_metrics}.")
 
     return final_metrics

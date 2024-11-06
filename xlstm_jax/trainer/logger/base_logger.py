@@ -27,11 +27,14 @@ class LoggerConfig(ConfigDict):
             will not write logs to disk.
         log_tools: A list of LoggerToolsConfig objects that should be used to log
             the metrics. These tools will be created in the Logger class.
+        cmd_logging_name: The name of the output file for command line logging without
+            suffix. The suffix .log will be added automatically.
     """
 
     log_every_n_steps: int = 1
     log_path: Path | None = None
     log_tools: list["LoggerToolsConfig"] = field(default_factory=list)
+    cmd_logging_name: str = "output"
 
     @property
     def log_dir(self) -> str:
@@ -68,7 +71,7 @@ class Logger:
         self.metric_postprocess_fn = metric_postprocess_fn if metric_postprocess_fn is not None else lambda x: x
         if self.log_path is not None:
             self.log_path.mkdir(parents=True, exist_ok=True)
-            setup_logging_multiprocess(logfile=self.log_path / "output.log")
+            setup_logging_multiprocess(logfile=self.log_path / f"{config.cmd_logging_name}.log")
         if jax.process_index() == 0:
             self.log_tools = [tool_config.create(self) for tool_config in config.log_tools]
         else:
