@@ -104,7 +104,8 @@ class JaxProfiler(Callback):
                 self.stop_trace()
         else:
             if (step_idx == self.profile_first_step) or (
-                time.time() - self.profiler_last_time > self.profile_every_n_minutes * 60
+                self.profile_every_n_minutes >= 0
+                and time.time() - self.profiler_last_time > self.profile_every_n_minutes * 60
             ):
                 self.start_trace(step_idx)
 
