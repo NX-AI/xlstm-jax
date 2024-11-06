@@ -166,13 +166,15 @@ def make_grain_llm_iterator(
         if apply_padding:
             grain_dataset = grain_dataset.map(grain_transforms.PadToMaxLength(max_target_length))
         grain_dataset = grain_dataset.batch(global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
-        grain_dataset = grain_dataset.map(grain_transforms.InferSegmentations(eod_token_id=eod_token_id))
 
     # Create targets by shifting.
     if shift:
         grain_dataset = grain_dataset.map(
             grain_transforms.ShiftData(axis=1, shift_target=shift_target, eod_token_id=eod_token_id)
         )
+
+    if not grain_packing:
+        grain_dataset = grain_dataset.map(grain_transforms.InferSegmentations(eod_token_id=eod_token_id))
 
     # Create LLMBatch objects.
     grain_dataset = grain_dataset.map(grain_transforms.CollateToBatch(batch_class=batch_class))

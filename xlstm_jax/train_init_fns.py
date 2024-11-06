@@ -16,8 +16,8 @@ from xlstm_jax.dataset import (
     LLMBatch,
     SyntheticDataConfig,
     create_data_iterator,
+    load_tokenizer,
 )
-from xlstm_jax.dataset.hf_data_processing import load_tokenizer
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig

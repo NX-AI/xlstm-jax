@@ -34,6 +34,7 @@ from xlstm_jax.dataset import grain_transforms
 
 from .configs import HFHubDataConfig, HFLocalDataConfig
 from .grain_iterator import make_grain_llm_iterator
+from .hf_tokenizer import load_tokenizer
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
@@ -134,38 +135,6 @@ def group_texts(examples: dict[str, Sequence[Any]], block_size: int, eod_token: 
         k: [t[i : i + block_size] for i in range(0, total_length, block_size)] for k, t in concatenated_examples.items()
     }
     return result
-
-
-def load_tokenizer(
-    tokenizer_path: str,
-    add_bos: bool,
-    add_eos: bool,
-    hf_access_token: str | None = None,
-    cache_dir: str | None = None,
-) -> transformers.AutoTokenizer:
-    """Loads the tokenizer.
-
-    Args:
-        tokenizer_path: The path to the tokenizer.
-        add_bos: Whether to add the beginning of sequence token.
-        add_eos: Whether to add the end of sequence token.
-        hf_access_token: The access token for HuggingFace.
-        cache_dir: The cache directory for the tokenizer.
-
-    Returns:
-        The tokenizer.
-    """
-    tokenizer = transformers.AutoTokenizer.from_pretrained(
-        tokenizer_path,
-        clean_up_tokenization_spaces=False,  # See https://github.com/huggingface/transformers/issues/31884
-        legacy=False,
-        token=hf_access_token,
-        use_fast=True,
-        add_bos=add_bos,
-        add_eos=add_eos,
-        cache_dir=cache_dir,
-    )
-    return tokenizer
 
 
 def tokenize_dataset(
@@ -355,8 +324,11 @@ def preprocessing_pipeline(
     assert global_batch_size % global_mesh.size == 0, "Batch size should be divisible number of global devices."
 
     # Load tokenizer if provided and set eod_token_id.
+    create_tokenizer_fn = partial(
+        load_tokenizer, tokenizer_path, add_bos, add_eos, hf_access_token, tokenizer_cache_dir
+    )
     if tokenizer_path is not None:
-        tokenizer = load_tokenizer(tokenizer_path, add_bos, add_eos, hf_access_token, tokenizer_cache_dir)
+        tokenizer = create_tokenizer_fn()
         LOGGER.info(f"Loaded tokenizer from {tokenizer_path} with vocab size {tokenizer.vocab_size}.")
         if eod_token_id is not None and eod_token_id != tokenizer.eos_token_id:
             LOGGER.warning(
@@ -366,8 +338,6 @@ def preprocessing_pipeline(
         else:
             eod_token_id = tokenizer.eos_token_id
             LOGGER.info(f"Using EOD token ID: {eod_token_id}.")
-    else:
-        tokenizer = None
 
     # if tokenize=True, assume that dataset may be pre-processed (tokenized + grouped) already.
     if tokenize:
@@ -379,7 +349,7 @@ def preprocessing_pipeline(
             shift_target = False
             operations = [
                 grain_transforms.HFTokenize(
-                    tokenizer=tokenizer,
+                    create_tokenizer_fn=create_tokenizer_fn,
                     column_name=data_column_name,
                     max_length=max_target_length,
                     add_eod=add_eod,

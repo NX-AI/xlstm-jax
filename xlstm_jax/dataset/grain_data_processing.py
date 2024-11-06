@@ -2,6 +2,7 @@ import glob
 import logging
 import math
 import re
+from functools import partial
 from pathlib import Path
 from typing import Any, SupportsIndex
 
@@ -9,8 +10,7 @@ import grain.python as grain
 import jax
 from jax.sharding import Mesh
 
-from xlstm_jax.dataset import grain_transforms
-from xlstm_jax.dataset.hf_data_processing import load_tokenizer
+from xlstm_jax.dataset import grain_transforms, load_tokenizer
 
 from .configs import GrainArrayRecordsDataConfig
 from .grain_iterator import make_grain_llm_iterator
@@ -95,8 +95,11 @@ def preprocessing_pipeline(
     assert global_batch_size % global_mesh.size == 0, "Batch size should be divisible number of global devices."
 
     # Load tokenizer if provided and set eod_token_id.
+    create_tokenizer_fn = partial(
+        load_tokenizer, tokenizer_path, add_bos, add_eos, hf_access_token, tokenizer_cache_dir
+    )
     if tokenizer_path is not None:
-        tokenizer = load_tokenizer(tokenizer_path, add_bos, add_eos, hf_access_token, tokenizer_cache_dir)
+        tokenizer = create_tokenizer_fn()
         LOGGER.info(f"Loaded tokenizer from {tokenizer_path} with vocab size {tokenizer.vocab_size}.")
         if eod_token_id is not None and eod_token_id != tokenizer.eos_token_id:
             LOGGER.warning(
@@ -106,8 +109,6 @@ def preprocessing_pipeline(
         else:
             eod_token_id = tokenizer.eos_token_id
             LOGGER.info(f"Using EOD token ID: {eod_token_id}.")
-    else:
-        tokenizer = None
 
     if tokenize:
         assert tokenizer_path is not None, "Tokenizer path must be provided if tokenize is True."
@@ -117,7 +118,7 @@ def preprocessing_pipeline(
         operations = [
             grain_transforms.ParseArrayRecords(column_name=data_column_name),
             grain_transforms.HFTokenize(
-                tokenizer=tokenizer,
+                create_tokenizer_fn=create_tokenizer_fn,
                 column_name=data_column_name,
                 max_length=max_target_length,
                 add_eod=add_eod,
@@ -127,7 +128,12 @@ def preprocessing_pipeline(
         ]
         LOGGER.info(f"Dataset size: {len(dataset)}")
     else:
-        raise NotImplementedError("Offline tokenization is not supported with ArrayRecords yet.")
+        shift_target = False
+        operations = [
+            grain_transforms.ParseTokenizedArrayRecords(column_name="input_ids"),
+            grain_transforms.AddEODToken(eod_token_id=eod_token_id, add_eod=add_eod, max_length=max_target_length),
+            grain_transforms.HFNormalizeFeatures("input_ids"),
+        ]
 
     if not drop_remainder:
         if grain_packing:

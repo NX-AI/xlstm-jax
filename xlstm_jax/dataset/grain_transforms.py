@@ -18,15 +18,17 @@ Operations used by Grain
 """
 
 import dataclasses
+from collections.abc import Callable
 from typing import NamedTuple
 
 import grain.python as grain
 import jax
 import numpy as np
 import tensorflow as tf
+import transformers
 from transformers.tokenization_utils_base import BatchEncoding
 
-from xlstm_jax.dataset.batch import LLMBatch
+from .batch import LLMBatch
 
 
 # Functions used by HF pipeline
@@ -162,12 +164,61 @@ class ParseArrayRecords(grain.MapTransform):
         """Map to parse array records.
 
         Args:
-            data: The bytestring-serialized example.
+            data: The bytestring-serialized example, e.g. b'Some Text'.
 
         Returns:
             Parsed data, a dictionary mapping the column_name to the deserialized string (text).
         """
         return {self.column_name: data.decode()}
+
+
+class ParseTokenizedArrayRecords(grain.MapTransform):
+    """Parse serialized example from array_records dataset."""
+
+    def __init__(self, column_name: str):
+        """
+        Args:
+            column_name: Column name to be used as key in the output dictionary.
+        """
+        self.column_name = column_name
+
+    def map(self, data: bytes) -> dict[str, int]:
+        """Map to parse array records.
+
+        Args:
+            data: The bytestring-serialized data that has been tokenized, e.g. b'[0, 9392, 1823]'
+
+        Returns:
+            Parsed data, a dictionary mapping the column_name to the deserialized string (text).
+        """
+        return {self.column_name: self.bytestring_to_sequence(data)}
+
+    @staticmethod
+    def sequence_to_bytestring(sequence: list[int] | np.ndarray) -> bytes:
+        """Convert a token sequence to a numpy bytestring.
+
+        Args:
+            sequence: The sequence of tokens. If a numpy array is provided, it must be one-dimensional.
+
+        Returns:
+            The bytestring.
+        """
+        if isinstance(sequence, np.ndarray):
+            assert sequence.ndim == 1, "Sequence must be one-dimensional."
+        assert np.max(sequence) <= np.iinfo(np.uint16).max, "Tokenizer above max vocab size for encoding."
+        return np.array(sequence, dtype=np.uint16).tobytes()
+
+    @staticmethod
+    def bytestring_to_sequence(bytestring: bytes) -> list[int]:
+        """Convert a numpy bytestring to a token sequence.
+
+        Args:
+            bytestring: The bytestring.
+
+        Returns:
+            The token sequence.
+        """
+        return np.frombuffer(bytestring, dtype=np.uint16).tolist()
 
 
 @dataclasses.dataclass
@@ -311,13 +362,7 @@ def shift_and_refine(
     else:
         # First token becomes start-of-sequence token (padding_value).
         x["inputs"] = shift_right(x["inputs"], axis=axis, padding_value=padding_value)
-        # When shifting inputs right, the first token is a start-of-sequence token for the 1st sequence.
-        # Thus, it gets the same segmentation as the first element.
-        x["inputs_segmentation"] = shift_right(
-            x["inputs_segmentation"],
-            axis=axis,
-            pad_by_first_element=True,
-        )
+        # Do not shift inputs_segmentation: by our definition, the previous EOD marks the BOS ok the next document.
     return x
 
 
@@ -410,7 +455,7 @@ class HFTokenize(grain.MapTransform):
 
     def __init__(
         self,
-        tokenizer,
+        create_tokenizer_fn: Callable[..., transformers.AutoTokenizer],
         column_name: str = "text",
         max_length: int | None = None,
         add_eod: bool = True,
@@ -418,19 +463,24 @@ class HFTokenize(grain.MapTransform):
     ):
         """
         Args:
-            tokenizer: HuggingFace tokenizer to use.
+            create_tokenizer_fn: Function to create the HuggingFace tokenizer to use.
             column_name: Name of the column to tokenize.
             max_length: Maximum length of the sequence. If None, no truncation is performed.
             add_eod: Whether to add an end-of-document token to the sequence.
                      Note: EOD token is added only if sequence is shorter than max_length, truly marking the end.
             eod_token_id: Token ID to use for the end-of-document token. If None, the tokenizer's EOS token ID is used.
         """
-        self.tokenizer = tokenizer
+        self.create_tokenizer_fn = create_tokenizer_fn
+        self.tokenizer = None
         self.column_name = column_name
         self.max_length = max_length
         self.add_eod = add_eod
-        if add_eod:
-            self.eod_token_id = eod_token_id if eod_token_id is not None else tokenizer.eos_token_id
+        self.eod_token_id = eod_token_id
+
+    def _lazy_init(self):
+        self.tokenizer = self.create_tokenizer_fn()
+        if self.add_eod:
+            self.eod_token_id = self.eod_token_id if self.eod_token_id is not None else self.tokenizer.eos_token_id
         else:
             self.eod_token_id = None
 
@@ -444,6 +494,8 @@ class HFTokenize(grain.MapTransform):
         )
 
     def map(self, data: dict[str, str]) -> dict[str, list[int]]:
+        if self.tokenizer is None:
+            self._lazy_init()
         tokenized_data = self._tokenize(data[self.column_name])
         if self.add_eod:
             # using the EOS token id of the tokenizer for marking EOD (there is no EOD token in the tokenizer).
@@ -454,3 +506,33 @@ class HFTokenize(grain.MapTransform):
             return tokenized_data_with_eod
         else:
             return tokenized_data
+
+
+@dataclasses.dataclass
+class AddEODToken(grain.MapTransform):
+    """Add an end-of-document token to the inputs and targets.
+
+    Args:
+        eod_token_id: The token ID to use for the end-of-document token.
+        add_eod: Whether to add the EOD token. If false, the transform is a no-op.
+        max_length: Maximum length of the sequence. If None, no truncation is performed.
+    """
+
+    def __init__(
+        self,
+        eod_token_id: int,
+        add_eod: bool = True,
+        max_length: int | None = None,
+    ):
+        self.eod_token_id = eod_token_id
+        self.add_eod = add_eod
+        self.max_length = max_length
+
+    def map(self, data: dict[str, list[int]]) -> dict[str, list[int]]:
+        """Map to add EOD token."""
+        if not self.add_eod:
+            return data
+        return {
+            key: (val + [self.eod_token_id]) if self.max_length is None or len(val) < self.max_length else val
+            for key, val in data.items()
+        }

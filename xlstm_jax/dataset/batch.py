@@ -44,16 +44,18 @@ class LLMBatch(Batch):
     def get_document_borders(self) -> jax.Array:
         """Get the document borders for the input data.
 
-        A token represents a document border if its previous input token has a different input segmentation.
-        For instance, if the input segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
+        A token represents a document border if its previous target token has a different target segmentation.
+        For instance, if the target segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
         This mask can be useful for processing documents separately in a recurrent model, i.e. when to reset the
         hidden state.
+        Note: If the last tokens are paddings, marking invalid tokens, the border between the last document and
+        padding will also be marked as document border.
 
         Returns:
             A boolean array indicating the document borders.
         """
         return jnp.pad(
-            self.inputs_segmentation[:, :-1] != self.inputs_segmentation[:, 1:],
+            self.targets_segmentation[:, :-1] != self.targets_segmentation[:, 1:],
             ((0, 0), (1, 0)),
             mode="constant",
             constant_values=True,

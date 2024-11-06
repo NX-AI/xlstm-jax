@@ -21,8 +21,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tabulate import tabulate as python_tabulate
 
-from xlstm_jax.dataset import GrainArrayRecordsDataConfig, HFHubDataConfig, LLMBatch, create_data_iterator
-from xlstm_jax.dataset.hf_data_processing import load_tokenizer
+from xlstm_jax.dataset import (
+    GrainArrayRecordsDataConfig,
+    HFHubDataConfig,
+    LLMBatch,
+    create_data_iterator,
+    load_tokenizer,
+)
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig

@@ -1,4 +1,5 @@
 import itertools
+from collections.abc import Sequence
 from pathlib import Path
 
 import datasets
@@ -10,6 +11,7 @@ from datasets import Dataset
 from jax.sharding import Mesh, PartitionSpec as P
 
 from xlstm_jax.dataset import HFHubDataConfig, create_data_iterator
+from xlstm_jax.dataset.batch import LLMBatch
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
@@ -56,6 +58,7 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
         grain_packing=False,
         worker_count=0,
     )
+    eod_token_id = 50256  # for "gpt2" tokenizer
 
     # Define iterators
     train_iterator = create_data_iterator(config=train_config, mesh=mesh)
@@ -129,6 +132,9 @@ def test_hf_dataset_with_group_texts(tmp_path: Path):
             batch_idx == eval_max_steps_per_epoch
         ), f"Should have the same number of steps for each epoch, failed at {epoch_idx}."
 
+    # Test if document borders are correctly computed.
+    _check_document_borders(batches=eval_batches + [train_batch], eod_token_id=eod_token_id)
+
 
 @pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
 def test_hf_dataset_with_packing(tmp_path: Path):
@@ -137,6 +143,7 @@ def test_hf_dataset_with_packing(tmp_path: Path):
 
     batch_size_per_device = 8
     context_length = 128
+    eod_token_id = 50256  # for "gpt2" tokenizer
 
     # Prepare the dataset and dataloaders for the test.
     parallel, mesh, train_ds, eval_ds, train_iterator, eval_iterator, tokenizer = _setup_data(
@@ -181,11 +188,8 @@ def test_hf_dataset_with_packing(tmp_path: Path):
         assert frac_eod < 0.05, f"Got {frac_eod:.2%} EOD tokens in {split}. Should be less than 5%."
 
     for batch in loaded_batches["train"] + loaded_batches["validation"]:
-        # 3) Check that inputs and targets are shifted by 1. Do the same for segmentations.
+        # 3) Check that inputs and targets are shifted by 1.
         assert np.all(batch.inputs[:, 1:] == batch.targets[:, :-1]), "inputs and targets are not shifted by 1."
-        assert np.all(
-            batch.inputs_segmentation[:, 1:] == batch.targets_segmentation[:, :-1]
-        ), "Inputs_segmentation and targets_segmentation are not shifted by 1."
         # 4) Check that segmentations are correct.
         # When there is a new document, the segmentation number increases. The token at this position must be EOD token.
         is_new_sequence = (batch.targets_segmentation[:, 1:] - batch.targets_segmentation[:, :-1]) == 1
@@ -203,7 +207,8 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     subsequences, paddings, eod_positions = [], [], []
     for idx_batch in range(len(batch.inputs)):
         example = batch[idx_batch]  # Do not iterate over the batch via "for example in batch", this iterates forever.
-        paddings.append(example.inputs[example.inputs_segmentation == 0])
+        # TODO: it was nicer to take example.inputs_segmentation == 0, but we no longer shift it (different assumption)
+        paddings.append(example.inputs[example.inputs == 0])
         eod_positions.append(example.inputs[example.inputs == tokenizer.eos_token_id])
         for sequence_id in range(1, max(example.inputs_segmentation) + 1):
             is_subsequence = np.bitwise_and(
@@ -254,6 +259,26 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     assert (
         max(n_batches_per_epoch) - min(n_batches_per_epoch) <= 2
     ), f"Difference in number of batches is too large. Got {n_batches_per_epoch} batches per epoch."
+
+    # Test if document borders are correctly computed.
+    eval_batches = [batch for batch in eval_iterator]
+    _check_document_borders(batches=eval_batches + [train_batch], eod_token_id=eod_token_id)
+
+
+def _check_document_borders(batches: Sequence[LLMBatch], eod_token_id: int):
+    """Check that the document borders computed in LLMBatch (using segmentation) are at indices,
+    where inputs are EOD tokens, since an EOD token marks the beginning of a new sequence."""
+    assert len(batches) > 0, "No batches to check."
+    for idx, batch in enumerate(batches):
+        manual_document_borders = batch.inputs == eod_token_id
+        document_borders = batch.get_document_borders()
+        assert document_borders[:, 0].all(), "The first token should always be a document border."
+        assert (manual_document_borders[:, 1:-1] == document_borders[:, 1:-1]).all(), (
+            f"Manual document borders should be the same as from LLMBatch.get_document_borders, "
+            f"except for the first token which is always a document border, and the last token which is ignored. {idx}"
+        )
+        assert (batch.inputs[manual_document_borders] == eod_token_id).all(), "Borders should be EOD tokens in inputs"
+        assert (batch.inputs[~manual_document_borders] != eod_token_id).all(), "Non-borders should not be EOD tokens"
 
 
 def _setup_data(

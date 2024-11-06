@@ -21,6 +21,7 @@ def test_llm_batch_document_borders(batch_size: int, context_length: int):
     eod_mask = inputs == eod_token_id
     inputs_segmentation = 1 + jnp.cumsum(eod_mask, axis=1)
     inputs_position = jnp.broadcast_to(jnp.arange(context_length), inputs.shape)
+    # TODO: this test does not shift inputs or targets. Therefore, the document borders might be not computed correctly.
     batch = LLMBatch(
         inputs=inputs,
         targets=inputs,
