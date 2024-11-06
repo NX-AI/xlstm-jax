@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval
-  # - /data@data_eval.val2: slimpajama_627B_local_ds_eval
+  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_7B
   - override /model: mLSTMv1_7B
   - override /data: dclm_arrayrecord_train
@@ -26,14 +26,16 @@ trainer:
   log_intermediates: true
 
 checkpointing:
-  monitor: spaj627B_AR_perplexity
+  monitor: dclm_perplexity
 
 data:
-  tokenizer_path: EleutherAI/gpt-neox-20b
+  tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 data_eval:
   val1:
-    tokenizer_path: EleutherAI/gpt-neox-20b
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  val2:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   reset_at_document_boundaries: true

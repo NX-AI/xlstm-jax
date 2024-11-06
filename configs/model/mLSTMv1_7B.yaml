@@ -6,6 +6,6 @@ defaults:
 name: mLSTMv1_7B
 # xLSTMLMModelConfig
 embedding_dim: 4096
-num_blocks: 30
+num_blocks: 32
 # mLSTMLayerConfig
 num_heads: 8
