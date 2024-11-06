@@ -48,11 +48,12 @@ def test_lmeval_evaluation(llm_toy_model: Any, tmp_path: Path, tp_size: int, fsd
             callbacks=(
                 LMEvalEvaluationConfig(
                     tokenizer_path="google/byt5-small",
-                    evaluation_tasks=["lambada"],
+                    evaluation_tasks=["lambada", "piqa"],
                     limit_requests=2,
                     cache_requests=True,
                     context_length=context_length,
                     debug=True,
+                    num_fewshot=2,
                 ),
             ),
             logger=LoggerConfig(

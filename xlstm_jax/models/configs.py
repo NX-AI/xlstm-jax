@@ -80,22 +80,30 @@ class ModelConfig(ConfigDict):
         model_class = getattr(module, model_class_path.split(".")[-1])
         model_class_cfg = inspect.get_annotations(model_class)["config"]
         model_cfg = ConfigDict.from_dict(model_class_cfg, data=cfg_dict["model"]["model_config"])
-        parallel_args = re.match(r"ParallelConfig\((.*)\)", cfg_dict["model"]["parallel"]).group(1)
-        parallel_args_json = (
-            "{"
-            + re.sub(
-                r"([a-zA-Z_]+)\=",
-                r'"\1": ',
-                parallel_args.replace("'", '"')
-                .replace("(", "[")
-                .replace(")", "]")
-                .replace("None", "null")
-                .replace("True", "true")
-                .replace("False", "false"),
+        if isinstance(cfg_dict["model"]["parallel"], str):
+            parallel_args = re.match(r"ParallelConfig\((.*)\)", cfg_dict["model"]["parallel"]).group(1)
+            parallel_args_json = (
+                "{"
+                + re.sub(
+                    r"([a-zA-Z_]+)\=",
+                    r'"\1": ',
+                    parallel_args.replace("'", '"')
+                    .replace("(", "[")
+                    .replace(")", "]")
+                    .replace("None", "null")
+                    .replace("True", "true")
+                    .replace("False", "false"),
+                )
+                + "}"
             )
-            + "}"
-        )
-        parallel = ParallelConfig(**json.loads(parallel_args_json))
+            parallel_cfg = json.loads(parallel_args_json)
+        else:
+            parallel_cfg = cfg_dict["model"]["parallel"]
+        if parallel_cfg["fsdp_gather_dtype"] == "None":
+            parallel_cfg["fsdp_gather_dtype"] = None
+        if parallel_cfg["fsdp_grad_scatter_dtype"] == "None":
+            parallel_cfg["fsdp_grad_scatter_dtype"] = None
+        parallel = ParallelConfig(**parallel_cfg)
         return ModelConfig(model_class=model_class, parallel=parallel, model_config=model_cfg)
 
 

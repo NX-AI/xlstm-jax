@@ -195,8 +195,7 @@ class ConfigDict:
             elif data is None or data == "None":
                 if NoneType in get_args(config_class):
                     return None
-                else:
-                    raise ValueError(f"Could not parse {data} into {config_class}")
+                raise ValueError(f"Could not parse {data} into {config_class}")
             elif isinstance(data, str):
                 if get_origin(config_class) == UnionType:
                     config_class = get_args(config_class)[0]
@@ -208,6 +207,8 @@ class ConfigDict:
             if data in get_args(config_class):
                 return data
             raise ValueError(f"Bad literal value {data} of {config_class}: {get_args(config_class)}")
+        elif data == "None":
+            return None
         else:
             if get_origin(config_class) == UnionType:
                 config_class_opts = get_args(config_class)
@@ -243,6 +244,9 @@ class ConfigDict:
                             return None
                         raise ValueError(f"Bad Value {data} for NoneType")
                     if isinstance(data, str):
+                        if any(typ is None for typ in config_class_opts):
+                            if data == "None":
+                                return None
                         return _parsed_string(
                             data, cfg_class=cfg_class, strict_classname_parsing=strict_classname_parsing
                         )

@@ -79,12 +79,14 @@ def main_lmeval(args: argparse.Namespace):
         del model_config_base["model_config"]
         global_model_config = {"model_config": ModelConfig.from_metadata(metadata).model_config, **model_config_base}
         LOGGER.info("Loading model config from metadata file.")
+        parallel.fsdp_modules = global_model_config["model_config"].parallel.fsdp_modules
+        parallel.remat = global_model_config["model_config"].parallel.remat
     else:
         # Config
         global_model_config = MODEL_CONFIGS[args.model]
         # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
-    parallel.fsdp_modules = global_model_config["fsdp_modules"]
-    parallel.remat = global_model_config["remat"]
+        parallel.fsdp_modules = global_model_config["fsdp_modules"]
+        parallel.remat = global_model_config["remat"]
 
     # General hyperparameters.
     # lr = global_model_config.get("lr", 1e-3)
@@ -111,8 +113,11 @@ def main_lmeval(args: argparse.Namespace):
         xlstm_config.parallel = parallel
         xlstm_config.context_length = context_length
         xlstm_config.__post_init__()
-    backend_name = xlstm_config.mlstm_block.mlstm.mlstm_cell.backend.name
-    wb_name = f"eval_{args.model}_gbs{int(batch_size)}_ctx{context_length}_{backend_name}"
+    if args.generic_wandb_name or not args.load_checkpoint_from:
+        wb_name = "evaluation"
+    else:
+        # use the hydra sweep name as wandb name, remove trailing and double / after split by filter
+        wb_name = "eval_" + list(filter(lambda x: bool(x), args.load_checkpoint_from.split("/")))[-2]
 
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
@@ -124,6 +129,7 @@ def main_lmeval(args: argparse.Namespace):
                     evaluation_tasks=args.tasks,
                     limit_requests=args.limit_requests,
                     context_length=args.context_length,
+                    num_fewshot=args.num_fewshot,
                 ),
             ),
             logger=LoggerConfig(
@@ -131,6 +137,10 @@ def main_lmeval(args: argparse.Namespace):
                 log_every_n_steps=20,
                 log_tools=[
                     FileLoggerConfig(log_dir="file_logs", config_format="json"),
+                ]
+                + []
+                if args.no_logging
+                else [
                     TensorBoardLoggerConfig(log_dir="tensorboard", tb_flush_secs=10),
                     WandBLoggerConfig(
                         wb_project="xlstm_jax",
@@ -260,6 +270,9 @@ if __name__ == "__main__":
     parser.add_argument("--fsdp_size", type=int, default=1)
     parser.add_argument("--model_tp_size", type=int, default=1)
     parser.add_argument("--tokenizer", type=str, default="gpt2")
+    parser.add_argument("--generic_wandb_name", action="store_true")
+    parser.add_argument("--no_logging", action="store_true")
+    parser.add_argument("--num_fewshot", type=int, default=None)
 
     args = parser.parse_args()
 

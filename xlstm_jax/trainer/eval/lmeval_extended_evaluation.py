@@ -7,10 +7,9 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
-from lm_eval import tasks
 from lm_eval.api.instance import Instance
 from lm_eval.api.model import LM
-from lm_eval.evaluator import evaluate
+from lm_eval.evaluator import simple_evaluate
 
 from xlstm_jax.dataset.batch import LLMBatch, LLMIndexedBatch
 from xlstm_jax.dataset.configs import DataConfig
@@ -104,6 +103,14 @@ class LMEvalEvaluationConfig(ExtendedEvaluationConfig):
     """ Number of workers for the grain loading """
     debug: bool = False
     """ Scale ouputs such that metrics can be computed for a random testing model """
+    system_instruction: str | None = None
+    """ Additional system instruction """
+    num_fewshot: int | None = None
+    """ Define number of in-context samples for few-shot training. """
+    bootstrap_iters: int = 1000
+    """ Bootstrap iterations for calculating stderrs on metrics - LMEval standard is 100000, limit here for speed """
+    apply_chat_template: bool | str = False
+    """ Apply the LMEval chat template, or a custom template """
 
     def create(self, trainer: Any, data_module: DataloaderModule | None = None) -> "LMEvalEvaluation":
         """
@@ -288,12 +295,16 @@ class LMEvalEvaluation(ExtendedEvaluation):
             Results from LMEval evaluation.
         """
         LOGGER.info("Running LMEval evaluation.")
-        res = evaluate(
+        res = simple_evaluate(
             self.lm,
-            task_dict=tasks.get_task_dict(self.config.evaluation_tasks),
+            tasks=self.config.evaluation_tasks,
             limit=self.config.limit_requests,
             cache_requests=self.config.cache_requests,
             write_out=self.config.write_out,
+            num_fewshot=self.config.num_fewshot,
+            apply_chat_template=self.config.apply_chat_template,
+            system_instruction=self.config.system_instruction,
+            bootstrap_iters=self.config.bootstrap_iters,
         )["results"]
         for task in res:
             del res[task]["alias"]
