@@ -848,8 +848,12 @@ class TrainerModule:
         """
         LOGGER.info("Verifying evaluation function...")
         if isinstance(val_loader, dict):
-            val_loader = val_loader[next(iter(val_loader.keys()))]
-        val_batch = next(iter(val_loader))
+            for key in val_loader:
+                LOGGER.info(f"Catching first validation batch from {key}...")
+                val_batch = next(iter(val_loader[key]))
+                LOGGER.info(f"Successfully caught first validation batch from {key}.")
+        else:
+            val_batch = next(iter(val_loader))
         eval_metrics = self.init_eval_metrics(val_batch)
         start_time = time.time()
         LOGGER.info("Testing and compiling eval_step...")
