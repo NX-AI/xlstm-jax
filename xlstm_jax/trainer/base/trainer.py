@@ -1221,9 +1221,12 @@ class TrainerModule:
             train_loader: If given, the training data loader is set to the state of the pretrained model.
             val_loader: If given, the validation data loader is set to the state of the pretrained model.
             test_loader: If given, the test data loader is set to the state of the pretrained model.
+
+        Returns:
+            The step index of the loaded model.
         """
         LOGGER.info(f"Loading pretrained model from {checkpoint_path}")
-        state_dict, data_module_state = load_pretrained_model(
+        state_dict, data_module_state, step_idx = load_pretrained_model(
             checkpoint_path, trainer=self, step_idx=step_idx, load_best=load_best, load_optimizer=load_optimizer
         )
         assert len(state_dict) > 0, "No model checkpoint found in the directory."
@@ -1231,6 +1234,8 @@ class TrainerModule:
         self.restore_data_loaders(
             data_module_state, train_loader=train_loader, val_loader=val_loader, test_loader=test_loader
         )
+
+        return step_idx
 
     @classmethod
     def load_from_checkpoint(

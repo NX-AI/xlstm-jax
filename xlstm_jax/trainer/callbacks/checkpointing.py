@@ -347,7 +347,7 @@ def load_pretrained_model(
     step_idx: int = -1,
     load_optimizer: bool = True,
     load_best: bool = False,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], dict[str, Any], int]:
     """
     Loads a pretrained model from a checkpoint.
 
@@ -361,7 +361,8 @@ def load_pretrained_model(
             based on the monitored metric instead of the latest checkpoint.
 
     Returns:
-        Dictionary of loaded model parameters and additional variables, as well as the dataloader state.
+        Dictionary of loaded model parameters and additional variables, as well as the dataloader state
+        and the resolved step index that was loaded.
     """
     config = ModelCheckpointConfig(log_path=checkpoint_path, save_optimizer_state=load_optimizer)
     callback = ModelCheckpoint(config, trainer, None)
@@ -369,4 +370,4 @@ def load_pretrained_model(
     state_dict = callback.load_model(step_idx)
     data_module_state = callback.load_dataloader(step_idx)
     callback.finalize()
-    return (state_dict, data_module_state)
+    return (state_dict, data_module_state, step_idx)

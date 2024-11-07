@@ -8,7 +8,7 @@ from omegaconf import DictConfig
 from xlstm_jax.define_hydra_schemas import register_configs
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.xla_utils import simulate_CPU_devices
-from xlstm_jax.train_init_fns import main_train
+from xlstm_jax.main_train import main_train
 
 set_XLA_flags()  # Must be executed before any JAX operation.
 

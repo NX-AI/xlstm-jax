@@ -1,0 +1,61 @@
+# @package _global_
+defaults:
+  - override /parallel: synthetic
+  - override /data: synthetic
+  - override /model: mLSTMv1_165M
+  - override /optimizer: adamw
+
+task_name: unit_test
+num_train_steps: 10
+batch_size_per_device: 1
+context_length: 32
+
+parallel:
+  model_axis_size: 1
+  fsdp_axis_size: 1
+  data_axis_size: -1
+
+data:
+  max_target_length: ${context_length}
+  data_shuffle_seed: 42
+  num_batches: 50
+
+model:
+  name: mLSTMv1Debug
+  vocab_size: 20
+  embedding_dim: 64
+  num_blocks: 1
+  context_length: ${context_length}
+  tie_weights: false
+  add_embedding_dropout: true
+  add_post_blocks_norm: true
+  dtype: float32
+  num_heads: 4
+  head_dim: 8
+  gate_dtype: float32
+  backend: parallel_stabilized
+
+checkpointing:
+  monitor: perplexity
+  max_to_keep: 1
+  save_optimizer_state: true
+  enable_async_checkpointing: true
+
+scheduler:
+  lr: 1e-3
+  end_lr_factor: 0.1
+  decay_steps: 0
+  warmup_steps: 0
+  cooldown_steps: 0
+
+optimizer:
+  beta2: 0.95
+
+logger:
+  loggers_to_use: [file_logger]
+
+hydra:
+  job:
+    num: 0
+
+base_dir: /tmp/hydra_synt_run

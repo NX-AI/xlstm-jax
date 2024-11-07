@@ -209,3 +209,47 @@ activated that you want to use for the experiment:
 ```PYTHONPATH=. python scripts/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
 
 So the only thing you have to add is ```--multirun hydra/launcher=slurm_launcher``` (and to overwrite SLURM-specific parameters as the number of nodes, for example, in your experiment file).
+
+
+## How to Resume an Experiment?
+
+To resume an experiment you need to know the path to the output
+folder of the experiment. You then execute
+
+```python
+python scripts/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN
+```
+
+If you want to use SLURM, set the flag `--use_slurm`.
+Not that this is only required if
+the original run was executed with SLURM by way of the CLI override
+`--multirun hydra/launcher=slurm_launcher` and
+not by way of experiment file. If it was specified in the experiment file, SLURM is used anyway.
+
+If you want to use the
+latest/best checkpoint, you don't need to supply anything but if you want to use a
+specific checkpoint, use `--checkpoint_step=X` to use checkpoint X.
+
+New hydra overrides can be supplied by way of `--new_overrides=STRING_OF_OVERRIDES`.
+Example of such a string for more training steps, a different learning rate and
+a different logging frequency would be
+`--new_overrides="num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"`, that is,
+the format is exactly as you would supply for CLI overrides.
+
+Executing `get_cli_command_to_resume_training` will return a string of the command that you
+have to execute to continue the training run.
+
+A full example to call is
+
+```python
+python scripts/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN --use_slurm --checkpoint_step=95000 --new_overrides="num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"
+```
+
+What the script does is to look in the specified folder and obtain the overrides (including the experiment file)
+that were used to start the previous run. It then compiles a new command from these, which, for the current
+example would look something like this:
+
+`PYTHONPATH=. python scripts/resume_training_with_hydra.py        -m hydra/launcher=slurm_launcher +experiment=synthetic_experiment_slurm +resume_from_folder=PATH_TO_RUN        +checkpoint_step=95000 num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10`
+
+This is the actual command you have to run to resume the experiment. Keep in mind that you can still
+use any other CLI overrides at this point so using them in the previous step is not strictly necessary.

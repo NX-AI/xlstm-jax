@@ -3,9 +3,21 @@ defaults:
   - override /parallel: synthetic
   - override /data: synthetic
   - override /model: mLSTMv1_165M
+  - _self_
 
-task_name: SPECIFY_TASK_NAME
-num_train_steps: 2
+# specify the deltas from the defaults:
+task_name: slurm_tests
+batch_size_per_device: 2
+context_length: 128
+num_train_steps: 10
+lr: 1e-3
+
+n_gpus: 1
+
+logger:
+  log_every_n_steps: 2
+  loggers_to_use:
+    - file_logger
 
 parallel:
   model_axis_size: 1
@@ -16,4 +28,6 @@ scheduler:
   warmup_steps: 0
   cooldown_steps: 0
 
-base_dir: /tmp/hydra_synt_run
+model:
+  # Negative value means we infer the vocab size from the tokenizer.
+  vocab_size: 10
