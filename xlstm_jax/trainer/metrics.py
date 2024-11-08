@@ -264,6 +264,12 @@ def get_metrics(
 
         else:
             metrics[key] = host_metrics[key]
+
+    # Convert to Python scalar if possible.
+    for key in metrics:
+        if isinstance(metrics[key], np.generic) or (isinstance(metrics[key], np.ndarray) and metrics[key].size == 1):
+            metrics[key] = metrics[key].item()
+
     if reset_metrics:
         global_metrics = jax.tree.map(jnp.zeros_like, global_metrics)
     if not isinstance(global_metrics, FrozenDict):
