@@ -104,3 +104,8 @@ quote-style = "double"
 # setuptools
 [tool.setuptools]
 packages = ["xlstm_jax"]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]

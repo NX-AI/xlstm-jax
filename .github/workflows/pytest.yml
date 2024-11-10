@@ -12,7 +12,7 @@ env:
   ENV_NAME: python_3.11_jax_0.4.34_cuda_12.6
   ENV_PATH: /usr/share/miniconda3/envs/python_3.11_jax_0.4.34_cuda_12.6
   ENV_FILE: envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
-  CACHE_NUMBER: 0  # increase to reset cache manually
+  CACHE_NUMBER: 0 # increase to reset cache manually
 
 jobs:
   pytest:

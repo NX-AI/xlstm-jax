@@ -68,8 +68,18 @@ def main_lmeval(args: argparse.Namespace):
     log_info("Mesh initialized.")
     assert len(jax.devices(backend="gpu")) > 0, "No devices found. This script should be run on GPU."
     log_info(f"Devices: {jax.devices()}")
-    if args.load_checkpoint_from:
-        path = Path(args.load_checkpoint_from) / "checkpoints"
+
+    checkpoint_folder = args.load_checkpoint_from
+    checkpoint_idx = args.checkpoint_step_idx
+    if args.load_checkpoint_from_subdir:
+        checkpoint_idx_path = Path(args.load_checkpoint_from_subdir)
+        checkpoint_folder = checkpoint_idx_path.parent.parent
+        checkpoint_idx = int(checkpoint_idx_path.name.split("_")[-1])
+    elif checkpoint_folder:
+        checkpoint_folder = Path(checkpoint_folder)
+
+    if checkpoint_folder:
+        path = Path(checkpoint_folder) / "checkpoints"
         metadata_path = (
             sorted(list(filter(lambda x: "checkpoint_" in str(x), path.iterdir())))[-1] / "metadata" / "metadata"
         )
@@ -87,9 +97,6 @@ def main_lmeval(args: argparse.Namespace):
         # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
         parallel.fsdp_modules = global_model_config["fsdp_modules"]
         parallel.remat = global_model_config["remat"]
-
-    # General hyperparameters.
-    # lr = global_model_config.get("lr", 1e-3)
 
     log_path = Path(args.log_dir) / "version_0"
     version_idx = 0
@@ -113,11 +120,11 @@ def main_lmeval(args: argparse.Namespace):
         xlstm_config.parallel = parallel
         xlstm_config.context_length = context_length
         xlstm_config.__post_init__()
-    if args.generic_wandb_name or not args.load_checkpoint_from:
+    if args.generic_wandb_name or not checkpoint_folder:
         wb_name = "evaluation"
     else:
         # use the hydra sweep name as wandb name, remove trailing and double / after split by filter
-        wb_name = "eval_" + list(filter(lambda x: bool(x), args.load_checkpoint_from.split("/")))[-2]
+        wb_name = "eval_" + checkpoint_folder.parent.name + f"_{checkpoint_idx}" if checkpoint_idx > 0 else ""
 
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
@@ -130,6 +137,8 @@ def main_lmeval(args: argparse.Namespace):
                     limit_requests=args.limit_requests,
                     context_length=args.context_length,
                     num_fewshot=args.num_fewshot,
+                    use_infinite_eval=(not args.use_limited_context),
+                    infinite_eval_chunksize=128,
                 ),
             ),
             logger=LoggerConfig(
@@ -143,7 +152,7 @@ def main_lmeval(args: argparse.Namespace):
                 else [
                     TensorBoardLoggerConfig(log_dir="tensorboard", tb_flush_secs=10),
                     WandBLoggerConfig(
-                        wb_project="xlstm_jax",
+                        wb_project="xlstm_jax_eval",
                         wb_entity="xlstm",
                         wb_name=wb_name,
                         wb_tags=[args.model, "evaluation"],
@@ -181,11 +190,11 @@ def main_lmeval(args: argparse.Namespace):
     eval_callback = trainer.callbacks[0]
     eval_callback.replace_trainer_state_by_eval_only()
 
-    if len(args.load_checkpoint_from) > 0:
-        log_info(f"Loading checkpoint from {args.load_checkpoint_from}.")
+    if checkpoint_folder:
+        log_info(f"Loading checkpoint from {checkpoint_folder}.")
         trainer.load_pretrained_model(
-            Path(args.load_checkpoint_from),
-            step_idx=args.checkpoint_step_idx,
+            Path(checkpoint_folder),
+            step_idx=checkpoint_idx,
             load_best=args.checkpoint_load_best,
             load_optimizer=False,
             train_loader=None,
@@ -198,9 +207,9 @@ def main_lmeval(args: argparse.Namespace):
                 "model": trainer.model_config,
                 "optimizer": trainer.optimizer_config,
                 "checkpoint_folder": CheckpointConfig(
-                    checkpoint_dir=args.load_checkpoint_from,
+                    checkpoint_dir=checkpoint_folder,
                     checkpoint_load_best=args.checkpoint_load_best,
-                    checkpoint_step_idx=args.checkpoint_step_idx,
+                    checkpoint_step_idx=checkpoint_idx,
                 ),
             }
         )
@@ -262,6 +271,7 @@ if __name__ == "__main__":
     parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="120M")
     parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs_poeppel/eval_jax")
     parser.add_argument("--load_checkpoint_from", type=str, default="")
+    parser.add_argument("--load_checkpoint_from_subdir", type=str, default=None)
     parser.add_argument("--checkpoint_step_idx", type=int, default=-1)
     parser.add_argument("--checkpoint_load_best", action="store_true")
     parser.add_argument("--limit_requests", type=int, default=None)
@@ -273,6 +283,7 @@ if __name__ == "__main__":
     parser.add_argument("--generic_wandb_name", action="store_true")
     parser.add_argument("--no_logging", action="store_true")
     parser.add_argument("--num_fewshot", type=int, default=None)
+    parser.add_argument("--no_infinite_eval", action="store_true")
 
     args = parser.parse_args()
 

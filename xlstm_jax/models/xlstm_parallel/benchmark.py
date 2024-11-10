@@ -13,8 +13,8 @@ from tqdm.auto import tqdm
 
 from xlstm_jax.dataset import Batch
 from xlstm_jax.distributed import fold_rng_over_axis
+from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm, print_metrics
-from xlstm_jax.models.xlstm_parallel.utils import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 

@@ -57,8 +57,12 @@ class HFPrefixTokenize(grain.MapTransform):
         prefix_column_name: str = "prefix",
         text_column_name: str = "text",
         add_bos_token: bool = True,
+        add_eos_token: bool = False,
+        bos_token_id: int | None = None,
+        eos_token_id: int | None = None,
         max_length: int | None = None,
         max_length_prefix: int | None = None,
+        keep_other_inputs: bool = True,
     ):
         """
         Args:
@@ -76,8 +80,22 @@ class HFPrefixTokenize(grain.MapTransform):
         self.prefix_column_name = prefix_column_name
         self.text_column_name = text_column_name
         self.max_length = max_length
-        self.max_length_prefix = max_length_prefix if max_length_prefix is not None else max_length // 2
+        self.max_length_prefix = (
+            max_length_prefix
+            if max_length_prefix is not None
+            else (max_length // 2 if max_length is not None else None)
+        )
         self.add_bos_token = add_bos_token
+        self.add_eos_token = add_eos_token
+        self.eos_token_id = eos_token_id if eos_token_id is not None else self.tokenizer.eos_token_id
+        self.bos_token_id = (
+            bos_token_id
+            if bos_token_id is not None
+            else (
+                self.tokenizer.bos_token_id if self.tokenizer.bos_token_id is not None else self.tokenizer.eos_token_id
+            )
+        )
+        self.keep_other_inputs = keep_other_inputs
 
     def map(self, features: dict[str, str]) -> dict[str, np.ndarray]:
         """
@@ -103,28 +121,36 @@ class HFPrefixTokenize(grain.MapTransform):
             return_attention_mask=True,
             return_token_type_ids=False,
             truncation=True,
-            max_length=self.max_length - self.max_length_prefix,
+            max_length=self.max_length - self.max_length_prefix if self.max_length is not None else None,
             return_tensors="np",
         )
-        output_tokens = np.concatenate([prefix.input_ids, inputs.input_ids], axis=1)
-        if self.add_bos_token:
-            bos_tokens = np.full((output_tokens.shape[0], 1), self.tokenizer.bos_token_id, dtype=np.int32)
-            input_tokens = np.concatenate([bos_tokens, output_tokens[:, :-1]], axis=1)
-            bos_mask = int(self.add_bos_token) * np.ones_like(prefix.attention_mask[:, :1])
-            input_mask = np.concatenate([bos_mask, prefix.attention_mask, inputs.attention_mask[:, :-1]], axis=1)
-            output_mask = np.concatenate([np.zeros_like(prefix.attention_mask), inputs.attention_mask], axis=1)
 
+        output_tokens = np.concatenate([prefix.input_ids, inputs.input_ids], axis=1).astype(np.int32)
+        if self.add_eos_token:
+            output_tokens = np.pad(output_tokens, ((0, 0), (0, 1)), constant_values=self.eos_token_id)
+        if self.add_bos_token:
+            input_tokens = np.pad(output_tokens[:, :-1], ((0, 0), (1, 0)), constant_values=self.bos_token_id)
+            input_mask = np.pad(
+                np.concatenate([prefix.attention_mask, inputs.attention_mask[:, :-1]], axis=1),
+                ((0, 0), (1, 0)),
+                constant_values=1,
+            )
+            output_mask = np.pad(inputs.attention_mask, ((0, 0), (prefix.attention_mask.shape[1], 0)))
         else:
             input_tokens = output_tokens[:, :-1]
             output_tokens = output_tokens[:, 1:]
             input_mask = np.concatenate([prefix.attention_mask, inputs.attention_mask[:, :-1]], axis=1)
-            output_mask = np.concatenate([np.zeros_like(prefix.attention_mask), inputs.attention_mask], axis=1)[1:]
+            output_mask = np.pad(inputs.attention_mask, ((0, 0), (prefix.attention_mask.shape[1], 0)))[:, 1:]
 
+        other_inputs = {
+            key: val for key, val in features.items() if key not in [self.prefix_column_name, self.text_column_name]
+        }
         return {
             "inputs": input_tokens,
             "targets": output_tokens,
             "inputs_segmentation": input_mask,
-            "output_segmentation": output_mask,
+            "targets_segmentation": output_mask,
+            **other_inputs,
         }
 
 

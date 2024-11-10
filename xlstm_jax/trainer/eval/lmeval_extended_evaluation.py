@@ -1,12 +1,16 @@
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
+from functools import partial
 from typing import Any
 
+import flax.linen as nn
 import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+from jax.experimental.shard_map import shard_map
+from jax.sharding import PartitionSpec as P
 from lm_eval.api.instance import Instance
 from lm_eval.api.model import LM
 from lm_eval.evaluator import simple_evaluate
@@ -16,14 +20,31 @@ from xlstm_jax.dataset.configs import DataConfig
 from xlstm_jax.dataset.grain_iterator import make_grain_llm_iterator
 from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_real_data
 from xlstm_jax.dataset.lmeval_dataset import HFTokenizeLogLikelihoodRolling
+from xlstm_jax.dataset.lmeval_pipeline import lmeval_preprocessing_pipeline
 from xlstm_jax.distributed import split_array_over_mesh
-from xlstm_jax.trainer.callbacks.extended_evaluation import ExtendedEvaluation, ExtendedEvaluationConfig
+from xlstm_jax.trainer.base.trainer import TrainState
+from xlstm_jax.trainer.callbacks.extended_evaluation import (
+    ExtendedEvaluation,
+    ExtendedEvaluationConfig,
+    device_metrics_aggregation,
+)
 from xlstm_jax.trainer.data_module import DataloaderModule
-from xlstm_jax.trainer.metrics import HostMetrics, Metrics
+from xlstm_jax.trainer.llm.trainer import LLMTrainer
+from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 
 PyTree = Any
 
 LOGGER = logging.getLogger(__name__)
+
+
+def log_info(msg: str):
+    """Logs an info message on the host device.
+
+    Args:
+        msg: Message to be logged.
+    """
+    if jax.process_index() == 0:
+        LOGGER.info(msg)
 
 
 def fuse_document_results(
@@ -93,6 +114,10 @@ class LMEvalEvaluationConfig(ExtendedEvaluationConfig):
     """Whether to limit requests to a smaller number for debugging purposes"""
     write_out: bool = False
     """Whether to write out results"""
+    use_infinite_eval: bool = True
+    """Whether to use the infinite eval"""
+    infinite_eval_chunksize: int = 64
+    """The chunk size for using the infinite eval"""
     context_length: int | None = None
     """ Override context_length of the model """
     batch_size: int | None = None
@@ -132,7 +157,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
     def __init__(
         self,
         config: LMEvalEvaluationConfig,
-        trainer: Any,
+        trainer: LLMTrainer,
         data_module: DataloaderModule | None = None,
     ):
         """
@@ -154,34 +179,6 @@ class LMEvalEvaluation(ExtendedEvaluation):
         )
         self.batch_size = batch_size
         instance = self
-
-        def _make_grain_iterator(dataset):
-            # We have to use the sample distribution as in the training loop,
-            # unless we want a different sharding, which probably doesn't make sense.
-            # However the worker_count is 0 now by default, but should not be a bottleneck.
-            process_indices = get_process_loading_real_data(
-                DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
-            )
-            it = make_grain_llm_iterator(
-                dataloading_host_index=process_indices.index(jax.process_index()),
-                dataloading_host_count=len(process_indices),
-                global_mesh=trainer.mesh,
-                dataset=dataset,
-                global_batch_size=batch_size,
-                max_target_length=2048,  # not actually used without padding
-                worker_count=config.worker_count,
-                shuffle=False,
-                data_shuffle_seed=0,
-                num_epochs=1,
-                shift=False,
-                batch_class=LLMIndexedBatch,
-                reset_after_epoch=True,
-                drop_remainder=False,
-                apply_padding=False,
-                grain_packing=False,
-                worker_buffer_size=config.worker_buffer_size,
-            )
-            return it
 
         class _AdaptedLM(LM):
             """
@@ -226,26 +223,60 @@ class LMEvalEvaluation(ExtendedEvaluation):
                 Returns:
                     List of loglikelihoods + greedy (boolean accuracy)
                 """
-                LOGGER.info("Start create dataset")
-                dataset = HFTokenizeLogLikelihoodRolling(
-                    tokenizer_path=config.tokenizer_path,
-                    batch_size=batch_size,
-                    max_length=context_length,
-                ).map(requests)
-                LOGGER.info("End create dataset")
-                assert (
-                    len(dataset) % batch_size == 0
-                ), f"Dataset size no divisible by batch_size {len(dataset)} % {batch_size}"
-                LOGGER.info("Start create data iterator")
-                it = _make_grain_iterator(dataset)
-                LOGGER.info("End create data iterator")
+                if config.use_infinite_eval:
+                    process_indices = get_process_loading_real_data(
+                        DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
+                    )
+                    it = lmeval_preprocessing_pipeline(
+                        dataloading_host_index=process_indices.index(jax.process_index()),
+                        dataloading_host_count=len(process_indices),
+                        global_mesh=trainer.mesh,
+                        dataset=requests,
+                        global_batch_size=batch_size,
+                        tokenizer_path=config.tokenizer_path,
+                        worker_count=0,
+                        worker_buffer_size=1,
+                        padding_multiple=config.infinite_eval_chunksize,
+                    )
+                else:
+                    dataset = HFTokenizeLogLikelihoodRolling(
+                        tokenizer_path=config.tokenizer_path,
+                        batch_size=batch_size,
+                        max_length=context_length,
+                    ).map(requests)
+                    # We have to use the sample distribution as in the training loop,
+                    # unless we want a different sharding, which probably doesn't make sense.
+                    # However the worker_count is 0 now by default, but should not be a bottleneck.
+                    process_indices = get_process_loading_real_data(
+                        DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
+                    )
+                    it = make_grain_llm_iterator(
+                        dataloading_host_index=process_indices.index(jax.process_index()),
+                        dataloading_host_count=len(process_indices),
+                        global_mesh=trainer.mesh,
+                        dataset=dataset,
+                        global_batch_size=batch_size,
+                        max_target_length=2048,  # not actually used without padding
+                        worker_count=config.worker_count,
+                        shuffle=False,
+                        data_shuffle_seed=0,
+                        num_epochs=1,
+                        shift=False,
+                        batch_class=LLMIndexedBatch,
+                        reset_after_epoch=True,
+                        drop_remainder=False,
+                        apply_padding=False,
+                        grain_packing=False,
+                        worker_buffer_size=config.worker_buffer_size,
+                    )
 
-                LOGGER.info("Start inference")
+                log_info("Start inference")
                 final_metrics = ExtendedEvaluation.eval_model(instance, it, mode=self.mode)
-                LOGGER.info("End inference")
-                LOGGER.info("Start results postprocessing")
+                log_info("End inference")
+
+                log_info("Start results postprocessing")
                 res = fuse_document_results(final_metrics)
-                LOGGER.info("End results postprocessing")
+                log_info("End results postprocessing")
                 assert len(res) == len(requests), f"Mis-match of requests and results: {len(requests)} != {len(res)}"
                 return res
 
@@ -294,7 +325,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         Returns:
             Results from LMEval evaluation.
         """
-        LOGGER.info("Running LMEval evaluation.")
+        log_info("Running LMEval evaluation.")
         res = simple_evaluate(
             self.lm,
             tasks=self.config.evaluation_tasks,
@@ -310,6 +341,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
             del res[task]["alias"]
             # convert "N/A" values to NaN values
             res[task] = {key: val if val != "N/A" else float("NaN") for key, val in res[task].items()}
+        log_info(f"LMEval results: {res}")
         return res
 
     def get_metric_postprocess_fn(self) -> Callable[[HostMetrics], HostMetrics]:
@@ -331,8 +363,152 @@ class LMEvalEvaluation(ExtendedEvaluation):
 
         return _postprocess_metrics
 
+    def create_jitted_functions(self):
+        """
+        Create jitted version of the evaluation function.
+        """
+        if self.config.use_infinite_eval:
+            eval_step = self.create_recurrent_evaluation_step_function(
+                chunk_size=self.config.infinite_eval_chunksize,
+                exmp_batch=LLMIndexedBatch.get_dtype_struct(
+                    self.trainer.exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize
+                ),
+            )
+            self.eval_step = eval_step
+        else:
+            super().create_jitted_functions()
+
+    def create_recurrent_evaluation_step_function(
+        self,
+        chunk_size: int,
+        exmp_batch: LLMIndexedBatch | None = None,
+        cache_init_fn: Callable[[PyTree], PyTree] | None = None,
+    ) -> Callable[[TrainState, LLMBatch, ImmutableMetrics | None], ImmutableMetrics]:
+        """
+        Create and return a recurrent function for the evaluation step. (see also llm/trainer.py).
+
+        Compared to the `create_evaluation_step_function`, this evaluation supports much longer sequences by chunking
+        the input and running the model recurrently over the chunks. This is useful for evaluation on long documents.
+        This is enabled by keeping a cache, which is forwarded between evaluation steps.
+
+        Note: do *not* jit this function if you want to support arbitrary input shapes. This function jit's the
+        recurrent function for a single chunk, and adds a python loop around it to handle arbitrary length sequences.
+        Thus, no outer jit is needed.
+
+        Note: this function is explicitly meant for recurrent models like xLSTM. Using this function on a non-recurrent
+        model will lead to unexpected, incorrect results.
+
+        Args:
+            chunk_size: Size of the chunks to split the input into. The slices are performed over the sequence length.
+            exmp_batch: An example batch to determine the shape of the cache. Defaults to None, in which case the
+                example batch from the trainer is used.
+            cache_init_fn: A function to initialize the cache. If not provided, the cache is initialized with zeros.
+                The function should take the shape dtype struct of the cache as input and return the initialized cache.
+
+        Returns:
+            The evaluation step function with support for arbitrary length sequences.
+        """
+        if cache_init_fn is None:
+            cache_init_fn = partial(jax.tree.map, jnp.zeros_like)
+
+        def rec_eval_step(
+            state: TrainState, cache: PyTree, batch: LLMIndexedBatch, metrics: ImmutableMetrics | None
+        ) -> tuple[PyTree, ImmutableMetrics]:
+            """
+            Recurrent evaluation step function.
+
+            Args:
+                state: Trainer state
+                cache: Recurrent model cache (state)
+                batch: Batch to be evaluated
+                metrics: Old metrics to be updated / taken as basis for new metrics.
+
+            Returns:
+                New recurrent cache (state), new metrics
+            """
+            # In our multi-host setup, each local device will have a different batch.
+            # So we first gather the batch across model and pipeline axes.
+            batch = jax.lax.all_gather(
+                batch, axis_name=(self.trainer.model_axis_name, self.trainer.pipeline_axis_name), axis=0, tiled=True
+            )
+            # Forward pass and compute metrics.
+            step_metrics, mutable_variables = self.eval_function(
+                state.params,
+                state.apply_fn,
+                batch,
+                jax.random.PRNGKey(self.trainer.trainer_config.seed_eval),
+                mutable_variables={"cache": cache},
+            )
+            cache = mutable_variables["cache"]
+            with jax.named_scope("sync_metrics"):
+                step_metrics = device_metrics_aggregation(trainer=self.trainer, metrics=step_metrics)
+            metrics = update_metrics(metrics, step_metrics, default_log_modes=("mean_nopostfix",))
+            return cache, metrics
+
+        # Determine cache structure.
+        cache_shape = self.trainer.get_cache_shape_dtype_struct(exmp_batch=exmp_batch)
+
+        # Shard the single-step recurrent evaluation function.
+        state_partition_specs = nn.get_partition_spec(self.trainer.state)
+        cache_partition_specs = nn.get_partition_spec(cache_shape)
+        rec_eval_step_fn = shard_map(
+            rec_eval_step,
+            self.trainer.mesh,
+            in_specs=(state_partition_specs, cache_partition_specs, self.trainer.batch_partition_specs, P()),
+            out_specs=P(),
+            check_rep=False,
+        )
+
+        # Jit the step function. We donate also the cache to free up memory.
+        rec_eval_step_fn = jax.jit(
+            rec_eval_step_fn,
+            donate_argnames=["cache", "metrics"],
+        )
+
+        # Create the looped evaluation step function.
+        def looped_eval_step_fn(
+            state: TrainState, batch: LLMIndexedBatch, metrics: ImmutableMetrics | None
+        ) -> ImmutableMetrics:
+            """
+            Evaluation step function that internally uses a loop over chunks.
+
+            Args:
+                state: The trainer/evaluator state.
+                batch: The LLMIndexedBatch (of potentially very large sequence length)
+                metrics: The old metrics to be updated.
+
+            Returns:
+                Update metrics after processing the batch.
+            """
+            # Create initial cache.
+            cache = cache_init_fn(cache_shape)
+            # Run the evaluation per chunk with forwarding the cache.
+            num_chunks = (batch.inputs.shape[1] - 1) // chunk_size + 1
+            for i in range(num_chunks):
+                # Get current chunk of batch.
+                chunk_start = i * chunk_size
+                chunk_end = min((i + 1) * chunk_size, batch.inputs.shape[1])
+                chunk_batch = jax.tree.map(lambda x: x[:, chunk_start:chunk_end] if x.ndim > 1 else x, batch)
+                if chunk_batch.inputs.shape[1] < chunk_size:
+                    # Pad batch.
+                    pad_size = chunk_size - chunk_batch.inputs.shape[1]
+                    chunk_batch = jax.tree.map(
+                        lambda x: jnp.pad(x, ((0, 0), (0, pad_size)), mode="constant") if x.ndim > 1 else x, chunk_batch
+                    )
+                # Run the evaluation step.
+                cache, metrics = rec_eval_step_fn(state, cache, chunk_batch, metrics)
+            # Return final metrics.
+            return metrics
+
+        return looped_eval_step_fn
+
     def eval_function(
-        self, params: Any, apply_fn: Any, batch: LLMIndexedBatch, rng: jax.Array
+        self,
+        params: Any,
+        apply_fn: Any,
+        batch: LLMIndexedBatch,
+        rng: jax.Array | None = None,
+        mutable_variables: dict[str, Any] | None = None,
     ) -> tuple[Metrics, PyTree]:
         """
         Function that passes the batch through the model and generates some extended metrics.
@@ -342,17 +518,20 @@ class LMEvalEvaluation(ExtendedEvaluation):
             apply_fn: Model functions.
             batch: LLMIndexedBatch that is passed through the model.
             rng: RNG for potential dropout.
+            mutable_variables: Mutable variables for the evaluation step function, e.g. the cache (recurrent state).
 
         Returns:
             Tuple with Metrics and MutableVariables.
         """
         _ = rng
         # Remaining computation is the same as before for single device.
+        if mutable_variables is None:
+            mutable_variables = {}
         logits, mutable_variables = apply_fn(
-            {"params": params},
+            {"params": params, **mutable_variables},
             batch.inputs,
             train=False,
-            mutable="intermediates",
+            mutable=["intermediates"] + list(mutable_variables.keys()),
         )
         # Select the targets per device.
         targets = batch.targets
