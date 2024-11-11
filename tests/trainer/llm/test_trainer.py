@@ -731,7 +731,7 @@ def test_infinite_eval_function(llm_toy_model: Any, tmp_path: Path, fsdp_size: i
                     qk_dim_factor=0.5,
                     mlstm_cell=mLSTMCellConfig(
                         gate_soft_cap=15.0,
-                        reset_at_document_boundaries=False,
+                        reset_at_document_boundaries=True,
                         backend=mLSTMBackendNameAndKwargs(name="recurrent"),
                     ),
                 )
@@ -808,6 +808,7 @@ def test_infinite_eval_function(llm_toy_model: Any, tmp_path: Path, fsdp_size: i
             **{
                 key: jnp.concatenate([getattr(batch, key) for batch in chunk], axis=1)
                 for key in LLMBatch.__dataclass_fields__
+                if getattr(chunk[0], key) is not None
             }
         )
         for chunk in long_val_loader

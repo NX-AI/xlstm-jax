@@ -472,7 +472,7 @@ class CollateToBatch(grain.MapTransform):
         key_map = {key: self.key_map.get(key, key) for key in data.keys()}
         data = {key_map[key]: data[key] for key in data.keys()}
         target_keys = self.batch_class.__dataclass_fields__.keys()
-        return self.batch_class(**{key: data[key] for key in target_keys})  # type: ignore
+        return self.batch_class(**{key: data[key] for key in target_keys if key in data})  # type: ignore
 
 
 @dataclasses.dataclass

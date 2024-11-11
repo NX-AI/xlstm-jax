@@ -357,7 +357,7 @@ class LLMTrainer(TrainerModule):
                 # Get current chunk of batch.
                 chunk_start = i * chunk_size
                 chunk_end = min((i + 1) * chunk_size, batch.inputs.shape[1])
-                chunk_batch = jax.tree.map(lambda x: x[:, chunk_start:chunk_end], batch)
+                chunk_batch = batch[:, chunk_start:chunk_end]
                 if chunk_batch.inputs.shape[1] < chunk_size:
                     # Pad batch.
                     pad_size = chunk_size - chunk_batch.inputs.shape[1]

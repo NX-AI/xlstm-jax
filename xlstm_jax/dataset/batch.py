@@ -1,7 +1,11 @@
+from functools import partial
+
 import jax
 import jax.numpy as jnp
 import numpy as np
 from flax.struct import dataclass
+
+dataclass_kwonly = partial(dataclass, kw_only=True)
 
 
 @dataclass
@@ -24,7 +28,7 @@ class Batch:
         return self.__class__(**vals)
 
 
-@dataclass
+@dataclass_kwonly
 class LLMBatch(Batch):
     """
     Batch for LLM training.
@@ -40,6 +44,10 @@ class LLMBatch(Batch):
     """Positions of the target tokens."""
     targets_segmentation: jax.Array
     """Segmentation of the target tokens. 0 to indicate padding."""
+    _document_borders: jax.Array | None = None
+    """Document borders for the input data. This buffer should only be used to explicitly overwrite the standard
+    algorithm to calculate the document borders; for instance, if slicing the batch. Otherwise, use
+    `:func:get_document_borders` to get the document borders."""
 
     def get_document_borders(self) -> jax.Array:
         """Get the document borders for the input data.
@@ -54,12 +62,29 @@ class LLMBatch(Batch):
         Returns:
             A boolean array indicating the document borders.
         """
-        return jnp.pad(
-            self.targets_segmentation[:, :-1] != self.targets_segmentation[:, 1:],
-            ((0, 0), (1, 0)),
-            mode="constant",
-            constant_values=True,
-        )
+        if self._document_borders is not None:
+            return self._document_borders
+        else:
+            return jnp.pad(
+                self.targets_segmentation[:, :-1] != self.targets_segmentation[:, 1:],
+                ((0, 0), (1, 0)),
+                mode="constant",
+                constant_values=True,
+            )
+
+    def __getitem__(self, key):
+        """Supports slicing and element access in batch."""
+        vals = {}
+        for k, v in self.__dict__.items():
+            if k == "_document_borders" and v is None:
+                v = self.get_document_borders()
+            if isinstance(v, (np.ndarray, jax.Array)):
+                if isinstance(key, (tuple, list)):
+                    key = key[: v.ndim]
+                vals[k] = v[key]
+            else:
+                vals[k] = v
+        return self.__class__(**vals)
 
     @staticmethod
     def from_inputs(inputs: jax.Array, targets: jax.Array | None = None) -> "LLMBatch":
@@ -124,7 +149,7 @@ class LLMBatch(Batch):
         return jax.tree.map(jnp.zeros_like, cls.get_dtype_struct(batch_size, max_length))
 
 
-@dataclass
+@dataclass_kwonly
 class LLMIndexedBatch(LLMBatch):
     """
     Batch for LLM data with document indices and sequence indices for correct ordering.
