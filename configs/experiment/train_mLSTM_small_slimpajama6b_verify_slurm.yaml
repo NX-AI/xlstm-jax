@@ -22,6 +22,16 @@ logger:
   loggers_to_use:
     - file_logger
 
+checkpointing:
+  monitor: spaj6B_AR_perplexity
+
+data:
+  tokenizer_path: "EleutherAI/gpt-neox-20b"
+
+data_eval:
+  val1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+
 scheduler:
   decay_steps: 0
   warmup_steps: 0

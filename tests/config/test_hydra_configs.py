@@ -23,6 +23,10 @@ def discover_config_files(config_dir: str):
         for file in config_files
         if "experiment" not in os.path.relpath(file, config_dir).split(os.sep)
     ]
+    # We require functionality that is not provided by the current release 1.2.0 of slurm_launcher but is tested here.
+    # Therefore, we remove the slurm_launcher config from the tests.
+    if "hydra/launcher/slurm_launcher" in config_names:
+        config_names.remove("hydra/launcher/slurm_launcher")
     return config_names
 
 

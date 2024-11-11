@@ -23,6 +23,8 @@ hydra:
       "time": "7-00:00:00",
       "exclusive": "",
     }
+    srun_args:
+      - "--kill-on-bad-exit=1"
     setup:
       - export NCCL_CROSS_NIC=0
       - export NCCL_SOCKET_NTHREADS=16
