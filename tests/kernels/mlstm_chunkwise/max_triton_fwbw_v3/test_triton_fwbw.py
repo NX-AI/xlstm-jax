@@ -251,3 +251,16 @@ def test_mlstm_chunkwise_fw_vs_pytorch_kernel(file_path: Path, mlstm_kernel: cal
             atol=1e-1,
             err_msg=f"Mismatch between Triton and PyTorch in the gradient {g_name} for file: {file_path}.",
         )
+
+
+@pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
+@pytest.mark.parametrize("mlstm_kernel", [mlstm_chunkwise_max_triton, mlstm_chunkwise_max_triton_noslice])
+def test_mlstm_chunkwise_state_passing(
+    default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array],
+    mlstm_state_passing_test: callable,
+    mlstm_kernel: callable,
+):
+    """Compare single forward vs chunked one with states passed between steps."""
+    # Repeat the inputs to have longer sequence length.
+    default_qkvif = jax.tree.map(lambda x: jnp.repeat(x, 2, axis=2), default_qkvif)
+    mlstm_state_passing_test(mlstm_kernel, *default_qkvif, num_chunks=4, rtol=1e-5, atol=1e-5)

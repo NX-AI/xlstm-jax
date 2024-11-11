@@ -185,6 +185,17 @@ def _compare_to_pytorch_fn(
         )
 
 
+@pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
+def test_mlstm_chunkwise_stablef_state_passing(
+    default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array],
+    mlstm_state_passing_test: callable,
+):
+    """Compare single forward vs chunked one with states passed between steps."""
+    # Repeat the inputs to have longer sequence length.
+    default_qkvif = jax.tree.map(lambda x: jnp.repeat(x, 2, axis=2), default_qkvif)
+    mlstm_state_passing_test(mlstm_chunkwise_triton_stablef, *default_qkvif, num_chunks=4, rtol=1e-5, atol=1e-5)
+
+
 # currently, these tests fail
 # however, the suspicion is that the numerical errors are actually higher for the
 # pytorch implementation, as for example there are fgate_preact gradients at position
