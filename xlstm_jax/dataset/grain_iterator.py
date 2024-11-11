@@ -19,6 +19,8 @@ LLM Data Iterator with Grain
 
 import logging
 import math
+from collections.abc import Callable
+from functools import partial
 from typing import Any
 
 import grain.python as grain
@@ -28,6 +30,7 @@ from jax.sharding import Mesh
 
 from . import grain_transforms
 from .batch import LLMBatch
+from .grain_batch_rampup import batch_dataset_with_rampup
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
@@ -56,6 +59,7 @@ def make_grain_llm_iterator(
     batch_class: type = LLMBatch,
     reset_after_epoch: bool = False,
     use_thread_prefetch: bool = False,
+    batch_rampup_factors: dict[str, float] | None = None,
 ) -> MultiHostDataLoadIterator:
     """Create a multi-host dataloader for LLM training.
 
@@ -110,10 +114,17 @@ def make_grain_llm_iterator(
             that resetting the iterator can be expensive in a multi-host setup and can fail if
             the multi-processing pool could not be set up.
         use_thread_prefetch: Whether to use thread prefetching instead of multi-processing.
+        batch_rampup_factors: A dictionary of boundaries and scales for the batch
+            rampup schedule. If provided, the batch size will be ramped up according to the
+            schedule. The boundaries are the steps at which the batch size will be increased,
+            and the scales are the factors by which the batch size will be scaled. Note that
+            the factors are not accumulated, but applied to the initial batch size. If not provided,
+            the global batch size will be used as the batch size.
 
     Returns:
         A :class:`MultiHostDataLoadIterator` object that can be used to iterate over the dataset.
     """
+    local_batch_size = global_batch_size // dataloading_host_count
     # Convert dataset to MapDataset.
     grain_dataset = grain.MapDataset.source(dataset)
     # Shard dataset. We do this by slicing the dataset into the correct shard for the host.
@@ -145,11 +156,19 @@ def make_grain_llm_iterator(
     # iter.
     LOGGER.info(f"Host {dataloading_host_index} has dataset length {len(grain_dataset)}.")
     grain_dataset = grain_dataset.to_iter_dataset()
+    # We batch the dataset with rampup. This will ramp up the batch size according to the schedule.
+    # If no schedule is provided, the batch size will be constant.
+    batch_fn: Callable[[grain.IterDataset], grain.IterDataset] = partial(
+        batch_dataset_with_rampup,
+        batch_size=local_batch_size,
+        drop_remainder=drop_remainder,
+        boundaries_and_scales=batch_rampup_factors,
+    )
     # Pack or batch dataset.
     if grain_packing:
         # Number of packing bins is independent of batch size in lazy API.
         if grain_packing_bin_count is None:
-            grain_packing_bin_count = global_batch_size // dataloading_host_count
+            grain_packing_bin_count = local_batch_size
         grain_dataset = FirstFitPackIterDataset(
             grain_dataset,
             length_struct={"inputs": max_target_length, "targets": max_target_length},
@@ -158,14 +177,14 @@ def make_grain_llm_iterator(
         )
         LOGGER.info(f"Packing dataset with {grain_packing_bin_count} bins.")
         # Packing returns each element one by one. We batch them together separately.
-        grain_dataset = grain_dataset.batch(global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
+        grain_dataset = batch_fn(grain_dataset)
         # The output is already in the correct structure, but some keys need renamings to be consistent with the
         # old API.
         grain_dataset = grain_dataset.map(grain_transforms.ReformatLazyPacking())
     else:
         if apply_padding:
             grain_dataset = grain_dataset.map(grain_transforms.PadToMaxLength(max_target_length))
-        grain_dataset = grain_dataset.batch(global_batch_size // dataloading_host_count, drop_remainder=drop_remainder)
+        grain_dataset = batch_fn(grain_dataset)
 
     # Create targets by shifting.
     if shift:

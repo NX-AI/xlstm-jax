@@ -31,6 +31,14 @@ trainer:
   gradient_accumulate_steps: 1
   log_intermediates: true
 
+checkpointing:
+  monitor: null
+
+data:
+  batch_rampup_factors:
+    0: 0.5
+    5: 1.0
+
 model:
   # Negative value means we infer the vocab size from the tokenizer.
   vocab_size: -1

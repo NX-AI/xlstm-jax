@@ -102,13 +102,25 @@ class LLMTrainer(TrainerModule):
             "loss": {"value": loss.sum(), "count": num_targets},
             "accuracy": {"value": correct_pred.sum(), "count": num_targets},
         }
-        # For training, we also log the norm, std, and max of the logits.
+        # For training, we log additional metrics.
         if train:
+            # Token and document statistics.
             step_metrics["token_utilization"] = {
                 "value": num_targets,
                 "count": targets_mask.size,
                 "log_modes": ["mean"],
             }
+            step_metrics["tokens_per_batch"] = {
+                "value": num_targets,
+                "count": 1.0 / self.mesh.size,  # Local has 1 / mesh size of the global batch.
+                "log_modes": ["mean"],
+            }
+            step_metrics["num_docs_per_batch"] = {
+                "value": jnp.max(batch.targets_segmentation, axis=-1).sum(),
+                "count": 1.0 / self.mesh.size,  # Local has 1 / mesh size of the global batch.
+                "log_modes": ["mean"],
+            }
+            # If enabled, log the norm, std, and max of the logits.
             if self.trainer_config.log_logit_stats:
                 logits_norm = jnp.linalg.norm(logits, axis=-1)
                 logits_std = jnp.std(logits, axis=-1)

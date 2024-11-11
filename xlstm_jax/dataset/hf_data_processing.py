@@ -270,6 +270,7 @@ def preprocessing_pipeline(
     tokenizer_cache_dir: str | None = None,
     max_steps_per_epoch: int | None = None,
     eod_token_id: int | None = None,
+    batch_rampup_factors: dict[int, float] | None = None,
 ) -> MultiHostDataLoadIterator:
     """Pipeline for preprocessing HF dataset.
 
@@ -316,6 +317,10 @@ def preprocessing_pipeline(
         eod_token_id: The token ID to use for the end-of-document token. If tokenizer_path is
             provided, the tokenizer's EOD token ID is used. If neither the tokenizer nor the
             EOD token ID is provided, an error is raised.
+        batch_rampup_factors: The batch rampup factors. If provided, the batch size will be
+            ramped up according to the schedule. The dictionary maps the step count to the
+            scaling factor. See the `boundaries_and_scales` doc in
+            :func:`grain_batch_rampup.create_batch_rampup_schedule` for more details.
 
     Returns:
         MultiHostDataLoadIterator: The multi-host data loading iterator.
@@ -433,6 +438,7 @@ def preprocessing_pipeline(
         worker_count=worker_count,
         worker_buffer_size=worker_buffer_size,
         drop_remainder=True,  # remainder is padded up if not dropped
+        batch_rampup_factors=batch_rampup_factors,
     )
 
     # Return multi-host jax.Array prep iterator
@@ -503,6 +509,7 @@ def make_hf_hub_iterator(
         drop_remainder=config.drop_remainder,
         tokenizer_cache_dir=config.hf_cache_dir,
         max_steps_per_epoch=config.max_steps_per_epoch,
+        batch_rampup_factors=config.batch_rampup_factors,
     )
     return iterator
 
@@ -558,5 +565,6 @@ def make_hf_local_iterator(
         drop_remainder=config.drop_remainder,
         max_steps_per_epoch=config.max_steps_per_epoch,
         eod_token_id=config.eod_token_id,
+        batch_rampup_factors=config.batch_rampup_factors,
     )
     return iterator

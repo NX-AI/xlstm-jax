@@ -88,6 +88,9 @@ class HFLocalDataConfig(DataConfig):
     """Buffer size for workers."""
     drop_remainder: bool = False
     """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
+    batch_rampup_factors: dict[int, float] | None = None
+    """Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
+    the `boundaries_and_scales` doc in `:func:grain_batch_rampup.create_batch_rampup_schedule` for more details."""
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -135,6 +138,9 @@ class HFHubDataConfig(DataConfig):
     """Buffer size for workers."""
     drop_remainder: bool = False
     """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
+    batch_rampup_factors: dict[int, float] | None = None
+    """Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
+    the `boundaries_and_scales` doc in `:func:grain_batch_rampup.create_batch_rampup_schedule` for more details."""
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -182,3 +188,6 @@ class GrainArrayRecordsDataConfig(DataConfig):
     """Directory to cache the dataset. Used to get the HF tokenizer."""
     hf_access_token: str | None = None
     """Access token for HuggingFace. Used to get the HF tokenizer."""
+    batch_rampup_factors: dict[int, float] | None = None
+    """Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
+    the `boundaries_and_scales` doc in `:func:grain_batch_rampup.create_batch_rampup_schedule` for more details."""
