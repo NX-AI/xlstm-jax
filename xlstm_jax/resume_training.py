@@ -3,8 +3,10 @@ from typing import Any
 from omegaconf import DictConfig
 
 from xlstm_jax.main_train import main_train
+from xlstm_jax.utils.error_logging_utils import with_error_handling
 
 
+@with_error_handling(flush_output=True)
 def resume_training(cfg: DictConfig) -> dict[str, Any]:
     """Resumes training from a checkpoint.
 

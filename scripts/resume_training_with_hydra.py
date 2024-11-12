@@ -24,8 +24,8 @@ def init_hydra_for_resume(cfg: DictConfig):
     Returns:
         The final metrics of the resumed training.
     """
-    final_metrics = resume_training(cfg)
 
+    final_metrics = resume_training(cfg)
     return final_metrics
 
 

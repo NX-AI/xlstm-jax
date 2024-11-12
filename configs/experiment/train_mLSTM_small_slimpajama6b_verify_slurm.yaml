@@ -27,6 +27,9 @@ checkpointing:
 
 data:
   tokenizer_path: "EleutherAI/gpt-neox-20b"
+  batch_rampup_factors:
+    0: 0.5
+    5: 1.0
 
 data_eval:
   val1:
@@ -40,14 +43,6 @@ scheduler:
 trainer:
   gradient_accumulate_steps: 1
   log_intermediates: true
-
-checkpointing:
-  monitor: null
-
-data:
-  batch_rampup_factors:
-    0: 0.5
-    5: 1.0
 
 model:
   # Negative value means we infer the vocab size from the tokenizer.

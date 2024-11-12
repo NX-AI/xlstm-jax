@@ -6,15 +6,27 @@ import jax
 from omegaconf import DictConfig, OmegaConf
 
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
-from xlstm_jax.train_init_fns import init_data_iterator, init_model_config, init_parallel, init_trainer, log_info
+from xlstm_jax.train_init_fns import (
+    LOGGER,
+    init_data_iterator,
+    init_model_config,
+    init_parallel,
+    init_trainer,
+    log_info,
+)
+from xlstm_jax.utils.error_logging_utils import with_error_handling
 
 
+@with_error_handling(flush_output=False, logger=LOGGER)
 def main_train(cfg: DictConfig, checkpoint_step: int | None = None) -> dict[str, Any]:
     """
     The main training function. This function initializes the mesh, data iterators,
       model config, and trainer and then starts training. Can be optionally started
       from a checkpoint, in which case the training state is loaded from the checkpoint
       with the supplied step index.
+
+    In order to see error logs in our custom logger, we use the with_error_handling
+      decorator.
 
     Args:
         cfg: The full configuration.
