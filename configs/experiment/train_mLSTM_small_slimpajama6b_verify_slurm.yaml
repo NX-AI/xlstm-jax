@@ -23,7 +23,7 @@ logger:
     - file_logger
 
 checkpointing:
-  monitor: spaj6B_AR_perplexity
+  monitor: null #spaj6B_AR_perplexity
 
 data:
   tokenizer_path: "EleutherAI/gpt-neox-20b"

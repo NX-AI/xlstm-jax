@@ -4,20 +4,13 @@ import numpy as np
 import pytest
 
 try:
-    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3._triton_fw import (
-        _mlstm_chunkwise__recurrent_fw_C,
-        _mlstm_chunkwise_fw,
+    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v5xlchunksize._combined_fw import mlstm_chunkwise_fw
+    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v5xlchunksize._recurrent_fw import (
+        mlstm_chunkwise__recurrent_fw_C,
     )
-    from xlstm_jax.kernels.mlstm_chunkwise.max_triton_fwbw_v3noslice._triton_fw import (
-        _mlstm_chunkwise__recurrent_fw_C as _mlstm_chunkwise__recurrent_fw_C_noslice,
-        _mlstm_chunkwise_fw as _mlstm_chunkwise_fw_noslice,
-    )
-
 except ImportError:
-    _mlstm_chunkwise_fw = None
-    _mlstm_chunkwise_fw_noslice = None
-    _mlstm_chunkwise__recurrent_fw_C = None
-    _mlstm_chunkwise__recurrent_fw_C_noslice = None
+    mlstm_chunkwise_fw = None
+    mlstm_chunkwise__recurrent_fw_C = None
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.fwbw import (
     mlstm_fwbw_custom_grad as mlstm_fwbw_custom_grad_jax,
     mLSTMBackendFwbwConfig as mLSTMfwbwConfig_jax,
@@ -28,7 +21,7 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.simple import (
 
 
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
-@pytest.mark.parametrize("kernel", [_mlstm_chunkwise_fw, _mlstm_chunkwise_fw_noslice])
+@pytest.mark.parametrize("kernel", [mlstm_chunkwise_fw])
 def test_mlstm_chunkwise_fw_vs_jax_backends(
     default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array], kernel: callable
 ):
@@ -38,7 +31,14 @@ def test_mlstm_chunkwise_fw_vs_jax_backends(
     CHUNK_SIZE = 64
 
     h_out_triton, n_out, m_out, _, _ = kernel(
-        matQ=q, matK=k, matV=v, vecI=igate_preact, vecF=fgate_preact, CHUNK_SIZE=CHUNK_SIZE
+        matQ=q,
+        matK=k,
+        matV=v,
+        vecI=igate_preact,
+        vecF=fgate_preact,
+        chunk_size_inter=64,
+        chunk_size_intra=64,
+        eps=1e-6,
     )
     assert h_out_triton.shape == (B, NH, S, DH)
     assert n_out.shape == (B, NH, S)
@@ -84,7 +84,7 @@ def test_mlstm_chunkwise_fw_vs_jax_backends(
 
 
 @pytest.mark.skipif(not pytest.triton_available, reason="Triton is not available.")
-@pytest.mark.parametrize("kernel", [_mlstm_chunkwise__recurrent_fw_C, _mlstm_chunkwise__recurrent_fw_C_noslice])
+@pytest.mark.parametrize("kernel", [mlstm_chunkwise__recurrent_fw_C])
 def test_mlstm_chunkwise_fw_C_w_init_state_vs_without_init_state(
     default_qkvif: tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array], kernel: callable
 ):
@@ -94,16 +94,12 @@ def test_mlstm_chunkwise_fw_C_w_init_state_vs_without_init_state(
     L = 64
     NC = S // L
 
-    igate_preact = igate_preact.reshape(B, NH, NC, L)
-    fgate_preact = fgate_preact.reshape(B, NH, NC, L)
-
     h_out_triton, n_out, m_out = kernel(
         matK=k,
         matV=v,
         vecI=igate_preact,
-        vecB=fgate_preact,
-        CHUNK_SIZE=L,
-        NUM_CHUNKS=NC,
+        vecF=fgate_preact,
+        chunk_size=L,
     )
     assert h_out_triton.shape == (B, NH, (NC + 1) * DH, DH)
     assert n_out.shape == (B, NH, (NC + 1) * DH)
@@ -121,12 +117,11 @@ def test_mlstm_chunkwise_fw_C_w_init_state_vs_without_init_state(
         matK=k,
         matV=v,
         vecI=igate_preact,
-        vecB=fgate_preact,
+        vecF=fgate_preact,
         matC_initial=c_initial,
         vecN_initial=n_initial,
         scaMinter_initial=m_initial,
-        CHUNK_SIZE=L,
-        NUM_CHUNKS=NC,
+        chunk_size=L,
     )
     assert h_out_triton2.shape == (B, NH, (NC + 1) * DH, DH)
     assert n_out2.shape == (B, NH, (NC + 1) * DH)

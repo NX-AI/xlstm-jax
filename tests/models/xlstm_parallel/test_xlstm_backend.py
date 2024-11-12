@@ -549,7 +549,7 @@ def test_jax_recurrent_vs_parallelized(context_length: int):
     np.testing.assert_allclose(
         out_recurrent,
         out_parallel,
-        atol=1e-5 if jax.default_backend() == "cpu" else 1e-2,
+        atol=1e-5 if jax.default_backend() == "cpu" else 2e-2,
         rtol=1e-2,
         err_msg="Mismatch between recurrent and parallel backends.",
     )

@@ -114,6 +114,18 @@ def _mlstm_chunkwise__recurrent_fw_C(
         str_vecNinitial_DHQK = get_stride(vecN_initial, axis=2)
         str_scaMinterinitial_B_NH = get_stride(scaMinter_initial, axis=1)
     else:
+        assert matC_initial is None and vecN_initial is None and scaMinter_initial is None
+        # Note: We need to pass empty arrays for the jax_triton.triton_call() to work.
+        # triton_call() expects the first arguments to be the input arrays, and the last arguments
+        # to be the output arrays.
+        # The output arrays (whose shape is passed into out_shape argument) are allocated by the triton kernel.
+        # Since the matC_initial, vecN_initial, and scaMinter_initial are optional INPUT arguments to the kernel,
+        # we always need to pass them in in order for the output arrays to be always at the correct position
+        # in the argument list. So these empty arrays serve as placeholders in the argument list
+        # and are not used within the kernel as USE_INITIAL_STATE is False.
+        matC_initial = jnp.empty((1,), dtype=jnp.float32)
+        vecN_initial = jnp.empty((1,), dtype=jnp.float32)
+        scaMinter_initial = jnp.empty((1,), dtype=jnp.float32)
         str_matCinitial_B_NH = 0
         str_matCinitial_DHQK = 0
         str_matCinitial_DHHV = 0
@@ -174,44 +186,17 @@ def _mlstm_chunkwise__recurrent_fw_C(
         kernel=_mlstm_chunkwise__recurrent_fw_C_kernel,
     )
 
-    if not USE_INITIAL_STATE:
-        # If not using an initial state, the initial states are set to None
-        # and are part of the metaparams instead of the actual args. Otherwise,
-        # this can lead to an error in the triton compilation (although not 100%
-        # sure why).
-        matC_states, vecN_states, scaMinter_states = jt.triton_call(
-            matK,  # (B, NH, S, DHQK)
-            matV,  # (B, NH, S, DHHV)
-            vecB,  # (B, NH, NC, L)
-            vecI,  # (B, NH, NC, L)
-            out_shape=(matC_states, vecN_states, scaMinter_states),
-            matC_initial=matC_initial,  # (B, NH, DHQK, DHHV)
-            vecN_initial=vecN_initial,  # (B, NH, DHQK)
-            scaMinter_initial=scaMinter_initial,  # (B, NH)
-            **triton_kwargs,
-        )
-    else:
-        # General function signature with initial states. For those, we need to give explicit arrays.
-        if isinstance(matC_states, jax.ShapeDtypeStruct):
-            matC_states = jnp.empty_like(matC_states)
-        if isinstance(vecN_states, jax.ShapeDtypeStruct):
-            vecN_states = jnp.empty_like(vecN_states)
-        if isinstance(scaMinter_states, jax.ShapeDtypeStruct):
-            scaMinter_states = jnp.empty_like(scaMinter_states)
-        jt.triton_call(
-            matK,  # (B, NH, S, DHQK)
-            matV,  # (B, NH, S, DHHV)
-            vecB,  # (B, NH, NC, L)
-            vecI,  # (B, NH, NC, L)
-            matC_states,  # (B, NH, (NC + 1) * DHQK, DHHV)
-            vecN_states,  # (B, NH, (NC + 1) * DHQK)
-            scaMinter_states,  # (B, NH, (NC + 1))
-            matC_initial,  # (B, NH, DHQK, DHHV)
-            vecN_initial,  # (B, NH, DHQK)
-            scaMinter_initial,  # (B, NH)
-            out_shape=(),
-            **triton_kwargs,
-        )
+    matC_states, vecN_states, scaMinter_states = jt.triton_call(
+        matK,  # (B, NH, S, DHQK)
+        matV,  # (B, NH, S, DHHV)
+        vecB,  # (B, NH, NC, L)
+        vecI,  # (B, NH, NC, L)
+        matC_initial,  # (B, NH, DHQK, DHHV)
+        vecN_initial,  # (B, NH, DHQK)
+        scaMinter_initial,  # (B, NH)
+        out_shape=(matC_states, vecN_states, scaMinter_states),
+        **triton_kwargs,
+    )
 
     return matC_states, vecN_states, scaMinter_states
 

@@ -26,8 +26,11 @@ from collections.abc import Callable
 import jax
 import jax.numpy as jnp
 
-from ._triton_bw import _mlstm_chunkwise_bw
-from ._triton_fw import _mlstm_chunkwise_fw
+from ._combined_bw import mlstm_chunkwise_bw
+from ._combined_fw import mlstm_chunkwise_fw
+
+# TODO if we want to tune the kernel parameters we need to pass it through the forward and backward functions
+# See the pytorch wrapper for an example of how to do this.
 
 
 def _mlstm_chunkwise_fwbw_generator(
@@ -121,7 +124,7 @@ def _mlstm_chunkwise_fwbw_generator(
             orig_dtypes["m"] = scaM_initial.dtype
             scaM_initial = scaM_initial.astype(autocast_kernel_dtype)
         # Call the forward triton kernels for the mLSTM.
-        matH_out, vecN_out, vecM_out, last_states, all_states = _mlstm_chunkwise_fw(
+        matH_out, vecN_out, vecM_out, last_states, all_states = mlstm_chunkwise_fw(
             matQ=matQ,
             matK=matK,
             matV=matV,
@@ -133,8 +136,7 @@ def _mlstm_chunkwise_fwbw_generator(
             qk_scale=qk_scale,
             return_last_states=return_last_states,
             return_all_states=(not recompute_states_in_bw),
-            EPS=eps,
-            CHUNK_SIZE=chunk_size,
+            eps=eps,
         )
         # Select what to return.
         if return_last_states:
@@ -165,7 +167,7 @@ def _mlstm_chunkwise_fwbw_generator(
                 matDeltaC_initial,
                 vecDeltaN_initial,
                 scaDeltaM_initial,
-            ) = _mlstm_chunkwise_bw(
+            ) = mlstm_chunkwise_bw(
                 matQ=matQ,
                 matK=matK,
                 matV=matV,
@@ -174,7 +176,6 @@ def _mlstm_chunkwise_fwbw_generator(
                 matC_initial=matC_initial,
                 vecN_initial=vecN_initial,
                 scaM_initial=scaM_initial,
-                qk_scale=qk_scale,
                 matC_all=matC_all,
                 vecN_all=vecN_all,
                 scaM_all=scaM_all,
@@ -182,8 +183,8 @@ def _mlstm_chunkwise_fwbw_generator(
                 vecM_out=vecM_out,
                 matDeltaH=matDeltaH,
                 matDeltaC_last=matDeltaC_last,
-                CHUNK_SIZE=chunk_size,
-                EPS=eps,
+                qk_scale=qk_scale,
+                eps=eps,
             )
             # Cast back to original dtypes.
             matDeltaQ = matDeltaQ.astype(orig_dtypes["q"])
@@ -244,7 +245,7 @@ def mlstm_chunkwise_max_triton(
     m_initial: jax.Array | None = None,
     return_last_states: bool = False,
     eps: float = 1e-6,
-    chunk_size: int = 64,
+    chunk_size: int = 64,  # TODO this is unused for now
     autocast_kernel_dtype: jnp.dtype = jnp.float32,
 ) -> jax.Array | tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
     """

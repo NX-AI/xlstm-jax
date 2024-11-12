@@ -179,6 +179,7 @@ def _mlstm_chunkwise_fwbw_generator(
                 matC_initial=matC_initial,
                 vecN_initial=vecN_initial,
                 scaM_initial=scaM_initial,
+                qk_scale=qk_scale,
                 matC_all=matC_all,
                 vecN_all=vecN_all,
                 scaM_all=scaM_all,

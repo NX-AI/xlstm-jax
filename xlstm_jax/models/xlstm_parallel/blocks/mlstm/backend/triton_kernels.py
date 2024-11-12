@@ -7,12 +7,13 @@ from flax import linen as nn
 from xlstm_jax.kernels import (
     mlstm_chunkwise_max_triton,
     mlstm_chunkwise_max_triton_noslice,
+    mlstm_chunkwise_max_triton_xlchunksize,
     mlstm_chunkwise_triton_stablef,
 )
 
 from .config import mLSTMBackend
 
-BackendNameType = Literal["max_triton_noslice", "max_triton", "triton_stablef"]
+BackendNameType = Literal["max_triton_xlchunksize", "max_triton_noslice", "max_triton", "triton_stablef"]
 
 
 @dataclass
@@ -114,6 +115,20 @@ class mLSTMBackendTriton(mLSTMBackend):
             )
         elif self.config.backend_name == "max_triton_noslice":
             return mlstm_chunkwise_max_triton_noslice(
+                q,
+                k,
+                v,
+                i,
+                f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                m_initial=m_initial,
+                return_last_states=return_last_states,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
+            )
+        elif self.config.backend_name == "max_triton_xlchunksize":
+            return mlstm_chunkwise_max_triton_xlchunksize(
                 q,
                 k,
                 v,
