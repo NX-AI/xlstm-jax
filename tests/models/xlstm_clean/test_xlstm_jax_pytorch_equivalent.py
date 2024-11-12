@@ -22,7 +22,7 @@ from xlstm_jax.models.xlstm_pytorch.xlstm_lm_model import (
     xLSTMLMModel as xLSTMLMModel_torch,
     xLSTMLMModelConfig as xLSTMLMModelConfig_torch,
 )
-from xlstm_jax.trainer.base.param_utils import flatten_dict
+from xlstm_jax.utils import flatten_dict
 
 PyTree = Any
 

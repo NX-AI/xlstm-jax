@@ -9,10 +9,10 @@ import jax
 import orbax.checkpoint as ocp
 
 from xlstm_jax.import_utils import class_to_name
-from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import Metrics
+from xlstm_jax.utils import flatten_dict
 
 LOGGER = logging.getLogger(__name__)
 

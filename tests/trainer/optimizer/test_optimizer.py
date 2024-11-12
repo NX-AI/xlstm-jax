@@ -14,8 +14,8 @@ from flax.training.train_state import TrainState
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ModelConfig, ParallelConfig
 from xlstm_jax.trainer import TrainerConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig, build_optimizer
+from xlstm_jax.utils import flatten_dict
 
 SCHEDULERS = [
     SchedulerConfig(name="constant", lr=0.1),
@@ -280,6 +280,7 @@ def test_grad_clip_value(grad_clip_value: float):
         return loss_factor * jnp.mean((state.apply_fn(params, inp) - 1.0) ** 2)
 
     # Make sure that the gradient norm is clipped and stays below the threshold.
+    grad_clip_value = jnp.array(grad_clip_value, dtype=jnp.float32)
     for loss_log_factor in np.linspace(-2.0, 2.0, 5):
         loss_factor = np.exp(loss_log_factor)
         grad = jax.grad(partial(loss_fn, loss_factor=loss_factor))(state.params)

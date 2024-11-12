@@ -7,42 +7,38 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from flax import linen as nn
-from flax.core import FrozenDict
 from tabulate import tabulate as python_tabulate
+
+from xlstm_jax.utils import flatten_pytree, pytree_key_path_to_str
 
 from .train_state import TrainState
 
 PyTree = Any
 
 
-def flatten_dict(d: dict | FrozenDict | list | tuple, flatten_sequences: bool = False, separator: str = ".") -> dict:
-    """Flattens a nested dictionary."""
-    if not isinstance(d, (dict, FrozenDict)):
-        assert flatten_sequences, "If flatten_sequences is False, only dicts and FrozenDicts are supported."
-        return {f"{i}": v for i, v in enumerate(d)}
-    flat_dict = {}
-    for k, v in d.items():
-        if isinstance(v, (dict, FrozenDict)) or (isinstance(v, (list, tuple)) and flatten_sequences):
-            sub_dict = {
-                f"{k}{separator}{k2}": v2
-                for k2, v2 in flatten_dict(v, flatten_sequences=flatten_sequences, separator=separator).items()
-            }
-            # Verify that there are no overlapping keys.
-            assert (
-                len(set(sub_dict.keys()).intersection(set(flat_dict.keys()))) == 0
-            ), f"Overlapping keys found in the nested dict: {set(sub_dict.keys()).intersection(set(flat_dict.keys()))}"
-            flat_dict.update(sub_dict)
-        else:
-            flat_dict[k] = v
-    return flat_dict
+def is_partitioned(x: Any) -> bool:
+    """Check if an object is a Partitioned.
+
+    Parameters that are sharded via FSDP, PP, or TP, are represented as Partitioned objects. Parameters that are
+    replicated are represented as regular jax.Array objects. This function can be used in the context of PyTrees as
+    is_leaf argument in a tree map to consider Partitioned objects as leaves instead of traversing them. Note that
+    in that case, JAX Arrays of standard replicated parameters and all other normal leaves are still considered leaves.
+
+    Args:
+        x: The object to check.
+
+    Returns:
+        Whether the object is a Partitioned.
+    """
+    return isinstance(x, nn.Partitioned)
 
 
 def get_num_params(params: PyTree) -> int:
     """Calculates the number of parameters in a PyTree."""
     param_shape = jax.tree.map(
-        lambda x: x.value.size if isinstance(x, nn.Partitioned) else (x.size if hasattr(x, "size") else 0),
+        lambda x: x.value.size if is_partitioned(x) else (x.size if hasattr(x, "size") else 0),
         params,
-        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+        is_leaf=is_partitioned,
     )
     return sum(jax.tree.leaves(param_shape))
 
@@ -70,11 +66,11 @@ def tabulate_params(
         params = state.params
     else:
         params = state
-    flat_params = flatten_dict(params)
+    flat_params = flatten_pytree(params, is_leaf=is_partitioned)
     param_shape = jax.tree.map(
-        lambda x: x.value.shape if isinstance(x, nn.Partitioned) else x.shape,
+        lambda x: x.value.shape if is_partitioned(x) else x.shape,
         flat_params,
-        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+        is_leaf=is_partitioned,
     )
     param_count = jax.tree.map(
         lambda x: int(np.prod(x)),
@@ -82,14 +78,14 @@ def tabulate_params(
         is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]),
     )
     param_dtype = jax.tree.map(
-        lambda x: str(x.value.dtype if isinstance(x, nn.Partitioned) else x.dtype),
+        lambda x: str(x.value.dtype if is_partitioned(x) else x.dtype),
         flat_params,
-        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+        is_leaf=is_partitioned,
     )
     param_sharding = jax.tree.map(
-        lambda x: str(x.names if isinstance(x, nn.Partitioned) else "Replicated"),
+        lambda x: str(x.names if is_partitioned(x) else "Replicated"),
         flat_params,
-        is_leaf=lambda x: isinstance(x, nn.Partitioned),
+        is_leaf=is_partitioned,
     )
     summary = defaultdict(list)
     for key in sorted(list(flat_params.keys())):
@@ -102,11 +98,11 @@ def tabulate_params(
         mask_fn = get_param_mask_fn(exclude=weight_decay_exclude, include=weight_decay_include)
         weight_decay_mask = mask_fn(params)
         weight_decay_mask = jax.tree.map(
-            lambda x: x.value if isinstance(x, nn.Partitioned) else x,
+            lambda x: x.value if is_partitioned(x) else x,
             weight_decay_mask,
-            is_leaf=lambda x: isinstance(x, nn.Partitioned),
+            is_leaf=is_partitioned,
         )
-        weight_decay_mask = flatten_dict(weight_decay_mask)
+        weight_decay_mask = flatten_pytree(weight_decay_mask)
         for key, mask in weight_decay_mask.items():
             summary["Weight Decay"].append(mask)
     table_str = python_tabulate(summary, headers="keys", intfmt="_", floatfmt=".3f")
@@ -129,7 +125,7 @@ def get_grad_norms(grads: Any, return_per_param: bool = False) -> dict[str, Any]
     global_norm, param_norm = get_sharded_global_norm(grads)
     metrics["grad_norm"] = global_norm
     if return_per_param:
-        param_norms = flatten_dict(param_norm)
+        param_norms = flatten_pytree(param_norm)
         for key, norm in param_norms.items():
             metrics[f"grad_norm_{key}"] = norm
     return metrics
@@ -150,7 +146,7 @@ def get_param_norms(params: Any, return_per_param: bool = False) -> dict[str, An
     global_norm, param_norm = get_sharded_global_norm(params)
     metrics["param_norm"] = global_norm
     if return_per_param:
-        param_norms = flatten_dict(param_norm)
+        param_norms = flatten_pytree(param_norm)
         for key, norm in param_norms.items():
             metrics[f"param_norm_{key}"] = norm
     return metrics
@@ -190,36 +186,9 @@ def get_sharded_global_norm(x: PyTree) -> tuple[jax.Array, PyTree]:
     """
     # Calculate the global norm over sharded parameters.
     # General norm: sqrt(sum(x**2))
-    norm_logits_per_param = jax.tree.map(
-        lambda x: get_sharded_norm_logits(x), x, is_leaf=lambda x: isinstance(x, nn.Partitioned)
-    )
+    norm_logits_per_param = jax.tree.map(lambda x: get_sharded_norm_logits(x), x, is_leaf=is_partitioned)
     norm_sq = jax.tree_util.tree_reduce(jnp.add, norm_logits_per_param)
     return jnp.sqrt(norm_sq), jax.tree.map(jnp.sqrt, norm_logits_per_param)
-
-
-def _key_path_to_str(path: jax.tree_util.KeyPath) -> str:
-    """Converts a path to a string.
-
-    An adjusted version of jax.tree_util.keystr to be more intuitive
-    and fitting to our flatten_dict method.
-
-    Args:
-        path (jax.tree_util.KeyPath): Path.
-
-    Returns:
-        str: Path as string.
-    """
-    cleaned_keys = []
-    for key in path:
-        if isinstance(key, jax.tree_util.DictKey):
-            cleaned_keys.append(f"{key.key}")
-        elif isinstance(key, jax.tree_util.SequenceKey):
-            cleaned_keys.append(f"{key.idx}")
-        elif isinstance(key, jax.tree_util.GetAttrKey):
-            cleaned_keys.append(key.name)
-        else:
-            cleaned_keys.append(str(key))
-    return ".".join(cleaned_keys)
 
 
 def get_param_mask_fn(
@@ -239,7 +208,7 @@ def get_param_mask_fn(
     assert exclude is None or include is None, "Only one of exclude or include can be set."
 
     def is_param_included(path, _):
-        param_name = _key_path_to_str(path)
+        param_name = pytree_key_path_to_str(path)
         if exclude is not None:
             return not any(re.search(excl, param_name) for excl in exclude)
         elif include is not None:

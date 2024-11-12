@@ -28,8 +28,9 @@ from xlstm_jax.trainer.data_module import DataIterator, DataloaderModule
 from xlstm_jax.trainer.logger import Logger, LoggerConfig
 from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
+from xlstm_jax.utils import flatten_dict, flatten_pytree
 
-from .param_utils import flatten_dict, get_grad_norms, get_num_params, get_param_norms, tabulate_params
+from .param_utils import get_grad_norms, get_num_params, get_param_norms, tabulate_params
 from .train_state import TrainState
 
 LOGGER = logging.getLogger(__name__)
@@ -487,7 +488,7 @@ class TrainerModule:
                 if not isinstance(mutable_variables, FrozenDict):
                     mutable_variables = freeze(mutable_variables)
                 mutable_variables, intermediates = mutable_variables.pop("intermediates")
-                intermediates = flatten_dict(intermediates, flatten_sequences=True)
+                intermediates = flatten_pytree(intermediates)
                 inter_keys = list(intermediates.keys())
                 for key in inter_keys:
                     if intermediates[key].ndim == 1 or (intermediates[key].ndim == 2 and 1 in intermediates[key].shape):

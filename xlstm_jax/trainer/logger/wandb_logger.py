@@ -5,8 +5,8 @@ from typing import Any
 import wandb
 
 from xlstm_jax.configs import ConfigDict
-from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.metrics import HostMetrics
+from xlstm_jax.utils import flatten_dict
 
 from .base_logger import Logger, LoggerTool, LoggerToolsConfig
 

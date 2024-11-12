@@ -11,10 +11,10 @@ from xlstm_jax.dataset import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.trainer import TrainerConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
 from xlstm_jax.trainer.logger import LoggerConfig
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
+from xlstm_jax.utils import flatten_dict
 
 
 class DataLoader:

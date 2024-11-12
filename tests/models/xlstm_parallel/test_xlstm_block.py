@@ -12,7 +12,7 @@ from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict
+from xlstm_jax.utils import flatten_dict
 
 PyTree = Any
 

@@ -16,7 +16,7 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
 from xlstm_jax.models.xlstm_parallel.training import init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
-from xlstm_jax.trainer.base.param_utils import flatten_dict
+from xlstm_jax.utils import flatten_dict
 
 PyTree = Any
 
