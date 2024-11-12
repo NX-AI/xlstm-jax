@@ -17,8 +17,11 @@ _mlstm_backend_registry = {
     "triton_kernels": mLSTMBackendTriton,
     "attention": mLSTMBackendAttention,
     "recurrent": mLSTMBackendRecurrent,
+    "recurrent_triton": mLSTMBackendRecurrent,
 }
-BackendType = Literal["parallel_stabilized", "fwbw_stabilized", "triton_kernels", "attention", "recurrent"]
+BackendType = Literal[
+    "parallel_stabilized", "fwbw_stabilized", "triton_kernels", "attention", "recurrent", "recurrent_triton"
+]
 
 
 @dataclass

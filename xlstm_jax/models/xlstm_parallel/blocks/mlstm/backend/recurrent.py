@@ -92,8 +92,8 @@ def recurrent_sequence_fw(
         queries: Queries tensor of shape (B, NH, S, DHQK).
         keys: Keys tensor of shape (B, NH, S, DHQK).
         values: Values tensor of shape (B, NH, S, DHV).
-        igate_preact: Input gate pre-activation tensor of shape (B, NH, S).
-        fgate_preact: Forget gate pre-activation tensor of shape (B, NH, S).
+        igate_preact: Input gate pre-activation tensor of shape (B, NH, S, 1).
+        fgate_preact: Forget gate pre-activation tensor of shape (B, NH, S, 1).
         c_initial: Initial memory state tensor of shape (B, NH, DHQK, DHV). If None, initialized to zeros.
         n_initial: Initial normalizer state tensor of shape (B, NH, DHQK). If None, initialized to zeros.
         m_initial: Initial max state tensor of shape (B, NH). If None, initialized to zeros.
@@ -110,6 +110,10 @@ def recurrent_sequence_fw(
     """
     B, NH, _, DHQK = queries.shape
     DHV = values.shape[-1]
+    if igate_preact.ndim == 3:
+        igate_preact = igate_preact[:, :, :, None]
+    if fgate_preact.ndim == 3:
+        fgate_preact = fgate_preact[:, :, :, None]
 
     # Set up initial states.
     if c_initial is not None:
