@@ -8,6 +8,7 @@ from .config_utils import NameAndKwargs
 from .fwbw import mLSTMBackendFwbw
 from .layer_factory import create_layer
 from .recurrent import mLSTMBackendRecurrent
+from .recurrent_triton import mLSTMBackendRecurrentTriton
 from .simple import mLSTMBackendParallel
 from .triton_kernels import mLSTMBackendTriton
 
@@ -17,7 +18,7 @@ _mlstm_backend_registry = {
     "triton_kernels": mLSTMBackendTriton,
     "attention": mLSTMBackendAttention,
     "recurrent": mLSTMBackendRecurrent,
-    "recurrent_triton": mLSTMBackendRecurrent,
+    "recurrent_triton": mLSTMBackendRecurrentTriton,
 }
 BackendType = Literal[
     "parallel_stabilized", "fwbw_stabilized", "triton_kernels", "attention", "recurrent", "recurrent_triton"
