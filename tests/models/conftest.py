@@ -30,6 +30,7 @@ class LLMTrainerHelper:
         batch_size: int = 8,
         context_length: int = 12,
         vocab_size: int = 50,
+        check_saved_model: bool = True,
     ):
         """
         Tests training a model.
@@ -97,25 +98,26 @@ class LLMTrainerHelper:
             f"Checkpoint 100 should exist, but found {os.listdir(tmp_path / 'checkpoints/')} with "
             f"final metrics {final_metrics}."
         )
-        # Check that validation performance can be reproduced with checkpoint.
-        trainer.load_model(step_idx=100)
-        new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=2)
-        assert "perplexity" in new_metrics
-        assert "loss" in new_metrics
-        assert (
-            new_metrics["perplexity"] == final_metrics["val_epoch_2"]["perplexity"]
-        ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_epoch_2']}"
-        assert new_metrics["loss"] == final_metrics["val_epoch_2"]["loss"], "Loss should match the loaded model."
-        # Check that we can continue training from this checkpoint as before.
-        new_final_metrics = trainer.train_model(
-            train_loader,
-            val_loader,
-            num_epochs=3,
-        )
-        assert new_final_metrics is not None
-        assert (
-            new_final_metrics["val_epoch_3"]["perplexity"] == final_metrics["val_epoch_3"]["perplexity"]
-        ), "Perplexity should match the loaded model."
+        if check_saved_model:
+            # Check that validation performance can be reproduced with checkpoint.
+            trainer.load_model(step_idx=100)
+            new_metrics = trainer.eval_model(val_loader, "val", epoch_idx=2)
+            assert "perplexity" in new_metrics
+            assert "loss" in new_metrics
+            assert (
+                new_metrics["perplexity"] == final_metrics["val_epoch_2"]["perplexity"]
+            ), f"Perplexity should match the loaded model: {new_metrics} versus {final_metrics['val_epoch_2']}"
+            assert new_metrics["loss"] == final_metrics["val_epoch_2"]["loss"], "Loss should match the loaded model."
+            # Check that we can continue training from this checkpoint as before.
+            new_final_metrics = trainer.train_model(
+                train_loader,
+                val_loader,
+                num_epochs=3,
+            )
+            assert new_final_metrics is not None
+            assert (
+                new_final_metrics["val_epoch_3"]["perplexity"] == final_metrics["val_epoch_3"]["perplexity"]
+            ), "Perplexity should match the loaded model."
 
     @staticmethod
     def causal_masking_test(

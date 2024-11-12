@@ -9,7 +9,7 @@ from xlstm_jax.distributed import ModelParallelismWrapper
 from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 from xlstm_jax.models.shared import TPLMHead, prepare_module, small_init
 
-from .attention import SelfAttention, SelfAttentionConfig, create_causal_mask, precompute_freqs
+from .attention import SelfAttention, SelfAttentionConfig, precompute_freqs
 from .feedforward import FeedForward, FeedForwardConfig
 
 
@@ -32,6 +32,8 @@ class LlamaConfig(SubModelConfig):
     """Dimension of the attention heads. The number of heads is inferred by `embed_dim // head_dim`."""
     qk_norm: bool = False
     """Whether to apply RMSNorm to Q and K."""
+    causal: bool = True
+    """Whether to use causal attention masking."""
     theta: float = 1e4
     """Rotary position encoding frequency."""
     ffn_multiple_of: int = 64
@@ -43,6 +45,8 @@ class LlamaConfig(SubModelConfig):
     """Whether to use bias in the linear layers."""
     scan_blocks: bool = True
     """Whether to scan the transformer blocks. Recommended for larger models to reduce compilation time."""
+    use_flash_attention: bool = False
+    """Whether to use the Flash Attention kernel for the self attention module."""
     dtype: str = "float32"
     """Data type to use for the activations."""
     dropout_rate: float = 0.0
@@ -79,7 +83,6 @@ class SelfAttentionBlock(nn.Module):
     def __call__(
         self,
         x: jax.Array,
-        mask: jax.Array | None = None,
         freqs: tuple[jax.Array, jax.Array] | None = None,
     ) -> jax.Array:
         """
@@ -89,7 +92,6 @@ class SelfAttentionBlock(nn.Module):
 
         Args:
             x: Input tensor.
-            mask: Attention mask tensor. See `SelfAttention` for details.
             freqs: Precomputed frequency tensors.
 
         Returns:
@@ -104,8 +106,11 @@ class SelfAttentionBlock(nn.Module):
             dtype=self.config.dtype,
             num_layers=self.config.num_blocks,
             dropout_rate=self.config.dropout_rate,
+            use_flash_attention=self.config.use_flash_attention,
+            causal=self.config.causal,
+            parallel=self.config.parallel,
         )
-        x = SelfAttention(config=attn_config, name="attn")(x, mask, freqs, train=self.train)
+        x = SelfAttention(config=attn_config, name="attn")(x, freqs, train=self.train)
         self.sow("intermediates", "attn_out_std", x.std(axis=-1).mean())
         self.sow("intermediates", "attn_out_abs_max", jnp.abs(x).max())
         x = x + res
@@ -146,6 +151,7 @@ class FFNBlock(nn.Module):
             dtype=self.config.dtype,
             num_layers=self.config.num_blocks,
             dropout_rate=self.config.dropout_rate,
+            parallel=self.config.parallel,
         )
         x = FeedForward(config=ffn_config, name="ffn")(x, train=self.train)
         self.sow("intermediates", "ffn_out_std", x.std(axis=-1).mean())
@@ -170,7 +176,6 @@ class TransformerBlock(nn.Module):
     def __call__(
         self,
         x: jax.Array,
-        mask: jax.Array | None = None,
         freqs: tuple[jax.Array, jax.Array] | None = None,
     ) -> jax.Array:
         """
@@ -178,7 +183,6 @@ class TransformerBlock(nn.Module):
 
         Args:
             x: Input tensor.
-            mask: Attention mask tensor. See `SelfAttention` for details.
             freqs: Precomputed frequency tensors.
 
         Returns:
@@ -191,7 +195,7 @@ class TransformerBlock(nn.Module):
             "AttnBlock",
             self.config.parallel,
         )
-        x = attn_block(name="attn")(x, mask, freqs)
+        x = attn_block(name="attn")(x, freqs)
 
         # Feedforward
         ffn_block = partial(FFNBlock, config=self.config, train=self.train)
@@ -227,8 +231,7 @@ class TransformerBlockStack(nn.Module):
         Returns:
             Output tensor of the transformer block stack.
         """
-        mask = create_causal_mask(x.shape[1], dtype=jnp.bool_)
-        freqs = precompute_freqs(self.config.head_dim, x.shape[1], self.config.theta)
+        freqs = precompute_freqs(self.config.head_dim, x.shape[1], self.config.theta, dtype=self.config._dtype)
         block_fn = partial(TransformerBlock, config=self.config, train=train)
         block_fn = prepare_module(
             block_fn,
@@ -238,11 +241,11 @@ class TransformerBlockStack(nn.Module):
 
         if not self.config.scan_blocks:
             for layer_idx in range(self.config.num_blocks):
-                x = block_fn(name=f"block_{layer_idx}")(x, mask, freqs)
+                x = block_fn(name=f"block_{layer_idx}")(x, freqs)
         else:
             block = block_fn(name="block")
             x, _ = nn.scan(
-                lambda module, carry, _: (module(carry, mask, freqs), None),
+                lambda module, carry, _: (module(carry, freqs), None),
                 variable_axes={"params": 0, "intermediates": 0},
                 split_rngs={"params": True, "dropout": True},
                 length=self.config.num_blocks,

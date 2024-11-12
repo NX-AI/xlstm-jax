@@ -159,7 +159,7 @@ class LLMTrainer(TrainerModule):
                 for key_postfix in ["loss", "loss_mean", "loss_single"]:
                     if key.endswith(key_postfix):
                         key_perplexity = f"{key[:-len(key_postfix)]}perplexity{key_postfix[4:]}"
-                        metrics[key_perplexity] = np.exp(metrics[key])
+                        metrics[key_perplexity] = np.exp(metrics[key]).item()
                         break
             return metrics
 

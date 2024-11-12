@@ -188,6 +188,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                 add_embedding_dropout=cfg.model.add_embedding_dropout,
                 scan_blocks=cfg.model.scan_blocks,
                 dtype=cfg.model.dtype,
+                use_flash_attention=cfg.model.use_flash_attention,
                 parallel=parallel,
             ),
         )

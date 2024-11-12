@@ -78,6 +78,7 @@ class QuickHackModelConfig:
 
     # Extra Llama params
     head_dim: int
+    use_flash_attention: bool
 
     def __post_init__(self):
         """Once this class is removed due to Hydra instantiate or our own Registry, make sure that the

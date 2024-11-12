@@ -3,28 +3,15 @@ from dataclasses import dataclass, field
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
+from jax.experimental.pallas.ops.gpu.attention import mha as mha_triton, mha_reference as mha_jax
 
 from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 from xlstm_jax.models.shared import small_init, wang_init
 
 
-def create_causal_mask(seqlen: int, dtype: jnp.dtype = jnp.float32) -> jnp.ndarray:
-    """
-    Create a causal mask for the given sequence length.
-
-    Args:
-        seqlen: Length of the sequence.
-        dtype: Data type of the mask.
-
-    Returns:
-        Causal mask of shape (1, 1, seqlen, seqlen).
-    """
-    seq = jnp.arange(seqlen)
-    mask = (seq[:, None] >= seq[None, :]).astype(dtype)
-    return mask[None, None, :, :]
-
-
-def precompute_freqs(feat_dim: int, max_length: int, theta: float = 1e4):
+def precompute_freqs(
+    feat_dim: int, max_length: int, theta: float = 1e4, dtype: jnp.dtype = jnp.float32
+) -> tuple[jax.Array, jax.Array]:
     """
     Compute the sine and cosine frequencies for the rotary embeddings.
 
@@ -32,6 +19,7 @@ def precompute_freqs(feat_dim: int, max_length: int, theta: float = 1e4):
         feat_dim: Feature dimension of the input.
         max_length: Maximum length of the input sequence.
         theta: Theta parameter for the wave length calculation.
+        dtype: Data type of the returned frequencies.
 
     Returns:
         Tuple of the sine and cosine frequencies.
@@ -39,8 +27,8 @@ def precompute_freqs(feat_dim: int, max_length: int, theta: float = 1e4):
     freqs = 1.0 / (theta ** (jnp.arange(0.0, float(feat_dim), 2.0)[: (feat_dim // 2)] / feat_dim))
     t = jnp.arange(max_length)
     freqs = jnp.outer(t, freqs)
-    freqs_cos = jnp.cos(freqs)
-    freqs_sin = jnp.sin(freqs)
+    freqs_cos = jnp.cos(freqs).astype(dtype)
+    freqs_sin = jnp.sin(freqs).astype(dtype)
     return freqs_sin, freqs_cos
 
 
@@ -65,15 +53,15 @@ def apply_rotary_emb(
         Tuple of the query and key features with the rotary embeddings applied.
     """
     if freqs_sin is None or freqs_cos is None:
-        freqs_sin, freqs_cos = precompute_freqs(xq.shape[-1], xq.shape[-2], theta=theta)
+        freqs_sin, freqs_cos = precompute_freqs(xq.shape[-1], xq.shape[-2], theta=theta, dtype=xq.dtype)
 
     # reshape xq and xk to match the complex representation
     xq_r, xq_i = jnp.moveaxis(xq.reshape(xq.shape[:-1] + (-1, 2)), -1, 0)
     xk_r, xk_i = jnp.moveaxis(xk.reshape(xk.shape[:-1] + (-1, 2)), -1, 0)
 
     # reshape freqs_cos and freqs_sin for broadcasting
-    freqs_cos = freqs_cos[None, :, None, :]
-    freqs_sin = freqs_sin[None, :, None, :]
+    freqs_cos = freqs_cos[None, :, None, :].astype(xq.dtype)
+    freqs_sin = freqs_sin[None, :, None, :].astype(xq.dtype)
 
     # apply rotation using real numbers
     xq_out_r = xq_r * freqs_cos - xq_i * freqs_sin
@@ -106,6 +94,10 @@ class SelfAttentionConfig(SubModelConfig):
     """Number of layers in the Llama model. Used for initialization."""
     dtype: str = "float32"
     """Data type of the activations in the network."""
+    use_flash_attention: bool = False
+    """Whether to use the Flash Attention kernel for the self attention module."""
+    causal: bool = True
+    """Whether to use causal attention masking for the self attention module."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
     """Parallel configuration."""
 
@@ -134,7 +126,6 @@ class SelfAttention(nn.Module):
     def __call__(
         self,
         x: jax.Array,
-        mask: jax.Array | None = None,
         freqs: tuple[jax.Array, jax.Array] | None = None,
         train: bool = False,
     ) -> jax.Array:
@@ -143,8 +134,6 @@ class SelfAttention(nn.Module):
 
         Args:
             x: Input tensor of shape (B, S, D).
-            mask: Mask tensor of shape (B, S, S) with dtype bool. Where False indicates masked positions for which the
-                attention logits are overwritten to -inf. If None, no mask is applied.
             freqs: Tuple of sine and cosine frequencies for the rotary embeddings. If None, calculates the frequencies
                 based on the input shape.
             train: Whether the model is in training mode or not. If True, applies dropout to the output.
@@ -193,20 +182,16 @@ class SelfAttention(nn.Module):
             freqs = precompute_freqs(head_dim, seqlen)
         q, k = apply_rotary_emb(q, k, *freqs)
 
-        # Swap head and sequence dimensions
-        q = q.swapaxes(1, 2)  # (B, H, S, D)
-        k = k.swapaxes(1, 2)  # (B, H, S, D)
-        v = v.swapaxes(1, 2)  # (B, H, S, D)
+        # Apply scaling
+        q = q / jnp.sqrt(head_dim)
 
         # Compute attention
-        attn_logits = jnp.einsum("bhqd,bhkd->bhqk", q, k)
-        attn_logits = attn_logits / jnp.sqrt(head_dim)
-        if mask is not None:
-            attn_logits = jnp.where(mask, attn_logits, jnp.finfo(attn_logits.dtype).min)
-        # Upcast softmax precision to float32
-        attn_probs = nn.softmax(attn_logits.astype(jnp.float32), axis=-1).astype(self.config._dtype)
-        attn_out = jnp.einsum("bhqk,bhkd->bhqd", attn_probs, v)
-        attn_out = attn_out.swapaxes(1, 2)  # (B, S, H, D)
+        if self.config.use_flash_attention:
+            attn_out = mha_triton(
+                q, k, v, segment_ids=None, causal=self.config.causal, interpret=jax.default_backend() == "cpu"
+            )
+        else:
+            attn_out = mha_jax(q, k, v, segment_ids=None, causal=self.config.causal)
 
         # Output projection
         out = nn.DenseGeneral(

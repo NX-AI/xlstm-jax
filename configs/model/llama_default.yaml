@@ -8,3 +8,4 @@ add_qk_norm: false
 scan_blocks: true
 add_embedding_dropout: false
 dtype: bfloat16
+use_flash_attention: true
