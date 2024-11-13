@@ -33,7 +33,18 @@ def get_cli_command(args: Any) -> str:
     """
     # Get the overrides of the run that is to be resumed from its run_dir.
     with open(os.path.join(args.resume_from_folder, ".hydra/overrides.yaml")) as f:
-        old_overrides = " ".join(yaml.safe_load(f))
+        old_overrides_list = yaml.safe_load(f)
+
+    # If the old overrides contain `checkpoint_step` or `resume_from_folder`,
+    # remove them from the list since they originate from the old resume command.
+    filtered_overrides = [
+        override
+        for override in old_overrides_list
+        if ("checkpoint_step" not in override and "resume_from_folder" not in override)
+    ]
+
+    # Join the remaining overrides to a string that can be used in Hydra CLI command.
+    old_overrides = " ".join(filtered_overrides)
 
     # If SLURM should be used, add the corresponding string to the command.
     if args.use_slurm:
@@ -42,9 +53,7 @@ def get_cli_command(args: Any) -> str:
         slurm_str = ""
 
     # Create the CLI command.
-    command_str = f"PYTHONPATH=. python scripts/resume_training_with_hydra.py\
-        {slurm_str} {old_overrides} +resume_from_folder={args.resume_from_folder}\
-        +checkpoint_step={args.checkpoint_step} {args.new_overrides}"
+    command_str = f"PYTHONPATH=. python scripts/resume_training_with_hydra.py {slurm_str} {old_overrides} +resume_from_folder={args.resume_from_folder} +checkpoint_step={args.checkpoint_step} {args.new_overrides}"  # noqa: E501
 
     return command_str
 

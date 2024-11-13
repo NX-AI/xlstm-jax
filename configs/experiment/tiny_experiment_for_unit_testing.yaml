@@ -18,7 +18,7 @@ parallel:
 data:
   max_target_length: ${context_length}
   data_shuffle_seed: 42
-  num_batches: 50
+  num_batches: 10
 
 model:
   name: mLSTMv1Debug
