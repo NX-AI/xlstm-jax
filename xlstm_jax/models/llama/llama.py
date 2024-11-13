@@ -9,7 +9,7 @@ from xlstm_jax.distributed import ModelParallelismWrapper
 from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 from xlstm_jax.models.shared import TPLMHead, prepare_module, small_init
 
-from .attention import SelfAttention, SelfAttentionConfig, precompute_freqs
+from .attention import AttentionBackend, SelfAttention, SelfAttentionConfig, precompute_freqs
 from .feedforward import FeedForward, FeedForwardConfig
 
 
@@ -45,8 +45,12 @@ class LlamaConfig(SubModelConfig):
     """Whether to use bias in the linear layers."""
     scan_blocks: bool = True
     """Whether to scan the transformer blocks. Recommended for larger models to reduce compilation time."""
-    use_flash_attention: bool = False
-    """Whether to use the Flash Attention kernel for the self attention module."""
+    attention_backend: AttentionBackend = "xla"
+    """Which backend to use for the attention module. If triton or cudnn, respective Flash Attention kernels are used.
+    cudnn is only supported for GPU backends, pallas_triton for both CPU and GPU backends, and xla on all backends."""
+    mask_across_document_boundaries: bool = False
+    """Whether to mask attention across document boundaries. If True, the tokens in a document can only attend to
+    tokens within the same document."""
     dtype: str = "float32"
     """Data type to use for the activations."""
     dropout_rate: float = 0.0
@@ -84,6 +88,7 @@ class SelfAttentionBlock(nn.Module):
         self,
         x: jax.Array,
         freqs: tuple[jax.Array, jax.Array] | None = None,
+        segment_ids: jax.Array | None = None,
     ) -> jax.Array:
         """
         Apply self-attention to the input tensor.
@@ -93,6 +98,7 @@ class SelfAttentionBlock(nn.Module):
         Args:
             x: Input tensor.
             freqs: Precomputed frequency tensors.
+            segment_ids: Segment IDs for the input tensor.
 
         Returns:
             Output tensor of self-attention with residual connection.
@@ -106,11 +112,11 @@ class SelfAttentionBlock(nn.Module):
             dtype=self.config.dtype,
             num_layers=self.config.num_blocks,
             dropout_rate=self.config.dropout_rate,
-            use_flash_attention=self.config.use_flash_attention,
+            attention_backend=self.config.attention_backend,
             causal=self.config.causal,
             parallel=self.config.parallel,
         )
-        x = SelfAttention(config=attn_config, name="attn")(x, freqs, train=self.train)
+        x = SelfAttention(config=attn_config, name="attn")(x, freqs, segment_ids=segment_ids, train=self.train)
         self.sow("intermediates", "attn_out_std", x.std(axis=-1).mean())
         self.sow("intermediates", "attn_out_abs_max", jnp.abs(x).max())
         x = x + res
@@ -177,6 +183,7 @@ class TransformerBlock(nn.Module):
         self,
         x: jax.Array,
         freqs: tuple[jax.Array, jax.Array] | None = None,
+        segment_ids: jax.Array | None = None,
     ) -> jax.Array:
         """
         Apply transformer block to the input tensor.
@@ -184,6 +191,7 @@ class TransformerBlock(nn.Module):
         Args:
             x: Input tensor.
             freqs: Precomputed frequency tensors.
+            segment_ids: Segment IDs for the input tensor
 
         Returns:
             Output tensor of the transformer block.
@@ -195,7 +203,7 @@ class TransformerBlock(nn.Module):
             "AttnBlock",
             self.config.parallel,
         )
-        x = attn_block(name="attn")(x, freqs)
+        x = attn_block(name="attn")(x, freqs, segment_ids)
 
         # Feedforward
         ffn_block = partial(FFNBlock, config=self.config, train=self.train)
@@ -220,18 +228,27 @@ class TransformerBlockStack(nn.Module):
     config: LlamaConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, train: bool = False) -> jax.Array:
+    def __call__(self, x: jax.Array, document_borders: jax.Array | None = None, train: bool = False) -> jax.Array:
         """
         Apply stack of transformer blocks to the input tensor.
 
         Args:
             x: Input tensor.
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). If self.config.mask_across_document_boundaries is True, these borders will be
+                used to identify which document each token belongs to, and masks out attention of tokens across
+                different documents. Shape (batch_size, context_length).
             train: Whether to run in training mode or not. If True, applies dropout.
 
         Returns:
             Output tensor of the transformer block stack.
         """
         freqs = precompute_freqs(self.config.head_dim, x.shape[1], self.config.theta, dtype=self.config._dtype)
+        if document_borders is not None and self.config.mask_across_document_boundaries:
+            segment_ids = jnp.cumsum(document_borders.astype(jnp.int32), axis=1)
+        else:
+            segment_ids = None
+
         block_fn = partial(TransformerBlock, config=self.config, train=train)
         block_fn = prepare_module(
             block_fn,
@@ -241,11 +258,11 @@ class TransformerBlockStack(nn.Module):
 
         if not self.config.scan_blocks:
             for layer_idx in range(self.config.num_blocks):
-                x = block_fn(name=f"block_{layer_idx}")(x, freqs)
+                x = block_fn(name=f"block_{layer_idx}")(x, freqs, segment_ids)
         else:
             block = block_fn(name="block")
             x, _ = nn.scan(
-                lambda module, carry, _: (module(carry, freqs), None),
+                lambda module, carry, _: (module(carry, freqs, segment_ids), None),
                 variable_axes={"params": 0, "intermediates": 0},
                 split_rngs={"params": True, "dropout": True},
                 length=self.config.num_blocks,
@@ -267,12 +284,18 @@ class LlamaTransformer(nn.Module):
     config: LlamaConfig
 
     @nn.compact
-    def __call__(self, idx: jax.Array, train: bool = False, **kwargs) -> jax.Array:
+    def __call__(
+        self, idx: jax.Array, document_borders: jax.Array | None = None, train: bool = False, **kwargs
+    ) -> jax.Array:
         """
         Apply LLAMA transformer model to the input tensor.
 
         Args:
             idx: Input tensor of token indices.
+            document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
+                and which don't (False). If self.config.mask_across_document_boundaries is True, these borders will be
+                used to identify which document each token belongs to, and masks out attention of tokens across
+                different documents. Shape (batch_size, context_length).
             train: Whether to run in training mode or not. If True, applies dropout.
 
         Returns:
@@ -299,7 +322,7 @@ class LlamaTransformer(nn.Module):
             x = nn.Dropout(rate=self.config.dropout_rate)(x, deterministic=not train)
         # BlockStack
         stack_fn = prepare_module(TransformerBlockStack, "BlockStack", config=self.config.parallel)
-        x = stack_fn(config=self.config, name="block_stack")(x, train=train)
+        x = stack_fn(config=self.config, name="block_stack")(x, document_borders=document_borders, train=train)
         # LMHead
         pred_fn = prepare_module(
             partial(

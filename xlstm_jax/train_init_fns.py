@@ -185,10 +185,12 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                 num_blocks=cfg.model.num_blocks,
                 head_dim=cfg.model.head_dim,
                 qk_norm=cfg.model.add_qk_norm,
+                theta=cfg.model.theta,
                 add_embedding_dropout=cfg.model.add_embedding_dropout,
                 scan_blocks=cfg.model.scan_blocks,
                 dtype=cfg.model.dtype,
-                use_flash_attention=cfg.model.use_flash_attention,
+                attention_backend=cfg.model.attention_backend,
+                mask_across_document_boundaries=cfg.model.reset_at_document_boundaries,
                 parallel=parallel,
             ),
         )

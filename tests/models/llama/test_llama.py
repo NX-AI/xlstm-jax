@@ -20,6 +20,7 @@ MODEL_CONFIGS = [
         dtype="bfloat16",
         ffn_multiple_of=4,
         scan_blocks=True,
+        mask_across_document_boundaries=False,
     ),
     lambda parallel: LlamaConfig(
         vocab_size=64,
@@ -31,6 +32,7 @@ MODEL_CONFIGS = [
         dtype="float32",
         ffn_multiple_of=64,
         scan_blocks=True,
+        mask_across_document_boundaries=True,
     ),
     lambda parallel: LlamaConfig(
         vocab_size=64,
@@ -42,7 +44,8 @@ MODEL_CONFIGS = [
         dtype="bfloat16",
         ffn_multiple_of=64,
         scan_blocks=True,
-        use_flash_attention=True,
+        attention_backend="pallas_triton",
+        mask_across_document_boundaries=True,
     ),
 ]
 LARGE_MODEL_CONFIGS = [
@@ -56,7 +59,8 @@ LARGE_MODEL_CONFIGS = [
         dtype="bfloat16",
         ffn_multiple_of=4,
         scan_blocks=True,
-        use_flash_attention=True,
+        attention_backend="pallas_triton",
+        mask_across_document_boundaries=True,
     ),
     lambda parallel: LlamaConfig(
         vocab_size=64,
@@ -68,7 +72,8 @@ LARGE_MODEL_CONFIGS = [
         dtype="bfloat16",
         ffn_multiple_of=64,
         scan_blocks=True,
-        use_flash_attention=True,
+        attention_backend="cudnn",
+        mask_across_document_boundaries=True,
     ),
 ]
 CONFIG_PARAMS = list(
@@ -131,4 +136,7 @@ def test_llama_causal_masking(
     def model_generator(parallel):
         return LlamaTransformer(llama_config_generator(parallel))
 
-    llm_trainer.causal_masking_test(model_generator, vocab_size=64)
+    exmp_config = llama_config_generator(ParallelConfig())
+    llm_trainer.causal_masking_test(
+        model_generator, vocab_size=64, test_document_borders=exmp_config.mask_across_document_boundaries
+    )

@@ -5,7 +5,8 @@ defaults:
 # LlamaConfig
 vocab_size: 50304
 add_qk_norm: false
+theta: 10_000
 scan_blocks: true
 add_embedding_dropout: false
 dtype: bfloat16
-use_flash_attention: true
+attention_backend: cudnn

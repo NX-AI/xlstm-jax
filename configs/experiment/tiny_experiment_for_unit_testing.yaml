@@ -34,7 +34,8 @@ model:
   head_dim: 8
   gate_dtype: float32
   backend: parallel_stabilized
-  use_flash_attention: false
+  attention_backend: xla
+  theta: 10_000
 
 checkpointing:
   monitor: perplexity

@@ -35,4 +35,6 @@ data_eval:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
+  reset_at_document_boundaries: true
   vocab_size: -1
+  theta: 500_000

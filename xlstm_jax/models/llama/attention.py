@@ -1,12 +1,15 @@
 from dataclasses import dataclass, field
+from typing import Literal
 
 import jax
 import jax.numpy as jnp
 from flax import linen as nn
-from jax.experimental.pallas.ops.gpu.attention import mha as mha_triton, mha_reference as mha_jax
+from jax.experimental.pallas.ops.gpu.attention import mha as mha_triton
 
 from xlstm_jax.models.configs import ParallelConfig, SubModelConfig
 from xlstm_jax.models.shared import small_init, wang_init
+
+AttentionBackend = Literal["xla", "pallas_triton", "cudnn"]
 
 
 def precompute_freqs(
@@ -76,6 +79,22 @@ def apply_rotary_emb(
     return xq_out, xk_out
 
 
+def segment_mask(segment_ids: jax.Array) -> jax.Array:
+    """
+    Create a mask for the self attention module based on the segment IDs.
+
+    Args:
+        segment_ids: Segment IDs for the input tensor. The attention weights between elements of different segments
+            is set to zero. Shape (B, S).
+
+    Returns:
+        Boolean tensor of shape (B, 1, S, S).
+    """
+    mask = jnp.equal(segment_ids[:, None, :], segment_ids[:, :, None]).astype(jnp.bool_)
+    mask = jnp.expand_dims(mask, axis=1)
+    return mask
+
+
 @dataclass
 class SelfAttentionConfig(SubModelConfig):
     """
@@ -94,8 +113,9 @@ class SelfAttentionConfig(SubModelConfig):
     """Number of layers in the Llama model. Used for initialization."""
     dtype: str = "float32"
     """Data type of the activations in the network."""
-    use_flash_attention: bool = False
-    """Whether to use the Flash Attention kernel for the self attention module."""
+    attention_backend: AttentionBackend = "xla"
+    """Which backend to use for the attention module. If triton or cudnn, respective Flash Attention kernels are used.
+    cudnn is only supported for GPU backends, pallas_triton for both CPU and GPU backends, and xla on all backends."""
     causal: bool = True
     """Whether to use causal attention masking for the self attention module."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
@@ -127,6 +147,7 @@ class SelfAttention(nn.Module):
         self,
         x: jax.Array,
         freqs: tuple[jax.Array, jax.Array] | None = None,
+        segment_ids: jax.Array | None = None,
         train: bool = False,
     ) -> jax.Array:
         """
@@ -136,6 +157,8 @@ class SelfAttention(nn.Module):
             x: Input tensor of shape (B, S, D).
             freqs: Tuple of sine and cosine frequencies for the rotary embeddings. If None, calculates the frequencies
                 based on the input shape.
+            segment_ids: Segment IDs for the input tensor. The attention weights between elements of different segments
+                is set to zero. If None, all elements are treated as belonging to the same segment, i.e. no masking.
             train: Whether the model is in training mode or not. If True, applies dropout to the output.
 
         Returns:
@@ -182,16 +205,15 @@ class SelfAttention(nn.Module):
             freqs = precompute_freqs(head_dim, seqlen)
         q, k = apply_rotary_emb(q, k, *freqs)
 
-        # Apply scaling
-        q = q / jnp.sqrt(head_dim)
-
         # Compute attention
-        if self.config.use_flash_attention:
-            attn_out = mha_triton(
-                q, k, v, segment_ids=None, causal=self.config.causal, interpret=jax.default_backend() == "cpu"
-            )
-        else:
-            attn_out = mha_jax(q, k, v, segment_ids=None, causal=self.config.causal)
+        attn_out = multihead_attention(
+            q,
+            k,
+            v,
+            segment_ids=segment_ids,
+            causal=self.config.causal,
+            backend=self.config.attention_backend,
+        )
 
         # Output projection
         out = nn.DenseGeneral(
@@ -204,3 +226,62 @@ class SelfAttention(nn.Module):
         )(attn_out)
         out = nn.Dropout(rate=self.config.dropout_rate)(out, deterministic=not train)
         return out
+
+
+def multihead_attention(
+    q: jax.Array,
+    k: jax.Array,
+    v: jax.Array,
+    segment_ids: jax.Array | None = None,
+    causal: bool = True,
+    qk_scale: float | None = None,
+    backend: AttentionBackend = "xla",
+) -> jax.Array:
+    """
+    Compute multi-head self attention.
+
+    Args:
+        q: Query tensor of shape (B, S, NH, DHQK).
+        k: Key tensor of shape (B, S, NH, DHQK).
+        v: Value tensor of shape (B, S, NH, DHV).
+        segment_ids: Segment IDs for the input tensor. The attention weights between elements of different segments
+            is set to zero. If None, all elements are treated as belonging to the same segment, i.e. no masking.
+        causal: Whether to use causal attention masking for the self attention module.
+        qk_scale: Scaling factor for the query-key logits. If None, defaults to 1/sqrt(DHQK). The scaling factor is
+            applied to the query tensor before the dot product.
+        backend: Which backend to use for the attention module. If triton or cudnn, respective Flash Attention kernels
+            are used. cudnn is only supported for GPU backends, pallas_triton for both CPU and GPU backends, and xla on
+            all backends.
+
+    Returns:
+        Output tensor of shape (B, S, NH, DHV).
+    """
+    if qk_scale is None:
+        qk_scale = q.shape[2] ** -0.5
+
+    # Apply scaling. We apply it here to avoid potential overflows in fp16 in the dot product.
+    q = q * qk_scale
+
+    if backend == "pallas_triton":
+        return mha_triton(
+            q,
+            k,
+            v,
+            segment_ids=segment_ids,
+            sm_scale=1.0,
+            causal=causal,
+            interpret=jax.default_backend() == "cpu",
+        )
+    elif backend in ["xla", "cudnn"]:
+        mask = segment_mask(segment_ids) if segment_ids is not None else None
+        return jax.nn.dot_product_attention(
+            q,
+            k,
+            v,
+            mask=mask,
+            scale=1.0,
+            is_causal=causal,
+            implementation=backend,
+        )
+    else:
+        raise ValueError(f"Unknown attention backend {backend}.")

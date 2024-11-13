@@ -4,6 +4,7 @@ import logging
 import os
 import time
 from dataclasses import dataclass
+from functools import partial
 from pathlib import Path
 
 import jax
@@ -11,8 +12,10 @@ import jax.numpy as jnp
 import numpy as np
 import tabulate
 from flax import linen as nn
+from flax.core import FrozenDict
 
 from xlstm_jax.distributed import set_XLA_flags
+from xlstm_jax.models.llama.attention import multihead_attention
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import (
     create_mlstm_backend,
     mLSTMBackend,
@@ -49,6 +52,19 @@ class BackendModule(nn.Module):
         return backend(*args, **kwargs)
 
 
+class AttentionBackendModule(nn.Module):
+    use_remat: bool
+    backend_config: FrozenDict
+
+    @nn.compact
+    def __call__(self, q, k, v, i, f, *args, **kwargs):
+        del i, f
+        backend = partial(multihead_attention, **self.backend_config)
+        if self.use_remat:
+            backend = nn.remat(backend, prevent_cse=False)
+        return backend(q, k, v, *args, **kwargs)
+
+
 def generate_input_data(
     batch_size: int,
     context_length: int,
@@ -56,6 +72,7 @@ def generate_input_data(
     head_dim: int,
     dtype: jnp.dtype,
     gate_dtype: jnp.dtype = jnp.float32,
+    backend_name: str = "parallel_stabilized",
 ) -> tuple[jax.Array, jax.Array, jax.Array, jax.Array, jax.Array]:
     """
     Create input data for the mLSTM cell backend.
@@ -67,12 +84,18 @@ def generate_input_data(
         head_dim: Dimension of the heads.
         dtype: Data type of the query, key, and value tensors.
         gate_dtype: Data type of the input and forget gate tensors.
+        backend_name: Name of the mLSTM backend. If "llama", the qkv shape will have sequence length before number of
+            heads.
 
     Returns:
         Tuple of query, key, value, input gate pre-activations, and forget gate pre-activations.
     """
-    qkv_shape = (batch_size, num_heads, context_length, head_dim)
-    gates_shape = (batch_size, num_heads, context_length, 1)
+    if backend_name == "llama":
+        qkv_shape = (batch_size, context_length, num_heads, head_dim)
+        gates_shape = (1,)  # Unused in Llama.
+    else:
+        qkv_shape = (batch_size, num_heads, context_length, head_dim)
+        gates_shape = (batch_size, num_heads, context_length, 1)
     rng = jax.random.PRNGKey(0)
     rng_q, rng_k, rng_v, rng_igate_preact, rng_fgate_preact = jax.random.split(rng, 5)
     q = jax.random.normal(rng_q, qkv_shape, dtype=dtype)
@@ -84,8 +107,11 @@ def generate_input_data(
 
 
 def create_backend(name: str, context_length: int, use_remat: bool, **kwargs) -> BackendModule:
-    backend_config = mLSTMBackendNameAndKwargs(name=name, kwargs=kwargs)
-    backend = BackendModule(context_length=context_length, use_remat=use_remat, backend_config=backend_config)
+    if name == "llama":
+        backend = AttentionBackendModule(use_remat=use_remat, backend_config=kwargs)
+    else:
+        backend_config = mLSTMBackendNameAndKwargs(name=name, kwargs=kwargs)
+        backend = BackendModule(context_length=context_length, use_remat=use_remat, backend_config=backend_config)
     return backend
 
 
@@ -122,7 +148,9 @@ def run_benchmark(
     backend_key: str | None = None,
 ) -> list[float]:
     dataset = [
-        generate_input_data(batch_size, context_length, num_heads, head_dim, dtype, gate_dtype)
+        generate_input_data(
+            batch_size, context_length, num_heads, head_dim, dtype, gate_dtype, backend_name=backend_name
+        )
         for _ in range(num_steps)
     ]
     if backend_kwargs is None:
@@ -214,10 +242,13 @@ def full_benchmark(
     backends = [
         ("parallel_stabilized", {}, "parallel_stabilized"),
         ("fwbw_stabilized", {}, "fwbw_stabilized"),
-        ("triton_kernels", {"reduce_slicing": False}, "triton_kernels_no_reduce_slicing"),
-        ("triton_kernels", {"reduce_slicing": True}, "triton_kernels_reduce_slicing"),
-        ("triton_kernels", {"reduce_slicing": True, "chunk_size": 32}, "triton_kernels_chunk32"),
-        ("triton_kernels", {"reduce_slicing": True, "chunk_size": 128}, "triton_kernels_chunk128"),
+        ("triton_kernels", {"backend_name": "max_triton_noslice"}, "triton_kernels_max_triton_noslice"),
+        ("triton_kernels", {"backend_name": "max_triton_xlchunksize"}, "triton_kernels_max_triton_xlchunksize"),
+        ("triton_kernels", {"backend_name": "max_triton"}, "triton_kernels_max_triton"),
+        ("triton_kernels", {"backend_name": "triton_stablef"}, "triton_kernels_triton_stablef"),
+        ("llama", {"backend": "xla"}, "attention_xla"),
+        ("llama", {"backend": "pallas_triton"}, "attention_pallas_triton"),
+        ("llama", {"backend": "cudnn"}, "attention_cudnn"),
     ]
     if save_dir is None and "XLSTM_JAX_BENCHMARK_DATA" in os.environ:
         save_dir = Path(os.environ["XLSTM_JAX_BENCHMARK_DATA"]) / "mlstm_backends"
@@ -227,11 +258,11 @@ def full_benchmark(
         "batch_size": 8,
         "context_length": 2048,
         "num_heads": 4,
-        "head_dim": 384,
+        "head_dim": 256,
         "dtype": "bfloat16",
         "gate_dtype": "float32",
         "use_remat": False,
-        "num_steps": 5,
+        "num_steps": 10,
         "num_repeats": 5,
         "backend_kwargs": None,
         "save_dir": save_dir,
@@ -248,6 +279,9 @@ def full_benchmark(
                 kwargs["backend_name"] = backend_name
                 kwargs["backend_kwargs"] = backend_kwargs
                 kwargs["backend_key"] = backend_key
+                if backend_name == "llama" and backend_kwargs.get("backend", "xla") != "xla":
+                    kwargs["head_dim"] = min(kwargs["head_dim"], 128)
+                    kwargs["dtype"] = "bfloat16" if kwargs["head_dim"] == 128 else kwargs["dtype"]
                 results[arg_name][value][backend_key] = run_benchmark(**kwargs)
 
     results = {}
