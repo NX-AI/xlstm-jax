@@ -115,6 +115,8 @@ class HFTokenizeLogLikelihoodRolling:
             "inputs_position": np.arange(self.max_length),
             "targets_position": np.arange(self.max_length),
             "document_idx": np.asarray(doc_idx, dtype=np.int32),
+            # Force no document borders, as each sequence contains a single document.
+            "_document_borders": np.zeros_like(inputs_segmentation, dtype=bool),
             "sequence_idx": np.asarray(seq_idx, dtype=np.int32),
         }
 
@@ -133,7 +135,7 @@ class HFTokenizeLogLikelihoodRolling:
         """
         llm_instances = []
 
-        for doc_idx, req in tqdm(enumerate(requests)):
+        for doc_idx, req in tqdm(enumerate(requests, 1)):  # Start at 1 to skip zero padding
             assert len(req.args) in [
                 1,
                 2,
@@ -176,6 +178,8 @@ class HFTokenizeLogLikelihoodRolling:
                         "inputs": inputs,
                         "targets": targets,
                         "inputs_segmentation": inputs_segmentation,
+                        # Force no document borders, as each sequence contains a single document.
+                        "_document_borders": np.zeros_like(inputs_segmentation, dtype=bool),
                         "targets_segmentation": targets_segmentation,
                         "inputs_position": np.arange(self.max_length),
                         "targets_position": np.arange(self.max_length),
@@ -190,7 +194,7 @@ class HFTokenizeLogLikelihoodRolling:
         # Fill up last batch with -1 indexed documents.
         if len(llm_instances) % self.batch_size != 0:
             for _ in range(self.batch_size - (len(llm_instances) % self.batch_size)):
-                llm_instances.append(self.simple_array(prefix_tokens=[], all_tokens=[], doc_idx=-1, seq_idx=0))
+                llm_instances.append(self.simple_array(prefix_tokens=[], all_tokens=[], doc_idx=0, seq_idx=0))
 
         return MapDataset.source(llm_instances)
 

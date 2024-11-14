@@ -65,10 +65,11 @@ class CompleteLLMIndexedBatch(grain.MapTransform):
     >>> from xlstm_jax.utils import pytree_diff
     >>> pytree_diff(
     ...     CompleteLLMIndexedBatch().map(
-    ...         {"inputs": np.array([[1, 2]]), "targets": np.array([[1, 2]]), "idx": np.array([0])}),
+    ...         {"inputs": np.array([[1, 2]]), "targets": np.array([[1, 2]]), "idx": np.array(0)}),
     ...     {"inputs": np.array([[1, 2]]), "targets": np.array([[1, 2]]),
-    ...      "document_idx": np.array([0]), "inputs_position": np.array([[0, 1]]),
-    ...      "targets_position": np.array([[0, 1]]), "sequence_idx": np.array([0])})
+    ...      "document_idx": np.array([1]), "inputs_position": np.array([[0, 1]]),
+    ...      "targets_position": np.array([[0, 1]]), "sequence_idx": np.array([0]),
+    ...      "_document_borders": np.array([[False, False]])})
     """
 
     def map(self, item: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
@@ -80,13 +81,33 @@ class CompleteLLMIndexedBatch(grain.MapTransform):
         if "sequence_idx" not in res:
             res["sequence_idx"] = np.zeros([batch_size], dtype=np.int32)
         if "idx" in res:
-            res["document_idx"] = np.asarray(res["idx"], dtype=np.int32)
+            doc_idx = np.asarray(res["idx"] + 1, dtype=np.int32)
+            if doc_idx.ndim == 0:
+                res["document_idx"] = doc_idx[None]
+            else:
+                res["document_idx"] = doc_idx
             del res["idx"]
         if "inputs_position" not in res:
             res["inputs_position"] = np.arange(item["inputs"].shape[1])[None, :].repeat(batch_size, 1)
         if "targets_position" not in res:
             res["targets_position"] = np.arange(item["inputs"].shape[1])[None, :].repeat(batch_size, 1)
+        if "_document_borders" not in res:
+            res["_document_borders"] = np.zeros_like(res["inputs"], dtype=bool)
         return res
+
+
+def empty_llm_indexed_sample():
+    return {
+        "sequence_idx": np.zeros([1], dtype=np.int32),
+        "document_idx": np.zeros([1], dtype=np.int32),
+        "inputs": np.zeros([1, 1], dtype=np.int32),
+        "inputs_segmentation": np.zeros([1, 1], dtype=np.int32),
+        "targets": np.zeros([1, 1], dtype=np.int32),
+        "targets_segmentation": np.zeros([1, 1], dtype=np.int32),
+        "inputs_position": np.zeros([1, 1], dtype=np.int32),
+        "targets_position": np.zeros([1, 1], dtype=np.int32),
+        "_document_borders": np.zeros([1, 1], dtype=bool),
+    }
 
 
 def token_length(item: dict[str, np.ndarray]) -> int:
@@ -105,29 +126,26 @@ def token_length(item: dict[str, np.ndarray]) -> int:
     return item["inputs"].shape[1]
 
 
-class SortedDataset(grain.MapDataset):
+class PadBatchDataset(grain.MapDataset):
     """
-    Creates a sorted dataset based on a key (applied to all items) and an existing dataset.
+    Creates a dataset that has only full batches by adding padding elements.
 
     Args:
         dataset: The existing dataset
-        key:  Key Function to be applied for sorting
-        reverse: If the sorting should be ascending (False, default) or descending
+        multiple_of:  Global batch size to be padded towards
+        pad_elem:  Empty element to be appended
 
-    >>> SortedDataset(grain.MapDataset.source([3, 1, 2]), lambda x: x)[0]
-    1
-    >>> SortedDataset(grain.MapDataset.source([3, 1, 2]), lambda x: x, reverse=True)[0]
-    3
-    >>> SortedDataset(grain.MapDataset.source(
-    ...     [{"inputs": np.array([[1, 2, 3]])},
-    ...      {"inputs": np.array([[1, 2]])}]), token_length)[0]
-    {'inputs': array([[1, 2]])}
+    >>> PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, pad_elem=0)[3]
+    0
+    >>> len(PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, pad_elem=0))
+    4
     """
 
-    def __init__(self, dataset: grain.MapDataset, key: Callable, reverse: bool = False):
+    def __init__(self, dataset: grain.MapDataset, multiple_of: int, pad_elem: Any):
         super().__init__(dataset)
-        self.key = key
-        self.dataset = sorted(dataset, key=key, reverse=reverse)
+        self.dataset = dataset
+        self.multiple_of = multiple_of
+        self.pad_elem = pad_elem
 
     def __getitem__(self, idx: int) -> Any:
         """
@@ -135,17 +153,17 @@ class SortedDataset(grain.MapDataset):
             idx: Item index
 
         Returns:
-            Dataset element from the sorted dataset
+            Dataset element from the PadBatchDataset
         """
-        return self.dataset[idx]
+        if idx < len(self.dataset):
+            return self.dataset[idx]
+        elif idx < ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of:
+            return self.pad_elem
+        else:
+            raise IndexError
 
-    def __len__(self) -> int:
-        """Dataset length
-
-        Returns:
-            int: Length of the dataset
-        """
-        return len(self.dataset)
+    def __len__(self):
+        return ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of
 
 
 def _pad_batch_multiple(
@@ -206,6 +224,172 @@ def _pad_batch_multiple(
     return padded_batch
 
 
+class PadSequenceInBatchDataset(grain.MapDataset):
+    """
+    Creates a dataset that has only full batches by adding padding elements.
+    This pads single elements (no batches yet). That enables having distributed
+    batches over more devices.
+    Assumes a dataset that consists of a flat dictionary of arrays.
+
+    Args:
+        dataset: The existing dataset, items are assumed to be dicts of array.
+        split_num: Number of sub-batches
+
+    >>> from xlstm_jax.utils.pytree_diff import pytree_diff
+    >>> pytree_diff(list(PadSequenceInBatchDataset(grain.MapDataset.source(
+    ...     [{"a": np.array([[3, 1, 5]])},
+    ...      {"a": np.array([[2, 4]])},
+    ...      {"a": np.array([[2, 4, 3, 3]])},
+    ...      {"a": np.array([[2, 4]])}]
+    ... ), batch_size=2, multiple_of=3 )), [
+    ...     {"a": np.array([[3, 1, 5]])},
+    ...     {"a": np.array([[2, 4, 0]])},
+    ...     {"a": np.array([[2, 4, 3, 3, 0, 0]])},
+    ...     {"a": np.array([[2, 4, 0, 0, 0, 0]])}])
+    """
+
+    def __init__(self, dataset: grain.MapDataset, batch_size: int, multiple_of: int = 64, pad_value: int = 0):
+        super().__init__(dataset)
+        self.dataset = dataset
+        self.batch_size = batch_size
+        self.multiple_of = multiple_of
+        self.pad_value = pad_value
+
+    def __getitem__(self, idx: int) -> Any:
+        """
+        Currently this actually creates a fully batch and returns the single element later on.
+
+        Args:
+            idx: Item index
+
+        Returns:
+            Dataset element from the SplitBatchDataset
+        """
+        return {
+            key: _pad_batch_multiple(
+                [
+                    self.dataset[(idx // self.batch_size) * self.batch_size + sub_idx][key]
+                    for sub_idx in range(self.batch_size)
+                ],
+                multiple_of=self.multiple_of,
+                axis=1,
+                pad_value=self.pad_value,
+                batch_size_pad=None,
+            )[idx % self.batch_size : idx % self.batch_size + 1]
+            if isinstance(self.dataset[idx][key], np.ndarray)
+            else self.dataset[idx][key]
+            for key in self.dataset[idx]
+        }
+
+    def __len__(self):
+        return len(self.dataset)
+
+
+class SortedDataset(grain.MapDataset):
+    """
+    Creates a sorted dataset based on a key (applied to all items) and an existing dataset.
+
+    Args:
+        dataset: The existing dataset
+        key:  Key Function to be applied for sorting
+        reverse: If the sorting should be ascending (False, default) or descending
+
+    >>> SortedDataset(grain.MapDataset.source([3, 1, 2]), lambda x: x)[0]
+    1
+    >>> SortedDataset(grain.MapDataset.source([3, 1, 2]), lambda x: x, reverse=True)[0]
+    3
+    >>> SortedDataset(grain.MapDataset.source(
+    ...     [{"inputs": np.array([[1, 2, 3]])},
+    ...      {"inputs": np.array([[1, 2]])}]), token_length)[0]
+    {'inputs': array([[1, 2]])}
+    """
+
+    def __init__(self, dataset: grain.MapDataset, key: Callable, reverse: bool = False):
+        super().__init__(dataset)
+        self.key = key
+        self.dataset = sorted(dataset, key=key, reverse=reverse)
+
+    def __getitem__(self, idx: int) -> Any:
+        """
+        Args:
+            idx: Item index
+
+        Returns:
+            Dataset element from the sorted dataset
+        """
+        return self.dataset[idx]
+
+    def __len__(self) -> int:
+        """Dataset length
+
+        Returns:
+            Length of the dataset
+        """
+        return len(self.dataset)
+
+
+class MultihostSortedRemapDataset(grain.MapDataset):
+    """
+    This implements an index re-shuffling for a SortedDataset.
+    The problem:
+    Given a sorted dataset, and multi-host dataloaders using .slice,
+    the sorting is broken.
+    Examplary dataset:
+    [1 2 3 4 5 6 7 8]
+
+    Multi-host (standard slicing - assumed as input):
+    [1 2 3 4] [5 6 7 8]
+    Multi-host batched:
+    [[1 2] [3 4]] [[5 6] [7 8]]
+
+    What we want actually for proper batching:
+    [[1 2] [5 6]] [[3 4] [7 8]]
+    such that the global batch still looks like:
+    [[1 2 3 4] [5 6 7 8]]
+
+    Args:
+        dataset: Original (sorted) dataset of which the order within batches should be kept.
+        global_batch_size: The global batch size.
+        dataloader_host_count: The number of dataloaders that a global batch is created from.
+
+    >>> ds = MultihostSortedRemapDataset(
+    ...     grain.MapDataset.source([1, 2, 3, 4, 5, 6, 7, 8]),
+    ...     global_batch_size=4, dataloader_host_count=2)
+    >>> host_slices = [slice(0, 4), slice(4, 8)]
+    >>> [list(ds.slice(host_slices[0]).batch(2)), list(ds.slice(host_slices[1]).batch(2))]
+    [[array([1, 2]), array([5, 6])], [array([3, 4]), array([7, 8])]]
+    """
+
+    def __init__(self, dataset: grain.MapDataset, global_batch_size: int, dataloader_host_count: int):
+        super().__init__(dataset)
+        self.dataset = dataset
+        self.global_batch_size = global_batch_size
+        self.dataloader_host_count = dataloader_host_count
+
+    def __getitem__(self, idx: int) -> Any:
+        """
+        Args:
+            idx: Item index
+
+        Returns:
+            Dataset element from the mapped idx.
+        """
+        local_batch_size = self.global_batch_size // self.dataloader_host_count
+        dataloader_internal_idx = idx % (len(self.dataset) // self.dataloader_host_count)
+        host_idx = idx // (len(self.dataset) // self.dataloader_host_count)
+        local_batch_subidx = dataloader_internal_idx % local_batch_size
+        local_batch_idx = dataloader_internal_idx // local_batch_size
+        return self.dataset[local_batch_idx * self.global_batch_size + host_idx * local_batch_size + local_batch_subidx]
+
+    def __len__(self) -> int:
+        """Dataset length
+
+        Returns:
+            Length of the dataset
+        """
+        return len(self.dataset)
+
+
 def lmeval_preprocessing_pipeline(
     dataloading_host_index: int,
     dataloading_host_count: int,
@@ -225,9 +409,13 @@ def lmeval_preprocessing_pipeline(
     """
     Create a mult-host dataloader for LMEval datasets for loglikelihood and
     loglikelihood_rolling tasks. This does not support generation tasks currently.
-    Also, it just support recurrent models that can take infinite sequence lengths.
+    Also, it just supports recurrent models that can take infinite sequence lengths.
     For sequence_length limited models use the `HFTokenizeLogLikelihoodRolling` from
     `lmeval_dataset.py`.
+    Internal Operation:
+    The dataset is fully loaded on all hosts / workers, sorted by sequence length,
+    padded in batch and sequence length. Only then it is sharded for a combined global
+    batch that has consistent sequence length over all hosts.
 
     Args:
         dataloading_host_index: The index of the dataloading host. Will be used to select the
@@ -242,13 +430,7 @@ def lmeval_preprocessing_pipeline(
     """
     grain_dataset = grain.MapDataset.source(dataset).map_with_index(lambda idx, x: {"idx": idx, "req": x})
     dataset_size = len(grain_dataset)
-    slice_size = dataset_size // dataloading_host_count
-    slice_remainder = dataset_size % dataloading_host_count
-    host_slice_start = dataloading_host_index * slice_size + min(dataloading_host_index, slice_remainder)
-    host_slice_end = host_slice_start + slice_size + (1 if dataloading_host_index < slice_remainder else 0)
-    host_slice = slice(host_slice_start, host_slice_end)
-    grain_dataset = grain_dataset.slice(host_slice)
-    LOGGER.info(f"Host {dataloading_host_index} has slice {host_slice} with global dataset size {dataset_size}.")
+    # do NOT! slice dataset here as single sequences have to have the same padded length for proper batching
 
     if tokenizer_path is not None:
         tokenizer = load_tokenizer(tokenizer_path, hf_access_token, tokenizer_cache_dir)
@@ -280,22 +462,40 @@ def lmeval_preprocessing_pipeline(
         for operation in operations:
             grain_dataset = grain_dataset.map(operation)
 
+    grain_dataset = PadBatchDataset(grain_dataset, multiple_of=global_batch_size, pad_elem=empty_llm_indexed_sample())
+
     # Sort dataset for token sequence length, enables minimal padding, make it longest first
     grain_dataset = SortedDataset(grain_dataset, key=token_length, reverse=True)
 
-    def batch_pad(batch: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
-        return {
-            key: _pad_batch_multiple(
-                [item[key] for item in batch],
-                multiple_of=padding_multiple,
-                batch_size_pad=global_batch_size // dataloading_host_count,
-                axis=1,
-            )
-            for key in batch[0]
-        }
+    grain_dataset = PadSequenceInBatchDataset(
+        grain_dataset, batch_size=global_batch_size, multiple_of=padding_multiple, pad_value=0
+    )
+
+    # Re-Shuffle indices such that ordering is kept inside a global batch
+    grain_dataset = MultihostSortedRemapDataset(
+        grain_dataset, global_batch_size=global_batch_size, dataloader_host_count=dataloading_host_count
+    )
+
+    def batch_concatenate(inp: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
+        return {key: np.concatenate([elem[key] for elem in inp], axis=0) for key in inp[0]}
+
+    # Moved from the early sequence processing to this point after tokenization+padding+batching
+    dataset_size = len(grain_dataset)
+    slice_size = dataset_size // dataloading_host_count
+    slice_remainder = dataset_size % dataloading_host_count
+    assert slice_remainder == 0, "Padding should have taken care of remaining sliced samples"
+    host_slice_start = dataloading_host_index * slice_size
+    host_slice_end = host_slice_start + slice_size
+    host_slice = slice(host_slice_start, host_slice_end)
+    grain_dataset = grain_dataset.slice(host_slice)
+    LOGGER.info(f"Host {dataloading_host_index} has slice {host_slice} with global dataset size {dataset_size}.")
+    assert slice_remainder == 0, (
+        f"Bad Padding, the should actually be no leftover slice ds: {dataset_size}, "
+        f"sl: {slice_size}, dl: {dataloading_host_count}"
+    )
 
     grain_dataset = grain_dataset.batch(
-        global_batch_size // dataloading_host_count, drop_remainder=False, batch_fn=batch_pad
+        global_batch_size // dataloading_host_count, drop_remainder=False, batch_fn=batch_concatenate
     )
     grain_dataset = grain_dataset.map(grain_transforms.InferSegmentations(eod_token_id=eos_token_id))
 
@@ -330,4 +530,5 @@ def lmeval_preprocessing_pipeline(
         dataset_size=len(dataset),
         reset_after_epoch=True,
     )
+
     return multihost_gen

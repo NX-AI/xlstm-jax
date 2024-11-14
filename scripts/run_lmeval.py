@@ -137,7 +137,7 @@ def main_lmeval(args: argparse.Namespace):
                     limit_requests=args.limit_requests,
                     context_length=args.context_length,
                     num_fewshot=args.num_fewshot,
-                    use_infinite_eval=(not args.use_limited_context),
+                    use_infinite_eval=(not args.no_infinite_eval),
                     infinite_eval_chunksize=128,
                 ),
             ),
@@ -156,6 +156,7 @@ def main_lmeval(args: argparse.Namespace):
                         wb_entity="xlstm",
                         wb_name=wb_name,
                         wb_tags=[args.model, "evaluation"],
+                        wb_resume_id=args.append_to_wandb_id,
                     ),
                 ],
             ),
@@ -222,7 +223,11 @@ def main_lmeval(args: argparse.Namespace):
         global_sync_fn()
 
     for task in sorted(metrics):
-        trainer.logger.log_host_metrics(metrics[task], step=trainer.global_step, mode="leh_" + task)
+        trainer.logger.log_host_metrics(
+            metrics[task],
+            step=trainer.global_step,
+            mode="leh_" + task + (f"_nfs{args.num_fewshot}" if args.num_fewshot else ""),
+        )
 
     log_info(f"Final metrics: {metrics}")
     trainer.logger.finalize(status="success")
@@ -284,6 +289,7 @@ if __name__ == "__main__":
     parser.add_argument("--no_logging", action="store_true")
     parser.add_argument("--num_fewshot", type=int, default=None)
     parser.add_argument("--no_infinite_eval", action="store_true")
+    parser.add_argument("--append_to_wandb_id", type=str, default=None)
 
     args = parser.parse_args()
 

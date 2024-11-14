@@ -2,10 +2,9 @@
 #SBATCH --job-name=xlstm-jax
 #SBATCH --nodes=1
 #SBATCH --partition=compute
-#SBATCH --reservation=debug_nodes
 #SBATCH --gres=gpu:1
 #SBATCH --gpu-bind=none
-#SBATCH --cpus-per-task=28  # Number of cores per socket on compute nodes
+#SBATCH --cpus-per-task=24  # Number of cores per socket on compute nodes
 #SBATCH --ntasks-per-node=1
 #SBATCH --wait-all-nodes=1
 #SBATCH --time=0-04:00:00
@@ -14,7 +13,13 @@
 
 #-------------------------------------------------------------------------------------------------
 CHECKPOINT_DIR=$1
+WANDB_ID=$2
 
+
+if [[ -n $WANDB_ID ]]
+then
+WANDB_ID=" --append_to_wandb_id $WANDB_ID"
+fi
 
 # Change directory (user env not supported in --chdir)
 cd /home/${USER}/xlstm-jax-dev/
@@ -109,6 +114,6 @@ echo $mpivars_path
 # Set Tokenizer!
 # EleutherAI/gpt-neox-20b, gpt2
 # run
-srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
+srun --kill-on-bad-exit=1 --cpu-bind=none --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --log_dir=$LOG_DIR --num_fewshot=5 --fsdp_size=1 --batch_size_per_device=128 --tokenizer=EleutherAI/gpt-neox-20b --load_checkpoint_from_subdir '$1' --tasks hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande'
+     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --log_dir=$LOG_DIR --fsdp_size=1 --batch_size_per_device=16 --tokenizer=EleutherAI/gpt-neox-20b '"$WANDB_ID"' --load_checkpoint_from_subdir '$1' --tasks wikitext hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande lambada'

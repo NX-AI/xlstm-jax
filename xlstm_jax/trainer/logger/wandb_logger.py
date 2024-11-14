@@ -38,6 +38,7 @@ class WandBLoggerConfig(LoggerToolsConfig):
     wb_notes: str | None = None
     wb_settings: dict[str, Any] = field(default_factory=lambda: {"start_method": "fork"})
     wb_tags: list[str] = field(default_factory=list)
+    wb_resume_id: str | None = None
     log_dir: str = "wandb"
 
     def create(self, logger: Logger) -> "LoggerTool":
@@ -91,16 +92,26 @@ class WandBLogger(LoggerTool):
         LOGGER.info("Setting up WandB logging.")
         self.log_path.mkdir(parents=True, exist_ok=True)
         wandb.login(host=self.config.wb_host, key=self.config.wb_key)
-        self.wandb_run = wandb.init(
-            entity=self.config.wb_entity,
-            project=self.config.wb_project,
-            name=self.config.wb_name,
-            tags=self.config.wb_tags,
-            notes=self.config.wb_notes,
-            dir=self.log_path,
-            config=self.config_to_log,
-            settings=wandb.Settings(**self.config.wb_settings),
-        )
+        if self.config.wb_resume_id is None:
+            self.wandb_run = wandb.init(
+                entity=self.config.wb_entity,
+                project=self.config.wb_project,
+                name=self.config.wb_name,
+                tags=self.config.wb_tags,
+                notes=self.config.wb_notes,
+                dir=self.log_path,
+                config=self.config_to_log,
+                settings=wandb.Settings(**self.config.wb_settings),
+            )
+        else:
+            LOGGER.info(f"WandB: Resuming experiment {self.config.wb_resume_id}")
+            self.wandb_run = wandb.init(
+                entity=self.config.wb_entity,
+                project=self.config.wb_project,
+                id=self.config.wb_resume_id,
+                resume="allow",
+                settings=wandb.Settings(**self.config.wb_settings),
+            )
         LOGGER.info(f"WandB mode: {self.wandb_run.settings.mode}")
 
     def log_metrics(self, metrics: HostMetrics, step: int, epoch: int, mode: str):

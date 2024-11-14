@@ -117,8 +117,7 @@ def device_metrics_aggregation(trainer: Any, metrics: Metrics) -> Metrics:
                     "log_modes" in metric_components
                     and (
                         "single_noreduce_wcount" in metric_components["log_modes"]
-                        or comp_name == "value"
-                        and "single_noreduce" in metric_components["log_modes"]
+                        or (comp_name == "value" and "single_noreduce" in metric_components["log_modes"])
                     )
                 )
                 else jax.tree.map(
@@ -306,7 +305,9 @@ class ExtendedEvaluation(Callback):
         )
         return eval_step_fn
 
-    def init_eval_metrics(self, batch: Batch | None = None) -> FrozenDict:
+    def init_eval_metrics(
+        self, batch: Batch | None = None, alternative_eval_step: Callable | None = None
+    ) -> FrozenDict:
         """
         Initialize the evaluation metrics with zeros.
 
@@ -316,6 +317,9 @@ class ExtendedEvaluation(Callback):
 
         Args:
             batch: An input to the model with which the shapes are inferred. If None, the :attr:`exmp_batch` is used.
+            alternative_eval_step: An optional alternative eval step (not self.eval_step). This is needed if
+                for a more complex eval step, that internally computes multiple steps (i.e. infinite eval in
+                `lmeval_extended_evaluation.py`)
 
         Returns:
             A dictionary of metrics with the same shape as the eval metrics.
@@ -325,7 +329,12 @@ class ExtendedEvaluation(Callback):
         if self.eval_metric_shapes is None:
             if batch is None:
                 batch = self.exmp_batch
-            self.eval_metric_shapes = jax.eval_shape(self.eval_step, self.trainer.state, batch, None)
+            self.eval_metric_shapes = jax.eval_shape(
+                self.eval_step if alternative_eval_step is None else alternative_eval_step,
+                self.trainer.state,
+                batch,
+                None,
+            )
             LOGGER.info(f"Initialized eval metrics with keys {self.eval_metric_shapes.keys()}.")
 
         return jax.tree.map(lambda x: jnp.zeros_like(x), self.eval_metric_shapes)

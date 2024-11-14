@@ -9,6 +9,7 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 import optax
+from flax.core import FrozenDict, freeze
 from jax.experimental.shard_map import shard_map
 from jax.sharding import PartitionSpec as P
 from lm_eval.api.instance import Instance
@@ -30,7 +31,14 @@ from xlstm_jax.trainer.callbacks.extended_evaluation import (
 )
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
-from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
+from xlstm_jax.trainer.metrics import (
+    HostMetrics,
+    ImmutableMetrics,
+    Metrics,
+    aggregate_metrics,
+    get_metrics,
+    update_metrics,
+)
 
 PyTree = Any
 
@@ -74,7 +82,7 @@ def fuse_document_results(
     accs_count = results_dict["accuracies_single_noreduce_wcount"][1]
 
     idxs = np.argsort(results_dict["document_idx_single_noreduce"])
-    previous_didx = -1
+    previous_didx = 0
     llh = 0.0
     acc = 0.0
     llh_count = 0
@@ -83,13 +91,16 @@ def fuse_document_results(
     results = []
     for idx in idxs:
         if didx[idx] != previous_didx and not first:
+            if didx[idx] != previous_didx + 1:
+                LOGGER.warning(f"Missing document index in between: {previous_didx} and {didx[idx]}")
             results.append((llh, bool(acc == acc_count)))
             llh = 0.0
             acc = 0.0
             llh_count = 0
             acc_count = 0
         previous_didx = didx[idx]
-        if didx[idx] == -1:
+        # ignore documents with document_idx padding value
+        if didx[idx] == 0:
             continue
         first = False
         llh += llhs[idx]
@@ -306,7 +317,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         Returns:
             LLMIndexedBatch
         """
-        return LLMIndexedBatch(
+        batch = LLMIndexedBatch(
             inputs=exmp_batch.inputs,
             targets=exmp_batch.targets,
             inputs_position=exmp_batch.inputs_position,
@@ -316,6 +327,13 @@ class LMEvalEvaluation(ExtendedEvaluation):
             document_idx=-jnp.ones([exmp_batch.inputs.shape[0]], dtype=jnp.int32),
             sequence_idx=jnp.zeros([exmp_batch.inputs.shape[0]], dtype=jnp.int32),
         )
+        if self.config.use_infinite_eval:
+            if isinstance(exmp_batch, jax.ShapeDtypeStruct):
+                return LLMIndexedBatch.get_dtype_struct(exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize)
+            else:
+                return LLMIndexedBatch.get_sample(exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize)
+        else:
+            return batch
 
     def run_evaluate(self) -> HostMetrics:
         """
@@ -368,15 +386,56 @@ class LMEvalEvaluation(ExtendedEvaluation):
         Create jitted version of the evaluation function.
         """
         if self.config.use_infinite_eval:
-            eval_step = self.create_recurrent_evaluation_step_function(
+            eval_step, eval_single_step = self.create_recurrent_evaluation_step_function(
                 chunk_size=self.config.infinite_eval_chunksize,
                 exmp_batch=LLMIndexedBatch.get_dtype_struct(
                     self.trainer.exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize
                 ),
             )
+            super().init_eval_metrics(alternative_eval_step=eval_single_step)
             self.eval_step = eval_step
+            self.eval_single_step = eval_single_step
         else:
             super().create_jitted_functions()
+
+    def init_eval_metrics(self, batch: LLMIndexedBatch | None = None) -> FrozenDict | dict:
+        """
+        Override parent init_eval_metrics potentially for infinite eval.
+        Then metrics are partly aggregated one level below (along the sequence) and aggregated fully
+        (across batches) within `eval_model`.
+
+        Args:
+            batch: An input to the model with which the shapes are inferred. If None, the :attr:`exmp_batch` is used.
+
+        Returns:
+            A dictionary of metrics with the same shape as the eval metrics.
+        """
+        if self.config.use_infinite_eval:
+            step_metrics = super().init_eval_metrics(alternative_eval_step=self.eval_single_step)
+            return {"step_metrics": step_metrics}
+        else:
+            return super().init_eval_metrics()
+
+    def aggregate_metrics(self, aggregated_metrics: HostMetrics, eval_metrics: HostMetrics) -> HostMetrics:
+        """
+        Aggregate metrics over multiple batches. This is an adaption of the parent class that ignores the
+        passed "step_metrics" in the metrics dictionary. The "step_metrics" are single recurrent step
+        metrics to be donated for a future evaluation step.
+
+        Args:
+            aggregated_metrics: Old aggregated metrics
+            eval_metrics: Single batch metrics
+
+        Returns:
+            aggregated_metrics including the new batch
+
+        """
+        if self.config.use_infinite_eval:
+            metrics = eval_metrics.copy()
+            metrics.pop("step_metrics")
+            return aggregate_metrics(aggregated_metrics, metrics)
+        else:
+            return super().aggregate_metrics(aggregated_metrics, eval_metrics)
 
     def create_recurrent_evaluation_step_function(
         self,
@@ -460,22 +519,36 @@ class LMEvalEvaluation(ExtendedEvaluation):
         )
 
         # Jit the step function. We donate also the cache to free up memory.
-        rec_eval_step_fn = jax.jit(
-            rec_eval_step_fn,
-            donate_argnames=["cache", "metrics"],
-        )
+        if not self.trainer.trainer_config.debug:
+            rec_eval_step_fn = jax.jit(
+                rec_eval_step_fn,
+                donate_argnames=["cache", "metrics"],
+            )
 
-        # Create the looped evaluation step function.
-        def looped_eval_step_fn(
+        def single_eval_step_fn(
             state: TrainState, batch: LLMIndexedBatch, metrics: ImmutableMetrics | None
         ) -> ImmutableMetrics:
+            """
+            Creates a single evaluation step function (without loop) to enable the init_eval_metrics function
+            as it is needed to compile the elementary step.
+            The looped eval step however has variable metrics output shapes.
+            """
+            cache = cache_init_fn(cache_shape)
+            cache, metrics = rec_eval_step_fn(state, cache, batch, metrics)
+            return metrics
+
+        # Create the looped evaluation step function.
+        def looped_eval_step_fn(state: TrainState, batch: LLMIndexedBatch, metrics: HostMetrics | None) -> HostMetrics:
             """
             Evaluation step function that internally uses a loop over chunks.
 
             Args:
                 state: The trainer/evaluator state.
                 batch: The LLMIndexedBatch (of potentially very large sequence length)
-                metrics: The old metrics to be updated.
+                metrics: The old metrics containing the `step_metrics` entry for single (recurrent) step metrics.
+                         These step_metrics contain the full validation metrics for "non-growing" metrics.
+                         Other metrics (per batch, per sample - "noreduce" metrics) are ignored and
+                         aggregated one level above. They are aggregated also internally starting from empty metrics.
 
             Returns:
                 Update metrics after processing the batch.
@@ -484,6 +557,16 @@ class LMEvalEvaluation(ExtendedEvaluation):
             cache = cache_init_fn(cache_shape)
             # Run the evaluation per chunk with forwarding the cache.
             num_chunks = (batch.inputs.shape[1] - 1) // chunk_size + 1
+            # step_metrics are part of the global metrics dict here, as they need to be donated
+            # for memory re-use. What is returns also contains the step metrics plus additional
+            # "batch host metrics" aggregated over multiple "sequence-internal" steps
+            # These are aggregated with the global "validation metrics" in `:func:eval_model`
+            step_metrics = metrics["step_metrics"]
+
+            # do not use outer aggregated metrics here, aggregate internally first
+            # the aggregation with the outer metrics happens in the evaluation loop
+            non_step_metrics = {}
+
             for i in range(num_chunks):
                 # Get current chunk of batch.
                 chunk_start = i * chunk_size
@@ -496,11 +579,31 @@ class LMEvalEvaluation(ExtendedEvaluation):
                         lambda x: jnp.pad(x, ((0, 0), (0, pad_size)), mode="constant") if x.ndim > 1 else x, chunk_batch
                     )
                 # Run the evaluation step.
-                cache, metrics = rec_eval_step_fn(state, cache, chunk_batch, metrics)
-            # Return final metrics.
-            return metrics
+                cache, step_metrics = rec_eval_step_fn(state, cache, chunk_batch, step_metrics)
+                non_step_metrics = aggregate_metrics(aggregated_metrics=non_step_metrics, batch_metrics=step_metrics)
 
-        return looped_eval_step_fn
+            # Return final metrics, including step_metrics that are needed for re-donation.
+            non_step_metrics["step_metrics"] = step_metrics
+            metrics = non_step_metrics
+            return freeze(metrics)
+
+        return looped_eval_step_fn, single_eval_step_fn
+
+    def finalize_metrics(self, aggregated_metrics: HostMetrics) -> HostMetrics:
+        """
+        Calculate final metrics from aggregated_metrics. (i,e, mean=sum/count)
+
+        Args:
+            aggregated_metrics: Aggregated metrics over the whole epoch
+
+        Returns:
+            Final metrics that are to be reported / logged.
+        """
+        if self.config.use_infinite_eval:
+            aggregated_metrics = aggregated_metrics
+            if "step_metrics" in aggregated_metrics:
+                aggregated_metrics.pop("step_metrics")
+        return get_metrics(aggregated_metrics)[1]
 
     def eval_function(
         self,
@@ -530,6 +633,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         logits, mutable_variables = apply_fn(
             {"params": params, **mutable_variables},
             batch.inputs,
+            document_borders=batch.get_document_borders(),
             train=False,
             mutable=["intermediates"] + list(mutable_variables.keys()),
         )

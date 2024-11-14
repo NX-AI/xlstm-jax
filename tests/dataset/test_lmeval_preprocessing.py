@@ -100,7 +100,8 @@ def test_hfprefix_tokenize():
 
 
 @pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
-def test_lmeval_iterator():
+@pytest.mark.parametrize("dataloading_host_count", [1, 2, 4])
+def test_lmeval_iterator(dataloading_host_count: int):
     """Tests the LMEval dataset iterator"""
     # Initialize mesh.
     parallel = ParallelConfig(
@@ -112,6 +113,10 @@ def test_lmeval_iterator():
     mesh = initialize_mesh(
         init_distributed_on_slurm=False, parallel_config=parallel, device_array=np.array(jax.devices())[0:1]
     )
+    # this dataset should have sequences of very different size to test proper sequence padding across
+    # multiple dataloader hosts
+    # adding text with % 5 and len=12 are chosen to fulfill this purpose, but there is room for improvement to
+    # specifically test all possibilities
     dataset = [
         Instance(request_type="loglikelihood_rolling", doc={}, idx=0, arguments=("This is some exemplary text.")),
     ] + [
@@ -119,25 +124,58 @@ def test_lmeval_iterator():
             request_type="loglikelihood_rolling",
             doc={},
             idx=0,
-            arguments=("This is some exemplary text. This is longer to test padding."),
-        ),
-    ] * 10
-    pipeline = lmeval_preprocessing_pipeline(
-        0,
-        1,
-        global_mesh=mesh,
-        dataset=dataset,
-        global_batch_size=2,
-        tokenizer_path="gpt2",
-        padding_multiple=128,
-    )
+            arguments=(
+                "This is some exemplary text. This is longer to test padding."
+                + "Really a lot more text repeated" * (sample_len % 5)
+            ),
+        )
+        for sample_len in range(12)
+    ]
 
-    for batch in pipeline:
-        assert batch.inputs.shape == (2, 128)
-        assert batch.targets.shape == (2, 128)
-        assert batch.inputs_position.shape == (2, 128)
-        assert batch.targets_position.shape == (2, 128)
-        assert batch.inputs_segmentation.shape == (2, 128)
-        assert batch.targets_segmentation.shape == (2, 128)
-        assert batch.document_idx.shape == (2,)
-        assert batch.sequence_idx.shape == (2,)
+    if dataloading_host_count == 1:
+        pipeline = lmeval_preprocessing_pipeline(
+            dataloading_host_index=0,
+            dataloading_host_count=1,
+            global_mesh=mesh,
+            dataset=dataset,
+            global_batch_size=2 * dataloading_host_count,
+            tokenizer_path="gpt2",
+            padding_multiple=128,
+        )
+
+        total_docs = 0
+        for batch in pipeline:
+            total_docs += (batch.document_idx != 0).sum()
+            assert batch.inputs.shape == (2, 128)
+            assert batch.targets.shape == (2, 128)
+            assert batch.inputs_position.shape == (2, 128)
+            assert batch.targets_position.shape == (2, 128)
+            assert batch.inputs_segmentation.shape == (2, 128)
+            assert batch.targets_segmentation.shape == (2, 128)
+            assert batch.document_idx.shape == (2,)
+            assert batch.sequence_idx.shape == (2,)
+    else:
+        all_batches = {}
+        for host_index in range(dataloading_host_count):
+            pipeline = lmeval_preprocessing_pipeline(
+                dataloading_host_index=host_index,
+                dataloading_host_count=dataloading_host_count,
+                global_mesh=mesh,
+                dataset=dataset,
+                global_batch_size=2 * dataloading_host_count,
+                tokenizer_path="gpt2",
+                padding_multiple=4,
+            )
+            all_batches[host_index] = [batch for batch in pipeline]
+
+        all_batches = jax.device_get(all_batches)
+        all_document_idx = np.concatenate(
+            [
+                np.concatenate([all_batches[host_idx][idx].document_idx for host_idx in all_batches], axis=0)
+                for idx in range(len(all_batches[0]))
+            ],
+            axis=0,
+        )
+        total_docs = (all_document_idx != 0).sum()
+
+    assert total_docs == len(dataset), f"Documents in batches {total_docs} != {len(dataset)} inserted docs."

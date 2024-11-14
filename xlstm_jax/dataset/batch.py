@@ -37,17 +37,17 @@ class LLMBatch(Batch):
     """
 
     inputs_position: jax.Array
-    """Positions of the input tokens."""
+    """Positions of the input tokens. dtype: np.int32"""
     inputs_segmentation: jax.Array
-    """Segmentation of the input tokens. 0 to indicate padding."""
+    """Segmentation of the input tokens. 0 to indicate padding. dtype: np.int32"""
     targets_position: jax.Array
-    """Positions of the target tokens."""
+    """Positions of the target tokens. dtype: np.int32"""
     targets_segmentation: jax.Array
-    """Segmentation of the target tokens. 0 to indicate padding."""
+    """Segmentation of the target tokens. 0 to indicate padding. dtype: np.int32"""
     _document_borders: jax.Array | None = None
     """Document borders for the input data. This buffer should only be used to explicitly overwrite the standard
     algorithm to calculate the document borders; for instance, if slicing the batch. Otherwise, use
-    `:func:get_document_borders` to get the document borders."""
+    `:func:get_document_borders` to get the document borders. dtype: bool"""
 
     def get_document_borders(self) -> jax.Array:
         """Get the document borders for the input data.
@@ -153,12 +153,14 @@ class LLMBatch(Batch):
 class LLMIndexedBatch(LLMBatch):
     """
     Batch for LLM data with document indices and sequence indices for correct ordering.
+
+    `document_idx` equals zero means padding.
     """
 
     document_idx: jax.Array
-    """Document indices for batch sequences"""
+    """Document indices for batch sequences. dtype: np.int32"""
     sequence_idx: jax.Array
-    """Sequence indices within documents for batch sequences"""
+    """Sequence indices within documents for batch sequences. dtype: np.int32"""
 
     @staticmethod
     def from_inputs(
