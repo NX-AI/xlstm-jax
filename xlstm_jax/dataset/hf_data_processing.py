@@ -272,7 +272,8 @@ def preprocessing_pipeline(
     eod_token_id: int | None = None,
     batch_rampup_factors: dict[int, float] | None = None,
 ) -> MultiHostDataLoadIterator:
-    """Pipeline for preprocessing HF dataset.
+    """
+    Pipeline for preprocessing HF dataset.
 
     Args:
         dataloading_host_index: The index of the data loading host. Will be used to select the

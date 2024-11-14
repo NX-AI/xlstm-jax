@@ -41,8 +41,8 @@ def mlstm_chunkwise__parallel_bw_dQ(
     output_dtype: jnp.dtype = jnp.float32,
 ) -> jax.Array:  # matDeltaQ (B, NH, S, DHQK)
     """
-    Computes only the deltaK gradients for the backward pass.
-    The other gradients are computed in the other (kernel) function.
+    Computes only the deltaK gradients for the backward pass. The other gradients are computed in
+    the other (kernel) function.
 
     This function defines the grid and block sizes for the kernel launch and calls the kernel.
     chunk parallel size:        siz_b_LQ

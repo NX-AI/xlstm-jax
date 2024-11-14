@@ -18,13 +18,14 @@ Issues = "https://github.com/NX-AI/xlstm-jax/issues"
 
 # docformatter
 [tool.docformatter]
-diff = true
-docstring-length = [90, 120]
+diff = false
+docstring-length = [40, 1000]
 in-place = true
 pre-summary-newline = true
 recursive = true
-wrap-summaries = 120
-wrap-descriptions = 120
+wrap-summaries = 100
+wrap-descriptions = 100
+non-cap = ["xLSTM"]
 
 # flake8
 [tool.flake8]
@@ -54,7 +55,7 @@ ignore-nested-functions = true
 ignore-nested-classes = true
 ignore-setters = true
 ignore-overloaded-functions = false
-fail-under = 55
+fail-under = 65
 exclude = []
 ignore-regex = []
 ext = []

@@ -61,7 +61,8 @@ def make_grain_llm_iterator(
     use_thread_prefetch: bool = False,
     batch_rampup_factors: dict[str, float] | None = None,
 ) -> MultiHostDataLoadIterator:
-    """Create a multi-host dataloader for LLM training.
+    """
+    Create a multi-host dataloader for LLM training.
 
     The dataloader will perform batch packing, padding, and shifting of the data to create
     a batch of LLMBatch objects. The LLMBatch object will contain the input and target data
