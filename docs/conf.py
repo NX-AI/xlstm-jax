@@ -27,6 +27,7 @@ extensions = [
     "sphinx.ext.todo",
     # "sphinx.ext.viewcode",  # throws an error
     "sphinx_rtd_theme",
+    "myst_parser",
 ]
 
 templates_path = ["_templates"]
