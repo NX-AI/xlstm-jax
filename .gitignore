@@ -79,3 +79,6 @@ coverage.xml
 
 # Benchmarks
 logs/
+
+# Private experiments
+configs/experiment/private*

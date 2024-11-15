@@ -1,0 +1,69 @@
+# @package _global_
+defaults:
+  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - override /parallel: mLSTMv1_7B
+  - override /model: mLSTMv1_7B
+  - override /data: dclm_arrayrecord_train
+  - override /optimizer: adamw
+  - override /profiling: jax_profiling
+  - override /hydra/launcher: slurm_launcher
+  - _self_
+
+# specify the deltas from the defaults:
+task_name: DCLM
+batch_size_per_device: 4
+context_length: 8192
+num_epochs: 1000
+num_train_steps: 500_000
+lr: 4e-4
+
+scheduler:
+  warmup_steps: 8_000
+
+trainer:
+  gradient_accumulate_steps: 1
+  check_val_every_n_steps: 2_500
+  log_logit_stats: false
+  log_intermediates: false
+  seed: 0
+
+checkpointing:
+  max_to_keep: null
+  monitor: null
+
+data:
+  tokenizer_path: "EleutherAI/gpt-neox-20b"
+  data_shuffle_seed: 0
+  batch_rampup_factors:
+    0: 0.25
+    2_000: 0.5
+    4_000: 1.0
+
+data_eval:
+  val1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  val2:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+
+model:
+  reset_at_document_boundaries: true
+  vocab_size: -1
+  num_heads: 8
+
+profiling:
+  # Not profiling to reduce time and potential failure points.
+  profile_every_n_minutes: -1
+
+# Run command:
+# PYTHONPATH=. python scripts/train_with_hydra.py +experiment=train_mLSTMv1_7B_dclm_long_run_wu8k.yaml
+hydra:
+  launcher:
+    nodes: 16
+    additional_parameters: {
+      "gpu-bind": "closest",
+      "wait-all-nodes": "1",
+      "time": "21-00:00:00",
+      "exclusive": "",
+    }
+  mode: MULTIRUN
