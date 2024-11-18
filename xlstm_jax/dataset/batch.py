@@ -34,6 +34,24 @@ class LLMBatch(Batch):
     Batch for LLM training.
 
     Contains inputs and targets along with their respective positions and segmentations.
+
+    ------------------------------------------------------------------------------------
+    Example: Consider sequences [1, 2, 3] and [4, 5], [6, 7].
+    These will be grouped into one sequence of length 8 and separated by an end-of-document token E.
+    Padding is token 0. Segmentations are used to separate the subsequences.
+
+    Note that we use grain packing (FirstFitPackIterDataset) for grouping the smaller sequence.
+    If the last subsequence does not fit in the same sequence, it will be used in the next sequence (not shown below).
+
+    Using packing & shift inputs (right):
+        targets:              [1, 2, 3, E, 4, 5, E, 0]
+        inputs:               [E, 1, 2, 3, E, 4, 5, E] # The first token is always E (marking the beginning).
+        targets_segmentation: [1, 1, 1, 1, 2, 2, 2, 0]
+        inputs_segmentation:  [1, 1, 1, 1, 2, 2, 2, 0]
+        targets_position:     [0, 1, 2, 3, 0, 1, 2, 0]
+        inputs_position:      [0, 1, 2, 3, 0, 1, 2, 0]
+        doc borders:          [1, 0, 0, 0, 1, 0, 0, 1]
+    Note that the two segmentations are identical. They would be different for prediction with multiple prefix tokens.
     """
 
     inputs_position: jax.Array
@@ -53,7 +71,7 @@ class LLMBatch(Batch):
         """Get the document borders for the input data.
 
         A token represents a document border if its previous target token has a different target segmentation.
-        For instance, if the target segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
+        For instance, if the input segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
         This mask can be useful for processing documents separately in a recurrent model, i.e. when to reset the
         hidden state.
         Note: If the last tokens are paddings, marking invalid tokens, the border between the last document and
@@ -66,7 +84,7 @@ class LLMBatch(Batch):
             return self._document_borders
         else:
             return jnp.pad(
-                self.targets_segmentation[:, :-1] != self.targets_segmentation[:, 1:],
+                self.inputs_segmentation[:, :-1] != self.inputs_segmentation[:, 1:],
                 ((0, 0), (1, 0)),
                 mode="constant",
                 constant_values=True,

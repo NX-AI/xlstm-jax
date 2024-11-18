@@ -273,9 +273,9 @@ def _check_document_borders(batches: Sequence[LLMBatch], eod_token_id: int):
         manual_document_borders = batch.inputs == eod_token_id
         document_borders = batch.get_document_borders()
         assert document_borders[:, 0].all(), "The first token should always be a document border."
-        assert (manual_document_borders[:, 1:-1] == document_borders[:, 1:-1]).all(), (
+        assert (manual_document_borders[:, 1:] == document_borders[:, 1:]).all(), (
             f"Manual document borders should be the same as from LLMBatch.get_document_borders, "
-            f"except for the first token which is always a document border, and the last token which is ignored. {idx}"
+            f"except for the first token which is always a document border. {idx}"
         )
         assert (batch.inputs[manual_document_borders] == eod_token_id).all(), "Borders should be EOD tokens in inputs"
         assert (batch.inputs[~manual_document_borders] != eod_token_id).all(), "Non-borders should not be EOD tokens"
