@@ -11,6 +11,7 @@ from jax.sharding import Mesh
 
 from xlstm_jax.dataset import grain_data_processing
 from xlstm_jax.dataset.configs import GrainArrayRecordsDataConfig
+from xlstm_jax.dataset.grain_transforms import InferSegmentations
 from xlstm_jax.dataset.input_pipeline_interface import create_data_iterator
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
@@ -117,6 +118,15 @@ def test_array_records_identical_to_hf_dataset_and_loader(tmp_path: Path):
             assert np.all(
                 getattr(eval_batches[i], field) == getattr(eval_batches_20[i], field)
             ), f"{field} is different in batch {i}"
+
+    # Assert that packing creates the same segmentations as which we would have inferred.
+    eod_idx = 50234
+    for batch in eval_batches_20:
+        inferred_batch = InferSegmentations(eod_token_id=eod_idx).map(batch.__dict__.copy())
+        for field in inferred_batch.keys():
+            np.testing.assert_array_equal(
+                inferred_batch[field], getattr(batch, field), err_msg=f"{field} is different in batch {i}"
+            )
 
 
 def _grain_setup_data(

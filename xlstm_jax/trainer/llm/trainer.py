@@ -75,6 +75,7 @@ class LLMTrainer(TrainerModule):
         logits, mutable_variables = apply_fn(
             {"params": params, **mutable_variables},
             batch.inputs,
+            pos_idx=batch.inputs_position,
             document_borders=batch.get_document_borders(),
             train=train,
             rngs={"dropout": dropout_rng},
@@ -239,6 +240,7 @@ class LLMTrainer(TrainerModule):
             _, mutable_variables = state.apply_fn(
                 {"params": state.params},
                 batch.inputs,
+                pos_idx=batch.inputs_position,
                 document_borders=batch.get_document_borders(),
                 train=False,
                 mutable="cache",

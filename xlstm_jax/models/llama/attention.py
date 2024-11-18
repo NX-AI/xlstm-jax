@@ -13,23 +13,32 @@ AttentionBackend = Literal["xla", "pallas_triton", "cudnn"]
 
 
 def precompute_freqs(
-    feat_dim: int, max_length: int, theta: float = 1e4, dtype: jnp.dtype = jnp.float32
+    feat_dim: int,
+    pos_idx: jax.Array | None = None,
+    max_length: int | None = None,
+    theta: float = 1e4,
+    dtype: jnp.dtype = jnp.float32,
 ) -> tuple[jax.Array, jax.Array]:
     """
     Compute the sine and cosine frequencies for the rotary embeddings.
 
     Args:
         feat_dim: Feature dimension of the input.
-        max_length: Maximum length of the input sequence.
+        pos_idx: Positional indices of the tokens in the input sequence. If None, uses an arange up to max_length.
+        max_length: Maximum length of the input sequence. Only used if pos is None.
         theta: Theta parameter for the wave length calculation.
         dtype: Data type of the returned frequencies.
 
     Returns:
-        Tuple of the sine and cosine frequencies.
+        Tuple of the sine and cosine frequencies, shape (B, S, D//2). If pos_idx is None, shape is (1, S, D//2).
     """
-    freqs = 1.0 / (theta ** (jnp.arange(0.0, float(feat_dim), 2.0)[: (feat_dim // 2)] / feat_dim))
-    t = jnp.arange(max_length)
-    freqs = jnp.outer(t, freqs)
+    if pos_idx is None:
+        assert max_length is not None, "If pos_idx is None, max_length must be specified."
+        t = jnp.arange(max_length, dtype=jnp.float32)[None, :]
+    else:
+        t = pos_idx.astype(jnp.float32)
+    freqs = 1.0 / (theta ** (jnp.arange(0.0, float(feat_dim), 2.0, dtype=jnp.float32)[: (feat_dim // 2)] / feat_dim))
+    freqs = jax.vmap(jnp.outer, in_axes=(0, None))(t, freqs)
     freqs_cos = jnp.cos(freqs).astype(dtype)
     freqs_sin = jnp.sin(freqs).astype(dtype)
     return freqs_sin, freqs_cos
@@ -46,8 +55,8 @@ def apply_rotary_emb(
     Apply the rotary embeddings to the queries and keys.
 
     Args:
-        xq: Array containing the query features of shape (B, NH, S, DHQK).
-        xk: Array containing the key features of shape (B, NH, S, DHQK).
+        xq: Array containing the query features of shape (B, S, NH, DHQK).
+        xk: Array containing the key features of shape (B, S, NH, DHQK).
         freqs_sin: Sine frequencies for the rotary embeddings. If None, computes them based on the shape of xq.
         freqs_cos: Cosine frequencies for the rotary embeddings. If None, computes them based on the shape of xq.
         theta: Theta parameter for calculating the frequencies.
@@ -56,15 +65,15 @@ def apply_rotary_emb(
         Tuple of the query and key features with the rotary embeddings applied.
     """
     if freqs_sin is None or freqs_cos is None:
-        freqs_sin, freqs_cos = precompute_freqs(xq.shape[-1], xq.shape[-2], theta=theta, dtype=xq.dtype)
+        freqs_sin, freqs_cos = precompute_freqs(xq.shape[-1], max_length=xq.shape[-2], theta=theta, dtype=xq.dtype)
 
     # reshape xq and xk to match the complex representation
     xq_r, xq_i = jnp.moveaxis(xq.reshape(xq.shape[:-1] + (-1, 2)), -1, 0)
     xk_r, xk_i = jnp.moveaxis(xk.reshape(xk.shape[:-1] + (-1, 2)), -1, 0)
 
     # reshape freqs_cos and freqs_sin for broadcasting
-    freqs_cos = freqs_cos[None, :, None, :].astype(xq.dtype)
-    freqs_sin = freqs_sin[None, :, None, :].astype(xq.dtype)
+    freqs_cos = jnp.broadcast_to(freqs_cos[:, :, None, :], xq_r.shape).astype(xq.dtype)
+    freqs_sin = jnp.broadcast_to(freqs_sin[:, :, None, :], xq_r.shape).astype(xq.dtype)
 
     # apply rotation using real numbers
     xq_out_r = xq_r * freqs_cos - xq_i * freqs_sin
@@ -202,7 +211,7 @@ class SelfAttention(nn.Module):
 
         # Apply rotary embeddings
         if freqs is None:
-            freqs = precompute_freqs(head_dim, seqlen)
+            freqs = precompute_freqs(head_dim, max_length=seqlen, dtype=q.dtype)
         q, k = apply_rotary_emb(q, k, *freqs)
 
         # Compute attention

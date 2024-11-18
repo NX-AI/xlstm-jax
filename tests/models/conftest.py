@@ -184,10 +184,13 @@ class LLMTrainerHelper:
         )
         variables = init_model_fn(init_rng, exmp_input)
 
-        def _forward(batch_input: jax.Array, variables: Any, batch_borders: jax.Array | None) -> jax.Array:
+        def _forward(
+            batch_input: jax.Array, variables: Any, batch_position: jax.Array | None, batch_borders: jax.Array | None
+        ) -> jax.Array:
             return model.apply(
                 variables,
                 batch_input,
+                pos_idx=batch_position,
                 document_borders=batch_borders,
                 train=True,
                 rngs={"dropout": jax.random.PRNGKey(42)},
@@ -197,18 +200,18 @@ class LLMTrainerHelper:
             shard_map(
                 _forward,
                 mesh,
-                in_specs=(P(), variables_partition_specs, P()),
+                in_specs=(P(), variables_partition_specs, P(), P()),
                 out_specs=P(),
                 check_rep=False,
             ),
         )
         # Run forward function.
-        logits = forward_fn(exmp_input, variables, None)
+        logits = forward_fn(exmp_input, variables, None, None)
         logits = jax.device_get(logits)
         assert logits.shape == (batch_size, context_length, vocab_size), f"Logits shape: {logits.shape}"
         # Check that the model is causal.
         exmp_input_perturbed = exmp_input.at[0, 4].set((exmp_input[0, 4] + 1) % vocab_size)
-        logits_perturbed = forward_fn(exmp_input_perturbed, variables, None)
+        logits_perturbed = forward_fn(exmp_input_perturbed, variables, None, None)
         logits_perturbed = jax.device_get(logits_perturbed)
         np.testing.assert_array_equal(
             logits[1:],
@@ -229,17 +232,24 @@ class LLMTrainerHelper:
 
         if test_document_borders:
             # Create document borders that are spaced over sequences.
-            border_idx = jnp.linspace(1, context_length, batch_size, dtype=jnp.int32)
+            border_idx = jnp.linspace(1, context_length - 1, batch_size, dtype=jnp.int32)
             document_borders = jnp.arange(context_length)[None] == border_idx[:, None]
             document_borders = document_borders.at[:, 0].set(True)
+            pos_idx = jnp.stack(
+                [
+                    np.concatenate([np.arange(border_idx[i]), np.arange(context_length - border_idx[i])])
+                    for i in range(batch_size)
+                ],
+                axis=0,
+            )
             # Run forward function with document borders.
-            logits = forward_fn(exmp_input, variables, document_borders)
+            logits = forward_fn(exmp_input, variables, pos_idx, document_borders)
             logits = jax.device_get(logits)
             assert logits.shape == (batch_size, context_length, vocab_size), f"Logits shape: {logits.shape}"
             # Check that the model is causal.
             pert_idx = context_length // 2
             exmp_input_perturbed = exmp_input.at[:, pert_idx].set((exmp_input[:, pert_idx] + 1) % vocab_size)
-            logits_perturbed = forward_fn(exmp_input_perturbed, variables, document_borders)
+            logits_perturbed = forward_fn(exmp_input_perturbed, variables, pos_idx, document_borders)
             logits_perturbed = jax.device_get(logits_perturbed)
             for i in range(batch_size):
                 postfix = f" Failed for idx={i}, border={border_idx[i]}, pert={pert_idx}."
@@ -269,6 +279,35 @@ class LLMTrainerHelper:
                         err_msg="Document border masking failed, tokens from future documents should not be affected."
                         + postfix,
                     )
+
+            # Feed in the same batch twice, once with document order flipped. This should be equivalent.
+            def flip_array(x: jax.Array):
+                return jnp.stack(
+                    [jnp.concatenate([x[i, border_idx[i] :], x[i, : border_idx[i]]]) for i in range(batch_size)], axis=0
+                )
+
+            exmp_input_flipped = flip_array(exmp_input)
+            pos_idx_flipped = flip_array(pos_idx)
+            document_borders_flipped = flip_array(document_borders)
+            np.testing.assert_array_equal(
+                document_borders_flipped[:, 0],
+                document_borders[:, 0],
+                err_msg="First document border should be the same.",
+            )
+            np.testing.assert_array_equal(
+                document_borders_flipped[:, 1:],
+                document_borders[:, 1:][:, ::-1],
+                err_msg="Document borders should be exactly flipped up to the first token.",
+            )
+            logits_flipped = forward_fn(exmp_input_flipped, variables, pos_idx_flipped, document_borders_flipped)
+            logits_flipped = jax.device_get(logits_flipped)
+            np.testing.assert_allclose(
+                flip_array(logits),
+                logits_flipped,
+                atol=1e-4,
+                rtol=1e-4,
+                err_msg="Flipping the input should not affect the output.",
+            )
 
 
 @pytest.fixture

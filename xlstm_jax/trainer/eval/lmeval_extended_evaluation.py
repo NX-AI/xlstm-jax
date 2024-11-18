@@ -633,6 +633,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         logits, mutable_variables = apply_fn(
             {"params": params, **mutable_variables},
             batch.inputs,
+            pos_idx=batch.inputs_position,
             document_borders=batch.get_document_borders(),
             train=False,
             mutable=["intermediates"] + list(mutable_variables.keys()),

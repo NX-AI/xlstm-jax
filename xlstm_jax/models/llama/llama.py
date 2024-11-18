@@ -228,12 +228,20 @@ class TransformerBlockStack(nn.Module):
     config: LlamaConfig
 
     @nn.compact
-    def __call__(self, x: jax.Array, document_borders: jax.Array | None = None, train: bool = False) -> jax.Array:
+    def __call__(
+        self,
+        x: jax.Array,
+        pos_idx: jax.Array | None = None,
+        document_borders: jax.Array | None = None,
+        train: bool = False,
+    ) -> jax.Array:
         """
         Apply stack of transformer blocks to the input tensor.
 
         Args:
             x: Input tensor.
+            pos_idx: Optional input tensor of positional indices. If None, positional indices are generated as an
+                increasing sequence from 0 to context_length - 1. Shape (batch_size, context_length).
             document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
                 and which don't (False). If self.config.mask_across_document_boundaries is True, these borders will be
                 used to identify which document each token belongs to, and masks out attention of tokens across
@@ -243,7 +251,7 @@ class TransformerBlockStack(nn.Module):
         Returns:
             Output tensor of the transformer block stack.
         """
-        freqs = precompute_freqs(self.config.head_dim, x.shape[1], self.config.theta, dtype=self.config._dtype)
+        freqs = precompute_freqs(self.config.head_dim, pos_idx, x.shape[1], self.config.theta, dtype=self.config._dtype)
         if document_borders is not None and self.config.mask_across_document_boundaries:
             segment_ids = jnp.cumsum(document_borders.astype(jnp.int32), axis=1)
         else:
@@ -285,13 +293,26 @@ class LlamaTransformer(nn.Module):
 
     @nn.compact
     def __call__(
-        self, idx: jax.Array, document_borders: jax.Array | None = None, train: bool = False, **kwargs
+        self,
+        idx: jax.Array,
+        pos_idx: jax.Array | None = None,
+        document_borders: jax.Array | None = None,
+        train: bool = False,
+        **kwargs,
     ) -> jax.Array:
         """
         Apply LLAMA transformer model to the input tensor.
 
+        Example inputs for batch size 1 and context length 9:
+                     idx = [[1, 8, 3, 2, 1, 4, 5, 5, 3]]
+                 pos_idx = [[0, 1, 2, 3, 0, 1, 2, 3, 4]]
+        document_borders = [[T, F, F, F, T, F, F, F, F]]
+        where 1 is the end-/start-of-document token, and T and F are True and False, respectively.
+
         Args:
             idx: Input tensor of token indices.
+            pos_idx: Optional input tensor of positional indices. If None, positional indices are generated as an
+                increasing sequence from 0 to context_length - 1. Shape (batch_size, context_length).
             document_borders: Optional boolean tensor indicating which input tokens represent document borders (True)
                 and which don't (False). If self.config.mask_across_document_boundaries is True, these borders will be
                 used to identify which document each token belongs to, and masks out attention of tokens across
@@ -322,7 +343,9 @@ class LlamaTransformer(nn.Module):
             x = nn.Dropout(rate=self.config.dropout_rate)(x, deterministic=not train)
         # BlockStack
         stack_fn = prepare_module(TransformerBlockStack, "BlockStack", config=self.config.parallel)
-        x = stack_fn(config=self.config, name="block_stack")(x, document_borders=document_borders, train=train)
+        x = stack_fn(config=self.config, name="block_stack")(
+            x, pos_idx=pos_idx, document_borders=document_borders, train=train
+        )
         # LMHead
         pred_fn = prepare_module(
             partial(

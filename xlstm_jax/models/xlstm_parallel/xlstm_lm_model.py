@@ -46,7 +46,9 @@ class xLSTMLMModel(nn.Module):
     config: xLSTMLMModelConfig
 
     @nn.compact
-    def __call__(self, idx: jax.Array, document_borders: jax.Array | None = None, train: bool = False) -> jax.Array:
+    def __call__(
+        self, idx: jax.Array, document_borders: jax.Array | None = None, train: bool = False, **kwargs
+    ) -> jax.Array:
         """
         Forward pass of the xLSTM language model.
 
