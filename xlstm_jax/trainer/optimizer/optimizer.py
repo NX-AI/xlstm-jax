@@ -1,12 +1,12 @@
 import logging
 import re
 from dataclasses import dataclass
-from typing import Any
 
 import jax
 import jax.numpy as jnp
 import optax
 
+from xlstm_jax.common_types import PyTree
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.trainer.base.param_utils import get_param_mask_fn, get_sharded_global_norm
 
@@ -14,8 +14,6 @@ from .ademamix import ademamix, alpha_scheduler, beta3_scheduler
 from .scheduler import SchedulerConfig, build_lr_scheduler
 
 LOGGER = logging.getLogger(__name__)
-
-PyTree = Any
 
 
 @dataclass(kw_only=True, frozen=False)

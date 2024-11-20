@@ -1,5 +1,3 @@
-from typing import Any
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -7,14 +5,13 @@ import pytest
 from jax.experimental.shard_map import shard_map
 from jax.sharding import PartitionSpec as P
 
+from xlstm_jax.common_types import PyTree
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlock, mLSTMBlockConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.cell import mLSTMCellConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMLayerConfig
 from xlstm_jax.utils import flatten_dict
-
-PyTree = Any
 
 
 @pytest.mark.parametrize("add_post_norm", [True, False])

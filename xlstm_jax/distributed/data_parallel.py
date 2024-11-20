@@ -8,7 +8,7 @@ import numpy as np
 from absl import logging
 from jax import lax
 
-from .common_types import Parameter, PyTree
+from xlstm_jax.common_types import Parameter, PyTree
 
 
 @jax.named_scope("shard_params")

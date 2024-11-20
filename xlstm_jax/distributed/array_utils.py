@@ -2,7 +2,7 @@ import jax
 import jax.numpy as jnp
 from flax import linen as nn
 
-from .common_types import Parameter, PRNGKeyArray, PyTree
+from xlstm_jax.common_types import Parameter, PRNGKeyArray, PyTree
 
 
 def fold_rng_over_axis(rng: PRNGKeyArray, axis_name: str) -> PRNGKeyArray:

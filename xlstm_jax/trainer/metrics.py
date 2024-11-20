@@ -1,42 +1,13 @@
 import logging
 from collections.abc import Sequence
-from typing import Any, Literal
+from typing import Any
 
 import jax
 import jax.numpy as jnp
 import numpy as np
 from flax.core import FrozenDict, freeze, unfreeze
 
-LogMode = Literal["mean", "mean_nopostfix", "single", "max", "std", "single_noreduce", "single_noreduce_wcount"]
-"""Mode for logging. Describes how to aggregate metrics over steps.
-
-- `mean`: Mean of the metric.
-- `mean_nopostfix`: Mean of the metric without adding a mean postfix to the key.
-- `single`: Single value of the metric, i.e. only tracks the last value.
-- `max`: Maximum value of the metric.
-- `std`: Standard deviation of the metric.
-- `single_noreduce`: Concatenate the metrics of multiple values.
-- `single_noreduce_wcount`: Concatenate the metrics and counts of multiple values.
-"""
-# TODO: not clear how to document module level type definitions
-# TODO: Python 3.12 has the new `type` statement, check if this makes things easier
-# Immutable metrics for compilation.
-ImmutableMetricElement = FrozenDict[LogMode, FrozenDict[str, jax.Array | int | float]]
-ImmutableMetrics = FrozenDict[str, ImmutableMetricElement]
-# Mutable metrics for updating/editing.
-MutableMetricElement = dict[LogMode, dict[str, jax.Array | int | float]]
-MutableMetrics = dict[str, MutableMetricElement]
-# Metrics forwarded per step.
-StepMetricsElement = (
-    jax.Array | int | float | dict[Literal["value", "count", "log_modes"], jax.Array | int | float | Sequence[LogMode]]
-)
-StepMetrics = dict[str, StepMetricsElement]
-# Combined types.
-MetricElement = ImmutableMetricElement | MutableMetricElement
-Metrics = ImmutableMetrics | MutableMetrics
-# Metrics on host (for logging).
-HostMetricElement = float | int | np.ndarray
-HostMetrics = dict[str, HostMetricElement]
+from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, LogMode, Metrics, MutableMetrics, StepMetrics
 
 LOGGER = logging.getLogger(__name__)
 

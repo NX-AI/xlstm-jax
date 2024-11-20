@@ -1,5 +1,3 @@
-from typing import Any
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -16,8 +14,6 @@ from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardCo
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from xlstm_jax.utils import flatten_dict
-
-PyTree = Any
 
 # Define configuration
 MODEL_CONFIGS = [

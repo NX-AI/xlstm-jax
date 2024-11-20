@@ -1,5 +1,3 @@
-from typing import Any
-
 import jax
 import jax.numpy as jnp
 import numpy as np
@@ -28,8 +26,6 @@ from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.fwbw import (
 from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple as parallel_stabilized_simple_torch,
 )
-
-PyTree = Any
 
 
 @pytest.mark.parametrize("context_length", [8, 128])

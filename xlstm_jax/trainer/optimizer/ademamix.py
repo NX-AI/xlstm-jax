@@ -7,7 +7,7 @@ TODO: Check license and add it here.
 
 import functools
 from collections.abc import Callable
-from typing import Any, NamedTuple
+from typing import NamedTuple
 
 import chex
 import jax
@@ -16,7 +16,7 @@ import optax
 from jax import tree_util as jtu
 from optax._src import base, combine, numerics, transform, utils
 
-PyTree = Any
+from xlstm_jax.common_types import PyTree
 
 
 def alpha_scheduler(alpha: float, alpha_start: float = 0.0, warmup: int = 0) -> optax.Schedule:

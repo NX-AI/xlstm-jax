@@ -1,5 +1,4 @@
 import dataclasses
-from typing import Any
 
 import jax
 import jax.numpy as jnp
@@ -9,6 +8,7 @@ import pytest
 from flax import linen as nn
 from jax.sharding import Mesh, PartitionSpec as P
 
+from xlstm_jax.common_types import PyTree
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
@@ -18,8 +18,6 @@ from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardCo
 from xlstm_jax.models.xlstm_parallel.training import get_train_step_fn, init_xlstm
 from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 from xlstm_jax.trainer.metrics import _update_single_metric, get_metrics
-
-PyTree = Any
 
 # Define configuration
 MODEL_CONFIGS = [

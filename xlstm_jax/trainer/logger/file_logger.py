@@ -7,8 +7,8 @@ from dataclasses import dataclass
 import pandas as pd
 import yaml
 
+from xlstm_jax.common_types import HostMetrics
 from xlstm_jax.configs import ConfigDict
-from xlstm_jax.trainer.metrics import HostMetrics
 
 from .base_logger import Logger, LoggerTool, LoggerToolsConfig
 

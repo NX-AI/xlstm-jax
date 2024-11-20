@@ -16,6 +16,7 @@ from lm_eval.api.instance import Instance
 from lm_eval.api.model import LM
 from lm_eval.evaluator import simple_evaluate
 
+from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, Metrics, PyTree, TrainState
 from xlstm_jax.dataset.batch import LLMBatch, LLMIndexedBatch
 from xlstm_jax.dataset.configs import DataConfig
 from xlstm_jax.dataset.grain_iterator import make_grain_llm_iterator
@@ -23,7 +24,6 @@ from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_real_
 from xlstm_jax.dataset.lmeval_dataset import HFTokenizeLogLikelihoodRolling
 from xlstm_jax.dataset.lmeval_pipeline import lmeval_preprocessing_pipeline
 from xlstm_jax.distributed import split_array_over_mesh
-from xlstm_jax.trainer.base.trainer import TrainState
 from xlstm_jax.trainer.callbacks.extended_evaluation import (
     ExtendedEvaluation,
     ExtendedEvaluationConfig,
@@ -32,15 +32,10 @@ from xlstm_jax.trainer.callbacks.extended_evaluation import (
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
 from xlstm_jax.trainer.metrics import (
-    HostMetrics,
-    ImmutableMetrics,
-    Metrics,
     aggregate_metrics,
     get_metrics,
     update_metrics,
 )
-
-PyTree = Any
 
 LOGGER = logging.getLogger(__name__)
 

@@ -8,8 +8,9 @@ from typing import Literal
 import jax
 import numpy as np
 
+from xlstm_jax.common_types import HostMetrics, Metrics
 from xlstm_jax.configs import ConfigDict
-from xlstm_jax.trainer.metrics import HostMetrics, Metrics, get_metrics
+from xlstm_jax.trainer.metrics import get_metrics
 
 from .cmd_logging import setup_logging_multiprocess
 

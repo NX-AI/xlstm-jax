@@ -5,13 +5,13 @@ import jax
 import jax.numpy as jnp
 import pytest
 
+from xlstm_jax.common_types import Metrics
 from xlstm_jax.dataset import Batch
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.trainer import TrainerConfig, TrainerModule
 from xlstm_jax.trainer.callbacks import Callback, CallbackConfig
 from xlstm_jax.trainer.logger import LoggerConfig
-from xlstm_jax.trainer.metrics import Metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
 
 

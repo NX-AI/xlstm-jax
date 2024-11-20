@@ -3,9 +3,9 @@ from typing import Any
 
 import jax
 
+from xlstm_jax.common_types import Metrics
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.trainer.data_module import DataloaderModule
-from xlstm_jax.trainer.metrics import Metrics
 
 
 @dataclass(kw_only=True, frozen=False)

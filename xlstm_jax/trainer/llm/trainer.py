@@ -11,14 +11,13 @@ from flax import linen as nn
 from jax.experimental.shard_map import shard_map
 from jax.sharding import PartitionSpec as P
 
+from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, Metrics, PyTree, TrainState
 from xlstm_jax.dataset import LLMBatch
 from xlstm_jax.distributed import fold_rng_over_axis, split_array_over_mesh
-from xlstm_jax.trainer.base.trainer import TrainerConfig, TrainerModule, TrainState
-from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
+from xlstm_jax.trainer.base.trainer import TrainerConfig, TrainerModule
+from xlstm_jax.trainer.metrics import update_metrics
 
 from .sampling import generate_tokens, temperature_sampling
-
-PyTree = Any
 
 
 @dataclass(kw_only=True, frozen=False)

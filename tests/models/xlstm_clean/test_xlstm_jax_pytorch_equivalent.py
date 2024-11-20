@@ -8,6 +8,7 @@ import optax
 import pytest
 import torch
 
+from xlstm_jax.common_types import PyTree
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.block import mLSTMBlockConfig as mLSTMBlockConfig_jax
 from xlstm_jax.models.xlstm_clean.blocks.mlstm.layer import mLSTMLayerConfig as mLSTMLayerConfig_jax
 from xlstm_jax.models.xlstm_clean.components.ln import LayerNorm as LayerNorm_jax
@@ -23,8 +24,6 @@ from xlstm_jax.models.xlstm_pytorch.xlstm_lm_model import (
     xLSTMLMModelConfig as xLSTMLMModelConfig_torch,
 )
 from xlstm_jax.utils import flatten_dict
-
-PyTree = Any
 
 # Define configuration
 MODEL_CONFIGS = [

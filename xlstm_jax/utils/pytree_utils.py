@@ -6,7 +6,7 @@ import jax.numpy as jnp
 import numpy as np
 from flax.core import FrozenDict
 
-PyTree = Any
+from xlstm_jax.common_types import PyTree
 
 
 class RecursionLimit:

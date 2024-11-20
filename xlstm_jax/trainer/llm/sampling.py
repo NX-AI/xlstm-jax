@@ -4,11 +4,9 @@ from typing import Any
 import jax
 import jax.numpy as jnp
 
+from xlstm_jax.common_types import PyTree, TrainState
 from xlstm_jax.distributed import fold_rng_over_axis
 from xlstm_jax.distributed.data_parallel import gather_params
-from xlstm_jax.trainer.base.trainer import TrainState
-
-PyTree = Any
 
 
 def temperature_sampling(logits: jax.Array, rng: jax.Array, temperature: float = 1.0) -> jax.Array:

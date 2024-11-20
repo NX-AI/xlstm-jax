@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 from torch.utils.tensorboard import SummaryWriter
 
+from xlstm_jax.common_types import HostMetrics
 from xlstm_jax.configs import ConfigDict
-from xlstm_jax.trainer.metrics import HostMetrics
 from xlstm_jax.utils import flatten_dict
 
 from .base_logger import Logger, LoggerTool, LoggerToolsConfig

@@ -17,25 +17,22 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tqdm.auto import tqdm
 
+from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, Metrics, PRNGKeyArray, PyTree, TrainState
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.dataset import Batch
 from xlstm_jax.distributed import accumulate_gradients, sync_gradients
-from xlstm_jax.distributed.common_types import PRNGKeyArray
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.callbacks import CallbackConfig, ModelCheckpoint, load_pretrained_model
 from xlstm_jax.trainer.data_module import DataIterator, DataloaderModule
 from xlstm_jax.trainer.logger import Logger, LoggerConfig
-from xlstm_jax.trainer.metrics import HostMetrics, ImmutableMetrics, Metrics, update_metrics
+from xlstm_jax.trainer.metrics import update_metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, build_optimizer
 from xlstm_jax.utils import flatten_dict, flatten_pytree
 
 from .param_utils import get_grad_norms, get_num_params, get_param_norms, tabulate_params
-from .train_state import TrainState
 
 LOGGER = logging.getLogger(__name__)
-
-PyTree = Any
 
 
 @dataclass(kw_only=True, frozen=False)

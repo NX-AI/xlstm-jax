@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from xlstm_jax.common_types import Metrics, PyTree
 from xlstm_jax.dataset import Batch
 from xlstm_jax.distributed import split_array_over_mesh
 from xlstm_jax.models import ModelConfig
@@ -15,10 +16,7 @@ from xlstm_jax.trainer import TrainerConfig, TrainerModule
 from xlstm_jax.trainer.callbacks import Callback
 from xlstm_jax.trainer.callbacks.extended_evaluation import ExtendedEvaluation, ExtendedEvaluationConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig
-from xlstm_jax.trainer.metrics import Metrics
 from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
-
-PyTree = Any
 
 
 class ToyExtendedEvaluation(ExtendedEvaluation):

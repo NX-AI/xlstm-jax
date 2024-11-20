@@ -9,11 +9,8 @@ import numpy as np
 from flax import linen as nn
 from tabulate import tabulate as python_tabulate
 
+from xlstm_jax.common_types import PyTree, TrainState
 from xlstm_jax.utils import flatten_pytree, pytree_key_path_to_str
-
-from .train_state import TrainState
-
-PyTree = Any
 
 
 def is_partitioned(x: Any) -> bool:

@@ -7,8 +7,9 @@ import jax
 import jax.numpy as jnp
 from flax.core.frozen_dict import FrozenDict
 
+from xlstm_jax.common_types import PyTree
+
 from .array_utils import fold_rng_over_axis, stack_params, unstack_params
-from .common_types import PyTree
 
 
 class ModelParallelismWrapper(nn.Module):

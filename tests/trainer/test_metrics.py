@@ -2,7 +2,8 @@ import jax
 import numpy as np
 import pytest
 
-from xlstm_jax.trainer.metrics import Metrics, get_metrics, update_metrics
+from xlstm_jax.common_types import Metrics
+from xlstm_jax.trainer.metrics import get_metrics, update_metrics
 
 
 @pytest.mark.parametrize("seed", list(range(10)))

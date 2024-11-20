@@ -3,9 +3,8 @@ from collections.abc import Callable, Sequence
 import jax
 import jax.numpy as jnp
 
+from xlstm_jax.common_types import Metrics, PRNGKeyArray, PyTree, TrainState
 from xlstm_jax.dataset import Batch
-
-from .common_types import Metrics, PRNGKeyArray, PyTree, TrainState
 
 
 def accumulate_gradients_loop(

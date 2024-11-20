@@ -8,13 +8,11 @@ import optax
 import pytest
 from flax import linen as nn
 
+from xlstm_jax.common_types import Metrics, PyTree
 from xlstm_jax.dataset import Batch
 from xlstm_jax.distributed import ModelParallelismWrapper, TPDense, shard_module_params, split_array_over_mesh
 from xlstm_jax.models import ModelConfig
 from xlstm_jax.trainer.base.trainer import TrainerModule
-from xlstm_jax.trainer.metrics import Metrics
-
-PyTree = Any
 
 
 def _llm_toy_model(inject_debug_print: bool = False):

@@ -4,9 +4,9 @@ from typing import Any
 
 import jax
 
+from xlstm_jax.common_types import Metrics
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 from xlstm_jax.trainer.data_module import DataloaderModule
-from xlstm_jax.trainer.metrics import Metrics
 from xlstm_jax.trainer.optimizer import build_lr_scheduler
 
 LOGGER = logging.getLogger(__name__)

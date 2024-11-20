@@ -12,13 +12,9 @@ from jax.experimental.shard_map import shard_map
 from jax.sharding import Mesh, PartitionSpec as P
 from tabulate import tabulate as python_tabulate
 
+from xlstm_jax.common_types import Metrics, PRNGKeyArray, PyTree, TrainState
 from xlstm_jax.distributed import fold_rng_over_axis, split_array_over_mesh, sync_gradients
-from xlstm_jax.distributed.common_types import Metrics, PRNGKeyArray, PyTree
-from xlstm_jax.distributed.single_gpu import (
-    Batch,
-    TrainState,
-    accumulate_gradients,
-)
+from xlstm_jax.distributed.single_gpu import Batch, accumulate_gradients
 
 from ..configs import ParallelConfig
 from .xlstm_lm_model import xLSTMLMModel, xLSTMLMModelConfig

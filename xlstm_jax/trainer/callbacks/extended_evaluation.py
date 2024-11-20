@@ -11,20 +11,15 @@ from jax import random
 from jax.experimental.shard_map import shard_map
 from jax.sharding import PartitionSpec as P
 
+from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, Metrics, PyTree, TrainState
 from xlstm_jax.dataset.batch import Batch
-from xlstm_jax.trainer.base.train_state import TrainState
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 from xlstm_jax.trainer.data_module import DataloaderModule
 from xlstm_jax.trainer.metrics import (
-    HostMetrics,
-    ImmutableMetrics,
-    Metrics,
     aggregate_metrics,
     get_metrics,
     update_metrics,
 )
-
-PyTree = Any
 
 LOGGER = logging.getLogger(__name__)
 
