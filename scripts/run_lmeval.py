@@ -6,7 +6,7 @@ from pathlib import Path
 # For now, we load MODEL_CONFIGS from this training script
 # In the future the config should be loaded from the checkpoint
 # or a configuration library.
-from scripts.run_train_slimpajama6b import MODEL_CONFIGS
+from scripts.run_train_slimpajama import MODEL_CONFIGS
 
 import jax
 import jax.numpy as jnp

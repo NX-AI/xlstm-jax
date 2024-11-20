@@ -12,7 +12,6 @@ from xlstm_jax.dataset import (
     DataIterator,
     GrainArrayRecordsDataConfig,
     HFHubDataConfig,
-    HFLocalDataConfig,
     LLMBatch,
     SyntheticDataConfig,
     create_data_iterator,
@@ -101,10 +100,9 @@ def init_single_data_iterator(
     """
 
     # Check data config type.
-    config_classes: dict[str, DataConfig] = {
+    config_classes: dict[str, type[DataConfig]] = {
         "synthetic": SyntheticDataConfig,
         "huggingface_hub": HFHubDataConfig,
-        "huggingface_local": HFLocalDataConfig,
         "grain_arrayrecord": GrainArrayRecordsDataConfig,
     }
     if cfg.data_config_type not in config_classes:
@@ -115,11 +113,30 @@ def init_single_data_iterator(
 
     # Create data iterator.
     config_class = config_classes[cfg.data_config_type]
+    cfg = OmegaConf.to_container(cfg, resolve=True, enum_to_str=True).copy()
     if create_split is None:
         data_config = config_class(**cfg)
+        LOGGER.info(f"Data config: {data_config}.")
     else:
-        train_config, eval_config = config_class.create_train_eval_configs(**cfg)
+        # Remove keys that by default are hard-coded to train.
+        for key in ["split", "shuffle_data", "drop_remainder"]:
+            if key in cfg:
+                cfg.pop(key)
+        train_kwargs, eval_kwargs = {}, {}
+        # Extract train- and eval-specific keys.
+        for train_key in ["grain_packing", "batch_rampup_factors"]:
+            if train_key in cfg:
+                train_kwargs[train_key] = cfg.pop(train_key)
+        for eval_key in ["max_steps_per_epoch"]:
+            if eval_key in cfg:
+                eval_kwargs[eval_key] = cfg.pop(eval_key)
+        # Create train and eval configs.
+        train_config, eval_config = config_class.create_train_eval_configs(
+            **cfg, train_kwargs=train_kwargs, eval_kwargs=eval_kwargs
+        )
+        # Select the correct config.
         data_config = train_config if create_split == "train" else eval_config
+        LOGGER.info(f"{create_split} data config: {data_config}.")
     data_iterator = create_data_iterator(config=data_config, mesh=mesh)
     return data_iterator
 

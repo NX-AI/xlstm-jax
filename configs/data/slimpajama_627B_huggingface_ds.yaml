@@ -1,0 +1,27 @@
+defaults:
+  - huggingface_hub_data_schema
+  - _self_
+
+# Name of the dataset. Used for logging.
+name: spaj627B_HF
+
+# Data config type.
+data_config_type: huggingface_hub
+
+# Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
+global_batch_size: ${global_batch_size}
+
+# Name of the huggingface dataset.
+hf_path: "cerebras/SlimPajama-627B"
+
+# Path to the directory where huggingface datasets and its transformations are cached.
+hf_cache_dir: "/nfs-gpu/xlstm/data/hf_cache"
+
+# Name or path of the hf tokenizer. Default is gpt2 for slimpajama.
+tokenizer_path: gpt2
+
+# Maximum length of the target sequence.
+max_target_length: ${context_length}
+
+# Column name for data.
+data_column: text

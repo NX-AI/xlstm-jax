@@ -20,7 +20,7 @@ from xlstm_jax.common_types import HostMetrics, ImmutableMetrics, Metrics, PyTre
 from xlstm_jax.dataset.batch import LLMBatch, LLMIndexedBatch
 from xlstm_jax.dataset.configs import DataConfig
 from xlstm_jax.dataset.grain_iterator import make_grain_llm_iterator
-from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_real_data
+from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_data
 from xlstm_jax.dataset.lmeval_dataset import HFTokenizeLogLikelihoodRolling
 from xlstm_jax.dataset.lmeval_pipeline import lmeval_preprocessing_pipeline
 from xlstm_jax.distributed import split_array_over_mesh
@@ -230,7 +230,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
                     List of loglikelihoods + greedy (boolean accuracy)
                 """
                 if config.use_infinite_eval:
-                    process_indices = get_process_loading_real_data(
+                    process_indices = get_process_loading_data(
                         DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
                     )
                     it = lmeval_preprocessing_pipeline(
@@ -253,7 +253,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
                     # We have to use the sample distribution as in the training loop,
                     # unless we want a different sharding, which probably doesn't make sense.
                     # However the worker_count is 0 now by default, but should not be a bottleneck.
-                    process_indices = get_process_loading_real_data(
+                    process_indices = get_process_loading_data(
                         DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
                     )
                     it = make_grain_llm_iterator(

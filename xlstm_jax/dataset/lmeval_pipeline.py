@@ -10,7 +10,7 @@ from lm_eval.api.instance import Instance
 
 from xlstm_jax.dataset import grain_transforms
 from xlstm_jax.dataset.batch import LLMIndexedBatch
-from xlstm_jax.dataset.hf_data_processing import load_tokenizer
+from xlstm_jax.dataset.hf_tokenizer import load_tokenizer
 
 from .multihost_dataloading import MultiHostDataLoadIterator
 

@@ -1,0 +1,4 @@
+defaults:
+  - slimpajama_627B_huggingface_ds
+  - default_huggingface_ds_train
+  - _self_

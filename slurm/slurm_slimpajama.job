@@ -1,14 +1,14 @@
 #!/bin/bash -l
-#SBATCH --job-name=llama-jax
-#SBATCH --nodes=4
+#SBATCH --job-name=xlstm-jax
+#SBATCH --nodes=2
 #SBATCH --partition=compute
 #SBATCH --gres=gpu:8
 #SBATCH --gpu-bind=none
 #SBATCH --cpus-per-task=28  # Number of cores per socket on compute nodes
 #SBATCH --ntasks-per-node=8
 #SBATCH --wait-all-nodes=1
-#SBATCH --time=1-00:00:00
-#SBATCH --output=/nfs-gpu/xlstm/logs/outputs/xlstm-jax/llama/%j.out
+#SBATCH --time=2-00:00:00
+#SBATCH --output=/nfs-gpu/xlstm/logs/outputs_plippe/outputs/xlstm-jax/slimpajama6b/%j.out
 #SBATCH --exclusive
 
 #-------------------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 cd /home/${USER}/xlstm-jax/
 
 # determine log directory
-log_dir="${OUTPUT_DIR}/outputs/xlstm-jax/llama/"
+log_dir="${OUTPUT_DIR}/outputs/xlstm-jax/slimpajama6b/"
 # count directories with version_*
 exp_version=$(ls -l $log_dir | grep -c version_)
 echo "Found $exp_version existing experiments"
@@ -102,4 +102,4 @@ export MASTER_PORT=$(expr 12000 + $(echo -n $SLURM_JOBID | tail -c 4))
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_llama_slimpajama6b.py --log_dir=$LOG_DIR --model="1.3B" --use_full_dataset'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_slimpajama.py --log_dir=$LOG_DIR --model="1.3B_v1" --use_full_dataset --grad_norm_clip=0.5'

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import jax
 
-from xlstm_jax.dataset import GrainArrayRecordsDataConfig, HFLocalDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import GrainArrayRecordsDataConfig, HFHubDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -23,6 +23,7 @@ set_XLA_flags()  # Must be executed before any JAX operation.
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
+
 
 MODEL_CONFIGS = {
     "120M": {
@@ -327,21 +328,20 @@ def main_train(args: argparse.Namespace):
     num_train_steps = 95_000
     lr = global_model_config.get("lr", 1e-3)
     log_path = Path(args.log_dir)
-    base_data_path = Path("/nfs-gpu/xlstm/data/hf_datasets/")
 
     # Create data iterator.
     log_info("Creating data iterator.")
     data_name = "600B" if args.use_full_dataset else "6B"
-    dataset_name = "cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B"
-    data_path = base_data_path / dataset_name
-    data_path = data_path / f"ctx{context_length}"
-    hf_train_config, hf_eval_config = HFLocalDataConfig.create_train_eval_configs(
+    dataset_name = "cerebras/SlimPajama-627B" if args.use_full_dataset else "DKYoon/SlimPajama-6B"
+    hf_train_config, hf_eval_config = HFHubDataConfig.create_train_eval_configs(
         global_batch_size=batch_size,
-        data_path=data_path,
+        hf_path=dataset_name,
+        hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
         max_target_length=context_length,
         data_column="text",
         data_shuffle_seed=123,
-        eod_token_id=50256,
+        tokenizer_path=args.tokenizer,
+        grain_packing=False,  # by default, we don't use packing for HF datasets preprocessing.
     )
     ar_train_config, ar_eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
         train_kwargs=dict(
@@ -353,7 +353,7 @@ def main_train(args: argparse.Namespace):
             grain_packing=False,
         ),
         global_batch_size=batch_size,
-        data_path=Path("/nfs-gpu/xlstm/data/array_records/") / dataset_name,
+        data_path=Path("/nfs-gpu/xlstm/data/array_records/") / dataset_name.replace("/", "_"),
         max_target_length=context_length,
         data_column="text",
         tokenizer_path=args.tokenizer,

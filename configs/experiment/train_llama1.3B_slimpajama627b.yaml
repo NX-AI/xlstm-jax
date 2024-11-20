@@ -1,8 +1,9 @@
 # @package _global_
 defaults:
+  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed_gpt2
   - override /parallel: llama1.3B
   - override /model: llama1.3B
-  - override /data: slimpajama_627B_local_ds
+  - override /data: slimpajama_627B_arrayrecord_train  # uses gpt2 by default
   - override /optimizer: adamw
   - override /scheduler: cosine_decay
   - _self_
@@ -16,3 +17,6 @@ lr: 1e-3
 
 trainer:
   gradient_accumulate_steps: 1
+
+checkpointing:
+  monitor: spaj627B_AR_perplexity

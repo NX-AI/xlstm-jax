@@ -1,18 +1,19 @@
 defaults:
-  - huggingface_local_data_schema
+  - grain_arrayrecord_data_schema
+  - default_arrayrecord_eval
   - _self_
 
 # Name of the dataset. Used for logging.
-name: spaj627B_HF
+name: spaj627B_AR
 
 # Data config type.
-data_config_type: huggingface_local
+data_config_type: grain_arrayrecord
 
 # Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
 global_batch_size: ${global_batch_size}
 
 # Path to the dataset directory.
-data_path: /nfs-gpu/xlstm/data/hf_datasets/cerebras_SlimPajama-627B/ctx${context_length}
+data_path: /nfs-gpu/xlstm/data/array_records/cerebras_SlimPajama-627B-preprocessed_tok-gpt2_cl-${context_length}
 
 # Maximum length of the target sequence.
 max_target_length: ${context_length}
@@ -20,5 +21,7 @@ max_target_length: ${context_length}
 # Column name for data.
 data_column: text
 
-# End of document token ID. Used for identifying the document segmentations.
-eod_token_id: 50256
+# Packing.
+grain_packing: false
+
+tokenize_data: false

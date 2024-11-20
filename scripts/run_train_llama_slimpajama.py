@@ -4,7 +4,7 @@ from pathlib import Path
 
 import jax
 
-from xlstm_jax.dataset import HFLocalDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import HFHubDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -92,20 +92,22 @@ def main_train(args: argparse.Namespace):
     num_train_steps = 300_000
     lr = global_model_config.get("lr", 1e-3)
     log_path = Path(args.log_dir)
-    base_data_path = Path("/nfs-gpu/xlstm/data/hf_datasets/")
 
     # Create data iterator.
     log_info("Creating data iterator.")
     data_name = "600B" if args.use_full_dataset else "6B"
-    data_path = base_data_path / ("cerebras_SlimPajama-627B" if args.use_full_dataset else "DKYoon_SlimPajama-6B")
-    data_path = data_path / f"ctx{context_length}"
-    train_config, eval_config = HFLocalDataConfig.create_train_eval_configs(
+    dataset_name = "cerebras/SlimPajama-627B" if args.use_full_dataset else "DKYoon/SlimPajama-6B"
+    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
         global_batch_size=batch_size,
-        data_path=data_path,
+        hf_path=dataset_name,
+        hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
         max_target_length=context_length,
         data_column="text",
+        tokenizer_path="gpt2",
         data_shuffle_seed=123,
+        grain_packing=False,
     )
+
     train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
     eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 

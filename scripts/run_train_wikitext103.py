@@ -65,7 +65,6 @@ def main_train(args: argparse.Namespace):
         hf_data_dir="wikitext-103-raw-v1",
         hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
         data_column="text",
-        tokenize_data=True,
         tokenizer_path="gpt2",
         data_shuffle_seed=42,
         add_bos=True,

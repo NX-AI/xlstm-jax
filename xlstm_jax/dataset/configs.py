@@ -27,8 +27,6 @@ class DataConfig:
     """Global batch size for training."""
     max_target_length: int | None = None
     """Maximum length of the target sequence."""
-    expansion_factor_real_data: int = -1
-    """Expansion factor for real data. If -1, all hosts will load real data."""
     data_shuffle_seed: int = 42
     """Seed for data shuffling."""
 
@@ -67,33 +65,6 @@ class DataConfig:
 
 
 @dataclass(kw_only=True, frozen=False)
-class HFLocalDataConfig(DataConfig):
-    """
-    HuggingFace dataset configuration for locally preprocessed datasets.
-    """
-
-    data_path: Path
-    """Path to the dataset directory."""
-    data_column: str = "text"
-    """Column name for (training or evaluation) data."""
-    split: str = "train"
-    """Split to use (for training or evaluation). Should be a subdirectory of data_dir."""
-    max_steps_per_epoch: int | None = None
-    """Maximum number of steps per epoch (for training or evaluation)."""
-    eod_token_id: int = 0
-    """End of document token ID. Used for identifying the document segmentations."""
-    worker_count: int = 1
-    """Number of workers for data processing."""
-    worker_buffer_size: int = 1
-    """Buffer size for workers."""
-    drop_remainder: bool = False
-    """Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size."""
-    batch_rampup_factors: dict[int, float] | None = None
-    """Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
-    the `boundaries_and_scales` doc in `:func:grain_batch_rampup.create_batch_rampup_schedule` for more details."""
-
-
-@dataclass(kw_only=True, frozen=False)
 class HFHubDataConfig(DataConfig):
     """HuggingFace dataset configuration for datasets on HuggingFace."""
 
@@ -111,14 +82,10 @@ class HFHubDataConfig(DataConfig):
     """Split to use (for training or evaluation)."""
     hf_num_data_processes: int | None = None
     """Number of processes to use for downloading the dataset."""
-    hf_num_map_processes: int | None = None
-    """Number of processes to use for mapping."""
     data_column: str = "text"
     """Column name for (training or evaluation) data."""
     max_steps_per_epoch: int | None = None
     """Maximum number of steps per epoch (for training or evaluation)."""
-    tokenize_data: bool = True
-    """Whether to tokenize the data data. If False, the data is assumed to be already tokenized."""
     tokenizer_path: str = "gpt2"
     """Path to the tokenizer."""  # TODO: is this really a path or rather a name?
     add_bos: bool = False

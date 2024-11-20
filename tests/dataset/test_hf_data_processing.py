@@ -3,7 +3,6 @@ from collections.abc import Sequence
 from pathlib import Path
 
 import datasets
-import jax.numpy as jnp
 import numpy as np
 import pytest
 import transformers
@@ -15,125 +14,6 @@ from xlstm_jax.dataset.batch import LLMBatch
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
-
-
-@pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
-def test_hf_dataset_with_group_texts(tmp_path: Path):
-    """Test data loading with huggingface datasets, using group_texts applied
-    via arrow_dataset.map method."""
-    fsdp_axis_size = min(2, pytest.num_devices)
-    model_axis_size = min(2, pytest.num_devices // fsdp_axis_size)
-
-    parallel = ParallelConfig(
-        data_axis_name="dp",
-        fsdp_axis_name="fsdp",
-        model_axis_name="tp",
-        pipeline_axis_name="pp",
-        fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
-        fsdp_min_weight_size=2**8,
-        fsdp_axis_size=fsdp_axis_size,
-        model_axis_size=model_axis_size,
-        data_axis_size=-1,
-    )
-
-    # Initialize mesh.
-    mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
-
-    # Define data configuration.
-    global_batch_size = 64
-    context_length = 128
-    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
-        global_batch_size=global_batch_size,
-        max_target_length=context_length,
-        hf_path="Salesforce/wikitext",
-        hf_data_dir="wikitext-2-v1",
-        hf_cache_dir=tmp_path / "hf_cache",
-        data_column="text",
-        tokenize_data=True,
-        tokenizer_path="gpt2",
-        data_shuffle_seed=42,
-        add_bos=True,
-        add_eos=True,
-        add_eod=True,
-        grain_packing=False,
-        worker_count=0,
-    )
-    eod_token_id = 50256  # for "gpt2" tokenizer
-
-    # Define iterators
-    train_iterator = create_data_iterator(config=train_config, mesh=mesh)
-    eval_iterator = create_data_iterator(config=eval_config, mesh=mesh)
-
-    # Get batch from training iterator and make sure that the batch size is correct.
-    train_batch = next(train_iterator)
-    assert train_batch.inputs.shape == (global_batch_size, context_length)
-    assert train_batch.inputs.sharding.spec == P(mesh.axis_names)
-    assert not jnp.all(
-        train_batch.inputs_segmentation == 1
-    ), "Not all segmentations should not be 1, indicates the end-of-document tokens are missing."
-
-    # Get batches from evaluation iterator and make sure that the batch size is correct,
-    # and that the batches are the same for each epoch.
-    eval_batches = list()
-    last_eval_batch = None
-    eval_dataset_size = len(eval_iterator)
-    for epoch_idx in range(2):
-        step = 0
-        for batch_idx, batch in enumerate(eval_iterator):
-            step += 1
-            assert batch.inputs.shape == (global_batch_size, context_length)
-            assert batch.inputs.sharding.spec == P(mesh.axis_names)
-            if epoch_idx == 0:
-                eval_batches.append(batch)
-            else:
-                ep0_batch = eval_batches[batch_idx]
-                np.testing.assert_allclose(batch.inputs, ep0_batch.inputs)
-                np.testing.assert_allclose(batch.targets, ep0_batch.targets)
-        assert step == eval_dataset_size, "Should have the same number of steps for each epoch."
-    assert len(eval_batches) == eval_dataset_size, "Should have the same number of batches for each epoch."
-    last_eval_batch = eval_batches[-1]
-    # For all attributes in the batch, we should have zeros.
-    for attr_name in [
-        "inputs",
-        "targets",
-        "inputs_segmentation",
-        "targets_segmentation",
-        "inputs_position",
-        "targets_position",
-    ]:
-        val = getattr(last_eval_batch, attr_name)[-1]
-        assert np.all(val == 0), f"Last batch should have all zeros for {attr_name}, but got {val}."
-    assert not np.all(
-        last_eval_batch.inputs[0] == 0
-    ), "In the last batch, there should be at least one non-padded element."
-
-    # Test max steps per epoch and a continuous validation iterator.
-    eval_max_steps_per_epoch = len(eval_iterator) // 2
-    eval_config.max_steps_per_epoch = eval_max_steps_per_epoch
-
-    # Define iterators
-    eval_iterator = create_data_iterator(config=eval_config, mesh=mesh)
-    assert len(eval_iterator) == eval_max_steps_per_epoch, "Eval dataset have the specified number of steps."
-    for epoch_idx in range(3):
-        batch_idx = 0
-        for batch in eval_iterator:
-            np.testing.assert_allclose(
-                batch.inputs,
-                eval_batches[batch_idx].inputs,
-                err_msg=f"Failed at batch idx: {batch_idx}, epoch idx: {epoch_idx}",
-            )
-            np.testing.assert_allclose(
-                batch.targets,
-                eval_batches[batch_idx].targets,
-                err_msg=f"Failed at batch idx: {batch_idx}, epoch idx: {epoch_idx}",
-            )
-            batch_idx += 1
-        assert (
-            batch_idx == eval_max_steps_per_epoch
-        ), f"Should have the same number of steps for each epoch, failed at {epoch_idx}."
-
-    # Test if document borders are correctly computed.
-    _check_document_borders(batches=eval_batches + [train_batch], eod_token_id=eod_token_id)
 
 
 @pytest.mark.skipif(not pytest.grain_available, reason="Grain is not available.")
@@ -332,7 +212,6 @@ def _setup_data(
         hf_data_dir="wikitext-2-v1",
         hf_cache_dir=tmp_path / "hf_cache",
         data_column="text",
-        tokenize_data=True,
         tokenizer_path="gpt2",
         data_shuffle_seed=42,
         add_bos=False,

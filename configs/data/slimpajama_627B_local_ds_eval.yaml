@@ -1,4 +1,0 @@
-defaults:
-  - slimpajama_627B_local_ds
-  - default_hf_local_ds_eval
-  - _self_

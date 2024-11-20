@@ -1,18 +1,20 @@
 import glob
 import logging
 import math
+import os
 import re
 from functools import partial
 from pathlib import Path
 from typing import Any, SupportsIndex
 
+import datasets
 import grain.python as grain
 import jax
 from jax.sharding import Mesh
 
 from xlstm_jax.dataset import grain_transforms, load_tokenizer
 
-from .configs import GrainArrayRecordsDataConfig
+from .configs import GrainArrayRecordsDataConfig, HFHubDataConfig
 from .grain_iterator import make_grain_llm_iterator
 from .multihost_dataloading import MultiHostDataLoadIterator
 
@@ -47,7 +49,7 @@ def preprocessing_pipeline(
     batch_rampup_factors: dict[int, float] | None = None,
 ) -> MultiHostDataLoadIterator:
     """
-    Pipeline for preprocessing array_records dataset.
+    Pipeline for preprocessing an array_records or huggingface dataset.
 
     Args:
         dataloading_host_index: The index of the data loading host. Will be used to select the
@@ -120,21 +122,25 @@ def preprocessing_pipeline(
         assert tokenizer_path is not None, "Tokenizer path must be provided if tokenize is True."
 
         # Create initial operations before those from make_grain_llm_iterator.
-        shift_target = False
-        operations = [
-            grain_transforms.ParseArrayRecords(column_name=data_column_name),
-            grain_transforms.HFTokenize(
-                create_tokenizer_fn=create_tokenizer_fn,
-                column_name=data_column_name,
-                max_length=max_target_length,
-                add_eod=add_eod,
-                eod_token_id=eod_token_id,
-            ),
-            grain_transforms.HFNormalizeFeatures("input_ids"),
-        ]
-        LOGGER.info(f"Dataset size: {len(dataset)}")
+        operations = []
+        if isinstance(dataset, grain.ArrayRecordDataSource):
+            operations.append(grain_transforms.ParseArrayRecords(column_name=data_column_name))
+        else:
+            dataset = dataset.select_columns([data_column_name])
+        operations.extend(
+            [
+                grain_transforms.HFTokenize(
+                    create_tokenizer_fn=create_tokenizer_fn,
+                    column_name=data_column_name,
+                    max_length=max_target_length,
+                    add_eod=add_eod,
+                    eod_token_id=eod_token_id,
+                ),
+                grain_transforms.HFNormalizeFeatures("input_ids"),
+            ]
+        )
     else:
-        shift_target = False
+        assert isinstance(dataset, grain.ArrayRecordDataSource), "Pre-processed datasets must be ArrayRecordDataSource."
         operations = [
             grain_transforms.ParseTokenizedArrayRecords(column_name="input_ids"),
             grain_transforms.AddEODToken(eod_token_id=eod_token_id, add_eod=add_eod, max_length=max_target_length),
@@ -148,7 +154,7 @@ def preprocessing_pipeline(
                 "With online-packing, we cannot determine the number of batches beforehand."
             )
         else:
-            dataset = pad_arrayrecord_dataset(dataset, global_batch_size, data_column_name)
+            dataset = pad_dataset(dataset, global_batch_size, data_column_name)
 
     if max_steps_per_epoch is not None:
         LOGGER.info(f"Limiting number of steps per epoch to {max_steps_per_epoch}.")
@@ -167,6 +173,8 @@ def preprocessing_pipeline(
         else:
             dataset = PaddedDataset(dataset, max_steps_per_epoch * global_batch_size, data_column_name)
 
+    LOGGER.info(f"Dataset size: {len(dataset)}")
+
     multihost_gen = make_grain_llm_iterator(
         dataloading_host_index,
         dataloading_host_count,
@@ -181,7 +189,7 @@ def preprocessing_pipeline(
         grain_packing=grain_packing,
         grain_packing_bin_count=grain_packing_bin_count,
         shift=shift,
-        shift_target=shift_target,
+        shift_target=False,  # we shift inputs
         eod_token_id=eod_token_id,
         worker_count=worker_count,
         worker_buffer_size=worker_buffer_size,
@@ -194,52 +202,50 @@ def preprocessing_pipeline(
 
 
 def make_grain_iterator(
-    config: GrainArrayRecordsDataConfig,
+    config: GrainArrayRecordsDataConfig | HFHubDataConfig,
     global_mesh: Mesh,
     process_indices: list[int],
-    dataloading_host_index: int | None = None,
-    dataloading_host_count: int | None = None,
 ) -> MultiHostDataLoadIterator:
-    """Load, preprocess dataset and return iterator for pure grain ArrayRecords dataset.
+    """Load a dataset, create the preprocessing pipeline and return a multihost data-loading iterator.
 
     Args:
-        config: GrainArrayRecordsDataConfig object with dataset configuration.
+        config: dataset configuration object for huggingface or arrayrecords dataset.
         global_mesh: The global mesh to shard the data over.
-        process_indices: List of process indices that should load the real data. This is used to
-            determine the dataloading host index and host count if not provided.
-        dataloading_host_index: The index of the dataloading host. Will be used to select the
-            correct shard of the dataset. If None, determined from process_indices and
-            jax.process_index().
-        dataloading_host_count: The number of dataloading hosts. Will be used to determine the
-            shard size. If not provided, determined from process_indices.
-
+        process_indices: List of process indices that should load the real data. This is used to determine the data
+            loading host index and host count.
     Returns:
-        Tuple of training and evaluation iterators.
+        data-loading iterator (for training or evaluation).
     """
-    if dataloading_host_index is None:
-        dataloading_host_index = process_indices.index(jax.process_index())
-    if dataloading_host_count is None:
-        dataloading_host_count = len(process_indices)
+    # Load the dataset from disk
+    if isinstance(config, GrainArrayRecordsDataConfig):
+        split_path = config.data_path / config.split
+        LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
+        dataset = load_array_record_dataset(dataset_path=split_path)
+    elif isinstance(config, HFHubDataConfig):
+        LOGGER.info(f"Loading {config.split} data of path {config.hf_path}.")
+        dataset = load_huggingface_dataset(config)
+    else:
+        raise ValueError(f"Unsupported config type {type(config)}.")
 
-    # Load training data from disk.
-    split_path = config.data_path / config.split
-    LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
-    assert split_path.exists(), f"{config.split} data path {split_path} does not exist."
-    dataset = load_array_record_dataset(dataset_path=split_path)
+    if isinstance(config, HFHubDataConfig):
+        tokenize = True
+    else:
+        tokenize = config.tokenize_data
 
+    # Create data-loading iterator.
     iterator = preprocessing_pipeline(
-        dataloading_host_index=dataloading_host_index,
-        dataloading_host_count=dataloading_host_count,
+        dataloading_host_index=process_indices.index(jax.process_index()),
+        dataloading_host_count=len(process_indices),
         global_mesh=global_mesh,
         dataset=dataset,
         data_column_name=config.data_column,
-        tokenize=config.tokenize_data,
+        tokenize=tokenize,
+        tokenizer_path=config.tokenizer_path,
+        hf_access_token=config.hf_access_token,
         global_batch_size=config.global_batch_size,
         max_target_length=config.max_target_length,
         shuffle=config.shuffle_data,
         data_shuffle_seed=config.data_shuffle_seed,
-        tokenizer_path=config.tokenizer_path,
-        hf_access_token=config.hf_access_token,
         add_bos=config.add_bos,
         add_eos=config.add_eos,
         add_eod=config.add_eod,
@@ -255,35 +261,16 @@ def make_grain_iterator(
     return iterator
 
 
-def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord") -> grain.ArrayRecordDataSource:
-    """Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.
-
-    Assumes that the filenames are multiple shards where the shard idx is in the filename, e.g. train_000001.arecord'.
-    We load the files in the order of the shard idx.
-
-    Args:
-        dataset_path: Path to the dataset folder, which contains .arecord files.
-        file_extension: The file extension of the dataset files. Default is '.arecord'.
-
-    Returns:
-        grain.ArrayRecordDataSource: The dataset as grain.ArrayRecordDataSource.
-    """
-    if isinstance(dataset_path, Path):
-        dataset_path = dataset_path.absolute().as_posix()
-    data_file_pattern = f"{dataset_path}/*{file_extension}"
-    data_files = glob.glob(data_file_pattern)
-    # sort the files by the shard idx in the filename, glob instead gives 00010 before 00002.
-    escaped_extension = re.escape(file_extension)
-    sorted_files = sorted(data_files, key=lambda x: int(re.search(r"_(\d+)" + escaped_extension + r"$", x).group(1)))
-    dataset = grain.ArrayRecordDataSource(sorted_files)
-    return dataset
-
-
 class PaddedDataset(grain.RandomAccessDataSource):
     """Dataset wrapper to pad the dataset to be a multiple of the global batch
     size."""
 
-    def __init__(self, dataset: grain.ArrayRecordDataSource, full_dataset_length: int, column_name: str):
+    def __init__(
+        self,
+        dataset: grain.ArrayRecordDataSource | datasets.Dataset,
+        full_dataset_length: int,
+        column_name: str,
+    ):
         """Initializes the PaddedDataset.
 
         Args:
@@ -293,6 +280,7 @@ class PaddedDataset(grain.RandomAccessDataSource):
                 and will return the smaller length.
             column_name: The column name in the dataset that is returned.
         """
+        assert isinstance(dataset, grain.ArrayRecordDataSource | datasets.Dataset)
         self.dataset = dataset
         self.full_dataset_length = full_dataset_length
         self.column_name = column_name
@@ -305,7 +293,7 @@ class PaddedDataset(grain.RandomAccessDataSource):
         """Returns padding if the record key is out of bounds, otherwise
         returns the dataset record."""
         if record_key >= len(self.dataset):
-            return b""  # empty bytestring for padding (padding here refers to dataset padding, i.e. an empty sequence)
+            return self.empty_sequence
         else:
             return self.dataset[record_key]
 
@@ -315,9 +303,21 @@ class PaddedDataset(grain.RandomAccessDataSource):
             f"column_name={self.column_name})"
         )
 
+    @property
+    def empty_sequence(self):
+        """Returns and empty sequence for padding, depending on the type of dataset."""
+        if isinstance(self.dataset, grain.ArrayRecordDataSource):
+            # AR datasets return bytestrings. We return an empty bytestring for padding.
+            return b""
+        elif isinstance(self.dataset, datasets.Dataset):
+            # HF datasets return dicts {self.column_name: some_text}. We return a dict with an empty string for padding.
+            return {self.column_name: ""}
+        else:
+            raise ValueError(f"Unsupported dataset type {type(self.dataset)}.")
 
-def pad_arrayrecord_dataset(
-    dataset: grain.ArrayRecordDataSource,
+
+def pad_dataset(
+    dataset: grain.ArrayRecordDataSource | datasets.Dataset,
     global_batch_size: int,
     column_name: str,
 ) -> PaddedDataset:
@@ -336,3 +336,42 @@ def pad_arrayrecord_dataset(
     padded_dataset = PaddedDataset(dataset, padded_length, column_name)
     LOGGER.info(f"Padding dataset to length {padded_length}.")
     return padded_dataset
+
+
+def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord") -> grain.ArrayRecordDataSource:
+    """Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.
+
+    Assumes that the filenames are multiple shards where the shard idx is in the filename, e.g. train_000001.arecord'.
+    We load the files in the order of the shard idx.
+
+    Args:
+        dataset_path: Path to the dataset folder, which contains .arecord files.
+        file_extension: The file extension of the dataset files. Default is '.arecord'.
+
+    Returns:
+        grain.ArrayRecordDataSource: The dataset as grain.ArrayRecordDataSource.
+    """
+    assert os.path.exists(dataset_path), f"dataset path {dataset_path} does not exist."
+    if isinstance(dataset_path, Path):
+        dataset_path = dataset_path.absolute().as_posix()
+    data_file_pattern = f"{dataset_path}/*{file_extension}"
+    data_files = glob.glob(data_file_pattern)
+    # sort the files by the shard idx in the filename, glob instead gives 00010 before 00002.
+    escaped_extension = re.escape(file_extension)
+    sorted_files = sorted(data_files, key=lambda x: int(re.search(r"_(\d+)" + escaped_extension + r"$", x).group(1)))
+    dataset = grain.ArrayRecordDataSource(sorted_files)
+    return dataset
+
+
+def load_huggingface_dataset(config):
+    dataset = datasets.load_dataset(
+        config.hf_path,
+        data_dir=config.hf_data_dir,
+        data_files=config.hf_data_files,
+        cache_dir=config.hf_cache_dir,
+        split=config.split,
+        streaming=False,
+        token=config.hf_access_token,
+        num_proc=config.hf_num_data_processes,
+    )
+    return dataset

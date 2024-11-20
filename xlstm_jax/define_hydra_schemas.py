@@ -10,7 +10,6 @@ from xlstm_jax.dataset.configs import (
     DataConfig,
     GrainArrayRecordsDataConfig,
     HFHubDataConfig,
-    HFLocalDataConfig,
     SyntheticDataConfig,
 )
 from xlstm_jax.models.configs import ParallelConfig
@@ -171,7 +170,6 @@ def register_configs() -> None:
     cs.store(name="parallel_schema", group="parallel", node=ParallelConfig)
     cs.store(name="synthetic_data_schema", group="data", node=SyntheticDataConfig)
     cs.store(name="huggingface_hub_data_schema", group="data", node=HFHubDataConfig)
-    cs.store(name="huggingface_local_data_schema", group="data", node=HFLocalDataConfig)
     cs.store(name="grain_arrayrecord_data_schema", group="data", node=GrainArrayRecordsDataConfig)
     cs.store(name="model_schema", group="model", node=QuickHackModelConfig)
     cs.store(name="scheduler_schema", group="scheduler", node=SchedulerConfig)
