@@ -3,6 +3,7 @@ import logging
 import math
 import os
 import sys
+import time
 from collections.abc import Sequence
 from multiprocessing import Pool
 from pathlib import Path
@@ -18,6 +19,7 @@ LOGGER = logging.getLogger(__name__)
 
 def write_array_record(
     config: HFHubDataConfig,
+    hf_data_name: str | None,
     split: str,
     out_path: Path,
     process_idx: int,
@@ -30,6 +32,7 @@ def write_array_record(
 
     Args:
         config: The configuration for the HuggingFace dataset.
+        hf_data_name: The name of the HuggingFace dataset.
         split: The dataset split to write. Must be one of ("train", "validation", "test"), not e.g. "train[0:10]".
         out_path: The output path (folder) for the array record files.
         process_idx: The index of the process writing the array record file. Used for logging only.
@@ -44,6 +47,7 @@ def write_array_record(
     LOGGER.info(f"[Process {process_idx}] Loading {process_split} dataset.")
     ds = datasets.load_dataset(
         config.hf_path,
+        name=hf_data_name,
         data_dir=config.hf_data_dir,
         data_files=config.hf_data_files,
         cache_dir=config.hf_cache_dir,
@@ -54,11 +58,17 @@ def write_array_record(
     )
 
     LOGGER.info(f"[Process {process_idx}] Finished loading {process_split} dataset.")
+    data_len = len(ds)
+    num_shards = math.ceil(data_len / shard_size)
+    start_time = time.time()
     writer = None
     for ex_idx, example in enumerate(ds):
         shard_idx = shard_start_idx + ex_idx // shard_size
         if writer is None:
-            LOGGER.info(f"[Process {process_idx}] Writing shard {shard_idx}.")
+            LOGGER.info(
+                f"[Process {process_idx}] Writing shard {shard_idx} ({shard_idx - shard_start_idx + 1} of {num_shards}"
+                " local shards)."
+            )
             shard_path = (out_path / f"{split}_{shard_idx:06d}.arecord").absolute().as_posix()
             assert not os.path.exists(shard_path), f"Shard file already exists: {shard_path}"  # Do not overwrite
             # "group_size:1", because __get_item__ of ArrayRecordDataSource runs into the following logging error:
@@ -68,7 +78,9 @@ def write_array_record(
             writer = ArrayRecordWriter(shard_path, "group_size:1")
         writer.write(str.encode(example["text"]))
         if (ex_idx + 1) % shard_size == 0:
-            LOGGER.info(f"[Process {process_idx}] Finished shard {shard_idx}.")
+            eta = int((time.time() - start_time) / (ex_idx + 1) * (data_len - ex_idx - 1))
+            eta_str = f"{eta // 3600:2d}h {eta // 60 % 60:2d}m {eta % 60:2d}s"
+            LOGGER.info(f"[Process {process_idx}] Finished shard {shard_idx} (ETA to finish: {eta_str}).")
             writer.close()
             writer = None
     if writer is not None:
@@ -82,6 +94,7 @@ def convert_dataset(
     hf_data_dir: str | None = None,
     splits: Sequence[str] = ("validation", "train"),
     num_processes: int | None = None,
+    num_hf_processes: int | None = None,
     shard_size: int = 250_000,
     base_out_path: Path = Path("/nfs-gpu/xlstm/data/array_records"),
     hf_cache_dir: Path = Path("/nfs-gpu/xlstm/data/hf_cache"),
@@ -94,6 +107,7 @@ def convert_dataset(
         hf_data_dir: Huggingface dataset directory.
         splits: The dataset splits to preprocess.
         num_processes: Number of workers to use for the convert/map preprocessing.
+        num_hf_processes: Number of workers to use for the HuggingFace dataset loading.
         shard_size: Number of examples in each shard.
         base_out_path: Base output directory for saving the preprocessed dataset.
         hf_cache_dir: Huggingface cache directory.
@@ -128,12 +142,14 @@ def convert_dataset(
             split=split,
             streaming=False,
             token=config.hf_access_token,
-            num_proc=None,  # multiprocessing does not give speedup for some reason.
+            num_proc=num_hf_processes,
         )
         dataset_size = len(ds)
         del ds  # free memory before reloading dataset chunks in multiple processes
 
         out_path = base_out_path / config.hf_path.replace("/", "_")
+        if hf_data_name is not None:
+            out_path = out_path / hf_data_name
         if hf_data_dir is not None:
             out_path = out_path / hf_data_dir
         out_path = out_path / split
@@ -146,6 +162,7 @@ def convert_dataset(
         if num_processes is None or num_processes <= 1:
             write_array_record(
                 config=config,
+                name=hf_data_name,
                 split=split,
                 out_path=out_path,
                 process_idx=0,
@@ -176,6 +193,7 @@ def convert_dataset(
                     [
                         (
                             config,
+                            hf_data_name,
                             split,
                             out_path,
                             process_idx,
@@ -215,16 +233,19 @@ if __name__ == "__main__":
         default="mlfoundations/dclm-baseline-1.0-parquet",
         help="Huggingface dataset path.",
     )
+    parser.add_argument("--hf_data_name", type=str, default=None, help="Huggingface dataset name.")
     parser.add_argument("--hf_data_dir", type=str, default=None, help="Huggingface dataset directory.")
     parser.add_argument("--splits", type=str, nargs="+", default=["train"], help="Dataset splits to convert.")
     parser.add_argument("--num_processes", type=int, default=None, help="Number of workers used to convert.")
+    parser.add_argument("--num_hf_processes", type=int, default=None, help="Number of workers used for download.")
     args = parser.parse_args()
 
     # Convert dataset to ArrayRecords.
     convert_dataset(
         hf_path=args.hf_path,
-        hf_data_name=None,
+        hf_data_name=args.hf_data_name,
         hf_data_dir=args.hf_data_dir,
         splits=args.splits,
         num_processes=args.num_processes if args.num_processes is not None else min(len(os.sched_getaffinity(0)), 128),
+        num_hf_processes=args.num_hf_processes,
     )
