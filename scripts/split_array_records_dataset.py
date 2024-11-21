@@ -194,7 +194,9 @@ if __name__ == "__main__":
 
     # Parameters.
     parser = argparse.ArgumentParser(description="Split array records dataset into train and validation.")
-    parser.add_argument("--dataset_name", type=str, choices=DatasetNameToArrayRecordsPath, default="DCLM")
+    parser.add_argument(
+        "--dataset_name", type=str, choices=list(e.name for e in DatasetNameToArrayRecordsPath), default="DCLM"
+    )
     parser.add_argument("--num_processes", type=int, default=100, help="Number of workers to write splits.")
     parser.add_argument("--num_eval_examples", type=int, default=500_000, help="Size of the validation split.")
     parser.add_argument("--exists_ok", action="store_true", help="Allow creation of folders if they do not exist.")

@@ -132,7 +132,9 @@ if __name__ == "__main__":
     )
 
     parser = argparse.ArgumentParser("Preprocess a validation set.")
-    parser.add_argument("--dataset_name", type=str, choices=DatasetNameToArrayRecordsPath, default="DCLM")
+    parser.add_argument(
+        "--dataset_name", type=str, choices=list(e.name for e in DatasetNameToArrayRecordsPath), default="DCLM"
+    )
     parser.add_argument("--context_length", type=int, default=8192, help="Context length.")
     parser.add_argument("--tokenizer_path", type=str, default="EleutherAI/gpt-neox-20b", help="Path to the tokenizer.")
     parser.add_argument("--grain_packing_batch_size", type=int, default=1024, help="Batch size for grain packing.")

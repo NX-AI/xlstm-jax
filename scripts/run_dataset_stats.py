@@ -37,12 +37,14 @@ class DatasetNameToHFPath(enum.StrEnum):
     SlimPajama6B = "DKYoon/SlimPajama-6B"
     SlimPajama627B = "cerebras/SlimPajama-627B"
     DCLM = "mlfoundations/dclm-baseline-1.0-parquet"
+    FinewebEdu = "HuggingFaceFW/fineweb-edu"
 
 
 class DatasetNameToArrayRecordsPath(enum.StrEnum):
     SlimPajama6B = "/nfs-gpu/xlstm/data/array_records/DKYoon_SlimPajama-6B"
     SlimPajama627B = "/nfs-gpu/xlstm/data/array_records/cerebras_SlimPajama-627B"
-    DCLM = "/nfs-gpu/xlstm/data/array_records/mlfoundations_dclm-baseline-1.0-parquet"
+    DCLM = "/nfs-gpu/xlstm/data/array_records/mlfoundations_dclm-baseline-1.0-parquet-split"
+    FinewebEdu = "/nfs-gpu/xlstm/data/array_records/HuggingFaceFW_fineweb-edu"
 
 
 def compute_and_tabulate_packed_batch_statistics(
@@ -106,6 +108,7 @@ def compute_and_tabulate_packed_batch_statistics(
             use_array_records=use_array_records,
             context_length=context_length,
             global_batch_size=batch_size * mesh.shape[parallel.data_axis_name],
+            tokenizer_path=train_data_config.tokenizer_path,
         )
         iterator = create_data_iterator(config=_train_data_config, mesh=mesh)
 
@@ -320,7 +323,7 @@ def _create_data_config(
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Compute stats of packing operations for a huggingface dataset.")
-    parser.add_argument("--dataset_name", type=str, choices=DatasetNameToHFPath, default="DCLM")
+    parser.add_argument("--dataset_name", type=str, choices=list(e.name for e in DatasetNameToHFPath), default="DCLM")
     parser.add_argument("--tokenizer_path", type=str, default="EleutherAI/gpt-neox-20b")
     parser.add_argument("--max_batches", type=int, default=50)
     parser.add_argument("--use_array_records", type=bool, default=True)
