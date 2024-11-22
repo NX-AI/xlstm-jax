@@ -15,16 +15,15 @@ from jax.sharding import Mesh
 from xlstm_jax.dataset import grain_transforms, load_tokenizer
 
 from .configs import GrainArrayRecordsDataConfig, HFHubDataConfig
-from .grain_iterator import make_grain_llm_iterator
+from .grain_iterator import make_grain_llm_dataset, make_grain_multihost_iterator
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
 
 
-def preprocessing_pipeline(
+def preprocess_dataset(
     dataloading_host_index: int,
     dataloading_host_count: int,
-    global_mesh: Mesh,
     dataset: Any,
     data_column_name: str,
     tokenize: bool,
@@ -40,14 +39,11 @@ def preprocessing_pipeline(
     grain_packing: bool = False,
     grain_packing_bin_count: int | None = None,
     shift: bool = True,
-    worker_count: int = 1,
-    worker_buffer_size: int = 1,
     drop_remainder: bool = True,
     tokenizer_cache_dir: str | None = None,
     max_steps_per_epoch: int | None = None,
     eod_token_id: int | None = None,
-    batch_rampup_factors: dict[int, float] | None = None,
-) -> MultiHostDataLoadIterator:
+) -> tuple[grain.IterDataset, grain.RandomAccessDataSource]:
     """
     Pipeline for preprocessing an array_records or huggingface dataset.
 
@@ -98,9 +94,11 @@ def preprocessing_pipeline(
             :func:`grain_batch_rampup.create_batch_rampup_schedule` for more details.
 
     Returns:
-        MultiHostDataLoadIterator: The multi-host data loading iterator.
+        The preprocessed grain dataset and the original data source.
     """
-    assert global_batch_size % global_mesh.size == 0, "Batch size should be divisible number of global devices."
+    assert (
+        global_batch_size % dataloading_host_count == 0
+    ), "Batch size should be divisible by the number of dataloading hosts."
 
     # Load tokenizer if provided and set eod_token_id.
     create_tokenizer_fn = partial(
@@ -175,10 +173,9 @@ def preprocessing_pipeline(
 
     LOGGER.info(f"Dataset size: {len(dataset)}")
 
-    multihost_gen = make_grain_llm_iterator(
+    grain_dataset = make_grain_llm_dataset(
         dataloading_host_index,
         dataloading_host_count,
-        global_mesh,
         dataset,
         global_batch_size,
         max_target_length,
@@ -191,72 +188,111 @@ def preprocessing_pipeline(
         shift=shift,
         shift_target=False,  # we shift inputs
         eod_token_id=eod_token_id,
-        worker_count=worker_count,
-        worker_buffer_size=worker_buffer_size,
-        drop_remainder=True,  # remainder is padded up if not dropped
-        batch_rampup_factors=batch_rampup_factors,
     )
 
-    # Return multi-host jax.Array prep iterator
-    return multihost_gen
+    # Return grain dataset and data source.
+    return grain_dataset, dataset
 
 
 def make_grain_iterator(
-    config: GrainArrayRecordsDataConfig | HFHubDataConfig,
+    configs: GrainArrayRecordsDataConfig | HFHubDataConfig | list[GrainArrayRecordsDataConfig | HFHubDataConfig],
     global_mesh: Mesh,
     process_indices: list[int],
+    dataset_weights: list[float] | None = None,
 ) -> MultiHostDataLoadIterator:
     """Load a dataset, create the preprocessing pipeline and return a multihost data-loading iterator.
 
     Args:
-        config: dataset configuration object for huggingface or arrayrecords dataset.
+        config: dataset configuration object for huggingface or arrayrecords dataset. If multiple configs are provided,
+            the datasets will be loaded in parallel and the data will be interleaved in a mixing style. NOTE: the
+            global batch size, worker count, worker buffer size, drop remainder, and batch rampup will be only used
+            from the first config. The other configs are assumed to have the same values. Otherwise, warnings will be
+            raised.
         global_mesh: The global mesh to shard the data over.
         process_indices: List of process indices that should load the real data. This is used to determine the data
             loading host index and host count.
+        dataset_weights: The weights for the datasets. If provided, the datasets will be mixed according to the
+            weights. Otherwise, a uniform mixing is used. If a single dataset is provided, the weights are ignored.
+
     Returns:
         data-loading iterator (for training or evaluation).
     """
-    # Load the dataset from disk
-    if isinstance(config, GrainArrayRecordsDataConfig):
-        split_path = config.data_path / config.split
-        LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
-        dataset = load_array_record_dataset(dataset_path=split_path)
-    elif isinstance(config, HFHubDataConfig):
-        LOGGER.info(f"Loading {config.split} data of path {config.hf_path}.")
-        dataset = load_huggingface_dataset(config)
-    else:
-        raise ValueError(f"Unsupported config type {type(config)}.")
+    if not isinstance(configs, list):
+        configs = [configs]
+    if dataset_weights is not None:
+        assert len(configs) == len(dataset_weights), "Number of datasets and weights must match."
+    # Assert that global batch size, worker count, worker buffer size, and drop remainder are the same for all datasets.
+    for attr_name in [
+        "global_batch_size",
+        "max_target_length",
+        "worker_count",
+        "worker_buffer_size",
+        "drop_remainder",
+        "batch_rampup_factors",
+    ]:
+        for config in configs[1:]:
+            if getattr(config, attr_name) != getattr(configs[0], attr_name):
+                LOGGER.warning(
+                    f"Attribute {attr_name} differs between datasets to mix: {config} vs {configs[0]}. "
+                    f"Using value from first dataset: {getattr(configs[0], attr_name)} != {getattr(config, attr_name)}."
+                )
 
-    if isinstance(config, HFHubDataConfig):
-        tokenize = True
-    else:
-        tokenize = config.tokenize_data
+    # Load the datasets and preprocess them.
+    grain_datasets, data_sources = [], []
+    for config in configs:
+        # Load the dataset from disk
+        if isinstance(config, GrainArrayRecordsDataConfig):
+            split_path = config.data_path / config.split
+            LOGGER.info(f"Loading {config.split} data from local path {split_path}.")
+            dataset = load_array_record_dataset(dataset_path=split_path)
+        elif isinstance(config, HFHubDataConfig):
+            LOGGER.info(f"Loading {config.split} data of path {config.hf_path}.")
+            dataset = load_huggingface_dataset(config)
+        else:
+            raise ValueError(f"Unsupported config type {type(config)}.")
 
-    # Create data-loading iterator.
-    iterator = preprocessing_pipeline(
-        dataloading_host_index=process_indices.index(jax.process_index()),
-        dataloading_host_count=len(process_indices),
+        if isinstance(config, HFHubDataConfig):
+            tokenize = True
+        else:
+            tokenize = config.tokenize_data
+
+        # Create data-loading iterator.
+        grain_dataset, dataset = preprocess_dataset(
+            dataloading_host_index=process_indices.index(jax.process_index()),
+            dataloading_host_count=len(process_indices),
+            dataset=dataset,
+            data_column_name=config.data_column,
+            tokenize=tokenize,
+            global_batch_size=config.global_batch_size,
+            max_target_length=config.max_target_length,
+            shuffle=config.shuffle_data,
+            data_shuffle_seed=config.data_shuffle_seed,
+            tokenizer_path=config.tokenizer_path,
+            hf_access_token=config.hf_access_token,
+            add_bos=config.add_bos,
+            add_eos=config.add_eos,
+            add_eod=config.add_eod,
+            grain_packing=config.grain_packing,
+            grain_packing_bin_count=config.grain_packing_bin_count,
+            drop_remainder=config.drop_remainder,
+            tokenizer_cache_dir=config.hf_cache_dir,
+            max_steps_per_epoch=config.max_steps_per_epoch,
+        )
+        grain_datasets.append(grain_dataset)
+        data_sources.append(dataset)
+
+    # Create the grain multihost iterator.
+    iterator = make_grain_multihost_iterator(
+        grain_datasets=grain_datasets,
+        dataset_lengths=[len(d) for d in data_sources],
         global_mesh=global_mesh,
-        dataset=dataset,
-        data_column_name=config.data_column,
-        tokenize=tokenize,
-        tokenizer_path=config.tokenizer_path,
-        hf_access_token=config.hf_access_token,
-        global_batch_size=config.global_batch_size,
-        max_target_length=config.max_target_length,
-        shuffle=config.shuffle_data,
-        data_shuffle_seed=config.data_shuffle_seed,
-        add_bos=config.add_bos,
-        add_eos=config.add_eos,
-        add_eod=config.add_eod,
-        grain_packing=config.grain_packing,
-        grain_packing_bin_count=config.grain_packing_bin_count,
-        worker_count=config.worker_count,
-        worker_buffer_size=config.worker_buffer_size,
-        drop_remainder=config.drop_remainder,
-        tokenizer_cache_dir=config.hf_cache_dir,
-        max_steps_per_epoch=config.max_steps_per_epoch,
-        batch_rampup_factors=config.batch_rampup_factors,
+        global_batch_size=configs[0].global_batch_size,
+        dataloading_host_count=len(process_indices),
+        dataset_weights=dataset_weights,
+        worker_count=configs[0].worker_count,
+        worker_buffer_size=configs[0].worker_buffer_size,
+        drop_remainder=configs[0].drop_remainder,
+        batch_rampup_factors=configs[0].batch_rampup_factors,
     )
     return iterator
 
@@ -338,7 +374,9 @@ def pad_dataset(
     return padded_dataset
 
 
-def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord") -> grain.ArrayRecordDataSource:
+def load_array_record_dataset(
+    dataset_path: Path | str, file_extension: str = ".arecord"
+) -> grain.ArrayRecordDataSource:
     """Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.
 
     Assumes that the filenames are multiple shards where the shard idx is in the filename, e.g. train_000001.arecord'.
@@ -363,7 +401,15 @@ def load_array_record_dataset(dataset_path: Path | str, file_extension=".arecord
     return dataset
 
 
-def load_huggingface_dataset(config):
+def load_huggingface_dataset(config: HFHubDataConfig) -> datasets.Dataset:
+    """Load a dataset from HuggingFace.
+
+    Args:
+        config: The HFHubDataConfig object.
+
+    Returns:
+        datasets.Dataset: The loaded dataset.
+    """
     dataset = datasets.load_dataset(
         config.hf_path,
         data_dir=config.hf_data_dir,

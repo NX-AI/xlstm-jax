@@ -15,6 +15,7 @@ from xlstm_jax.dataset import (
     LLMBatch,
     SyntheticDataConfig,
     create_data_iterator,
+    create_mixed_data_iterator,
     load_tokenizer,
 )
 from xlstm_jax.models import ModelConfig
@@ -61,13 +62,16 @@ def init_data_iterator(
     Returns:
         Training and evaluation data iterators.
     """
-    if cfg.data_eval is None:
+    if cfg.data_eval is None and cfg.data_train is None:
         # If config eval is None, we use the config class to split the data into train and eval.
         train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="train")
         eval_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="eval")
     else:
         # Create train data iterator.
-        train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh)
+        if cfg.data_train is None:
+            train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh)
+        else:
+            train_data_iterator = init_mixed_data_iterator(cfg=cfg.data_train, mesh=mesh)
 
         # Create evaluation data iterator.
         eval_data_iterator = None
@@ -138,6 +142,46 @@ def init_single_data_iterator(
         data_config = train_config if create_split == "train" else eval_config
         LOGGER.info(f"{create_split} data config: {data_config}.")
     data_iterator = create_data_iterator(config=data_config, mesh=mesh)
+    return data_iterator
+
+
+def init_mixed_data_iterator(
+    cfg: DictConfig,
+    mesh: Mesh,
+) -> DataIterator:
+    """Initialize a data iterator with mixed data sources.
+
+    Args:
+        cfg: Data configuration.
+        mesh: The jax device mesh.
+
+    Returns:
+        Data iterator.
+    """
+    config_classes: dict[str, type[DataConfig]] = {
+        "huggingface_hub": HFHubDataConfig,
+        "grain_arrayrecord": GrainArrayRecordsDataConfig,
+    }
+
+    data_configs, data_weights = [], []
+    for key in cfg:
+        if not key.startswith("val") or cfg[key] is None:
+            continue
+        data_config = cfg[key]
+        if data_config.data_config_type not in config_classes:
+            raise NotImplementedError(
+                "Only Huggingface and ArrayRecord datasets are supported for mixed datasets, "
+                f"got {data_config.data_config_type} in config {data_config}."
+            )
+        config_class = config_classes[data_config.data_config_type]
+        data_config = OmegaConf.to_container(data_config, resolve=True, enum_to_str=True).copy()
+        data_config = config_class(**data_config)
+        LOGGER.info(f"Data config: {data_config}.")
+        data_configs.append(data_config)
+        data_weights.append(float(cfg[key.replace("val", "weight")]))
+    assert len(data_configs) > 0, "No datasets found in the config."
+
+    data_iterator = create_mixed_data_iterator(configs=data_configs, mesh=mesh, dataset_weights=data_weights)
     return data_iterator
 
 

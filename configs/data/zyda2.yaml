@@ -1,0 +1,26 @@
+defaults:
+  - /data@data_train.val1: fineweb_edu_arrayrecord_train
+  - /data@data_train.val2: dclm_arrayrecord_train
+  - /data@data_train.val3: zyda2_zyda_arrayrecord_train
+  - /data@data_train.val4: zyda2_dolmacc_arrayrecord_train
+  - _self_
+
+# The following is not directly used in the experiment, but for logging purposes.
+data:
+  # Name of the dataset. Used for logging.
+  name: zyda
+
+  # Data config type.
+  data_config_type: mixed_dataset
+
+  # Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
+  global_batch_size: ${global_batch_size}
+
+  # Maximum length of the target sequence.
+  max_target_length: ${context_length}
+
+data_train:
+  weight1: 4.0
+  weight2: 4.0
+  weight3: 0.16
+  weight4: 0.24

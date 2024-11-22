@@ -79,3 +79,30 @@ def create_data_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
         return make_grain_iterator(config, mesh, process_indices)
     else:
         raise NotImplementedError(f"Unknown dataset_type {type(config)}, dataset_type must be synthetic or hf.")
+
+
+def create_mixed_data_iterator(
+    configs: list[HFHubDataConfig | GrainArrayRecordsDataConfig], mesh: Mesh, dataset_weights: list[float] | None = None
+) -> DataIterator:
+    """Create a data iterator that mixes multiple datasets.
+
+    Each individual dataset will be loaded, and the iterator will return batches where each batch element is from
+    one of the datasets. The frequency of each dataset is determined by the dataset_weights.
+
+    Args:
+        configs: List of DataConfig objects, determining the datasets to load.
+        mesh: JAX mesh object. Used to distribute the data over multiple devices.
+        dataset_weights: Mixing weights for the datasets. If None, all datasets will have equal weight.
+
+    Returns:
+        DataIterator object that can be used to iterate over the mixed dataset.
+    """
+    if not GRAIN_AVAILABLE:  # Was checked before during import, but just in case.
+        raise NotImplementedError("Grain is not available, multi-host data loading are disabled. Exiting.")
+    process_indices = get_process_loading_data(configs[0], mesh)
+    if jax.process_index() not in process_indices:
+        raise NotImplementedError(
+            f"Current process {jax.process_index()} not in process_indices {process_indices}. "
+            f"Global batch size must be larger than the number of hosts. Hosts not loading data is not supported."
+        )
+    return make_grain_iterator(configs, mesh, process_indices, dataset_weights)

@@ -56,17 +56,35 @@ def test_infer_segmentations(eod_idx: int):
     )
     example["targets_position"] = example["inputs_position"]
 
-    # Output
-    output = InferSegmentations(eod_token_id=eod_idx).map(example)
-
-    # Check that the output is correct.
-    np.testing.assert_array_equal(example["inputs"], output["inputs"], err_msg="Inputs should not change.")
-    np.testing.assert_array_equal(
-        example["inputs_segmentation"], expected_segmentations, err_msg="Inputs segmentation incorrectly inferred."
-    )
-    np.testing.assert_array_equal(
-        example["targets_segmentation"], expected_segmentations, err_msg="Targets segmentation incorrectly inferred."
-    )
-    np.testing.assert_array_equal(
-        example["inputs_position"], expected_positions, err_msg="Inputs position incorrectly inferred."
-    )
+    # Output.
+    transformation = InferSegmentations(eod_token_id=eod_idx)
+    for setting in ["batchwise", "elementwise"]:
+        prefix = f"[Setting: {setting}]"
+        if setting == "batchwise":
+            output = transformation.map(example)
+        else:
+            output = [
+                transformation.map({key: value[i] for key, value in example.items()})
+                for i in range(example["inputs"].shape[0])
+            ]
+            output = {key: np.stack([o[key] for o in output]) for key in output[0].keys()}
+        # Check that the output is correct.
+        np.testing.assert_array_equal(
+            example["inputs"], output["inputs"], err_msg=f"{prefix} Inputs should not change."
+        )
+        np.testing.assert_array_equal(
+            example["inputs_segmentation"],
+            expected_segmentations,
+            err_msg=f"{prefix} Inputs segmentation incorrectly inferred.",
+        )
+        np.testing.assert_array_equal(
+            example["targets_segmentation"],
+            expected_segmentations,
+            err_msg=f"{prefix} Targets segmentation incorrectly inferred.",
+        )
+        np.testing.assert_array_equal(
+            example["inputs_position"], expected_positions, err_msg=f"{prefix} Inputs position incorrectly inferred."
+        )
+        np.testing.assert_array_equal(
+            example["targets_position"], expected_positions, err_msg=f"{prefix} Targets position incorrectly inferred."
+        )

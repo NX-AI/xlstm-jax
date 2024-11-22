@@ -441,39 +441,46 @@ class InferSegmentations(grain.MapTransform):
 
     def map(self, data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         """Map to infer segmentations."""
-        batch_size, seq_len = data["inputs"].shape
         # Identify end-of-document tokens.
         eod_mask = data["inputs"] == self.eod_token_id
         # Document ID is the cumulative sum of the end-of-document mask. We start at 1,
         # as the first document is document 1 and 0 is used for padding. This is ensured
         # by adding 1 - eod_mask[:, 0:1], which adds 1 if the first token is not an EOD token,
         # ie the first token starts with document idx 0, and 0 otherwise.
-        doc_id = np.cumsum(eod_mask, axis=-1, dtype=np.int32) + (1 - eod_mask[:, 0:1])
+        doc_id = np.cumsum(eod_mask, axis=-1, dtype=np.int32) + (1 - eod_mask[..., 0:1])
         # Set the segmentations, respecting the padding.
         inp_padding_mask = (data["inputs_segmentation"] != 0).astype(np.int32)
         data["inputs_segmentation"] = doc_id * inp_padding_mask
         out_padding_mask = (data["targets_segmentation"] != 0).astype(np.int32)
         data["targets_segmentation"] = doc_id * out_padding_mask
-        # Correcting the positions to start counting from 0 at each new document. Example:
-        # doc_id  = [[1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]]
-        # inp_pos = [[0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3]]
-        data["inputs_position"] = np.zeros_like(data["inputs_position"])
-        for bs in range(batch_size):
-            # Find document borders per batch element. For each document, we set the positions
-            # to an arange from 0 to the document length. We add 0 and seq_len to the borders
-            # to ensure we get the last document as well.
-            doc_borders = [0] + np.where(eod_mask[bs])[0].tolist() + [seq_len]
-            for db in range(len(doc_borders) - 1):
-                if doc_borders[db + 1] - doc_borders[db] == 0:
-                    continue
-                doc_pos = np.arange(doc_borders[db + 1] - doc_borders[db], dtype=np.int32)
-                data["inputs_position"][bs, doc_borders[db] : doc_borders[db + 1]] = doc_pos
+        # Correcting the positions to start counting from 0 at each new document.
+        if data["inputs"].ndim == 1:
+            data["inputs_position"] = self._get_positions(eod_mask)
+        else:
+            data["inputs_position"] = np.stack([self._get_positions(eod_mask[bs]) for bs in range(doc_id.shape[0])])
         # Targets have identical positions to inputs. Copy to prevent in-place modification.
         data["targets_position"] = data["inputs_position"].copy()
         # Mask out the padding.
         data["inputs_position"] *= inp_padding_mask
         data["targets_position"] *= out_padding_mask
         return data
+
+    def _get_positions(self, eod_mask: np.ndarray) -> np.ndarray:
+        """Infer positions from end-of-document mask."""
+        seq_len = eod_mask.shape[0]
+        # Correcting the positions to start counting from 0 at each new document. Example:
+        # doc_id   = [[1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3]]
+        # eod_mask = [[1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]]
+        # inp_pos  = [[0, 1, 2, 0, 1, 2, 3, 0, 1, 2, 3]]
+        # First element of eod_mask is optional.
+        input_positions = np.array(np.zeros(seq_len), dtype=np.int32)
+        doc_borders = [0] + np.where(eod_mask)[0].tolist() + [seq_len]
+        for db in range(len(doc_borders) - 1):
+            if doc_borders[db + 1] - doc_borders[db] == 0:
+                continue
+            doc_pos = np.arange(doc_borders[db + 1] - doc_borders[db], dtype=np.int32)
+            input_positions[doc_borders[db] : doc_borders[db + 1]] = doc_pos
+        return input_positions
 
 
 @dataclasses.dataclass

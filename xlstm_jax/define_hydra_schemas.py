@@ -130,6 +130,32 @@ class DataEvalConfig:
 
 
 @dataclass
+class DataTrainConfig:
+    """Supports maximum of 10 data training configurations."""
+
+    val1: DataConfig | None = None
+    weight1: float = 1.0
+    val2: DataConfig | None = None
+    weight2: float = 1.0
+    val3: DataConfig | None = None
+    weight3: float = 1.0
+    val4: DataConfig | None = None
+    weight4: float = 1.0
+    val5: DataConfig | None = None
+    weight5: float = 1.0
+    val6: DataConfig | None = None
+    weight6: float = 1.0
+    val7: DataConfig | None = None
+    weight7: float = 1.0
+    val8: DataConfig | None = None
+    weight8: float = 1.0
+    val9: DataConfig | None = None
+    weight9: float = 1.0
+    val10: DataConfig | None = None
+    weight10: float = 1.0
+
+
+@dataclass
 class Config:
     """The base config class."""
 
@@ -158,6 +184,7 @@ class Config:
     task_name: str = MISSING
     logging_name: str = MISSING
 
+    data_train: DataTrainConfig | None = None
     data_eval: DataEvalConfig | None = None
 
 
