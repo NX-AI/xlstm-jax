@@ -167,6 +167,7 @@ class mLSTMLayerV1(nn.Module):
             name="outnorm",
             axis=2,
             eps=self.config.mlstm_cell.norm_eps,
+            norm_type=self.config.mlstm_cell.norm_type_v1,
             model_axis_name=self.config.parallel.model_axis_name,
         )(h_state)
         h_state_norm = h_state_norm.reshape(B, S, -1)

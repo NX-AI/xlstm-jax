@@ -28,6 +28,10 @@ class mLSTMCellConfig(SubModelConfig):
     """Epsilon value for numerical stability in layer norm."""
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
     """Type of normalization layer to use."""
+    norm_type_v1: Literal["layernorm", "rmsnorm"] = "layernorm"
+    """Type of normalization layer to use. NOTE: this is only used in the 'mlstm_v1' layer_type. Due to a bug, the
+    'norm_type' was not used correctly in the v1 version. To keep the same behavior, we introduce a separate parameter
+    for the normalization layer."""
     dtype: str = "bfloat16"
     gate_dtype: str = "float32"
     gate_soft_cap: float | None = None

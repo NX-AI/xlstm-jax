@@ -31,6 +31,7 @@ backend_name: "max_triton_noslice"
 igate_bias_init_range: 0.0
 add_qk_norm: false
 cell_norm_type: rmsnorm
+cell_norm_type_v1: layernorm
 cell_norm_eps: 1e-6
 gate_soft_cap: 15.0
 reset_at_document_boundaries: false

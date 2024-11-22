@@ -281,6 +281,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     output_init_fn=cfg.model.output_init_fn,
                     qk_dim_factor=cfg.model.qk_dim_factor,
                     v_dim_factor=cfg.model.v_dim_factor,
+                    norm_type=cfg.model.cell_norm_type,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(
@@ -292,6 +293,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
                         norm_type=cfg.model.cell_norm_type,
+                        norm_type_v1=cfg.model.cell_norm_type_v1,
                         norm_eps=cfg.model.cell_norm_eps,
                         gate_soft_cap=cfg.model.gate_soft_cap,
                         reset_at_document_boundaries=cfg.model.reset_at_document_boundaries,
@@ -336,6 +338,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                     output_init_fn=cfg.model.output_init_fn,
                     qk_dim_factor=cfg.model.qk_dim_factor,
                     v_dim_factor=cfg.model.v_dim_factor,
+                    norm_type=cfg.model.cell_norm_type,
                     mlstm_cell=mLSTMCellConfig(
                         gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(
@@ -347,6 +350,8 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
                         norm_type=cfg.model.cell_norm_type,
+                        # v1 norm type is not used in the mlstm block type, added for completeness.
+                        norm_type_v1=cfg.model.cell_norm_type_v1,
                         norm_eps=cfg.model.cell_norm_eps,
                         gate_soft_cap=cfg.model.gate_soft_cap,
                         reset_at_document_boundaries=cfg.model.reset_at_document_boundaries,

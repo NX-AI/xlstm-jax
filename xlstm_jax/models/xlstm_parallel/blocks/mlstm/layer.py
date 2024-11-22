@@ -30,7 +30,7 @@ class mLSTMLayerConfig(UpProjConfigMixin):
     """Initialization function for the output projection layer."""
     layer_type: Literal["mlstm", "mlstm_v1"] = "mlstm"
     norm_type: Literal["layernorm", "rmsnorm"] = "layernorm"
-    """Type of normalization layer to use."""
+    """Type of normalization layer to use. NOTE: this is only used in the 'mlstm' layer_type."""
     qk_dim_factor: float = 1.0
     """Factor to scale the qk projection dimension by. By default, the qk projection dimension is the same as the
     inner embedding dimension, split into num_heads. This factor is applied to this default size."""

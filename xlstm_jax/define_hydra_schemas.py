@@ -65,6 +65,7 @@ class QuickHackModelConfig:
     igate_bias_init_range: float
     add_qk_norm: bool
     cell_norm_type: str
+    cell_norm_type_v1: str
     cell_norm_eps: float
     gate_soft_cap: float
     reset_at_document_boundaries: bool
@@ -90,6 +91,7 @@ class QuickHackModelConfig:
         assert self.init_distribution in typing.get_args(InitDistribution)
         assert self.init_distribution_embed in typing.get_args(InitDistribution)
         assert self.norm_type in typing.get_args(NormType)
+        assert self.norm_type_v1 in typing.get_args(NormType)
         # If the soft caps are set to 0.0, set them to None.
         if self.logits_soft_cap <= 0.0:
             self.logits_soft_cap = None
