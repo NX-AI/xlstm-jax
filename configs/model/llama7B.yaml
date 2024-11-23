@@ -1,0 +1,10 @@
+defaults:
+  - model_schema
+  - llama_default
+  - _self_
+
+name: llama7B
+# LlamaConfig
+embedding_dim: 4096
+num_blocks: 32
+head_dim: 128

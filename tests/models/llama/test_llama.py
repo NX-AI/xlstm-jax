@@ -32,6 +32,7 @@ MODEL_CONFIGS = [
         dtype="float32",
         ffn_multiple_of=64,
         scan_blocks=True,
+        logits_soft_cap=5.0,
         mask_across_document_boundaries=True,
     ),
     lambda parallel: LlamaConfig(

@@ -57,6 +57,9 @@ class LlamaConfig(SubModelConfig):
     """Dropout rate to apply to the activations."""
     add_embedding_dropout: bool = False
     """Whether to apply dropout to the embeddings."""
+    logits_soft_cap: float | None = None
+    """Soft cap for the logits. If not None, the logits are soft-clipped to the range
+    [-logits_soft_cap, logits_soft_cap]."""
     parallel: ParallelConfig = field(default_factory=ParallelConfig)
     """Parallel configuration."""
 
@@ -355,6 +358,7 @@ class LlamaTransformer(nn.Module):
                 kernel_init=small_init(self.config.embedding_dim),
                 norm_fn=partial(nn.RMSNorm, dtype=self.config.dtype, name="out_norm"),
                 lm_head_dtype=self.config._dtype,
+                logits_soft_cap=self.config.logits_soft_cap,
                 name="lm_head",
             ),
             "LMHead",

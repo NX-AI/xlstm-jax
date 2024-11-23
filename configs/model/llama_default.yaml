@@ -10,3 +10,4 @@ scan_blocks: true
 add_embedding_dropout: false
 dtype: bfloat16
 attention_backend: cudnn
+logits_soft_cap: 30.0
