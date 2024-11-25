@@ -1,0 +1,4 @@
+defaults:
+  - smoltalk_openhermes_arrayrecord
+  - default_arrayrecord_train
+  - _self_

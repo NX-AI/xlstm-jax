@@ -1,0 +1,4 @@
+defaults:
+  - smoltalk_magpie_arrayrecord
+  - default_arrayrecord_train
+  - _self_
