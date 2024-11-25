@@ -23,7 +23,7 @@ WANDB_ID=" --append_to_wandb_id $WANDB_ID"
 fi
 
 # Change directory (user env not supported in --chdir)
-cd /home/${USER}/xlstm-jax/
+cd /home/${USER}/xlstm-jax-dev/
 
 # determine log directory
 log_dir="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/evaluation/"
@@ -94,7 +94,7 @@ export NCCL_CROSS_NIC=0 \
 
 # Needed for CUDA compatibility with older drivers on H100
 # TODO: Adjust to shared conda env once set up.
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat/
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/xlstmjax0434cu126_poeppel_eval/cuda-compat/
 
 
 # --------------------------------------------------------------------------------------------------
@@ -102,8 +102,8 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.
 
 # activate specified conda env
 # TODO: Adjust to shared conda env once set up.
-echo "Activating conda env" python_3.11_jax_0.4.34_cuda_12.6
-conda activate python_3.11_jax_0.4.34_cuda_12.6
+echo "Activating conda env" xlstmjax0434cu126_poeppel_eval
+conda activate xlstmjax0434cu126_poeppel_eval
 
 # set the first node name as master address master port is retrieved in the script
 master_addr=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
@@ -117,4 +117,4 @@ echo $mpivars_path
 # run
 srun --kill-on-bad-exit=1 --cpu-bind=none --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --log_dir=$LOG_DIR --fsdp_size=1 --batch_size_per_device=16 --tokenizer=EleutherAI/gpt-neox-20b '"$WANDB_ID"' --load_checkpoint_from_subdir '$CHECKPOINT_DIR' --tasks wikitext hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande lambada'
+     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=0 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --no_infinite_eval --log_dir=$LOG_DIR --fsdp_size=1 --context_length=2048 --batch_size_per_device=4 --tokenizer=EleutherAI/gpt-neox-20b '"$WANDB_ID"' --load_checkpoint_from_subdir '$1' --tasks hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande lambada'

@@ -63,6 +63,7 @@ def main_lmeval(args: argparse.Namespace):
                 axis_name=mesh.axis_names,
             )
 
+    # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
     global_sync_fn = shard_map(global_sync, mesh, in_specs=(P(mesh.axis_names)), out_specs=P(), check_rep=False)
 
     log_info("Mesh initialized.")
@@ -87,14 +88,21 @@ def main_lmeval(args: argparse.Namespace):
             metadata = fp.read()
         model_config_base = MODEL_CONFIGS[args.model]
         del model_config_base["model_config"]
-        global_model_config = {"model_config": ModelConfig.from_metadata(metadata).model_config, **model_config_base}
+        if "model_class" in model_config_base:
+            del model_config_base["model_class"]
+        model_cfg = ModelConfig.from_metadata(metadata)
+        global_model_config = {
+            "model_config": model_cfg.model_config,
+            "model_class": model_cfg.model_class,
+            **model_config_base,
+        }
         LOGGER.info("Loading model config from metadata file.")
         parallel.fsdp_modules = global_model_config["model_config"].parallel.fsdp_modules
         parallel.remat = global_model_config["model_config"].parallel.remat
     else:
         # Config
         global_model_config = MODEL_CONFIGS[args.model]
-        # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
+        global_model_config["model_class"] = xLSTMLMModel
         parallel.fsdp_modules = global_model_config["fsdp_modules"]
         parallel.remat = global_model_config["remat"]
 
@@ -119,7 +127,8 @@ def main_lmeval(args: argparse.Namespace):
         xlstm_config = global_model_config["model_config"]
         xlstm_config.parallel = parallel
         xlstm_config.context_length = context_length
-        xlstm_config.__post_init__()
+        if hasattr(xlstm_config, "__post_init__"):
+            xlstm_config.__post_init__()
     if args.generic_wandb_name or not checkpoint_folder:
         wb_name = "evaluation"
     else:
@@ -172,7 +181,7 @@ def main_lmeval(args: argparse.Namespace):
             log_intermediates=True,
         ),
         ModelConfig(
-            model_class=xLSTMLMModel,
+            model_class=global_model_config["model_class"],
             parallel=parallel,
             model_config=xlstm_config,
         ),
@@ -226,7 +235,7 @@ def main_lmeval(args: argparse.Namespace):
         trainer.logger.log_host_metrics(
             metrics[task],
             step=trainer.global_step,
-            mode="leh_" + task + (f"_nfs{args.num_fewshot}" if args.num_fewshot else ""),
+            mode="leh_" + task,
         )
 
     log_info(f"Final metrics: {metrics}")
