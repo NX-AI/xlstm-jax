@@ -20,6 +20,11 @@ def resume_training(cfg: DictConfig) -> dict[str, Any]:
     if cfg.resume_from_folder is None:
         raise ValueError("The parameter 'resume_from_folder' must be set in the configuration when resuming training.")
 
-    final_metrics = main_train(cfg=cfg, checkpoint_step=cfg.checkpoint_step)
+    final_metrics = main_train(
+        cfg=cfg,
+        checkpoint_step=cfg.checkpoint_step,
+        load_dataloaders=cfg.get("load_dataloaders", True),
+        load_optimizer=cfg.get("load_optimizer", True),
+    )
 
     return final_metrics

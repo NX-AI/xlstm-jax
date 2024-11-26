@@ -1148,11 +1148,10 @@ class TrainerModule:
 
         # Transfer state dict into train state.
         kwargs = {}
-        # This should be replace-able upon correct fixing of Issue #158
         if hasattr(self.state, "tx"):
             kwargs["tx"] = self.state.tx if self.state.tx else self.init_optimizer(self.optimizer_config)
         if hasattr(self.state, "opt_state"):
-            kwargs["opt_state"] = state_dict.get("opt_state", None)
+            kwargs["opt_state"] = state_dict.get("opt_state", self.state.opt_state)
         self.state = self.state.__class__(
             step=state_dict.get("step", 0),
             apply_fn=self.model.apply,
@@ -1207,6 +1206,7 @@ class TrainerModule:
         train_loader: DataIterator | dict[str, DataIterator] | None = None,
         val_loader: DataIterator | dict[str, DataIterator] | None = None,
         test_loader: DataIterator | dict[str, DataIterator] | None = None,
+        delete_params_before_loading: bool = True,
     ):
         """
         Load a pretrained model from a checkpoint directory.
@@ -1219,13 +1219,20 @@ class TrainerModule:
             train_loader: If given, the training data loader is set to the state of the pretrained model.
             val_loader: If given, the validation data loader is set to the state of the pretrained model.
             test_loader: If given, the test data loader is set to the state of the pretrained model.
+            delete_params_before_loading: If True, delete the current model parameters before loading the pretrained
+                model. Saves memory on the device, but original model parameters cannot be used anymore.
 
         Returns:
             The step index of the loaded model.
         """
         LOGGER.info(f"Loading pretrained model from {checkpoint_path}")
         state_dict, data_module_state, step_idx = load_pretrained_model(
-            checkpoint_path, trainer=self, step_idx=step_idx, load_best=load_best, load_optimizer=load_optimizer
+            checkpoint_path,
+            trainer=self,
+            step_idx=step_idx,
+            load_best=load_best,
+            load_optimizer=load_optimizer,
+            delete_params_before_loading=delete_params_before_loading,
         )
         assert len(state_dict) > 0, "No model checkpoint found in the directory."
         self.restore_model(state_dict)

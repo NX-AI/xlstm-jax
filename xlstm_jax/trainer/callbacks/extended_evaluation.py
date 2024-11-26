@@ -185,68 +185,6 @@ class ExtendedEvaluation(Callback):
         raise NotImplementedError
         # return metrics
 
-    def replace_trainer_state_by_eval_only(self):
-        """
-        Replace the trainer + trainer state with a version without optimizer.
-
-        This is optional and not needed to be called for evaluation, but keeps the memory footprint low. Needs to be
-        called before checkpoint loading, but leaves the trainer in an effectively non-working state for training.
-
-        This should be replace-able upon correct fixing of Issue #158
-        """
-        LOGGER.info("Replacing trainer state by imputed state without optimizer")
-        self.init_eval_metrics(self.exmp_batch)
-        init_rng = random.PRNGKey(0)
-        rng = self.trainer.state.rng
-        step = self.trainer.state.step
-
-        delattr(self.trainer, "state")
-
-        def _init_model(init_rng: random.PRNGKey, batch: Batch) -> EvalState:
-            param_rng, init_rng = jax.random.split(init_rng)
-            # Initialize parameters.
-            variables = self.trainer.run_model_init(batch, param_rng)
-            assert isinstance(variables, core.FrozenDict), "Model init must return a FrozenDict."
-            mutable_variables, params = variables.pop("params")
-            if len(mutable_variables) == 0:
-                mutable_variables = None
-            # Create train state.
-            state = EvalState.create(
-                step=step,
-                apply_fn=self.trainer.model.apply,
-                params=params,
-                mutable_variables=mutable_variables,
-                rng=rng,
-            )
-            return state
-
-        init_model_fn = jax.jit(
-            shard_map(
-                _init_model,
-                self.trainer.mesh,
-                in_specs=(P(), self.trainer.batch_partition_specs),
-                out_specs=P(),
-                check_rep=False,
-            ),
-        )
-        state_shapes = jax.eval_shape(init_model_fn, init_rng, self.exmp_batch)
-        state_partition_specs = nn.get_partition_spec(state_shapes)
-        # Run init model function again with correct output specs.
-        init_model_fn = jax.jit(
-            shard_map(
-                _init_model,
-                self.trainer.mesh,
-                in_specs=(P(), self.trainer.batch_partition_specs),
-                out_specs=state_partition_specs,
-                check_rep=False,
-            ),
-        )
-        new_state = init_model_fn(init_rng, self.exmp_batch)
-        self.trainer.state = new_state
-        self.create_jitted_functions()
-
-        self.init_eval_metrics(self.exmp_batch)
-
     def create_jitted_functions(self):
         """
         Create jitted version of the evaluation function.

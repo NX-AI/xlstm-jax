@@ -18,7 +18,9 @@ from xlstm_jax.utils.error_logging_utils import with_error_handling
 
 
 @with_error_handling(flush_output=False, logger=LOGGER)
-def main_train(cfg: DictConfig, checkpoint_step: int | None = None) -> dict[str, Any]:
+def main_train(
+    cfg: DictConfig, checkpoint_step: int | None = None, load_dataloaders: bool = True, load_optimizer: bool = True
+) -> dict[str, Any]:
     """
     The main training function. This function initializes the mesh, data iterators,
       model config, and trainer and then starts training. Can be optionally started
@@ -32,6 +34,8 @@ def main_train(cfg: DictConfig, checkpoint_step: int | None = None) -> dict[str,
         cfg: The full configuration.
         checkpoint_step (optional): Step index of checkpoint to be loaded.
          Defaults to None, in which case training starts from scratch.
+        load_dataloaders (optional): Whether to load the data loaders. Defaults to True.
+        load_optimizer (optional): Whether to load the optimizer. Defaults to True.
 
     Returns:
         The final metrics of the training.
@@ -69,8 +73,9 @@ def main_train(cfg: DictConfig, checkpoint_step: int | None = None) -> dict[str,
         loaded_step_idx = trainer.load_pretrained_model(
             checkpoint_path=Path(cfg.resume_from_folder),
             step_idx=checkpoint_step,
-            train_loader=data_iterator,
-            val_loader=eval_data_iterator,
+            load_optimizer=load_optimizer,
+            train_loader=data_iterator if load_dataloaders else None,
+            val_loader=eval_data_iterator if load_dataloaders else None,
         )
 
     # Save resolved config to output directory if not continuing from checkpoint.

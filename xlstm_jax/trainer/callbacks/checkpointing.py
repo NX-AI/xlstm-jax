@@ -12,7 +12,7 @@ from xlstm_jax.common_types import Metrics
 from xlstm_jax.import_utils import class_to_name
 from xlstm_jax.trainer.callbacks.callback import Callback, CallbackConfig
 from xlstm_jax.trainer.data_module import DataloaderModule
-from xlstm_jax.utils import flatten_dict
+from xlstm_jax.utils import delete_arrays_in_pytree, flatten_dict, get_shape_dtype_pytree
 
 LOGGER = logging.getLogger(__name__)
 
@@ -96,7 +96,7 @@ class ModelCheckpoint(Callback):
 
         options = ocp.CheckpointManagerOptions(
             max_to_keep=self.config.max_to_keep,
-            best_fn=lambda m: m[self.config.monitor] if self.config.monitor is not None else None,
+            best_fn=(lambda m: m[self.config.monitor]) if self.config.monitor is not None else None,
             best_mode=self.config.mode,
             step_prefix="checkpoint",
             cleanup_tmp_directories=True,
@@ -230,7 +230,9 @@ class ModelCheckpoint(Callback):
             else:
                 LOGGER.warning(f"No dataloader state found for {name}. Skipping save.")
 
-    def load_model(self, step_idx: int = -1, load_best: bool = False) -> dict[str, Any]:
+    def load_model(
+        self, step_idx: int = -1, load_best: bool = False, delete_params_before_loading: bool = False
+    ) -> dict[str, Any]:
         """
         Loads model parameters and variables from the logging directory.
 
@@ -238,22 +240,37 @@ class ModelCheckpoint(Callback):
             step_idx: Index of the step to load. If -1, loads the latest step by default.
             load_best: If True and step_idx is -1, loads the best checkpoint
                 based on the monitored metric instead of the latest checkpoint.
+            delete_params_before_loading: If True, deletes the current parameters in the
+                trainer state before loading the new parameters.
 
         Returns:
             Dictionary of loaded model parameters and additional variables.
         """
         step_idx = self.resolve_step_idx(step_idx, load_best)
         LOGGER.info(f"Loading model at step {step_idx}.")
+        if delete_params_before_loading:
+            LOGGER.info("Deleting current parameters before loading new parameters.")
+            params = get_shape_dtype_pytree(self.trainer.state.params)
+            delete_arrays_in_pytree(self.trainer.state.params)
+        else:
+            params = self.trainer.state.params
         args = {
             "step": ocp.args.ArrayRestore(self.trainer.state.step),
-            "params": ocp.args.StandardRestore(self.trainer.state.params),
+            "params": ocp.args.StandardRestore(params),
             "rng": ocp.args.ArrayRestore(self.trainer.state.rng),
             "metadata": ocp.args.JsonRestore(self.metadata),
         }
         if self.trainer.state.mutable_variables is not None:
             args["mutable_variables"] = ocp.args.StandardRestore(self.trainer.state.mutable_variables)
         if self.config.save_optimizer_state:
-            args["opt_state"] = ocp.args.StandardRestore(self.trainer.state.opt_state)
+            if delete_params_before_loading:
+                LOGGER.info("Deleting current optimizer state before loading new optimizer state.")
+                opt_state = get_shape_dtype_pytree(self.trainer.state.opt_state)
+                delete_arrays_in_pytree(self.trainer.state.opt_state)
+            else:
+                opt_state = self.trainer.state.opt_state
+            args["opt_state"] = ocp.args.StandardRestore(opt_state)
+
         state_dict = self.manager.restore(
             step_idx,
             args=ocp.args.Composite(**args),
@@ -347,6 +364,7 @@ def load_pretrained_model(
     step_idx: int = -1,
     load_optimizer: bool = True,
     load_best: bool = False,
+    delete_params_before_loading: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any], int]:
     """
     Loads a pretrained model from a checkpoint.
@@ -359,15 +377,19 @@ def load_pretrained_model(
         load_optimizer: If True the optimizer state is loaded from the checkpoint.
         load_best: If True and step_idx is -1, loads the best checkpoint
             based on the monitored metric instead of the latest checkpoint.
+        delete_params_before_loading: If True, deletes the current parameters in the
+            trainer state before loading the new parameters.
 
     Returns:
         Dictionary of loaded model parameters and additional variables, as well as the dataloader state
         and the resolved step index that was loaded.
     """
-    config = ModelCheckpointConfig(log_path=checkpoint_path, save_optimizer_state=load_optimizer)
+    config = ModelCheckpointConfig(
+        log_path=checkpoint_path, save_optimizer_state=load_optimizer, enable_async_checkpointing=False
+    )
     callback = ModelCheckpoint(config, trainer, None)
     step_idx = callback.resolve_step_idx(step_idx, load_best)
-    state_dict = callback.load_model(step_idx)
+    state_dict = callback.load_model(step_idx, delete_params_before_loading=delete_params_before_loading)
     data_module_state = callback.load_dataloader(step_idx)
     callback.finalize()
     return (state_dict, data_module_state, step_idx)

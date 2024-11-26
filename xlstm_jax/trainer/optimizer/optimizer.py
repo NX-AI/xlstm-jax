@@ -1,6 +1,6 @@
 import logging
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import jax
 import jax.numpy as jnp
@@ -23,9 +23,12 @@ class OptimizerConfig(ConfigDict):
 
     Attributes:
         name (str): Name of the optimizer. The supported optimizers are "adam", "adamw", "sgd", "nadam", "adamax",
-            "radam", "nadamw", "adamax", and "lamb".
-        scheduler (SchedulerConfig): Configuration for learning rate scheduler.
-        beta1 (float): Exponential decay rate for the first moment estimates. This includes momentum in SGD.
+            "radam", "nadamw", "adamax", and "lamb". If "none" is provided, the optimizer will be set to an SGD
+            optimizer with learning rate 0.0, effectively skipping the optimizer.
+        scheduler (SchedulerConfig): Configuration for learning rate scheduler. Defaults to a constant learning rate.
+            If the optimizer is "none", the scheduler is not used.
+        beta1 (float): Exponential decay rate for the first moment estimates. This includes momentum in SGD, which
+            can be set to None for no momentum.
         beta2 (float): Exponential decay rate for the second moment estimates.
         beta3 (float): For AdEMAMix, exponential decay rate for the slow EMA.
         alpha (float): For AdEMAMix, mixing coefficient for the linear combination of the fast and slow EMAs.
@@ -46,8 +49,8 @@ class OptimizerConfig(ConfigDict):
     """
 
     name: str
-    scheduler: SchedulerConfig
-    beta1: float = 0.9
+    scheduler: SchedulerConfig = field(default_factory=lambda: SchedulerConfig(lr=1e-3))
+    beta1: float | None = 0.9
     beta2: float = 0.999
     beta3: float = 0.9999
     alpha: float = 8.0
@@ -72,10 +75,11 @@ class OptimizerConfig(ConfigDict):
             "adamaxw",
             "lamb",
             "ademamix",
+            "none",
         ]
         assert (
             self.name in optimizers
-        ), f"Unknown optimizer {self.name} provided in config, supported are: {optimizers}."
+        ), f"Unknown optimizer '{self.name}' provided in config, supported are: {optimizers}."
 
 
 def build_optimizer(optimizer_config: OptimizerConfig) -> tuple[optax.GradientTransformation, optax.Schedule]:
@@ -173,6 +177,9 @@ def build_optimizer_function(
                 exclude=optimizer_config.weight_decay_exclude, include=optimizer_config.weight_decay_include
             ),
         )
+    elif optimizer_name == "none":
+        # SGD with learning rate 0.0 is equivalent to skipping the optimizer.
+        opt_class = optax.sgd(learning_rate=0.0)
     else:
         raise ValueError(f"Unknown optimizer {optimizer_name}.")
 

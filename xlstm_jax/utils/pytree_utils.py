@@ -1,3 +1,4 @@
+import logging
 from collections.abc import Callable, Mapping, Sequence
 from typing import Any
 
@@ -7,6 +8,8 @@ import numpy as np
 from flax.core import FrozenDict
 
 from xlstm_jax.common_types import PyTree
+
+LOGGER = logging.getLogger(__name__)
 
 
 class RecursionLimit:
@@ -198,3 +201,41 @@ def flatten_dict(d: dict | FrozenDict, separator: str = ".") -> dict[str, Any]:
         d, (dict, FrozenDict)
     ), f"Expected a dict or FrozenDict, got {type(d)}. For general PyTrees, use flatten_pytree."
     return flatten_pytree(d, separator=separator, is_leaf=lambda x: not isinstance(x, (dict, FrozenDict)))
+
+
+def get_shape_dtype_pytree(
+    x: PyTree,
+) -> PyTree:
+    """Converts a PyTree of jax.Array objects to a PyTree of ShapeDtypeStruct objects.
+
+    Leaf nodes of the PyTree that are not jax.Array objects are left unchanged.
+
+    Args:
+        x: PyTree of jax.Array objects.
+
+    Returns:
+        PyTree of ShapeDtypeStruct objects.
+    """
+    return jax.tree.map(
+        lambda x: jax.ShapeDtypeStruct(x.shape, x.dtype, sharding=x.sharding) if isinstance(x, jax.Array) else x, x
+    )
+
+
+def delete_arrays_in_pytree(x: PyTree) -> None:
+    """Deletes and frees all jax.Array objects in a PyTree from the device memory.
+
+    Leaf nodes of the PyTree that are not jax.Array objects are left unchanged.
+
+    Args:
+        x: PyTree of jax.Array objects.
+    """
+
+    def _delete_array(x: Any):
+        if isinstance(x, jax.Array):
+            LOGGER.debug("Delete array of shape", x.shape)
+            x.delete()
+        else:
+            LOGGER.debug("Not deleting object of type", type(x))
+        return x
+
+    jax.tree.map(_delete_array, x)

@@ -22,7 +22,7 @@ from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModel
 from xlstm_jax.trainer.eval.lmeval_extended_evaluation import LMEvalEvaluationConfig
 from xlstm_jax.trainer.llm.trainer import LLMTrainer, LLMTrainerConfig
 from xlstm_jax.trainer.logger import FileLoggerConfig, LoggerConfig, TensorBoardLoggerConfig, WandBLoggerConfig
-from xlstm_jax.trainer.optimizer import OptimizerConfig, SchedulerConfig
+from xlstm_jax.trainer.optimizer import OptimizerConfig
 
 LOGGER = logging.getLogger(__name__)
 
@@ -185,20 +185,11 @@ def main_lmeval(args: argparse.Namespace):
             parallel=parallel,
             model_config=xlstm_config,
         ),
-        # this is needed for the trainer, but not actually used
-        # it it just the optimizer with zero additional memory overhead
-        OptimizerConfig(
-            name="sgd",
-            scheduler=SchedulerConfig(
-                lr=1e-3,
-            ),
-        ),
+        # empty optimizer config
+        OptimizerConfig(name="none"),
         batch=LLMBatch.get_dtype_struct(batch_size, context_length),
         mesh=mesh,
     )
-
-    eval_callback = trainer.callbacks[0]
-    eval_callback.replace_trainer_state_by_eval_only()
 
     if checkpoint_folder:
         log_info(f"Loading checkpoint from {checkpoint_folder}.")
@@ -225,6 +216,8 @@ def main_lmeval(args: argparse.Namespace):
         )
 
     trainer.logger.on_training_start()
+
+    eval_callback = trainer.callbacks[0]
     metrics = eval_callback.run_evaluate()
 
     # synchronize all GPUs
