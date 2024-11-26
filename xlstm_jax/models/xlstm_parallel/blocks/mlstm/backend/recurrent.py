@@ -44,13 +44,13 @@ def recurrent_step_fw(
     # gates
     scaF_log = jax.nn.log_sigmoid(scaF)
     scaF_log = scaF_log.astype(state_dtype)
+    scaI = scaI.astype(state_dtype)
 
     # update rule
     scaM_state_new = jnp.maximum(scaF_log + scaM_state, scaI)  # (B, NH, 1)
 
     scaF_act = jnp.exp(scaF_log + scaM_state - scaM_state_new)  # (B, NH, 1)
     scaI_act = jnp.exp(scaI - scaM_state_new)  # (B, NH, 1)
-    scaI_act = scaI_act.astype(state_dtype)
 
     vecQ_scaled = vecQ / math.sqrt(DHQK)  # (B, NH, DHQK)
 
@@ -64,9 +64,10 @@ def recurrent_step_fw(
 
     qn_dotproduct = vecQ_scaled[:, :, None, :] @ vecN_state_new[:, :, :, None].astype(qkv_dtype)  # (B, NH, 1, 1)
     qn_dotproduct = qn_dotproduct.squeeze(2)  # (B, NH, 1)
-    max_val = jnp.exp(-scaM_state_new).astype(qkv_dtype)  # (B, NH, 1)
-    h_denom = jnp.maximum(jnp.abs(qn_dotproduct), max_val) + eps  # (B, NH, 1)
-    h = h_num / h_denom  # (B, NH, DHV) / (B, NH, 1) = (B, NH, DHV)
+    max_val = jnp.exp(-scaM_state_new)  # (B, NH, 1)
+    h_denom = jnp.maximum(jnp.abs(qn_dotproduct).astype(state_dtype), max_val) + eps  # (B, NH, 1)
+    h = h_num.astype(state_dtype) / h_denom  # (B, NH, DHV) / (B, NH, 1) = (B, NH, DHV)
+    h = h.astype(qkv_dtype)  # Division is upcasted for numerical stability.
 
     return h, (matC_state_new, vecN_state_new, scaM_state_new)
 
@@ -83,6 +84,7 @@ def recurrent_sequence_fw(
     return_last_states: bool = False,
     eps: float = 1e-6,
     state_dtype: jnp.dtype | None = None,
+    use_scan: bool = False,
     mlstm_step_fn: Callable = recurrent_step_fw,
 ) -> jax.Array | tuple[jax.Array, tuple[jax.Array, jax.Array, jax.Array]]:
     """
@@ -102,13 +104,15 @@ def recurrent_sequence_fw(
         state_dtype: Dtype of the states. If None, uses the dtype of the initial states if provided, or other
             the dtypes of the pre-activations. If initial states are provided, the return dtype will be the same as the
             initial states. Defaults to None.
+        use_scan: Whether to use `jax.lax.scan` for the loop. The scan reduces compilation time, but may be slower for
+            kernels without XLA compiler support and introduces memory copy overhead.
         mlstm_step_fn: Function to compute a single mLSTM step. By default, set to `recurrent_step_fw` in this backend.
 
     Returns:
         Hidden states tensor of shape (B, NH, S, DHV) if `return_last_states` is False.
         Tuple of hidden states tensor and tuple of last states tensors if `return_last_states` is True.
     """
-    B, NH, _, DHQK = queries.shape
+    B, NH, S, DHQK = queries.shape
     DHV = values.shape[-1]
     if igate_preact.ndim == 3:
         igate_preact = igate_preact[:, :, :, None]
@@ -138,31 +142,73 @@ def recurrent_sequence_fw(
         # max state
         vecM_state = jnp.zeros((B, NH, 1), dtype=state_dtype)
 
-    # Recurrent loop step function. The states are in the carry,
-    # and the inputs are the tensors at the current time step.
-    def _scan_fn(carry, inputs):
-        matC_state, vecN_state, vecM_state = carry
-        vecQ_t, vecK_t, vecV_t, vecI_t, vecF_t = inputs
-
-        vecH, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
+    if S == 1:
+        # Single step can skip the loop and other operations.
+        matH, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
             matC_state=matC_state,
             vecN_state=vecN_state,
             scaM_state=vecM_state,
-            vecQ=vecQ_t,
-            vecK=vecK_t,
-            vecV=vecV_t,
-            scaI=vecI_t,
-            scaF=vecF_t,
+            vecQ=queries[:, :, 0],
+            vecK=keys[:, :, 0],
+            vecV=values[:, :, 0],
+            scaI=igate_preact[:, :, 0],
+            scaF=fgate_preact[:, :, 0],
             eps=eps,
         )
-        return (matC_state, vecN_state, vecM_state), vecH
+        matH = matH[:, :, None]
+    elif use_scan:
+        # Recurrent loop step function. The states are in the carry,
+        # and the inputs are the tensors at the current time step.
+        def _scan_fn(carry, inputs):
+            matC_state, vecN_state, vecM_state = carry
+            vecQ_t, vecK_t, vecV_t, vecI_t, vecF_t = inputs
 
-    # Run the recurrent loop.
-    carry = (matC_state, vecN_state, vecM_state)
-    inputs = (queries, keys, values, igate_preact, fgate_preact)
-    inputs = jax.tree.map(lambda x: jnp.moveaxis(x, 2, 0), inputs)  # Scan expects time as the first dimension.
-    (matC_state, vecN_state, vecM_state), matH = jax.lax.scan(_scan_fn, carry, inputs)
-    matH = jnp.moveaxis(matH, 0, 2)  # Scan returns time as the first dimension.
+            vecH, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
+                matC_state=matC_state,
+                vecN_state=vecN_state,
+                scaM_state=vecM_state,
+                vecQ=vecQ_t,
+                vecK=vecK_t,
+                vecV=vecV_t,
+                scaI=vecI_t,
+                scaF=vecF_t,
+                eps=eps,
+            )
+            return (matC_state, vecN_state, vecM_state), vecH
+
+        # Run the recurrent loop.
+        carry = (matC_state, vecN_state, vecM_state)
+        inputs = (queries, keys, values, igate_preact, fgate_preact)
+        inputs = jax.tree.map(lambda x: jnp.moveaxis(x, 2, 0), inputs)  # Scan expects time as the first dimension.
+        (matC_state, vecN_state, vecM_state), matH = jax.lax.scan(_scan_fn, carry, inputs)
+        matH = jnp.moveaxis(matH, 0, 2)  # Scan returns time as the first dimension.
+    else:
+        # Use loop to iterate over the sequence.
+        # Recurrent loop step function. The states are in the carry,
+        # and the inputs are the tensors at the current time step.
+        inputs = {
+            "vecQ": queries,
+            "vecK": keys,
+            "vecV": values,
+            "scaI": igate_preact,
+            "scaF": fgate_preact,
+        }
+        inputs = jax.tree.map(
+            lambda x: jnp.moveaxis(x, 2, 0), inputs
+        )  # Move time to first dimension for easier slicing.
+        outputs = []
+        for t in range(S):
+            inputs_t = jax.tree_map(lambda x: x[t], inputs)
+            vecH_t, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
+                matC_state=matC_state,
+                vecN_state=vecN_state,
+                scaM_state=vecM_state,
+                **inputs_t,
+                eps=eps,
+            )
+            outputs.append(vecH_t)
+
+        matH = jnp.stack(outputs, axis=2)
 
     if return_last_states:
         if c_initial is not None:
@@ -180,6 +226,8 @@ def recurrent_sequence_fw(
 class mLSTMBackendRecurrentConfig:
     context_length: int = -1
     eps: float = 1e-6
+    state_dtype: str | None = None
+    use_scan: bool = False
 
     def assign_model_config_params(self, model_config, *args, **kwargs):
         self.context_length = model_config.context_length
@@ -213,6 +261,8 @@ class mLSTMBackendRecurrent(mLSTMBackend):
             m_initial=m_initial,
             return_last_states=return_last_states,
             eps=self.config.eps,
+            state_dtype=self.config.state_dtype,
+            use_scan=self.config.use_scan,
         )
 
     @property

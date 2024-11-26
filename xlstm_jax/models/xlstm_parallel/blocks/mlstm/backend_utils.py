@@ -46,9 +46,14 @@ def run_backend(
     use_cache = parent.is_mutable_collection("cache") and not parent.is_initializing()
     if use_cache:
         cache_initialized = parent.has_variable("cache", "cached_c")
-        c_initial = parent.variable("cache", "cached_c", jnp.zeros, (batch_size, num_heads, qk_dim, v_dim), jnp.float32)
-        n_initial = parent.variable("cache", "cached_n", jnp.zeros, (batch_size, num_heads, qk_dim), jnp.float32)
-        m_initial = parent.variable("cache", "cached_m", jnp.zeros, (batch_size, num_heads), jnp.float32)
+        # Infer state dtype from backend config, or use the dtype of the forget gate preactivation.
+        if hasattr(cell_config.backend.kwargs, "state_dtype"):
+            state_dtype = cell_config.backend.kwargs.state_dtype
+        else:
+            state_dtype = fgate_preact.dtype
+        c_initial = parent.variable("cache", "cached_c", jnp.zeros, (batch_size, num_heads, qk_dim, v_dim), state_dtype)
+        n_initial = parent.variable("cache", "cached_n", jnp.zeros, (batch_size, num_heads, qk_dim), state_dtype)
+        m_initial = parent.variable("cache", "cached_m", jnp.zeros, (batch_size, num_heads), state_dtype)
     else:
         cache_initialized = False
         c_initial, n_initial, m_initial = None, None, None

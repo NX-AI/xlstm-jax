@@ -11,7 +11,8 @@ from omegaconf import DictConfig, OmegaConf
 
 from xlstm_jax.define_hydra_schemas import register_configs
 from xlstm_jax.distributed import set_XLA_flags
-from xlstm_jax.train_init_fns import init_model_config, init_parallel, init_trainer, initialize_mesh
+from xlstm_jax.distributed.mesh_utils import initialize_mesh
+from xlstm_jax.train_init_fns import init_model_config, init_parallel, init_trainer
 from xlstm_jax.trainer.llm.sampling import greedy_sampling
 from xlstm_jax.trainer.llm.trainer import LLMTrainer
 
@@ -39,6 +40,7 @@ def benchmark_generate(trainer: LLMTrainer, cfg: DictConfig):
         eod_token_id=-1,  # Run full generation.
         token_sample_fn=greedy_sampling,
         gather_params_once=True,
+        param_dtype=jnp.bfloat16,
     )
     trace_dir = (trainer.logger.log_path / "trace").absolute().as_posix()
     os.makedirs(trace_dir, exist_ok=True)
@@ -61,6 +63,14 @@ def benchmark_generate(trainer: LLMTrainer, cfg: DictConfig):
         prefix_mask = jnp.zeros((global_batch_size, num_tokens), dtype=jnp.bool_)
         prefix_mask = prefix_mask.at[:, 0].set(True)
 
+        log_info("Compiling generate function...")
+        compiled_gen_fn = generate_fn.lower(trainer.state, rng, prefix_tokens, prefix_mask).compile()
+        log_info(f"Compiled generate function for global batch size {batch_size}.")
+        flops = int(compiled_gen_fn.cost_analysis()[0]["flops"])
+        log_info(f"Cost analysis - FLOPS: {flops:_d}")
+        log_info(f"Cost analysis - FLOPS per batch element: {int(flops // (global_batch_size)):_d}")
+        log_info(f"Cost analysis - FLOPS per token: {int(flops // (global_batch_size * num_tokens)):_d}")
+
         # Run benchmark.
         all_times = []
         for i in range(10):
@@ -72,7 +82,7 @@ def benchmark_generate(trainer: LLMTrainer, cfg: DictConfig):
             # Run generate function (full sequence is generated).
             start_time = time()
             with jax.profiler.StepTraceAnnotation("gen_step", step_num=i):
-                tokens, is_valid = generate_fn(trainer.state, rng, prefix_tokens, prefix_mask)
+                tokens, is_valid = compiled_gen_fn(trainer.state, rng, prefix_tokens, prefix_mask)
             tokens.block_until_ready()
             is_valid.block_until_ready()
             end_time = time()

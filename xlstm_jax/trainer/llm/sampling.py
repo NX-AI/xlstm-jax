@@ -59,6 +59,7 @@ def generate_tokens(
     gather_params_once: bool = False,
     data_axis_name: str = "dp",
     fsdp_axis_name: str = "fsdp",
+    param_dtype: jnp.dtype | None = None,
 ) -> tuple[jax.Array, jax.Array]:
     """
     Generate tokens from an LLM.
@@ -74,7 +75,9 @@ def generate_tokens(
             will be initialized.
         max_length: The maximum length of the generated text. Defaults to 2048.
         eod_token_id: The end-of-document token id. If all sequences hit this token, generation will stop. Defaults
-            to -1, ie will not have an effect.
+            to -1, in which case generation will continue until max_length is reached. Note that if this is set to
+            -1, we perform the generation in a for loop, and otherwise in a while loop, which stops if all sequences
+            have hit the EOD token or the max length is reached.
         token_sample_fn: The token sampler to use for sampling tokens. Defaults to temperature sampling with
             temperature 1.0.
         gather_params_once: Whether to gather fsdp-sharded parameters once before generating. This reduces
@@ -82,12 +85,21 @@ def generate_tokens(
             parallelism). Defaults to false.
         data_axis_name: The data axis name. Defaults to "dp".
         fsdp_axis_name: The fsdp axis name. Defaults to "fsdp".
+        param_dtype: The dtype that the parameters should be converted to before applying the model. For instance,
+            if all operations happen in bfloat16, setting this to bfloat16 converts all parameters once into bfloat16
+            before generating. Defaults to None, in which case the parameters are not converted.
 
     Returns:
         The sampled tokens and a mask for valid tokens (true if valid, false otherwise).
     """
     batch_size = prefix_tokens.shape[0]
+
+    # Prepare parameters.
     params = state.params
+    if param_dtype is not None:
+        params = jax.tree_map(lambda x: x.astype(param_dtype), params)
+
+    # Prepare prefix tokens and mask.
     if prefix_tokens.ndim == 1:
         prefix_tokens = prefix_tokens[:, None]
     if prefix_mask is None:
@@ -104,6 +116,7 @@ def generate_tokens(
         params = gather_params(params, axis_name=fsdp_axis_name)
 
     # Single apply of model with support for caching.
+    @jax.named_scope("apply_fn")
     def _apply_fn(inputs: jax.Array, cache: PyTree | None) -> tuple[jax.Array, PyTree]:
         variables = {"params": params}
         if cache is not None:
@@ -123,6 +136,7 @@ def generate_tokens(
         # Initialize cache.
         _, cache = _apply_fn(prefix_tokens, cache)
 
+    @jax.named_scope("generate_step")
     def _generate_one_step(loop_state: dict[str, Any]) -> dict[str, Any]:
         # Function for performing a single generation step, ie generate one token per sequence.
         # We use a loop state to keep track of the current state of the generation. The loop state
@@ -151,7 +165,8 @@ def generate_tokens(
 
         # Sample next token.
         logits, cache = _apply_fn(last_token, cache)
-        next_token = token_sample_fn(logits, step_rng)
+        with jax.named_scope("token_sample_fn"):
+            next_token = token_sample_fn(logits, step_rng)
 
         # Overwrite prefix tokens.
         next_token = jnp.where(is_prefix, prefix_token, next_token)
@@ -198,7 +213,14 @@ def generate_tokens(
     }
 
     # Run loop.
-    loop_state = jax.lax.while_loop(_loop_cond, _generate_one_step, loop_state)
+    # If we have given an EOD token, we perform early stopping by running a while loop to generate tokens.
+    # Otherwise, we perform a for loop to generate tokens.
+    if eod_token_id >= 0:
+        loop_state = jax.lax.while_loop(_loop_cond, _generate_one_step, loop_state)
+    else:
+        loop_state = jax.lax.fori_loop(0, max_length - 1, lambda i, val: _generate_one_step(val), loop_state)
+
+    # Final outputs.
     tokens = loop_state["tokens"]
     is_valid = loop_state["is_valid"]
 

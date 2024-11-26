@@ -7,8 +7,8 @@ defaults:
 
 # specify the deltas from the defaults:
 task_name: benchmark
-batch_size_per_device: 8192  # Max batch size to test.
-context_length: 2048
+batch_size_per_device: 64  # Max batch size to test.
+context_length: 64  # Only used for init.
 num_epochs: 1000
 num_train_steps: 95_000
 lr: 1e-2
@@ -17,4 +17,12 @@ trainer:
   gradient_accumulate_steps: 1
 
 model:
-  backend: recurrent
+  # backend: recurrent
+  backend: recurrent_triton
+  gate_dtype: bfloat16
+
+parallel:
+  remat: []
+
+# Run command:
+# PYTHONPATH=. python scripts/benchmark_with_hydra.py +experiment=benchmark_mLSTMv1_7B.yaml

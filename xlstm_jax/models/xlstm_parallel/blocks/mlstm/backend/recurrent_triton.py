@@ -15,7 +15,11 @@ class mLSTMBackendRecurrentTritonConfig:
     """
 
     eps: float = 1e-6
-    """Epsilon value used in the kernel"""
+    """Epsilon value used in the kernel."""
+    state_dtype: str | None = None
+    """Data type for the state tensors. If None, the data type is inferred from the input tensors."""
+    use_scan: bool = False
+    """Whether to use scan for the recurrent sequence."""
 
     def assign_model_config_params(self, *args, **kwargs):
         pass
@@ -75,6 +79,8 @@ class mLSTMBackendRecurrentTriton(mLSTMBackend):
             m_initial=m_initial,
             return_last_states=return_last_states,
             eps=self.config.eps,
+            state_dtype=self.config.state_dtype,
+            use_scan=self.config.use_scan,
         )
 
     @property

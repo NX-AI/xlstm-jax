@@ -171,19 +171,24 @@ class LLMTrainer(TrainerModule):
         eod_token_id: int = -1,
         token_sample_fn: Callable[[jax.Array, jax.Array], jax.Array] = temperature_sampling,
         gather_params_once: bool = False,
+        param_dtype: jnp.dtype | None = None,
     ) -> Callable[[TrainState, jax.Array, jax.Array, jax.Array | None, PyTree | None], tuple[jax.Array, jax.Array]]:
         """
         Create a function to generate text from the model.
 
         Args:
             max_length: The maximum length of the generated text. Defaults to 2048.
-            eod_token_id: The end-of-document token id. If all sequences hit this token, generation will stop. Defaults
-                to -1, ie will not have an effect.
+        eod_token_id: The end-of-document token id. If all sequences hit this token, generation will stop. Defaults
+            to -1, in which case generation will continue until max_length is reached. Note that if this is set to
+            -1, we perform the generation in a for loop, and otherwise in a while loop.
             token_sample_fn: The token sampler to use for sampling tokens. Defaults to temperature sampling with
                 temperature 1.0.
             gather_params_once: Whether to gather fsdp-sharded parameters once before generating. This reduces
                 communication overhead between devices, but requires the model to fit on a single device (up to TP
                 parallelism). Defaults to false.
+            param_dtype: The dtype that the parameters should be converted to before applying the model. For instance,
+                if all operations happen in bfloat16, setting this to bfloat16 converts all parameters once into
+                bfloat16 before generating. Defaults to None, in which case the parameters are not converted.
 
         Returns:
             The generate function. Takes as input the state, an RNG key, prefix tokens, prefix mask, and an optional
@@ -201,6 +206,7 @@ class LLMTrainer(TrainerModule):
             gather_params_once=gather_params_once,
             data_axis_name=self.data_axis_name,
             fsdp_axis_name=self.fsdp_axis_name,
+            param_dtype=param_dtype,
         )
 
         # Shard the generate function.
