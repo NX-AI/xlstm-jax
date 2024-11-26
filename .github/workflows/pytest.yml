@@ -24,8 +24,19 @@ jobs:
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
+      # - name: List repository contents
+      #   run: |
+      #     ls -R
+
       - name: Checkout code
         uses: actions/checkout@v4
+        # with:
+        #   submodules: true
+        #   token: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: List repository contents after checkout
+      #   run: |
+      #     ls -R
 
       - name: Set up Mamba
         uses: mamba-org/setup-micromamba@v1

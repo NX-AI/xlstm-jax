@@ -49,6 +49,15 @@ try:
 except ImportError:
     TRITON_AVAILABLE = False
 
+
+try:
+    from transformers import AutoModelForCausalLM, xLSTMForCausalLM  # noqa: F401
+
+    HUGGINGFACE_XLSTM_AVAILABLE = True
+except ImportError:
+    HUGGINGFACE_XLSTM_AVAILABLE = False
+
+
 # Set W&B offline for tests.
 os.environ["WANDB_MODE"] = "offline"
 
@@ -62,3 +71,4 @@ def pytest_configure():
     pytest.num_devices = NUM_DEVICES
     pytest.grain_available = GRAIN_AVAILABLE
     pytest.triton_available = TRITON_AVAILABLE
+    pytest.huggingface_xlstm_available = HUGGINGFACE_XLSTM_AVAILABLE

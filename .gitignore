@@ -3,6 +3,7 @@ wandb
 outputs
 data/*
 local
+notebooks
 
 # PyCharm
 .idea
