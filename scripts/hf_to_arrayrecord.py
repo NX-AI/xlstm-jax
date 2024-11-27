@@ -17,6 +17,58 @@ from xlstm_jax.dataset import HFHubDataConfig
 LOGGER = logging.getLogger(__name__)
 
 
+sft_datasets = [
+    "openai/gsm8k",
+    "meta-math/MetaMathQA",
+    "allenai/tulu-v3.1-mix-preview-4096-OLMoE",
+    "HuggingFaceTB/smoltalk",
+    "teknium/OpenHermes-2.5",
+    "AI-MO/NuminaMath-CoT",
+]
+
+
+def _parse_sft_example(example: dict, hf_path: str) -> str:
+    """Extract the string from the example.
+
+    If the dataset is one of
+
+    Args:
+        example: An example loaded from the dataset.
+        hf_path: The HuggingFace dataset path.
+
+    Returns:
+        The extracted string.
+    """
+    if hf_path == "openai/gsm8k":
+        return "\n".join([example["question"].rstrip("\n"), example["answer"]])
+    elif hf_path == "meta-math/MetaMathQA":
+        return "\n".join([example["query"].rstrip("\n"), example["response"]])
+    elif hf_path == "teknium/OpenHermes-2.5":
+        return "\n".join(msg["value"].rstrip("\n") for msg in example["conversations"])
+    elif hf_path in ["allenai/tulu-v3.1-mix-preview-4096-OLMoE", "HuggingFaceTB/smoltalk", "AI-MO/NuminaMath-CoT"]:
+        return "\n".join(msg["content"].rstrip("\n") for msg in example["messages"])
+    else:
+        raise NotImplementedError(f"Extracting string from example not implemented for dataset: {hf_path}")
+
+
+def parse_example(example: dict, hf_path: str, data_column_name: str) -> str:
+    """Extract the string from the example.
+
+    If the dataset is one of
+
+    Args:
+        example: An example loaded from the dataset.
+        hf_path: The HuggingFace dataset path.
+        data_column_name: the name of the column containing the text data, e.g. "text" or "messages".
+
+    Returns:
+        The extracted string.
+    """
+    if hf_path in sft_datasets:
+        return _parse_sft_example(example=example, hf_path=hf_path)
+    return example[data_column_name]
+
+
 def write_array_record(
     config: HFHubDataConfig,
     hf_data_name: str | None,
@@ -27,6 +79,7 @@ def write_array_record(
     example_start_idx: int,
     example_end_idx: int,
     shard_size: int,
+    data_column_name: str,
 ):
     """Write the dataset split to an array record file.
 
@@ -40,6 +93,7 @@ def write_array_record(
         example_start_idx: The index of the first example to write.
         example_end_idx: The index of the last example to write.
         shard_size: The number of examples in each shard.
+        data_column_name: The column containing the text data, e.g. "text" or "messages". Used only for non-sft data.
     """
     assert split in ("train", "validation", "test"), f"Invalid split: {split}"
     process_split = f"{split}[{example_start_idx}:{example_end_idx}]"  # chunk for this process
@@ -63,6 +117,7 @@ def write_array_record(
     start_time = time.time()
     writer = None
     for ex_idx, example in enumerate(ds):
+        parsed_example = parse_example(example=example, hf_path=config.hf_path, data_column_name=data_column_name)
         shard_idx = shard_start_idx + ex_idx // shard_size
         if writer is None:
             LOGGER.info(
@@ -76,7 +131,7 @@ def write_array_record(
             # The API is of C++ ArrayRecordWriter is unfortunately not documented (afaik). But here is an example:
             # https://github.com/google/array_record/blob/main/python/array_record_module_test.py#L135C48-L135C63
             writer = ArrayRecordWriter(shard_path, "group_size:1")
-        writer.write(str.encode(example["text"]))
+        writer.write(str.encode(parsed_example))
         if (ex_idx + 1) % shard_size == 0:
             eta = int((time.time() - start_time) / (ex_idx + 1) * (data_len - ex_idx - 1))
             eta_str = f"{eta // 3600:2d}h {eta // 60 % 60:2d}m {eta % 60:2d}s"
@@ -92,12 +147,13 @@ def convert_dataset(
     hf_path: str,
     hf_data_name: str | None = None,
     hf_data_dir: str | None = None,
-    splits: Sequence[str] = ("validation", "train"),
+    splits: Sequence[str] = ("train",),
     num_processes: int | None = None,
     num_hf_processes: int | None = None,
     shard_size: int = 250_000,
     base_out_path: Path = Path("/nfs-gpu/xlstm/data/array_records"),
     hf_cache_dir: Path = Path("/nfs-gpu/xlstm/data/hf_cache"),
+    data_column_name: str = "text",
 ):
     """Convert dataset from HuggingFace to ArrayRecord.
 
@@ -111,6 +167,7 @@ def convert_dataset(
         shard_size: Number of examples in each shard.
         base_out_path: Base output directory for saving the preprocessed dataset.
         hf_cache_dir: Huggingface cache directory.
+        data_column_name: The column containing the text data, e.g. "text" or "messages". Used only for non-sft data.
     """
     LOGGER.info(f"Converting to array_records with {num_processes} workers")
     # Dataset Configuration
@@ -162,7 +219,7 @@ def convert_dataset(
         if num_processes is None or num_processes <= 1:
             write_array_record(
                 config=config,
-                name=hf_data_name,
+                hf_data_name=hf_data_name,
                 split=split,
                 out_path=out_path,
                 process_idx=0,
@@ -170,6 +227,7 @@ def convert_dataset(
                 example_start_idx=0,
                 example_end_idx=dataset_size,
                 shard_size=shard_size,
+                data_column_name=data_column_name,
             )
         else:
             # We split the dataset into num_processes chunks (start and end idx) and convert each chunk in parallel.
@@ -201,6 +259,7 @@ def convert_dataset(
                             example_start_indices[process_idx],
                             example_end_indices[process_idx],
                             shard_size,
+                            data_column_name,
                         )
                         for process_idx in range(num_split_processes)
                     ],
@@ -223,14 +282,9 @@ if __name__ == "__main__":
     # Processing parameters.
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        # "--hf_path", type=str, default="DKYoon/SlimPajama-6B", help="Huggingface dataset path."
-        # "--hf_path",
-        # type=str,
-        # default="cerebras/SlimPajama-627B",
-        # help="Huggingface dataset path.",
         "--hf_path",
         type=str,
-        default="mlfoundations/dclm-baseline-1.0-parquet",
+        default="allenai/dolmino-mix-1124",
         help="Huggingface dataset path.",
     )
     parser.add_argument("--hf_data_name", type=str, default=None, help="Huggingface dataset name.")
@@ -238,6 +292,7 @@ if __name__ == "__main__":
     parser.add_argument("--splits", type=str, nargs="+", default=["train"], help="Dataset splits to convert.")
     parser.add_argument("--num_processes", type=int, default=None, help="Number of workers used to convert.")
     parser.add_argument("--num_hf_processes", type=int, default=None, help="Number of workers used for download.")
+    parser.add_argument("--data_column_name", type=str, default="text", help="Column name containing data.")  # messages
     args = parser.parse_args()
 
     # Convert dataset to ArrayRecords.
@@ -248,4 +303,5 @@ if __name__ == "__main__":
         splits=args.splits,
         num_processes=args.num_processes if args.num_processes is not None else min(len(os.sched_getaffinity(0)), 128),
         num_hf_processes=args.num_hf_processes,
+        data_column_name=args.data_column_name,
     )

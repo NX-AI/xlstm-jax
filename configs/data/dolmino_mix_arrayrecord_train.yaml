@@ -1,0 +1,4 @@
+defaults:
+  - dolmino_mix_arrayrecord
+  - default_arrayrecord_train
+  - _self_

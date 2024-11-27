@@ -1,0 +1,24 @@
+defaults:
+  - grain_arrayrecord_data_schema
+  - _self_
+
+# Name of the dataset. Used for logging.
+name: large_sft_datasets_pp2
+
+# Data config type.
+data_config_type: grain_arrayrecord
+
+# Global batch. Will be calculated as multiplication of batch_size_per_device and num_devices.
+global_batch_size: ${global_batch_size}
+
+# Path to the dataset directory.
+data_path: /nfs-gpu/xlstm/data/array_records/large_sft_datasets_pp2
+
+# Maximum length of the target sequence.
+max_target_length: ${context_length}
+
+# Column name for data.
+data_column: text
+
+# Packing.
+grain_packing: true
