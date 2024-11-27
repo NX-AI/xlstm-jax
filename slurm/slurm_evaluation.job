@@ -2,7 +2,6 @@
 #SBATCH --job-name=xlstm-jax
 #SBATCH --nodes=1
 #SBATCH --partition=compute
-#SBATCH --reservation=debug_nodes
 #SBATCH --gres=gpu:1
 #SBATCH --gpu-bind=none
 #SBATCH --cpus-per-task=28  # Number of cores per socket on compute nodes
