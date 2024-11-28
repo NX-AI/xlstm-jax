@@ -16,7 +16,11 @@ def main():
     )
     parser.add_argument("--no_convert_to_hf", action="store_true")
     parser.add_argument("--single-gpu", action="store_true")
+    parser.add_argument("--batch_size", type=int, default=16)
     parser.add_argument("--old_leaderboard", action="store_true")
+    parser.add_argument(
+        "--mixed_precision", type=str, default="no", help="Use mixed precision with optional dtypes fp16,bf16,fp32"
+    )
     parser.add_argument(
         "--tasks",
         type=str,
@@ -30,16 +34,22 @@ def main():
         if args.old_leaderboard:
             eval_output_dir = "/nfs-gpu/xlstm/logs/evals/"
         else:
-            eval_output_dir = "nfs-gpu/xlstm/logs/evals_leaderboard/"
+            eval_output_dir = "/nfs-gpu/xlstm/logs/evals_leaderboard/"
     else:
         eval_output_dir = args.eval_output_dir
     if args.tasks is None:
         if args.old_leaderboard:
             tasks = (
-                "leaderboard|winogrande|5|0,leaderboard|hellaswag|5|0,"
-                "leaderboard|arc:challenge|5|0,lighteval|arc:easy|5|0,leaderboard|mmlu|5|0,lighteval|openbookqa|5|0,"
-                "lighteval|piqa|5|0"
+                "leaderboard|arc:challenge|25|0,leaderboard|hellaswag|10|0,"
+                "leaderboard|truthfulqa:mc|0|0,leaderboard|mmlu|5|0,"
+                "leaderboard|winogrande|5|0,leaderboard|gsm8k|5|0,"
+                "lighteval|piqa|5|0,lighteval|openbookqa|5|0"
             )
+            # tasks = (
+            #     "leaderboard|winogrande|5|0,leaderboard|hellaswag|5|0,"
+            #     "leaderboard|arc:challenge|5|0,lighteval|arc:easy|5|0,leaderboard|mmlu|5|0,lighteval|openbookqa|5|0,"
+            #     "lighteval|piqa|5|0"
+            # )
         else:
             tasks = "leaderboard"
     else:
@@ -105,37 +115,37 @@ def main():
     else:
         LOGGER.info("Skipping HF checkpoint conversion.")
 
+    run_args_accelerate = [
+        "accelerate",
+        "launch",
+        "--multi_gpu" if not args.single_gpu else "",
+        f"--num_processes={1 if args.single_gpu else 8}",
+        f"--mixed_precision={args.mixed_precision}",
+    ]
+
     if args.old_leaderboard:
-        run_args = [
-            "accelerate",
-            "launch",
-            "--multi_gpu" if not args.single_gpu else "",
-            f"--num_processes={1 if args.single_gpu else 8}",
-            "--dynamo_backend=inductor",
+        run_args = run_args_accelerate + [
+            "--dynamo-backend=inductor",
             "-m",
             "lighteval",
             "accelerate",
             "--model_args",
             f"pretrained={str(output_path)},tokenizer=EleutherAI/gpt-neox-20b",
             "--override_batch_size",
-            "16",
+            f"{args.batch_size}",
             f"--output_dir={str(eval_output_dir)}",
             "--tasks",
             str(tasks),
         ]
     else:
-        run_args = [
-            "accelerate",
-            "launch",
-            "--multi_gpu",
-            "--num_processes=8",
+        run_args = run_args_accelerate + [
             "-m",
             "lm_eval",
             "--model_args",
             f"pretrained={str(output_path)},tokenizer=EleutherAI/gpt-neox-20b",
             f"--tasks={str(tasks)}",
-            "--batch_size=16",
-            f"--output_path={str(output_path)}",
+            f"--batch_size={args.batch_size}",
+            f"--output_path={str(eval_output_dir)}",
         ]
     LOGGER.info("Running:\n" + " ".join(run_args))
     subprocess.run(
