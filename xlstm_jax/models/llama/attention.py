@@ -281,7 +281,7 @@ def multihead_attention(
             causal=causal,
             interpret=jax.default_backend() == "cpu",
         )
-    elif backend in ["xla", "cudnn"]:
+    if backend in ["xla", "cudnn"]:
         mask = segment_mask(segment_ids) if segment_ids is not None else None
         return jax.nn.dot_product_attention(
             q,
@@ -292,5 +292,4 @@ def multihead_attention(
             is_causal=causal,
             implementation=backend,
         )
-    else:
-        raise ValueError(f"Unknown attention backend {backend}.")
+    raise ValueError(f"Unknown attention backend {backend}.")

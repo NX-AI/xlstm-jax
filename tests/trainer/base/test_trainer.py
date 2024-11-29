@@ -162,7 +162,7 @@ def test_nan_checks(mse_trainer: Any, toy_model: Any, tmp_path: Path):
     assert (log_path / fl_dir).exists(), f"Expected file logging directory {log_path / fl_dir} to exist"
     assert (
         log_path / fl_dir / "metrics_train.csv"
-    ).exists(), f"Expected metrics file {log_path / fl_dir / f'metrics_train.csv'} to exist"
+    ).exists(), f"Expected metrics file {log_path / fl_dir / 'metrics_train.csv'} to exist"
     df = pd.read_csv(log_path / fl_dir / "metrics_train.csv")
     # Logs till 220 (11 steps), plus one epoch time.
     assert df.shape[0] == 12, f"Expected 12 columns in the metrics file, but got {df.shape[0]}."
@@ -236,7 +236,7 @@ def test_log_intermediates(
     assert (log_path / fl_dir).exists(), f"Expected file logging directory {log_path / fl_dir} to exist"
     assert (
         log_path / fl_dir / "metrics_train.csv"
-    ).exists(), f"Expected metrics file {log_path / fl_dir / f'metrics_train.csv'} to exist"
+    ).exists(), f"Expected metrics file {log_path / fl_dir / 'metrics_train.csv'} to exist"
     df = pd.read_csv(log_path / fl_dir / "metrics_train.csv")
     assert (
         "last_activations.0_0_mean" in df.columns

@@ -44,9 +44,9 @@ class ToyExtendedEvaluation(ExtendedEvaluation):
         step_metrics = {
             "l3_dist": {"value": l1_dist.sum(), "count": batch_size},
         }
-        return (step_metrics, mutable_vars)
+        return step_metrics, mutable_vars
 
-    def on_filtered_validation_epoch_end(self, val_metrics: Metrics, epoch_idx: int, step_idx: int):
+    def on_filtered_validation_epoch_end(self, eval_metrics: Metrics, epoch_idx: int, step_idx: int):
         """Rerun the extended metrics on the validation dataset and log to standard logger."""
         val_iter = iter(self.data_module.val_dataloader)
         metrics = self.eval_model(val_iter, mode="val", epoch_idx=epoch_idx)

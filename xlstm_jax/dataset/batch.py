@@ -82,13 +82,12 @@ class LLMBatch(Batch):
         """
         if self._document_borders is not None:
             return self._document_borders
-        else:
-            return jnp.pad(
-                self.inputs_segmentation[:, :-1] != self.inputs_segmentation[:, 1:],
-                ((0, 0), (1, 0)),
-                mode="constant",
-                constant_values=True,
-            )
+        return jnp.pad(
+            self.inputs_segmentation[:, :-1] != self.inputs_segmentation[:, 1:],
+            ((0, 0), (1, 0)),
+            mode="constant",
+            constant_values=True,
+        )
 
     def __getitem__(self, key):
         """Supports slicing and element access in batch."""

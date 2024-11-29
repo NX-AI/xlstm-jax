@@ -6,7 +6,6 @@ def LayerNorm(
     weight: bool = True,
     bias: bool = False,
     eps: float = 1e-5,
-    residual_weight: bool = True,
     dtype: jnp.dtype = jnp.float32,
     **kwargs,
 ):
@@ -17,7 +16,6 @@ def MultiHeadLayerNorm(
     weight: bool = True,
     bias: bool = False,
     eps: float = 1e-5,
-    residual_weight: bool = True,
     dtype: jnp.dtype = jnp.float32,
     axis: int = 1,
     **kwargs,

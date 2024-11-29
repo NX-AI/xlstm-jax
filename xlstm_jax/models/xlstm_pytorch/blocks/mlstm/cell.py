@@ -35,7 +35,7 @@ class mLSTMCell(nn.Module):
 
         self.reset_parameters()
 
-    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(self, q: torch.Tensor, k: torch.Tensor, v: torch.Tensor) -> torch.Tensor:
         B, S, _ = q.shape  # (B, S, H)
 
         if_gate_input = torch.cat([q, k, v], dim=-1)
@@ -66,7 +66,6 @@ class mLSTMCell(nn.Module):
         k: torch.Tensor,
         v: torch.Tensor,
         mlstm_state: tuple[torch.Tensor, torch.Tensor, torch.Tensor] = None,
-        **kwargs,
     ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
         B, S, _ = q.shape  # (B, S, H)
         assert S == 1, f"mLSTMCell.step only supports sequence length S=1, but got S={S}."

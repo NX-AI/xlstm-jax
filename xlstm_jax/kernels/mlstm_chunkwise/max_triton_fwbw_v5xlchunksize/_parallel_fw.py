@@ -1,12 +1,12 @@
-from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_parallel_fw import (
-    _mlstm_chunkwise__parallel_fw_Hintra_kernel,
-)
-
 import jax
 import jax.numpy as jnp
 import jax_triton as jt
 import triton
+
+from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
+from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_parallel_fw import (
+    _mlstm_chunkwise__parallel_fw_Hintra_kernel,
+)
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride
@@ -49,16 +49,21 @@ def mlstm_chunkwise__parallel_fw_Hintra(
         matQ: Tensor containing the queries. Shape (B, NH, S, DHQK).
         matK: Tensor containing the keys. Shape (B, NH, S, DHQK).
         matV: Tensor containing the values. Shape (B, NH, S, DHHV).
-        matC_states: States of the C matrix. Shape (B, NH, NC * DHQK, DHHV).
-            This state and following states must be all states up to the last chunk, i.e. :-1.
-        vecN_states: States of the N vector. Shape (B, NH, NC * DHQK).
-        scaMinter_states: States of the M scalar. Shape (B, NH, NC).
         vecI: Tensor containing the input gate. Shape (B, NH, NC, L).
         vecF: Tensor containing the forget gate preactivations. Shape (B, NH, NC * L) = (B, NH, S).
+        matC_all: Tensor containing the C states at the chunk borders. Shape (B, NH, (NC+1) * DHQK, DHHV).
+        vecN_all: Tensor containing the N states at the chunk borders. Shape (B, NH, (NC+1) * DHQK).
+        scaM_all: Tensor containing the M states at the chunk borders. Shape (B, NH, (NC+1)).
         qk_scale: Scaling factor for the QK matrix. Defaults to None and will be inferred.
-        CHUNK_SIZE: Chunk size for the kernel. Defaults to 64.
-        NUM_CHUNKS: Number of chunks. Defaults to 1.
-        EPS: Small value to avoid division by zero. Defaults to 1e-6.
+        chunk_size:Chunk size. Defaults to 64.
+        siz_b_LQ: Block size for the chunk dimension LQ. Defaults to 32.
+        siz_b_LKV: Block size for the chunk dimension LKV. Defaults to 32.
+        siz_b_DHQK: Block size for the head dimension DHQK. Defaults to None.
+        siz_b_DHHV: Block size for the head dimension DHHV. Defaults to None.
+        num_warps: Number of warps. Defaults to None.
+        num_stages: Number of stages. Defaults to None.
+        eps: Epsilon value. Defaults to 1e-6.
+        output_dtype: Output data type. Defaults to jnp.float32.
 
     Returns:
         Tuple containing the output matrix H (shape (B, NH, S, DHHV)) and the N vector (shape (B, NH, S)).
@@ -79,8 +84,6 @@ def mlstm_chunkwise__parallel_fw_Hintra(
 
     if siz_b_DHHV is None:
         siz_b_DHHV = min(128, triton.next_power_of_2(DHHV))
-    else:
-        siz_b_DHHV = siz_b_DHHV
 
     assert siz_b_LQ <= L, "siz_b_LQ must be less than or equal to chunk size L"
     assert siz_b_LKV <= L, "siz_b_LKV must be less than or equal to chunk size L"

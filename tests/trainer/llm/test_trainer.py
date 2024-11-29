@@ -479,7 +479,7 @@ def test_llm_trainer_sampling(llm_toy_model: Any, tmp_path: Path, fsdp_size: int
     # Check that all sequences ended before the max length (extra set very long here).
     assert not np.any(is_valid[:, -1]), "All sequences should have ended before the end of the context."
 
-    # Check that all sequences are different, i.e. RNG should have been splitted correctly.
+    # Check that all sequences are different, i.e. RNG should have been split correctly.
     assert not np.all(tokens[0:1] == tokens), "Sequences should be different."
     assert not np.all(is_valid[0:1] == is_valid), "Validity should be different."
 
@@ -626,7 +626,7 @@ def test_xlstm_sampling(tmp_path: Path):
     # Check that all sequences ended before the max length (extra set very long here).
     assert not np.any(is_valid[:, -1]), "All sequences should have ended before the end of the context."
 
-    # Check that all sequences are different, i.e. RNG should have been splitted correctly.
+    # Check that all sequences are different, i.e. RNG should have been split correctly.
     assert not np.all(tokens[0:1] == tokens), "Sequences should be different."
     assert not np.all(is_valid[0:1] == is_valid), "Validity should be different."
 

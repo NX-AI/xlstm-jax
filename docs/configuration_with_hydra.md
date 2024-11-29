@@ -10,7 +10,7 @@ The configuration files are organized in the `configs` directory. For now, the s
 - [`configs/`]: Contains all configuration files.
   - `config.yaml`: The main configuration file. In there, the default sub-configurations are specified by way of the
   `defaults` list. Additionaly, global variables are defined.
-  The sub-modules are in subfolders:
+  The submodules are in subfolders:
 
   TODO: fill up once ready
 
@@ -218,8 +218,7 @@ the original run was executed with SLURM by way of the CLI override
 `--multirun hydra/launcher=slurm_launcher` and
 not by way of experiment file. If it was specified in the experiment file, SLURM is used anyway.
 
-If you want to use the
-latest/best checkpoint, you don't need to supply anything but if you want to use a
+If you want to use the latest checkpoint, you don't need to supply anything but if you want to use a
 specific checkpoint, use `--checkpoint_step=X` to use checkpoint X.
 
 New hydra overrides can be supplied by way of `--new_overrides=STRING_OF_OVERRIDES`.

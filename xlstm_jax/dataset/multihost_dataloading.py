@@ -164,7 +164,7 @@ class MultiHostDataLoadIterator:
 
     def __iter__(self):
         if not self.state_set or self.step_counter >= self.iterator_length:
-            # If we previously set the state, we do not want to reset it, except if we would have done it anyway.
+            # If we previously set the state, we do not want to reset it (except if we would do so anyways).
             self.reset()
         self.state_set = False
         return self

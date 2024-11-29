@@ -132,14 +132,13 @@ class mLSTMCell(nn.Module):
                         kernel_init=nn.initializers.zeros,
                         name=name,
                     )
-                else:
-                    return nn.Dense(
-                        features=self.config.num_heads,
-                        dtype=self.config._gate_dtype,
-                        bias_init=bias_init,
-                        kernel_init=nn.initializers.zeros,
-                        name=name,
-                    )
+                return nn.Dense(
+                    features=self.config.num_heads,
+                    dtype=self.config._gate_dtype,
+                    bias_init=bias_init,
+                    kernel_init=nn.initializers.zeros,
+                    name=name,
+                )
 
             # Initialization function for the gate biases.
             def gate_init(init_range):

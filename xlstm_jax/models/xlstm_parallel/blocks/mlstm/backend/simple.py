@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 import math
 from dataclasses import dataclass
 
@@ -19,7 +20,6 @@ def parallel_stabilized_simple(
     eps: float = 1e-6,
     qkv_dtype: jnp.dtype | None = None,
     gate_dtype: jnp.dtype | None = None,
-    **kwargs,
 ) -> jax.Array:
     """
     This is the mLSTM cell in parallel form.
@@ -139,7 +139,7 @@ def parallel_stabilized_simple(
 class mLSTMBackendParallelConfig:
     context_length: int = -1
 
-    def assign_model_config_params(self, model_config, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         self.context_length = model_config.context_length
 
 

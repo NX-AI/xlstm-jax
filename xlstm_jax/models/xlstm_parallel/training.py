@@ -220,7 +220,8 @@ def tabulate_params(state: TrainState) -> str:
     Prints a summary of the parameters represented as table.
 
     Args:
-        exmp_input: An input to the model with which the shapes are inferred.
+        state: The current training state.
+
     """
     params = state.params
     params = flatten_dict(params)
@@ -232,7 +233,7 @@ def tabulate_params(state: TrainState) -> str:
     param_count = jax.tree.map(
         lambda x: int(np.prod(x)),
         param_shape,
-        is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]),
+        is_leaf=lambda x: isinstance(x, tuple) and all(isinstance(i, int) for i in x),
     )
     param_dtype = jax.tree.map(
         lambda x: str(x.value.dtype if isinstance(x, nn.Partitioned) else x.dtype),

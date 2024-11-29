@@ -126,7 +126,7 @@ MODEL_CONFIGS = [
 
 def _create_mesh(config: xLSTMLMModelConfig, fsdp_axis_size: int = 1) -> Mesh:
     """Create a mesh with the given FSDP configuration."""
-    device_array = np.array(jax.devices()).reshape(-1, fsdp_axis_size, 1, 1)
+    device_array = np.array(jax.devices()).reshape((-1, fsdp_axis_size, 1, 1))
     return Mesh(
         device_array,
         (
@@ -149,7 +149,7 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
     optimizer = optax.adamw(learning_rate=1e-3)
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+    assert all(p.sharding.spec == P() for p in jax.tree.leaves(state.params)), (
         "Parameters should be replicated over axes, but found different sharding: "
         f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
     )
@@ -170,11 +170,11 @@ def test_simple_data_parallel(config: xLSTMLMModelConfig, gradient_accumulate_st
         metrics,
         batch,
     )
-    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+    assert all(p.sharding.spec == P() for p in jax.tree.leaves(state.params)), (
         "Parameters should be replicated over axes, but found different sharding: "
         f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
     )
-    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+    assert all(m.sharding.spec == P() for m in jax.tree.leaves(metrics)), (
         "Metrics should be replicated over axes, but found different sharding: "
         f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
     )
@@ -305,14 +305,13 @@ def test_fsdp(config: xLSTMLMModelConfig):
         if pytest.num_devices == 1:
             # Nothing to be sharded over single device.
             continue
-        elif param.size <= config.parallel.fsdp_min_weight_size:
+        if param.size <= config.parallel.fsdp_min_weight_size:
             assert param.sharding.spec == P(), (
                 f"Parameter should have been too small for sharding, but found sharded nonetheless: "
                 f"{param.sharding.spec} with shape {param.shape}"
             )
-        elif param.size > config.parallel.fsdp_min_weight_size * (
-            config.num_blocks if config.scan_blocks else 1
-        ):  # For stacked blocks, ignore parameters in this range.
+        if param.size > config.parallel.fsdp_min_weight_size * (config.num_blocks if config.scan_blocks else 1):
+            # For stacked blocks, ignore parameters in this range.
             assert param.sharding.spec != P(), (
                 "Parameter should have been sharded, but appears replicated: "
                 f"{param.sharding.spec} with shape {param.shape}"
@@ -336,7 +335,7 @@ def test_fsdp(config: xLSTMLMModelConfig):
     )
     new_param_spec_tree = nn.get_partition_spec(state.params)
     assert new_param_spec_tree == param_spec_tree, f"Specs differ: {new_param_spec_tree} vs {param_spec_tree}"
-    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+    assert all(m.sharding.spec == P() for m in jax.tree.leaves(metrics)), (
         "Metrics should be replicated over axes, but found different sharding: "
         f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
     )

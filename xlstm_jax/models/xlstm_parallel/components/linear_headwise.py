@@ -89,7 +89,7 @@ class LinearHeadwiseExpand(nn.Module):
                 bias = jax.lax.stop_gradient(bias)
             bias = bias.astype(self.config._dtype)
             bias = jnp.broadcast_to(bias, x.shape)
-            x = x + bias
+            x += bias
         return x
 
     def extra_repr(self):

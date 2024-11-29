@@ -24,12 +24,11 @@ class LoggerConfig(ConfigDict):
 
     Attributes:
         log_every_n_steps: The frequency at which logs should be written.
-        log_path: The path where the logs should be written. If None, we
-            will not write logs to disk.
-        log_tools: A list of LoggerToolsConfig objects that should be used to log
-            the metrics. These tools will be created in the Logger class.
-        cmd_logging_name: The name of the output file for command line logging without
-            suffix. The suffix .log will be added automatically.
+        log_path: The path where the logs should be written. If None, we will not write logs to disk.
+        log_tools: A list of LoggerToolsConfig objects that should be used to log the metrics. These tools will be
+            created in the Logger class.
+        cmd_logging_name: The name of the output file for command line logging without suffix. The suffix `.log` will
+            be added automatically.
     """
 
     log_every_n_steps: int = 1
@@ -48,8 +47,7 @@ class LoggerToolsConfig(ConfigDict):
     """
     Base config class for logger tools.
 
-    These are tools that can be used to log metrics, images, etc.
-    They are created inside the Logger class.
+    These are tools that can be used to log metrics, images, etc. They are created inside the Logger class.
     """
 
     def create(self, logger: "Logger") -> "LoggerTool":
@@ -65,7 +63,7 @@ class Logger:
         Base Logger Class.
 
         Args:
-            config (ConfigDict): The logger config.
+            config: The logger config.
         """
         self.config = config
         self.log_path = config.log_path
@@ -80,6 +78,7 @@ class Logger:
         self.epoch = 0
         self.step = 0
         self.found_nans = False
+        self.last_step = {}
         self.last_step_time = None
         self.epoch_start_time_stack = []
         self.mode_stack = []
@@ -101,17 +100,14 @@ class Logger:
         Logs the configuration.
 
         Args:
-            config (ConfigDict | dict[str, ConfigDict]): The configuration to log.
-                Can also be a dictionary of multiple configurations.
+            config: The configuration to log. Can also be a dictionary of multiple configurations.
         """
         LOGGER.info("Logging config.")
         for tool in self.log_tools:
             tool.log_config(config)
 
     def on_training_start(self):
-        """
-        Setup the logger for training.
-        """
+        """Set up the logger for training."""
         LOGGER.info("Starting training.")
         for tool in self.log_tools:
             tool.setup()
@@ -126,9 +122,9 @@ class Logger:
         training mode.
 
         Args:
-            epoch (int): The index of the epoch.
-            step (int): The index of the global training step.
-            mode (str, optional): The logging mode. Should be in ["train", "val", "test"]. Defaults to "train".
+            epoch: The index of the epoch.
+            step: The index of the global training step.
+            mode: The logging mode. Should be in {"train", "val", "test"}. Defaults to "train".
         """
         LOGGER.info(f"Starting epoch {epoch} at step {step} in mode {mode}.")
         self.epoch_start_time_stack.append(time.time())
@@ -142,6 +138,7 @@ class Logger:
 
         Args:
             metrics: The metrics to log. Should follow the structure of the metrics in the metrics.py file.
+            step: The current step.
 
         Returns:
             If the metrics are logged in this step, the metrics will be updated to reset all metrics.
@@ -175,11 +172,11 @@ class Logger:
         """
         Check if any of the metrics contain NaNs.
 
-        If NaN are found, a warning if logged and the found_nans attribute is set to True.
+        If `NaN` are found, a warning is logged and the `found_nans` attribute is set to `True`.
 
         Args:
-            metrics (Metrics): The metrics to check.
-            step (int, optional): The step at which the metrics were logged. Used for logging if provided.
+            host_metrics: The metrics to check.
+            step: The step at which the metrics were logged. Used for logging if provided.
         """
         for key, value in host_metrics.items():
             if isinstance(value, float) and np.isnan(value).any():
@@ -194,10 +191,9 @@ class Logger:
         Can be used by callbacks to log additional metrics.
 
         Args:
-            host_metrics (HostMetrics): The metrics to log.
-            step (int): The current step.
-            mode (str, optional): The mode / prefix with which to log the metrics. If None,
-                the current mode is used. Defaults to None.
+            host_metrics: The metrics to log.
+            step: The current step.
+            mode: The mode / prefix with which to log the metrics. If None, the current mode is used.
         """
         mode = mode if mode is not None else self.mode
         for tool in self.log_tools:
@@ -214,7 +210,8 @@ class Logger:
         If any other epoch is still running, the logger will switch back to that epoch.
 
         Args:
-            metrics (Metrics): The metrics that should be logged in this epoch.
+            metrics: The metrics that should be logged in this epoch.
+            step: The current step.
 
         Returns:
             The originally passed metric dict and potentially any other metrics that should be passed
@@ -255,7 +252,7 @@ class Logger:
         Closes the logger.
 
         Args:
-            status (str): The status of the training run (e.g. success, failure).
+            status: The status of the training run (e.g. success, failure).
         """
         for tool in self.log_tools:
             tool.finalize(status)
@@ -270,24 +267,20 @@ class LoggerTool:
         Log the configuration to the tool.
 
         Args:
-            config (ConfigDict | dict[str, ConfigDict]): The configuration to log.
+            config: The configuration to log.
         """
-        pass
 
     def log_metrics(self, metrics: HostMetrics, step: int, epoch: int, mode: str):
         """
         Log the metrics to the tool.
 
         Args:
-            metrics (HostMetrics): The metrics to log.
-            step (int): The current step.
-            epoch (int): The current epoch.
-            mode (str): The current mode (train, val, test).
+            metrics: The metrics to log.
+            step: The current step.
+            epoch: The current epoch.
+            mode: The current mode (train, val, test).
         """
         raise NotImplementedError
 
     def finalize(self, status: str):
-        """
-        Finalize and close the tool.
-        """
-        pass
+        """Finalize and close the tool."""

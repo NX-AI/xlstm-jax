@@ -44,8 +44,7 @@ def NormLayer(
             module_kwargs=norm_kwargs,
             name=name,
         )
-    else:
-        return norm_class(**norm_kwargs)
+    return norm_class(**norm_kwargs)
 
 
 def MultiHeadNormLayer(
@@ -93,8 +92,7 @@ def MultiHeadNormLayer(
             module_kwargs=norm_kwargs,
             name=name,
         )
-    else:
-        return vmap_module(**norm_kwargs)
+    return vmap_module(**norm_kwargs)
 
 
 def resolve_norm(
@@ -121,7 +119,6 @@ def resolve_norm(
     """
     if norm_type == "layernorm":
         return nn.LayerNorm, {"epsilon": eps, "use_bias": bias, "use_scale": weight, "dtype": dtype, **kwargs}
-    elif norm_type == "rmsnorm":
+    if norm_type == "rmsnorm":
         return nn.RMSNorm, {"epsilon": eps, "use_scale": weight, "dtype": dtype, **kwargs}
-    else:
-        raise ValueError(f"Unknown norm type: {norm_type}")
+    raise ValueError(f"Unknown norm type: {norm_type}")

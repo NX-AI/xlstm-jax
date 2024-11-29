@@ -11,12 +11,11 @@ import jax
 
 LOG_FORMAT = "[%(asctime)s][%(name)s:%(lineno)d][%(levelname)s]{rank} - %(message)s"
 
-
 LOGGER = logging.getLogger(__name__)
 
 
 def setup_exception_logging():
-    """Make sure that uncaught exceptions are logged with the logging."""
+    """Make sure that uncaught exceptions are logged with the logger."""
 
     # Log uncaught exceptions
     def exception_logging(typ, value, traceback):
@@ -26,7 +25,7 @@ def setup_exception_logging():
 
 
 def get_loglevel() -> str:
-    """Get loglevel from environment variable.
+    """Get loglevel from `LOGLEVEL` environment variable.
 
     Returns:
         str: loglevel
@@ -35,10 +34,10 @@ def get_loglevel() -> str:
 
 
 def setup_logging(logfile: str = "output.log"):
-    """Initialize logging to `log_file` and stdout.
+    """Initialize logging to `logfile` and `stdout`.
 
     Args:
-        log_file (str, optional): Name of the log file. Defaults to "output.log".
+        logfile: Name of the log file. Defaults to "output.log".
     """
     file_handler = logging.FileHandler(filename=logfile)
     stdout_handler = logging.StreamHandler(sys.stdout)
@@ -58,10 +57,10 @@ def setup_logging(logfile: str = "output.log"):
 
 
 def setup_logging_multiprocess(logfile: str = "output.log"):
-    """Initialize logging to `log_file` and stdout for jax distributed training.
+    """Initialize logging to `logfile` and `stdout` for JAX distributed training.
 
     Args:
-        log_file (str, optional): Name of the log file. Defaults to "output.log".
+        logfile: Name of the log file. Defaults to "output.log".
     """
 
     file_handler = logging.FileHandler(filename=logfile)

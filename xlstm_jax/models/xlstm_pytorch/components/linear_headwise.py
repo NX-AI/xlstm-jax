@@ -60,7 +60,7 @@ class LinearHeadwiseExpand(nn.Module):
             self.bias = None
         self.reset_parameters()
 
-    def reset_parameters(self, **kwargs):
+    def reset_parameters(self):
         # small init
         nn.init.normal_(self.weight.data, mean=0.0, std=sqrt(2 / 5 / self.weight.shape[-1]))
         if self.bias is not None:

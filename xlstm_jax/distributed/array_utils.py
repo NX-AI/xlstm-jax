@@ -107,11 +107,9 @@ def unstack_params(params: PyTree, axis_name: str) -> PyTree:
             axis_idx = names.index(axis_name)
             value = value.squeeze(axis_idx)
             names = names[:axis_idx] + names[axis_idx + 1 :]
-            if all([n is None for n in names]):
+            if all(n is None for n in names):
                 return value
-            else:
-                return nn.Partitioned(value, names=names)
-        else:
-            return x
+            return nn.Partitioned(value, names=names)
+        return x
 
     return jax.tree.map(_unstack, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))

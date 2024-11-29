@@ -8,14 +8,15 @@ from transformers.tokenization_utils_base import BatchEncoding
 
 class HFTokenizeLogLikelihoodRolling:
     """
-    Dataset that tokenizes (HuggingFace) and and splits documents according to the structure of
-    loglikelihood_rolling. Targets are shifted for next token prediction.
-    It does not work on a test instance level as used in e.g. grain, as documents are split into
-    multiple sequences to match the maximal sequence length. However, we employ the .map()
+    Dataset that tokenizes (HuggingFace) and splits documents according to the structure of
+    loglikelihood_rolling.
+
+    Targets are shifted for next token prediction. It does not work on a test instance level as used in e.g. grain,
+    as documents are split into multiple sequences to match the maximal sequence length. However, we employ the `.map()`
     paradigm converting a list of lm_eval Instances to training instances (dict).
     See: https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/api/model.py
 
-    Prefix Tokens are handled here as well and masked out in the targets_segmentation.
+    Prefix tokens are handled here as well and masked out in the targets_segmentation.
 
     Args:
         tokenizer_path: HuggingFace tokenizer name
@@ -23,8 +24,8 @@ class HFTokenizeLogLikelihoodRolling:
         batch_size: Batch size to be used for filling up the last batch.
         hf_access_token: HuggingFace access token for other tokenizers.
         tokenizer_cache_dir: HuggingFace tokenizer cache dir
-        add_bos_token: If to add a beginning of sequence/docuemnt token.
-        add_eos_token: If to add an end of sequence/document token.
+        add_bos_token: Whether to add a beginning of sequence / document token.
+        add_eos_token: Whether to add an end of sequence / document token.
         bos_token_id: BOS token id if not taken from tokenizer.
         eos_token_id: EOS token id if not taken from tokenizer.
     """
@@ -202,12 +203,13 @@ class HFTokenizeLogLikelihoodRolling:
 class HFTokenizeLogLikelihood:
     """
     Dataset mapper modeling a simplified lm_eval dataset. Post-processing here could be done
-    using the grain pipeline. However, instances are not split if the exceed the maximal
+    using the grain pipeline. However, instances are not split if they exceed the maximal
     sequence length as for LoglikelihoodRolling
     See: https://github.com/EleutherAI/lm-evaluation-harness/blob/main/lm_eval/api/model.py
     """
 
-    def map(self, requests: list[Instance]) -> MapDataset:
+    @staticmethod
+    def map(requests: list[Instance]) -> MapDataset:
         """
         Maps a list of lm_eval Instances to a dictionary usable in grain transforms.
 

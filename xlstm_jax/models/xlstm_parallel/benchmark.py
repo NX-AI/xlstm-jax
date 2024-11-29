@@ -31,7 +31,9 @@ def init_mesh(
     if "SLURM_STEP_NODELIST" in os.environ:
         jax.distributed.initialize()
 
-    device_array = np.array(jax.devices()).reshape(data_axis_size, fsdp_axis_size, pipeline_axis_size, model_axis_size)
+    device_array = np.array(jax.devices()).reshape(
+        (data_axis_size, fsdp_axis_size, pipeline_axis_size, model_axis_size)
+    )
     mesh = Mesh(device_array, (data_axis_name, fsdp_axis_name, pipeline_axis_name, model_axis_name))
     print("Mesh", mesh)
     return mesh

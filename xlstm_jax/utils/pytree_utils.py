@@ -59,8 +59,8 @@ def pytree_diff(tree1: PyTree, tree2: PyTree) -> PyTree:
                 return {"array_difference": (a, b)}
             if isinstance(diff, jax.Array):
                 return diff if not np.allclose(diff, jnp.zeros_like(diff)) else None
-            else:
-                return diff if not np.allclose(diff, np.zeros_like(diff)) else None
+            return diff if not np.allclose(diff, np.zeros_like(diff)) else None
+
         # Check for scalar values and report if different
         if a != b:
             return a, b
@@ -100,7 +100,7 @@ def pytree_diff(tree1: PyTree, tree2: PyTree) -> PyTree:
             return diff if diff else None
 
         # Case 2: Both are sequences (e.g., lists, tuples) and of the same type
-        elif (
+        if (
             isinstance(t1, Sequence)
             and isinstance(t2, Sequence)
             and isinstance(t2, type(t1))
@@ -114,8 +114,7 @@ def pytree_diff(tree1: PyTree, tree2: PyTree) -> PyTree:
             return diff if diff else None
 
         # Case 3: Both are comparable types (e.g., scalars, arrays)
-        else:
-            return diff_fn(t1, t2)
+        return diff_fn(t1, t2)
 
     diff_tree = recursive_diff(tree1, tree2)
     return diff_tree if diff_tree else None
@@ -127,7 +126,8 @@ def pytree_key_path_to_str(path: jax.tree_util.KeyPath, separator: str = ".") ->
     An adjusted version of jax.tree_util.keystr to support different separators and easier to read output.
 
     Args:
-        path (jax.tree_util.KeyPath): Path.
+        path: Path.
+        separator: Separator for the keys.
 
     Returns:
         str: Path as string.

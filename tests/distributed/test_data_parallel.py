@@ -18,7 +18,7 @@ def _create_mesh(
     pipeline_axis_name: str = "pp",
     model_axis_name: str = "tp",
 ) -> Mesh:
-    device_array = np.array(jax.devices()).reshape(-1, fsdp_axis_size, 1, 1)
+    device_array = np.array(jax.devices()).reshape((-1, fsdp_axis_size, 1, 1))
     return Mesh(
         device_array,
         (

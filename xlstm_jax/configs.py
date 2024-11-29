@@ -24,10 +24,8 @@ def _instantiate_class_empty(cls: Any) -> Any:
     if get_origin(cls) is UnionType:
         if None in get_args(cls):
             return None
-        else:
-            return get_args(cls)[0]()
-    else:
-        return cls()
+        return get_args(cls)[0]()
+    return cls()
 
 
 def _get_annotations_full_dataclass(cls: dataclass) -> dict[str, type]:
@@ -50,11 +48,12 @@ def _get_annotations_full_dataclass(cls: dataclass) -> dict[str, type]:
 def _parse_python_arguments_to_json(arguments: str) -> dict | None:
     """
     Parse badly serialized dataclasses via json into dictionary.
+
     E.g. "mLSTMBackendTritonConfig(autocast_kernel_dtype='float32')"
     Unfortunately our previous configs are not serialized in a good format.
 
     Args:
-        arguments: A string of the form SomeClass(argument1=..., argument2=...)
+        arguments: A string of the form `SomeClass(argument1=..., argument2=...)`
 
     Returns:
         Dictionary of the keyword arguments: {"argument1": ..., "argument2": ...}
@@ -87,8 +86,7 @@ def _parse_python_arguments_to_json(arguments: str) -> dict | None:
             return args_dict
         except json.JSONDecodeError:
             return None
-    else:
-        return arguments
+    return arguments
 
 
 def _parsed_string(data: str, cfg_class: type, strict_classname_parsing: bool = False) -> Any:
@@ -137,7 +135,7 @@ class ConfigDict:
             if isinstance(v, ConfigDict) or hasattr(v, "to_dict"):
                 d[k] = v.to_dict()
             elif isinstance(v, (tuple, list)):
-                d[k] = tuple([x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v])
+                d[k] = tuple(x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v)
             elif isinstance(v, Path):
                 d[k] = v.as_posix()
             elif inspect.isclass(v):
@@ -159,20 +157,22 @@ class ConfigDict:
         none_to_zero_for_ints: bool = False,
     ) -> Any:
         """
-        Utility for parsing dictionaries back into a nested dataclass structure, including
-        arbitrary classes (ends nesting) and types (dtypes).
-        Currently this is taylored towards the current logging system with the "hardly" invertable
-        to_dict.
+        Utility for parsing dictionaries back into a nested dataclass structure, including arbitrary classes and types.
+
+        Currently, this is tailored towards the current logging system with the "hardly" invertible to_dict.
 
         Args:
+
             config_class: Typically a dataclass, but can be any other type as well
                 If it is another type, the parser tries to create an object via
                 config_class(**data) if data is a dictionary or config_class(data) else.
             data: Typically a dictionary that contains attributes of the dataclass.
                 Can be any other kind of data.
-
+            strict_classname_parsing: Parse class names strictly.
+            ignore_extensive_attributes: Ignore attributes that are not defined in the dataclass.
+            none_to_zero_for_ints: Convert None to 0 for integer types.
         Returns:
-            An object of type config_class that contains the data as attributes.
+            An object of type `config_class` that contains the data as attributes.
 
         """
         if is_dataclass(config_class) or (
@@ -191,73 +191,77 @@ class ConfigDict:
                     val_parsed = ConfigDict.from_dict(annotations[attr], data[attr])
                     cfg_dict[attr] = val_parsed
                 return config_class(**cfg_dict)
+
             # the "None" check is a leftover from bad serialization
-            elif data is None or data == "None":
+            if data is None or data == "None":
                 if NoneType in get_args(config_class):
                     return None
                 raise ValueError(f"Could not parse {data} into {config_class}")
-            elif isinstance(data, str):
+
+            if isinstance(data, str):
                 if get_origin(config_class) == UnionType:
                     config_class = get_args(config_class)[0]
                 cfg_dict = _parse_python_arguments_to_json(data)
                 if cfg_dict is not None:
                     return config_class(**cfg_dict)
+
             raise ValueError(f"Could not parse {data} into {config_class}")
-        elif get_origin(config_class) is Literal:
+
+        if get_origin(config_class) is Literal:
             if data in get_args(config_class):
                 return data
             raise ValueError(f"Bad literal value {data} of {config_class}: {get_args(config_class)}")
-        elif data == "None":
+
+        if data == "None":
             return None
+
+        if get_origin(config_class) == UnionType:
+            config_class_opts = get_args(config_class)
         else:
-            if get_origin(config_class) == UnionType:
-                config_class_opts = get_args(config_class)
-            else:
-                config_class_opts = [config_class]
-            for cfg_class in config_class_opts:
-                try:
-                    if inspect.getmro(cfg_class)[0] == dict:
-                        if isinstance(data, dict):
-                            return {
-                                key: _parsed_string(val, str, strict_classname_parsing=strict_classname_parsing)
-                                if isinstance(val, str)
-                                else val
-                                for key, val in data.items()
-                            }
-                        if isinstance(data, str):
-                            return _parsed_string(data, dict, strict_classname_parsing=strict_classname_parsing)
-                        raise ValueError(f"Parsing error of {data} into {cfg_class}")
-                    if issubclass(cfg_class, str) and not data.startswith("<class "):
-                        if None in config_class_opts and data == "None":
-                            return None
-                        return str(data)
-                    if issubclass(cfg_class, bool):
-                        return bool(data)
-                    if issubclass(cfg_class, int):
-                        if none_to_zero_for_ints and (data is None or data == "None"):
-                            return 0
-                        return int(data)
-                    if issubclass(cfg_class, float):
-                        return float(data)
-                    if cfg_class is NoneType:
-                        if data == "None" or data is None:
-                            return None
-                        raise ValueError(f"Bad Value {data} for NoneType")
-                    if isinstance(data, str):
-                        if any(typ is None for typ in config_class_opts):
-                            if data == "None":
-                                return None
-                        return _parsed_string(
-                            data, cfg_class=cfg_class, strict_classname_parsing=strict_classname_parsing
-                        )
-                    if inspect.getmro(cfg_class)[0] == list:
-                        return list(data)
-                    if inspect.getmro(cfg_class)[0] == tuple:
-                        return tuple(data)
+            config_class_opts = [config_class]
+
+        for cfg_class in config_class_opts:
+            try:
+                if inspect.getmro(cfg_class)[0] == dict:
                     if isinstance(data, dict):
-                        return cfg_class(**data)
-                    return cfg_class(data)
-                # TODO: how to improve this
-                except (ValueError, TypeError, KeyError, AttributeError):
-                    continue
-            raise ValueError("Could not parse")
+                        return {
+                            key: _parsed_string(val, str, strict_classname_parsing=strict_classname_parsing)
+                            if isinstance(val, str)
+                            else val
+                            for key, val in data.items()
+                        }
+                    if isinstance(data, str):
+                        return _parsed_string(data, dict, strict_classname_parsing=strict_classname_parsing)
+                    raise ValueError(f"Parsing error of {data} into {cfg_class}")
+                if issubclass(cfg_class, str) and not data.startswith("<class "):
+                    if None in config_class_opts and data == "None":
+                        return None
+                    return str(data)
+                if issubclass(cfg_class, bool):
+                    return bool(data)
+                if issubclass(cfg_class, int):
+                    if none_to_zero_for_ints and (data is None or data == "None"):
+                        return 0
+                    return int(data)
+                if issubclass(cfg_class, float):
+                    return float(data)
+                if cfg_class is NoneType:
+                    if data == "None" or data is None:
+                        return None
+                    raise ValueError(f"Bad Value {data} for NoneType")
+                if isinstance(data, str):
+                    if any(typ is None for typ in config_class_opts):
+                        if data == "None":
+                            return None
+                    return _parsed_string(data, cfg_class=cfg_class, strict_classname_parsing=strict_classname_parsing)
+                if inspect.getmro(cfg_class)[0] == list:
+                    return list(data)
+                if inspect.getmro(cfg_class)[0] == tuple:
+                    return tuple(data)
+                if isinstance(data, dict):
+                    return cfg_class(**data)
+                return cfg_class(data)
+            # TODO: how to improve this
+            except (ValueError, TypeError, KeyError, AttributeError):
+                continue
+        raise ValueError("Could not parse")

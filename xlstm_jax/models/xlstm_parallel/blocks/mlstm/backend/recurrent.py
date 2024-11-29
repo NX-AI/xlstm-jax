@@ -218,8 +218,7 @@ def recurrent_sequence_fw(
         if m_initial is not None:
             vecM_state = vecM_state.astype(m_initial.dtype)
         return matH, (matC_state, vecN_state, vecM_state.squeeze(-1))
-    else:
-        return matH
+    return matH
 
 
 @dataclass
@@ -229,7 +228,7 @@ class mLSTMBackendRecurrentConfig:
     state_dtype: str | None = None
     use_scan: bool = False
 
-    def assign_model_config_params(self, model_config, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         self.context_length = model_config.context_length
 
 

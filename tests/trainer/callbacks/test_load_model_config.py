@@ -376,7 +376,7 @@ def test_checkpoint_reload(tmp_path: Path):
     assert (checkpoint_path / "checkpoint_100").exists()
     metadata_file_path = checkpoint_path / "checkpoint_100" / "metadata" / "metadata"
 
-    assert (metadata_file_path).exists()
+    assert metadata_file_path.exists()
 
     with open(str(metadata_file_path), encoding="utf8") as fp:
         metadata = fp.read()

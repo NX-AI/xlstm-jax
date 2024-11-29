@@ -141,7 +141,7 @@ INIT_MODEL_CONFIG_FNS = [
 
 def _create_mesh(config: xLSTMLMModelConfig, fsdp_axis_size: int = 1) -> Mesh:
     """Create a mesh with the given FSDP configuration."""
-    device_array = np.array(jax.devices()).reshape(-1, fsdp_axis_size, 1, 1)
+    device_array = np.array(jax.devices()).reshape((-1, fsdp_axis_size, 1, 1))
     return Mesh(
         device_array,
         (
@@ -163,7 +163,7 @@ def test_data_parallel_initialization(config: xLSTMLMModelConfig):
     optimizer = optax.adamw(learning_rate=1e-3)
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+    assert all(p.sharding.spec == P() for p in jax.tree.leaves(state.params)), (
         "Parameters should be replicated over axes, but found different sharding: "
         f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
     )
@@ -236,7 +236,7 @@ def test_init_dist_and_fn(config_fn: callable, init_distribution: str, output_in
     optimizer = optax.adamw(learning_rate=1e-3)
     state = init_xlstm(config=config, mesh=mesh, rng=model_rng, input_array=input_array, optimizer=optimizer)
     assert state is not None
-    assert all([p.sharding.spec == P() for p in jax.tree.leaves(state.params)]), (
+    assert all(p.sharding.spec == P() for p in jax.tree.leaves(state.params)), (
         "Parameters should be replicated over axes, but found different sharding: "
         f"{[p.sharding for p in jax.tree.leaves(state.params)]}"
     )

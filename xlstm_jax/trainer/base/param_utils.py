@@ -72,7 +72,7 @@ def tabulate_params(
     param_count = jax.tree.map(
         lambda x: int(np.prod(x)),
         param_shape,
-        is_leaf=lambda x: isinstance(x, tuple) and all([isinstance(i, int) for i in x]),
+        is_leaf=lambda x: isinstance(x, tuple) and all(isinstance(i, int) for i in x),
     )
     param_dtype = jax.tree.map(
         lambda x: str(x.value.dtype if is_partitioned(x) else x.dtype),
@@ -166,9 +166,8 @@ def get_sharded_norm_logits(x: jax.Array | nn.Partitioned) -> jax.Array:
         norm_logit = (x.value**2).sum()
         sharded_axes = [name for name in jax.tree.leaves(x.names) if name is not None]
         return jax.lax.psum(norm_logit, axis_name=sharded_axes)
-    else:
-        # For replicated parameters, we calculate the norm logit directly.
-        return (x**2).sum()
+    # For replicated parameters, we calculate the norm logit directly.
+    return (x**2).sum()
 
 
 def get_sharded_global_norm(x: PyTree) -> tuple[jax.Array, PyTree]:
@@ -208,10 +207,9 @@ def get_param_mask_fn(
         param_name = pytree_key_path_to_str(path)
         if exclude is not None:
             return not any(re.search(excl, param_name) for excl in exclude)
-        elif include is not None:
+        if include is not None:
             return any(re.search(incl, param_name) for incl in include)
-        else:
-            return True
+        return True
 
     def mask_fn(params: PyTree):
         mask_tree = jax.tree_util.tree_map_with_path(

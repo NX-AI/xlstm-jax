@@ -62,8 +62,7 @@ def _update_model(
     new_state = state.apply_gradients(grads=grad)
     if return_loss:
         return new_state, loss
-    else:
-        return new_state
+    return new_state
 
 
 def _get_standard_adam(scheduler_config: SchedulerConfig, num_update_steps: int = 1, **kwargs) -> TrainState:

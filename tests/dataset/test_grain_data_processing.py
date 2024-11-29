@@ -1,13 +1,13 @@
 import itertools
 from pathlib import Path
 
-from scripts.hf_to_arrayrecord import convert_dataset
-from tests.dataset.test_hf_data_processing import _setup_data as _hf_setup_data
-
 import grain.python as grain
 import numpy as np
 import pytest
 from jax.sharding import Mesh
+
+from scripts.hf_to_arrayrecord import convert_dataset
+from tests.dataset.test_hf_data_processing import _setup_data as _hf_setup_data
 
 from xlstm_jax.dataset import grain_data_processing
 from xlstm_jax.dataset.configs import GrainArrayRecordsDataConfig
@@ -178,8 +178,8 @@ def _grain_setup_data(
     mesh = initialize_mesh(init_distributed_on_slurm=False, parallel_config=parallel)
 
     train_data_config, eval_data_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
-        train_kwargs=dict(grain_packing=True, max_steps_per_epoch=None),
-        eval_kwargs=dict(grain_packing=eval_grain_packing, max_steps_per_epoch=eval_max_steps_per_epoch),
+        train_kwargs={"grain_packing": True, "max_steps_per_epoch": None},
+        eval_kwargs={"grain_packing": eval_grain_packing, "max_steps_per_epoch": eval_max_steps_per_epoch},
         global_batch_size=batch_size_per_device * mesh.shape[parallel.data_axis_name],
         max_target_length=context_length,
         data_path=data_path,

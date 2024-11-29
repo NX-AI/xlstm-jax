@@ -242,7 +242,7 @@ def test_end_lr_conflict(end_lr: float, end_lr_factor: float):
 @pytest.mark.parametrize("decay_steps", [100, 200, 300])
 @pytest.mark.parametrize("cooldown_steps", [0, 10, 20, 50])
 def test_no_negative_lrs(decay_steps: int, cooldown_steps: int):
-    """Test that the learning rate does not go negative, even outside of the cooldown phase."""
+    """Test that the learning rate does not go negative, even outside the cooldown phase."""
     config = SchedulerConfig(
         name="exponential_decay",
         lr=0.1,

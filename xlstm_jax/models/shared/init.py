@@ -66,14 +66,13 @@ def create_common_init_fn(
     """
     if fn_name == "small":
         return small_init(dim, distribution)
-    elif fn_name == "wang":
+    if fn_name == "wang":
         return wang_init(dim, num_blocks, distribution)
-    elif fn_name == "wang2":
+    if fn_name == "wang2":
         return wang_init(dim, 2 * num_blocks, distribution)
-    elif fn_name == "zeros":
+    if fn_name == "zeros":
         return jax.nn.initializers.zeros
-    else:
-        raise ValueError(f"Invalid initializer function name {fn_name}.")
+    raise ValueError(f"Invalid initializer function name {fn_name}.")
 
 
 def _dist_from_stddev(stddev: float, distribution: InitDistribution) -> Initializer:
@@ -91,13 +90,12 @@ def _dist_from_stddev(stddev: float, distribution: InitDistribution) -> Initiali
     """
     if distribution == "normal":
         return jax.nn.initializers.normal(stddev=stddev)
-    elif distribution == "truncated_normal":
+    if distribution == "truncated_normal":
         return jax.nn.initializers.truncated_normal(stddev=stddev)
-    elif distribution == "uniform":
+    if distribution == "uniform":
         uniform_bounds = jnp.sqrt(3.0) * stddev
         return uniform_init(-uniform_bounds, uniform_bounds)
-    else:
-        raise ValueError(f"Invalid distribution type {distribution}.")
+    raise ValueError(f"Invalid distribution type {distribution}.")
 
 
 def uniform_init(min_val: float, max_val: float) -> Initializer:

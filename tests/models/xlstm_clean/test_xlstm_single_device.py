@@ -62,11 +62,9 @@ def test_xLSTMLMModel():
     assert logits.dtype == jnp.float32
     intermediates = _pytree_get_dtype(intermediates)
     assert all(
-        [
-            all([v == jnp.bfloat16 for v in intermediates[key]])
-            or key in ["intermediates.lm_head.__call__", "intermediates.__call__"]
-            for key in intermediates
-        ]
+        all(v == jnp.bfloat16 for v in intermediates[key])
+        or key in ("intermediates.lm_head.__call__", "intermediates.__call__")
+        for key in intermediates
     )
 
 
@@ -84,10 +82,9 @@ def _pytree_get_dtype(tree: Any) -> dict[str, Any]:
             else:
                 new_dict[key] = sub_dict
         return new_dict
-    elif isinstance(tree, tuple):
-        return tuple([t.dtype for t in tree])
-    else:
-        return tree.dtype
+    if isinstance(tree, tuple):
+        return tuple(t.dtype for t in tree)
+    return tree.dtype
 
 
 def test_xLSTMBlockStack():

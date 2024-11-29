@@ -27,21 +27,21 @@ def compute_chunkwise_log_gates_vecB_vecA(
 
     if return_vecB_only:
         return vecB
-    else:
-        # compute vecA
-        vecI_chunked = vecI.reshape(B, NH, NC, L)
-        # unstable vecA computation:
-        # vecA = (vecB[..., -1, None] - vecB) + vecI  # (B, NH, NC, L)
-        # stable vecA computation:
-        vecF_cumsum = jnp.flip(jnp.flip(vecF_logsig_chunked[..., 1:], axis=-1).cumsum(-1), axis=-1)
-        vecA = (
-            jnp.concat(
-                [
-                    vecF_cumsum,
-                    jnp.zeros((B, NH, NC, 1), dtype=jnp.float32),
-                ],
-                axis=-1,
-            )
-            + vecI_chunked
-        )  # (B, NH, NC, L)
-        return vecB, vecA
+
+    # compute vecA
+    vecI_chunked = vecI.reshape(B, NH, NC, L)
+    # unstable vecA computation:
+    # vecA = (vecB[..., -1, None] - vecB) + vecI  # (B, NH, NC, L)
+    # stable vecA computation:
+    vecF_cumsum = jnp.flip(jnp.flip(vecF_logsig_chunked[..., 1:], axis=-1).cumsum(-1), axis=-1)
+    vecA = (
+        jnp.concat(
+            [
+                vecF_cumsum,
+                jnp.zeros((B, NH, NC, 1), dtype=jnp.float32),
+            ],
+            axis=-1,
+        )
+        + vecI_chunked
+    )  # (B, NH, NC, L)
+    return vecB, vecA

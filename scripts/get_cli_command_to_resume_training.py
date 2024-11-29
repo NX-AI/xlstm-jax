@@ -12,21 +12,14 @@ def get_cli_command(args: Any) -> str:
         Parsed command line arguments. They contain the fields:
 
             - 'resume_from_folder': The run dir of the experiment that is to be resumed
-
-            - 'checkpoint_step': The step counter of the checkpoint that you want to
-                                 use to resume training. Defaults to -1,
-                                 which means that the latest/best checkpoint will
-                                 be loaded.
-
-            - 'use_slurm': Whether to use SLURM for the continuation runs. Only required if
-                           the original run was executed with SLURM via the CLI override
-                           --multirun hydra/launcher=slurm_launcher and
-                           not via experiment file. Otherwise, slurm is used anyway.
-
-            - 'new_overrides': String that containes new overrides for this experiment.
-                            Example for more training steps, a different learning rate and
-                            a different logging frequency:
-                            "num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"
+            - 'checkpoint_step': The step counter of the checkpoint that you want to use to resume training.
+                Defaults to -1, which means that the latest checkpoint will be loaded.
+            - 'use_slurm': Whether to use SLURM for the continuation runs. Only required if the original run was
+                executed with SLURM via the CLI override ``--multirun hydra/launcher=slurm_launcher`` and not via
+                experiment file. Otherwise, slurm is used anyway.
+            - 'new_overrides': String that contains new overrides for this experiment. Example for more training
+                steps, a different learning rate and a different logging frequency:
+                ``num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10``
 
     Returns:
         The CLI command to resume training from a checkpoint.
@@ -53,7 +46,11 @@ def get_cli_command(args: Any) -> str:
         slurm_str = ""
 
     # Create the CLI command.
-    command_str = f"PYTHONPATH=. python scripts/resume_training_with_hydra.py {slurm_str} {old_overrides} +resume_from_folder={args.resume_from_folder} +checkpoint_step={args.checkpoint_step} {args.new_overrides}"  # noqa: E501
+    command_str = (
+        f"PYTHONPATH=. python scripts/resume_training_with_hydra.py {slurm_str} {old_overrides} "
+        f"+resume_from_folder={args.resume_from_folder} +checkpoint_step={args.checkpoint_step} "
+        f"{args.new_overrides}"
+    )
 
     return command_str
 
@@ -70,8 +67,8 @@ if __name__ == "__main__":
         "--checkpoint_step",
         type=int,
         default=-1,
-        help="The step counter of the checkpoint that you want to use to resume training. \
-            Defaults to -1, which means that the latest/best checkpoint will be loaded.",
+        help="The step counter of the checkpoint that you want to use to resume training. "
+        "Defaults to -1, which means that the latest/best checkpoint will be loaded.",
     )
     parser.add_argument(
         "--use_slurm",

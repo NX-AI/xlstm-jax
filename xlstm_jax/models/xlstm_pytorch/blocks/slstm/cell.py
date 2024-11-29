@@ -295,24 +295,25 @@ class sLSTMCellBase(nn.Module):
             y = x.view(x.shape[0], x.shape[1], self.config.num_gates, self.config.num_heads, -1).permute(1, 0, 2, 3, 4)
         else:
             raise ValueError("Bad input_shape value")
+
         if self.config.internal_input_shape == "SBGNH":
             return y.view(y.shape[0], y.shape[1], -1)
-        elif self.config.internal_input_shape == "SBNGH":
+        if self.config.internal_input_shape == "SBNGH":
             return y.permute(0, 1, 3, 2, 4).reshape(y.shape[0], y.shape[1], -1)
-        elif self.config.internal_input_shape == "SBNHG":
+        if self.config.internal_input_shape == "SBNHG":
             return y.permute(0, 1, 3, 4, 2).reshape(y.shape[0], y.shape[1], -1)
-        else:
-            raise ValueError("Bad internal_input_shape value")
+        raise ValueError("Bad internal_input_shape value")
 
     def _permute_output(self, x: torch.Tensor) -> torch.Tensor:
         if self.config.output_shape == "SBH":
             return x
-        elif self.config.output_shape == "BSH":
+        if self.config.output_shape == "BSH":
             return x.permute(1, 0, 2)
-        elif self.config.output_shape == "BNSH":
+        if self.config.output_shape == "BNSH":
             return x.view((x.shape[0], x.shape[1], self.config.num_heads, self.config.head_dim)).permute(1, 2, 0, 3)
-        elif self.config.output_shape == "SBNH":
+        if self.config.output_shape == "SBNH":
             return x.view((x.shape[0], x.shape[1], self.config.num_heads, self.config.head_dim))
+        raise ValueError("Bad output_shape value")
 
     def reset_parameters(self):
         """Resets this layer's parameters to their initial values."""
@@ -394,7 +395,8 @@ class sLSTMCellBase(nn.Module):
             )
         return state
 
-    def _get_final_state(self, all_states: torch.Tensor) -> torch.Tensor:
+    @staticmethod
+    def _get_final_state(all_states: torch.Tensor) -> torch.Tensor:
         """All states have the structure [STATES, SEQUENCE, BATCH, HIDDEN]"""
         return all_states[:, -1]
 
@@ -412,7 +414,7 @@ class sLSTMCellBase(nn.Module):
         output = self._permute_output(all_states[0])
         return output, state
 
-    def forward(self, input, state=None, lengths=None):
+    def forward(self, input, state=None):
         self._check_input(input)
         input = self._permute_input(input)
         states = self._get_state(input, state)
@@ -421,8 +423,7 @@ class sLSTMCellBase(nn.Module):
         output = self._permute_output(all_states[0][1:])
         if torch.is_autocast_enabled():
             return output, state
-        else:
-            return output.to(input.dtype), state.to(input.dtype)
+        return output.to(input.dtype), state.to(input.dtype)
 
 
 class sLSTMCellCUDA:
@@ -487,8 +488,8 @@ def sLSTMCellFuncGenerator(training, config: sLSTMCellConfig):
             else:
                 grads = slstm_mod.backward(*saved, grad_s.contiguous())
             with torch.no_grad():
-                S, B, H = grads[0].shape
-            return (None, *grads)
+                _S, _B, _H = grads[0].shape
+            return None, *grads
 
     return sLSTMCellFunction
 
@@ -496,7 +497,7 @@ def sLSTMCellFuncGenerator(training, config: sLSTMCellConfig):
 class sLSTMCell_vanilla(sLSTMCellBase):
     config_class = sLSTMCellConfig
 
-    def __init__(self, config: sLSTMCellConfig, skip_backend_init=False):
+    def __init__(self, config: sLSTMCellConfig):
         super().__init__(config)
         # load pointwise function
         self.pointwise = slstm_pointwise_function_registry[self.config.function]
@@ -537,7 +538,7 @@ class sLSTMCell_vanilla(sLSTMCellBase):
     def _bias_int2ext(self, bias_int: torch.Tensor) -> torch.Tensor:
         return bias_int.reshape(self.config.num_gates, self.config.num_heads, self.config.head_dim).permute(1, 0, 2)
 
-    def _impl(self, training: bool, input: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
+    def _impl(self, input: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
         return slstm_forward(
             input,
             state,
@@ -547,7 +548,7 @@ class sLSTMCell_vanilla(sLSTMCellBase):
             constants=self.config.constants,
         )[0]
 
-    def _impl_step(self, training: bool, input: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
+    def _impl_step(self, input: torch.Tensor, state: torch.Tensor) -> torch.Tensor:
         return slstm_forward_step(
             input,
             state,
@@ -632,7 +633,6 @@ class sLSTMCell(sLSTMCellBase):
     def __new__(cls, config: sLSTMCellConfig, skip_backend_init: bool = False):
         if config.backend == "cuda":
             return sLSTMCell_cuda(config, skip_backend_init=skip_backend_init)
-        elif config.backend == "vanilla":
+        if config.backend == "vanilla":
             return sLSTMCell_vanilla(config)
-        else:
-            raise RuntimeError(f'sLSTMCell unknown backend {config.backend}, choose from ["cuda", "vanilla"]')
+        raise RuntimeError(f'sLSTMCell unknown backend {config.backend}, choose from ["cuda", "vanilla"]')

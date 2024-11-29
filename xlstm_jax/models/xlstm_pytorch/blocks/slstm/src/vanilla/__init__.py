@@ -20,7 +20,7 @@ def slstm_forward(
         [torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, float]],
         tuple[torch.Tensor, torch.Tensor],
     ],
-    constants: dict[str, float] = {},
+    constants: dict[str, float] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     num_states = states.shape[0]
     sequence_dim = x.shape[0]
@@ -56,7 +56,7 @@ def slstm_forward(
             .reshape(batch_dim, -1)
         )
         sdtype = states.dtype
-        states, gates = pointwise_forward(Wx_t, Ry, b, states, constants=constants)
+        states, gates = pointwise_forward(Wx_t, Ry, b, states, constants=constants if constants is not None else {})
         states = states.to(dtype=sdtype)
         g[i] = gates
         states_all[:, i + 1] = states
@@ -74,7 +74,7 @@ def slstm_forward_step(
         [torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, dict[str, float]],
         tuple[torch.Tensor, torch.Tensor],
     ],
-    constants: dict[str, float] = {},
+    constants: dict[str, float] | None = None,
 ) -> tuple[torch.Tensor, torch.Tensor]:
     num_states = states.shape[0]
     sequence_dim = x.shape[0]
@@ -109,7 +109,7 @@ def slstm_forward_step(
         .reshape(batch_dim, -1)
     )
     sdtype = states.dtype
-    states, gates = pointwise_forward(x[0], Ry, b, states, constants=constants)
+    states, _gates = pointwise_forward(x[0], Ry, b, states, constants=constants if constants is not None else {})
     states = states.to(dtype=sdtype)
 
     # shapes: [[B, H], [B, H], [B, H]], [S, B, 4 * H]

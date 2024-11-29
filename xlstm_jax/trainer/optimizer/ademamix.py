@@ -110,7 +110,7 @@ def ademamix(
         alpha_scheduler: an optional scheduler function, given a timestep, returns the
             value of alpha. Use `alpha_scheduler(alpha,0,T_alpha)` to follow the
             AdEMAMix paper.
-        eps: A small constant applied to denominator outside of the square root
+        eps: A small constant applied to denominator outside the square root
             (as in the Adam paper) to avoid dividing by zero when rescaling.
         eps_root: A small constant applied to denominator inside the square root (as
             in RMSProp), to avoid dividing by zero when rescaling. This is needed for
@@ -120,7 +120,7 @@ def ademamix(
         weight_decay: Strength of the weight decay regularization. Note that this
             weight decay is multiplied with the learning rate. This is consistent
             with other frameworks such as PyTorch, but different from
-            (Loshchilov et al, 2019) where the weight decay is only multiplied with
+            (Loshchilov et al., 2019) where the weight decay is only multiplied with
             the "schedule multiplier", but not the base learning rate.
         mask: A tree with same structure as (or a prefix of) the params PyTree,
             or a Callable that returns such a pytree given the params/updates.
@@ -162,7 +162,7 @@ def scale_by_ademamix(
         alpha_scheduler: an optional scheduler function, given a timestep, returns the
             value of alpha. Use `alpha_scheduler(alpha,0,T_alpha)` to follow the
             AdEMAMix paper.
-        eps: A small constant applied to denominator outside of the square root
+        eps: A small constant applied to denominator outside the square root
             (as in the Adam paper) to avoid dividing by zero when rescaling.
         eps_root: A small constant applied to denominator inside the square root (as
             in RMSProp), to avoid dividing by zero when rescaling. This is needed for
@@ -208,8 +208,7 @@ def tree_cast(tree: PyTree, dtype: jnp.dtype) -> PyTree:
     """Cast tree to given dtype, skip if None."""
     if dtype is not None:
         return jtu.tree_map(lambda t: t.astype(dtype), tree)
-    else:
-        return tree
+    return tree
 
 
 def tree_zeros_like(
@@ -261,11 +260,10 @@ def tree_update_moment_per_elem_norm(
     def orderth_norm(g):
         if jnp.isrealobj(g):
             return g**order
-        else:
-            half_order = order / 2
-            # JAX generates different HLO for int and float `order`
-            if half_order.is_integer():
-                half_order = int(half_order)
+        half_order = order / 2
+        # JAX generates different HLO for int and float `order`
+        if half_order.is_integer():
+            half_order = int(half_order)
         return numerics.abs_sq(g) ** half_order
 
     return jtu.tree_map(lambda g, t: (1 - decay) * orderth_norm(g) + decay * t, updates, moments)

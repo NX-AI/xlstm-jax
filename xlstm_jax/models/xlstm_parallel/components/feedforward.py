@@ -26,11 +26,10 @@ _act_fn_registry = {
 def get_act_fn(act_fn_name: str) -> Callable[[jax.Array], jax.Array]:
     if act_fn_name in _act_fn_registry:
         return _act_fn_registry[act_fn_name]
-    else:
-        assert False, (
-            f"Unknown activation function name '{act_fn_name}'. "
-            f"Available activation functions are: {str(_act_fn_registry.keys())}"
-        )
+    assert False, (
+        f"Unknown activation function name '{act_fn_name}'. "
+        f"Available activation functions are: {str(_act_fn_registry.keys())}"
+    )
 
 
 @dataclass
@@ -182,7 +181,6 @@ class FeedForward(nn.Module):
 def create_feedforward(config: FeedForwardConfig, name: str = "ffn") -> nn.Module:
     if config.ff_type == "ffn_gated":
         return GatedFeedForward(config, name=name)
-    elif config.ff_type == "ffn":
+    if config.ff_type == "ffn":
         return FeedForward(config, name=name)
-    else:
-        raise ValueError(f"Unknown feedforward type {config.ff_type}")
+    raise ValueError(f"Unknown feedforward type {config.ff_type}")

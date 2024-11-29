@@ -1,9 +1,9 @@
-from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
-from mlstm_kernels.mlstm_kernels.mlstm.recurrent.triton_fused_fw import _recurrent_step_fw_kernel
-
 import jax
 import jax_triton as jt
 import triton
+
+from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
+from mlstm_kernels.mlstm_kernels.mlstm.recurrent.triton_fused_fw import _recurrent_step_fw_kernel
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride

@@ -47,15 +47,16 @@ class SyntheticDataIterator:
             partial(SyntheticDataIterator.raw_generate_synthetic_data, config=self.config),
             out_shardings=data_pspec_shardings,
         )
+        self._step_counter = 0
 
     def __iter__(self):
-        self.step_counter = 0
+        self._step_counter = 0
         return self
 
     def __next__(self):
-        if self.step_counter >= self.num_batches:
+        if self._step_counter >= self.num_batches:
             raise StopIteration
-        self.step_counter += 1
+        self._step_counter += 1
         with self.mesh:
             return self.data_generator()
 

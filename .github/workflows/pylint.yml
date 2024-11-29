@@ -1,0 +1,56 @@
+name: Pylint code check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+env:
+  ENV_NAME: python_3.11_jax_0.4.34_cuda_12.6
+  ENV_PATH: /usr/share/miniconda3/envs/python_3.11_jax_0.4.34_cuda_12.6
+  ENV_FILE: envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
+  CACHE_NUMBER: 0 # increase to reset cache manually
+
+jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove unnecessary files
+        # see https://github.com/actions/runner-images/issues/2840#issuecomment-1284059930
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Mamba
+        uses: mamba-org/setup-micromamba@v1
+        with:
+          environment-file: ${{ env.ENV_FILE }}
+          environment-name: ${{ env.ENV_NAME }}
+          micromamba-version: latest
+          init-shell: bash
+          generate-run-shell: true
+          cache-downloads: true
+          cache-downloads-key: ${{ runner.os }}-micromamba-${{ hashFiles(env.ENV_FILE) }}
+          cache-environment: true
+          cache-environment-key: ${{ runner.os }}-micromamba-${{ env.CACHE_NUMBER }}-${{ hashFiles(env.ENV_FILE) }}
+
+      - name: Install dependencies
+        shell: bash -el {0}
+        run: |
+          micromamba install pylint
+
+      - name: Version info
+        shell: bash -el {0}
+        run: |
+          micromamba info
+          micromamba list
+
+      - name: Pylint code check
+        shell: bash -el {0}
+        run: |
+          pylint .

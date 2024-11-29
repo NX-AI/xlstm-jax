@@ -17,16 +17,16 @@ Dimensions:
 
 """
 
+import jax
+import jax.numpy as jnp
+import jax_triton as jt
+import triton
+
 from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
 from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.triton_fwbw_stablef import (
     chunk_mlstm_bwd_kernel_dC,
     chunk_mlstm_bwd_kernel_dqkvif,
 )
-
-import jax
-import jax.numpy as jnp
-import jax_triton as jt
-import triton
 
 from xlstm_jax.kernels.stride_utils import get_stride
 
@@ -70,7 +70,7 @@ def _mlstm_chunkwise__recurrent_bw_dC(
 
     Returns:
         Tensor containing the C gradients and the C_first gradients.
-        Shapes (B, H, NT * DHQK, DHHV), (B, H, DHQK, DHHV)..
+        Shapes (B, H, NT * DHQK, DHHV), (B, H, DHQK, DHHV).
     """
     B, H, T, K, V = *matQ.shape, matDeltaH.shape[-1]
     NT = num_chunks

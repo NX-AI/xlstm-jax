@@ -31,7 +31,7 @@ else:
 
 # Check if grain is available.
 try:
-    import grain  # noqa: F401
+    import grain  # noqa: F401 pylint: disable=unused-import
 
     GRAIN_AVAILABLE = True
 except ImportError:

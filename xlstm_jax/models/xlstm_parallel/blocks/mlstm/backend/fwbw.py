@@ -33,7 +33,7 @@ class mLSTMBackendFwbwConfig:
     """Whether to stabilize the output correctly. This is only needed if no GroupNorm is applied after the mLSTM.
     If GroupNorm is applied, this can be set to False, as results after GroupNorm will be the same."""
 
-    def assign_model_config_params(self, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         pass
 
 
@@ -131,7 +131,7 @@ def fwbw_forward(
         kv = jnp.einsum("bctk,bctd,bct->bckd", k, v, jnp.exp(forward_gates))
         ksum = jnp.einsum("bctk,bct->bck", k, jnp.exp(forward_gates))
 
-        def _inner_step(carry, xs):
+        def _inner_step(carry, xs):  # pylint: disable=unused-argument
             m_last, c_last, n_last, j = carry
             m_new = jnp.maximum(
                 (lflast[:, j - 1] + m_last),
@@ -279,8 +279,8 @@ def fwbw_backward(
         log_fgates,
         M_norm,
         lflast,
-        c_saved,
-        n_saved,
+        _c_saved,
+        _n_saved,
         m,
         initial_C,
         initial_n,
@@ -421,8 +421,7 @@ def fwbw_backward(
             jnp.zeros_like(q, shape=(B, K)),
             jnp.zeros_like(q, shape=(B,)),
         )
-    else:
-        return dq, dk, dv, di.reshape(B, T, 1), df.reshape(B, T, 1), None, None, None
+    return dq, dk, dv, di.reshape(B, T, 1), df.reshape(B, T, 1), None, None, None
 
 
 def mlstm_fwbw_custom_grad(

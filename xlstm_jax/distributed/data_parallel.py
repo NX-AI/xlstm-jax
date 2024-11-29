@@ -33,31 +33,32 @@ def shard_params(params: PyTree, axis_name: str, min_weight_size: int = 2**18) -
         else:
             value = x
             names = (None,) * value.ndim
+
         if axis_name in names:
             logging.warning(f"Parameter {value.shape} with names {names} already sharded on axis {axis_name}.")
             return x
-        elif value.size <= min_weight_size:
+        if value.size <= min_weight_size:
             logging.info(
                 f"Parameter {value.shape} with names {names} too small to shard, size {value.size} < {min_weight_size}."
             )
             return x
-        else:
-            shape = value.shape
-            idx = np.argsort(shape)[::-1]  # Shard along largest possible axis.
-            for i in idx:
-                if shape[i] % axis_size == 0 and names[i] is None:
-                    split_size = shape[i] // axis_size
-                    p_sharded = nn.Partitioned(
-                        value=lax.dynamic_slice_in_dim(  # Shard to keep on present device.
-                            value, axis_idx * split_size, split_size, axis=i
-                        ),
-                        names=names[:i] + (axis_name,) + names[i + 1 :],
-                    )
-                    return p_sharded
-            logging.warning(
-                f"Could not shard {value.shape} with names {names} on axis {axis_name}, no suitable axis found."
-            )
-            return x
+
+        shape = value.shape
+        idx = np.argsort(shape)[::-1]  # Shard along largest possible axis.
+        for i in idx:
+            if shape[i] % axis_size == 0 and names[i] is None:
+                split_size = shape[i] // axis_size
+                p_sharded = nn.Partitioned(
+                    value=lax.dynamic_slice_in_dim(  # Shard to keep on present device.
+                        value, axis_idx * split_size, split_size, axis=i
+                    ),
+                    names=names[:i] + (axis_name,) + names[i + 1 :],
+                )
+                return p_sharded
+        logging.warning(
+            f"Could not shard {value.shape} with names {names} on axis {axis_name}, no suitable axis found."
+        )
+        return x
 
     return jax.tree.map(
         _split,
@@ -140,12 +141,10 @@ def gather_params(
             # If there are any other axes that are sharded, we need to keep the partitioned structure.
             # Otherwise, we can return the value directly.
             param_shard = param_shard[:shard_axis] + (None,) + param_shard[shard_axis + 1 :]
-            if any([name is not None for name in param_shard]):
+            if any(name is not None for name in param_shard):
                 return nn.Partitioned(value, param_shard)
-            else:
-                return value
-        else:
-            return p
+            return value
+        return p
 
     return jax.tree.map(_gather, params, is_leaf=lambda x: isinstance(x, nn.Partitioned))
 
@@ -207,11 +206,9 @@ def sync_gradients(
             if len(replication_axis_names) == 0:
                 # Parameters partitioned over all axes.
                 return g
-            else:
-                # Average over remaining replicated axes.
-                return g.replace(value=jax.lax.pmean(g.value, axis_name=replication_axis_names))
-        else:
-            # Parameters are replicated over all axes.
-            return jax.lax.pmean(g, axis_name=axis_names)
+            # Average over remaining replicated axes.
+            return g.replace(value=jax.lax.pmean(g.value, axis_name=replication_axis_names))
+        # Parameters are replicated over all axes.
+        return jax.lax.pmean(g, axis_name=axis_names)
 
     return jax.tree.map(sync_grad, grads, is_leaf=lambda x: isinstance(x, nn.Partitioned))

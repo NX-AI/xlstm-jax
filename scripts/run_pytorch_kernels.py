@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v3.triton_fwbw import mlstm_chunkwise_fwbw
-
 import numpy as np
 import torch
+
+from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v3.triton_fwbw import mlstm_chunkwise_fwbw
 
 assert torch.cuda.is_available(), "This script needs to be run with the PyTorch environment and GPU support."
 
@@ -22,11 +22,11 @@ def run_pytorch_kernel(
     Run the PyTorch kernels and store to disk.
 
     Args:
-        B: Batch size.
-        NH: Number of heads.
-        S: Sequence length.
-        DH: Hidden dimension.
-        CHUNK_SIZE: Chunk size.
+        batch_size: Batch size.
+        num_heads: Number of heads.
+        context_length: Context length.
+        head_dimension: Head dimension.
+        chunk_size: Chunk size.
         seed: Random seed.
         autocast_kernel_dtype: Data type for the kernel.
         out_path: Output path for the kernel data.
@@ -47,7 +47,7 @@ def run_pytorch_kernel(
     k_torch = torch.from_numpy(k).to(device=device, dtype=autocast_kernel_dtype).requires_grad_()
     v_torch = torch.from_numpy(v).to(device=device, dtype=autocast_kernel_dtype).requires_grad_()
     igate_preact_torch = torch.from_numpy(igate_preact).to(device=device, dtype=autocast_kernel_dtype).requires_grad_()
-    # Keep forget gate in float32, as it is anyways upcasted in the kernel.
+    # Keep forget gate in float32, as it is upcasted in the kernel anyway.
     fgate_preact_torch = torch.from_numpy(fgate_preact).to(device=device, dtype=torch.float32).requires_grad_()
 
     # Run the PyTorch kernel.

@@ -135,7 +135,7 @@ class BlockStack(nn.Module):
             for block in blocks:
                 x = block(x, document_borders=document_borders)
         else:
-            assert all([v == 0 for v in self.config.block_map]), "scan_blocks only supported for pure mLSTM blocks"
+            assert all(v == 0 for v in self.config.block_map), "scan_blocks only supported for pure mLSTM blocks"
             block_fn = prepare_module(
                 get_partial_mLSTMBlock(self.config.mlstm_block),
                 "mLSTMBlock",

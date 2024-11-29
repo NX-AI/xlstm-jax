@@ -9,7 +9,6 @@ from xlstm_jax.resume_training import resume_training
 
 set_XLA_flags()  # Must be executed before any JAX operation.
 
-
 # Register Hydra configs
 register_configs()
 

@@ -46,7 +46,7 @@ def mlstm_chunkwise_bw(
     num_stages_inter: int | None = None,
     eps: float = 0.0,
 ):
-    B, NH, S, DHQK = matQ.shape
+    _B, _NH, S, DHQK = matQ.shape
 
     if chunk_size_inter is None:
         chunk_size_inter = min(128, S)

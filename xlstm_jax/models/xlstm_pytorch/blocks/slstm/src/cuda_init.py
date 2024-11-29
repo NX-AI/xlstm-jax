@@ -37,6 +37,8 @@ if torch.cuda.is_available():
     os.environ["CUDA_LIB"] = os.path.join(
         os.path.split(torch.utils.cpp_extension.include_paths(cuda=True)[-1])[0], "lib"
     )
+
+
 # print(os.environ.get("LD_LIBRARY_PATH", ""))
 # print(os.environ["CUDA_LIB"])
 

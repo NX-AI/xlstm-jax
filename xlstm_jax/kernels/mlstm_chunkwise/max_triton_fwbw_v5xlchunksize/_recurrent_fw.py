@@ -1,12 +1,12 @@
-from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_recurrent_fw import (
-    _mlstm_chunkwise__recurrent_fw_C_kernel,
-)
-
 import jax
 import jax.numpy as jnp
 import jax_triton as jt
 import triton
+
+from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
+from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_recurrent_fw import (
+    _mlstm_chunkwise__recurrent_fw_C_kernel,
+)
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride
@@ -34,14 +34,8 @@ def mlstm_chunkwise__recurrent_fw_C(
     Args:
         matK: Tensor containing the keys. Shape (B, NH, S, DHQK).
         matV: Tensor containing the values. Shape (B, NH, S, DHHV).
-        vecB: Tensor containing the summed log forget gate activations. Shape (B, NH, NC, L).
+        vecF: Tensor containing the forget gate. Shape (B, NH, NC, L).
         vecI: Tensor containing the input gate. Shape (B, NH, NC, L).
-        matC_states: Buffer for the states of the C matrix.
-            Shape (B, NH, (NC + 1) * DHQK, DHHV). Defaults to None.
-        vecN_states: Buffer for the states of the N vector. Shape (B, NH, (NC + 1) * DHQK).
-            Defaults to None.
-        scaMinter_states: Buffer for the states of the M scalar. Shape (B, NH, (NC + 1)).
-            Defaults to None.
         matC_initial: Initial state of the C matrix. Shape (B, NH, DHQK, DHHV).
             Defaults to None.
         vecN_initial: Initial state of the N vector. Shape (B, NH, DHQK).
@@ -99,7 +93,7 @@ def mlstm_chunkwise__recurrent_fw_C(
         # to be the output arrays.
         # The output arrays (whose shape is passed into out_shape argument) are allocated by the triton kernel.
         # Since the matC_initial, vecN_initial, and scaMinter_initial are optional INPUT arguments to the kernel,
-        # we always need to pass them in in order for the output arrays to be always at the correct position
+        # we always need to pass them in order for the output arrays to be always at the correct position
         # in the argument list. So these empty arrays serve as placeholders in the argument list
         # and are not used within the kernel as USE_INITIAL_STATE is False.
         matC_initial = jnp.empty((1,), dtype=jnp.float32)
@@ -121,44 +115,44 @@ def mlstm_chunkwise__recurrent_fw_C(
 
     # Shared kwargs for the triton call.
     grid = (num_b_DHQK, num_b_DHHV, B * NH)
-    triton_kwargs = dict(
-        str_matK_B_NH=get_stride(matK, axis=1),
-        str_matK_S=get_stride(matK, axis=2),
-        str_matK_DHQK=get_stride(matK, axis=3),
-        str_matV_B_NH=get_stride(matV, axis=1),
-        str_matV_S=get_stride(matV, axis=2),
-        str_matV_DHHV=get_stride(matV, axis=3),
-        str_vecFI_B_NH=get_stride(vecF, axis=1),
-        str_matCstates_B_NH=get_stride(matC_states, axis=1),
-        str_matCstates_NCDHQK=get_stride(matC_states, axis=2),
-        str_matCstates_DHHV=get_stride(matC_states, axis=3),
-        str_vecNstates_B_NH=get_stride(vecN_states, axis=1),
-        str_vecNstates_NCDHQK=get_stride(vecN_states, axis=2),
-        str_scaMinterstates_B_NH=get_stride(scaMinter_states, axis=1),
-        str_scaMinterstates_NC=get_stride(scaMinter_states, axis=2),
-        str_matCinitial_B_NH=str_matCinitial_B_NH,
-        str_matCinitial_DHQK=str_matCinitial_DHQK,
-        str_matCinitial_DHHV=str_matCinitial_DHHV,
-        str_vecNinitial_B_NH=str_vecNinitial_B_NH,
-        str_vecNinitial_DHQK=str_vecNinitial_DHQK,
-        str_scaMinterinitial_B_NH=str_scaMinterinitial_B_NH,
-        B=B,
-        NH=NH,
-        S=S,
-        DHQK=DHQK,
-        DHHV=DHHV,
-        NC=NC,
-        L=L,
-        siz_b_DHQK=siz_b_DHQK,
-        siz_b_DHHV=siz_b_DHHV,
-        save_states_every_nth_chunk=save_states_every_nth_chunk,
-        USE_INITIAL_STATE=USE_INITIAL_STATE,
-        DTYPE=jax2triton_dtype(matK.dtype),
-        num_stages=num_stages,
-        num_warps=num_warps,
-        grid=grid,
-        kernel=_mlstm_chunkwise__recurrent_fw_C_kernel,
-    )
+    triton_kwargs = {
+        "str_matK_B_NH": get_stride(matK, axis=1),
+        "str_matK_S": get_stride(matK, axis=2),
+        "str_matK_DHQK": get_stride(matK, axis=3),
+        "str_matV_B_NH": get_stride(matV, axis=1),
+        "str_matV_S": get_stride(matV, axis=2),
+        "str_matV_DHHV": get_stride(matV, axis=3),
+        "str_vecFI_B_NH": get_stride(vecF, axis=1),
+        "str_matCstates_B_NH": get_stride(matC_states, axis=1),
+        "str_matCstates_NCDHQK": get_stride(matC_states, axis=2),
+        "str_matCstates_DHHV": get_stride(matC_states, axis=3),
+        "str_vecNstates_B_NH": get_stride(vecN_states, axis=1),
+        "str_vecNstates_NCDHQK": get_stride(vecN_states, axis=2),
+        "str_scaMinterstates_B_NH": get_stride(scaMinter_states, axis=1),
+        "str_scaMinterstates_NC": get_stride(scaMinter_states, axis=2),
+        "str_matCinitial_B_NH": str_matCinitial_B_NH,
+        "str_matCinitial_DHQK": str_matCinitial_DHQK,
+        "str_matCinitial_DHHV": str_matCinitial_DHHV,
+        "str_vecNinitial_B_NH": str_vecNinitial_B_NH,
+        "str_vecNinitial_DHQK": str_vecNinitial_DHQK,
+        "str_scaMinterinitial_B_NH": str_scaMinterinitial_B_NH,
+        "B": B,
+        "NH": NH,
+        "S": S,
+        "DHQK": DHQK,
+        "DHHV": DHHV,
+        "NC": NC,
+        "L": L,
+        "siz_b_DHQK": siz_b_DHQK,
+        "siz_b_DHHV": siz_b_DHHV,
+        "save_states_every_nth_chunk": save_states_every_nth_chunk,
+        "USE_INITIAL_STATE": USE_INITIAL_STATE,
+        "DTYPE": jax2triton_dtype(matK.dtype),
+        "num_stages": num_stages,
+        "num_warps": num_warps,
+        "grid": grid,
+        "kernel": _mlstm_chunkwise__recurrent_fw_C_kernel,
+    }
 
     matC_states, vecN_states, scaMinter_states = jt.triton_call(
         matK,  # (B, NH, S, DHQK)

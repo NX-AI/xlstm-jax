@@ -198,12 +198,9 @@ def batch_dataset_with_rampup(
             f"batch size {batch_size}."
         )
         return parent.batch(batch_size, drop_remainder=drop_remainder, batch_fn=batch_fn)
-    else:
-        LOGGER.info(
-            f"Creating {schedule_type} batch rampup schedule with boundaries and scales: {boundaries_and_scales}."
-        )
-        batch_rampup_schedule = create_batch_rampup_schedule(batch_size, schedule_type, boundaries_and_scales)
-        return BatchRampUpIterDataset(parent, batch_rampup_schedule, drop_remainder, batch_fn)
+    LOGGER.info(f"Creating {schedule_type} batch rampup schedule with boundaries and scales: {boundaries_and_scales}.")
+    batch_rampup_schedule = create_batch_rampup_schedule(batch_size, schedule_type, boundaries_and_scales)
+    return BatchRampUpIterDataset(parent, batch_rampup_schedule, drop_remainder, batch_fn)
 
 
 def create_batch_rampup_schedule(

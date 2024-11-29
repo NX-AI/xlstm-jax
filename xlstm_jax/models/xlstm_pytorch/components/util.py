@@ -17,9 +17,8 @@ def conditional_decorator(condition, decorator):
     if condition:
         # If condition is True, return the actual decorator
         return decorator
-    else:
-        # If condition is False, return the dummy decorator
-        return dummy_decorator
+    # If condition is False, return the dummy decorator
+    return dummy_decorator
 
 
 class ParameterProxy:

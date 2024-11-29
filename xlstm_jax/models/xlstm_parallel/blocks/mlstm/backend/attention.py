@@ -82,12 +82,11 @@ def attention(
     activation_function: Literal["softmax", "sigmoid", "none"] = "softmax",
     qk_pre_activation_function: Literal["silu", "swish", "none"] = "none",
     theta: float = 1e4,
-    **kwargs,
 ) -> jax.Array:
     """
     This is an attention backend that mimics the attention mechanism of the transformer.
 
-    Note that no forget and input gate are applied here.
+    Note that no forget and input gates are applied here.
 
     Args:
         queries: Array containing the query features of shape (B, NH, S, DHQK).
@@ -160,7 +159,10 @@ class mLSTMBackendAttentionConfig:
     theta: float = 1e4
     """Theta parameter for the rotary embeddings."""
 
-    def assign_model_config_params(self, model_config, *args, **kwargs):
+    def assign_model_config_params(
+        self,
+        model_config,
+    ):
         self.context_length = model_config.context_length
 
 

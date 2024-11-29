@@ -21,11 +21,10 @@ _act_fn_registry = {
 def get_act_fn(act_fn_name: str) -> Callable[[torch.Tensor], torch.Tensor]:
     if act_fn_name in _act_fn_registry:
         return _act_fn_registry[act_fn_name]
-    else:
-        assert False, (
-            f"Unknown activation function name '{act_fn_name}'. "
-            f"Available activation functions are: {str(_act_fn_registry.keys())}"
-        )
+    assert False, (
+        f"Unknown activation function name '{act_fn_name}'. "
+        f"Available activation functions are: {str(_act_fn_registry.keys())}"
+    )
 
 
 @dataclass
@@ -67,7 +66,7 @@ class GatedFeedForward(nn.Module):
         self.dropout = nn.Dropout(self.config.dropout)
         self.reset_parameters()
 
-    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         gate_preact, up_proj = self.proj_up(x).split(self.config._proj_up_dim, dim=-1)
         x = self.dropout(self.proj_down(self.act_fn(gate_preact) * up_proj))
         return x
@@ -84,5 +83,4 @@ class GatedFeedForward(nn.Module):
 def create_feedforward(config: FeedForwardConfig) -> nn.Module:
     if config.ff_type == "ffn_gated":
         return GatedFeedForward(config)
-    else:
-        raise ValueError(f"Unknown feedforward type {config.ff_type}")
+    raise ValueError(f"Unknown feedforward type {config.ff_type}")

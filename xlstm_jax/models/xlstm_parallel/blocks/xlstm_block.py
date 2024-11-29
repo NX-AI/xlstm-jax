@@ -94,7 +94,7 @@ class ResidualBlock(nn.Module):
         if module_kwargs is None:
             module_kwargs = [{}] * len(self.module_fns)
         else:
-            module_kwargs = module_kwargs + [{}] * max(0, len(self.module_fns) - len(module_kwargs))
+            module_kwargs += [{}] * max(0, len(self.module_fns) - len(module_kwargs))
             module_kwargs = [{} if kws is None else kws for kws in module_kwargs]
 
         # Forward pass.

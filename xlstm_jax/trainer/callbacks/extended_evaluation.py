@@ -152,6 +152,7 @@ class ExtendedEvaluation(Callback):
         self.exmp_batch = self.create_modified_exemplary_batch(self.trainer.exmp_batch)
         self.eval_step = None
         self.create_jitted_functions()
+        self._eval_metric_shapes = None
 
     def create_modified_exemplary_batch(self, exmp_batch: Batch) -> Batch:
         """
@@ -257,20 +258,20 @@ class ExtendedEvaluation(Callback):
         Returns:
             A dictionary of metrics with the same shape as the eval metrics.
         """
-        if not hasattr(self, "eval_metric_shapes"):
-            self.eval_metric_shapes = None
-        if self.eval_metric_shapes is None:
+        if not hasattr(self, "_eval_metric_shapes"):
+            self._eval_metric_shapes = None
+        if self._eval_metric_shapes is None:
             if batch is None:
                 batch = self.exmp_batch
-            self.eval_metric_shapes = jax.eval_shape(
+            self._eval_metric_shapes = jax.eval_shape(
                 self.eval_step if alternative_eval_step is None else alternative_eval_step,
                 self.trainer.state,
                 batch,
                 None,
             )
-            LOGGER.info(f"Initialized eval metrics with keys {self.eval_metric_shapes.keys()}.")
+            LOGGER.info(f"Initialized eval metrics with keys {self._eval_metric_shapes.keys()}.")
 
-        return jax.tree.map(lambda x: jnp.zeros_like(x), self.eval_metric_shapes)
+        return jax.tree.map(lambda x: jnp.zeros_like(x), self._eval_metric_shapes)
 
     def aggregate_metrics(self, aggregated_metrics: HostMetrics, eval_metrics: ImmutableMetrics) -> HostMetrics:
         """

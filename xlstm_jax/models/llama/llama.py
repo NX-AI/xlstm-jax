@@ -122,7 +122,7 @@ class SelfAttentionBlock(nn.Module):
         x = SelfAttention(config=attn_config, name="attn")(x, freqs, segment_ids=segment_ids, train=self.train)
         self.sow("intermediates", "attn_out_std", x.std(axis=-1).mean())
         self.sow("intermediates", "attn_out_abs_max", jnp.abs(x).max())
-        x = x + res
+        x += res
         return x
 
 
@@ -165,7 +165,7 @@ class FFNBlock(nn.Module):
         x = FeedForward(config=ffn_config, name="ffn")(x, train=self.train)
         self.sow("intermediates", "ffn_out_std", x.std(axis=-1).mean())
         self.sow("intermediates", "ffn_out_abs_max", jnp.abs(x).max())
-        x = x + res
+        x += res
         return x
 
 

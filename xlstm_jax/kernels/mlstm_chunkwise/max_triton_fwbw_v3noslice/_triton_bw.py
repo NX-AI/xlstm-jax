@@ -24,16 +24,16 @@ Variables:
     matD, D: gating matrix for the parallel form.
 """
 
+import jax
+import jax.numpy as jnp
+import jax_triton as jt
+import triton
+
 from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
 from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v3noslice._triton_bw import (
     _mlstm_chunkwise__parallel_bw_dQKV_kernel,
     _mlstm_chunkwise__recurrent_bw_dC_kernel,
 )
-
-import jax
-import jax.numpy as jnp
-import jax_triton as jt
-import triton
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride
@@ -308,7 +308,7 @@ def _mlstm_chunkwise_bw(
     # Common arguments
     CHUNK_SIZE: int = 64,
     EPS: float = 1e-6,
-    reduce_slicing: bool = False,
+    reduce_slicing: bool = False,  # pylint: disable=unused-argument
 ) -> tuple[
     jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array | None, jax.Array | None, jax.Array | None
 ]:  # matDeltaQ, matDeltaK, matDeltaV, vecDeltaI, vecDeltaF, matDeltaC_initial, vecDeltaN_initial, scaDeltaM_initial

@@ -43,7 +43,7 @@ class mLSTMfwbwConfig:
     scale = None
     device_type: str = "cuda"
 
-    def assign_model_config_params(self, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         pass
 
 
@@ -201,9 +201,8 @@ def mLSTMTorchFunction(config: mLSTMfwbwConfig):
                 n = n[:, :, -1]
                 c = c[:, :, -1].requires_grad_(True)
                 ctx.mark_non_differentiable(n, m)
-                return (h, c, n, m)
-            else:
-                return h
+                return h, c, n, m
+            return h
 
         @staticmethod
         @once_differentiable
@@ -221,8 +220,8 @@ def mLSTMTorchFunction(config: mLSTMfwbwConfig):
                 log_fgates,
                 M_norm,
                 lflast,
-                c_saved,
-                n_saved,
+                _c_saved,
+                _n_saved,
                 m,
                 initial_C,
                 initial_n,
@@ -362,8 +361,7 @@ def mLSTMTorchFunction(config: mLSTMfwbwConfig):
                     q.new_empty((B, H, K)).zero_(),
                     q.new_empty((B, H)).zero_(),
                 )
-            else:
-                return dq, dk, dv, di.view(B, H, T, 1), df.view(B, H, T, 1), None, None, None
+            return dq, dk, dv, di.view(B, H, T, 1), df.view(B, H, T, 1), None, None, None
 
     return mLSTMTorchFunc
 
@@ -379,8 +377,7 @@ class mLSTMfwbw(torch.nn.Module):
     def forward(self, *args):
         if self.config.use_initial_state:
             return self.func.apply(*args)
-        else:
-            return self.func.apply(*args, None, None, None)
+        return self.func.apply(*args, None, None, None)
 
 
 # def mLSTM_parallel(q, k, v, i, f, initial_C=None, initial_n=None, initial_m=None):

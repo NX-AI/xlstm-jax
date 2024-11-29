@@ -12,7 +12,6 @@ from xlstm_jax.main_train import main_train
 
 set_XLA_flags()  # Must be executed before any JAX operation.
 
-
 # Register Hydra configs
 register_configs()
 

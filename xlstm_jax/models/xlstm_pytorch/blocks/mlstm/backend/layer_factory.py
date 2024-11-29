@@ -48,10 +48,9 @@ def create_layer(
     def get_layer(name: str) -> type:
         if name in registry:
             return registry[name]
-        else:
-            raise ValueError(
-                f"Unknown {layer_cfg_key} layer: {name}. Available {layer_cfg_key} layers: {list(registry.keys())}"
-            )
+        raise ValueError(
+            f"Unknown {layer_cfg_key} layer: {name}. Available {layer_cfg_key} layers: {list(registry.keys())}"
+        )
 
     # clear registry in every case, since it is not needed anymore after it has
     # been used to create the layer
@@ -85,36 +84,35 @@ def create_layer(
             "but other kwargs is not None.",
         )
         return layer_class(**cfg_kwargs) if cfg_kwargs is not None else layer_class()
+    # * create the layer config dataclass object
+    # if we create multiple layers with the same config
+    # (e.g. multiple transformer blocks), we need to make sure that the config
+    # is created only once.
+    if isinstance(cfg_kwargs, dict) or cfg_kwargs is None:
+        try:
+            layer_config = from_dict(
+                data_class=layer_config_class,
+                data=(cfg_kwargs if cfg_kwargs is not None else {}),
+                config=Config(strict=True, strict_unions_match=True),
+            )
+        except dacite.exceptions.UnexpectedDataError as e:
+            LOGGER.error(f"Dacite error: class: {layer_config_class}, kwargs: {cfg_kwargs}")
+            raise e
+        layer_config.assign_model_config_params(model_config=config)
     else:
-        # * create the layer config dataclass object
-        # if we create multiple layers with the same config
-        # (e.g. multiple transformer blocks), we need to make sure that the config
-        # is created only once.
-        if isinstance(cfg_kwargs, dict) or cfg_kwargs is None:
-            try:
-                layer_config = from_dict(
-                    data_class=layer_config_class,
-                    data=(cfg_kwargs if cfg_kwargs is not None else {}),
-                    config=Config(strict=True, strict_unions_match=True),
-                )
-            except dacite.exceptions.UnexpectedDataError as e:
-                LOGGER.error(f"Dacite error: class: {layer_config_class}, kwargs: {cfg_kwargs}")
-                raise e
-            layer_config.assign_model_config_params(model_config=config)
+        layer_config = cfg_kwargs
+
+    # * assign the config dataclass to the kwargs
+    # this is used for printing the full config
+    if set_cfg_kwargs:
+        if nameandkwargs is not None:
+            nameandkwargs.kwargs = layer_config
         else:
-            layer_config = cfg_kwargs
+            setattr(config, layer_cfg_key, NameAndKwargs(name=cfg_name, kwargs=layer_config))
 
-        # * assign the config dataclass to the kwargs
-        # this is used for printing the full config
-        if set_cfg_kwargs:
-            if nameandkwargs is not None:
-                nameandkwargs.kwargs = layer_config
-            else:
-                setattr(config, layer_cfg_key, NameAndKwargs(name=cfg_name, kwargs=layer_config))
+    if kwargs:
+        layer = layer_class(layer_config, **kwargs)
+    else:
+        layer = layer_class(layer_config)
 
-        if kwargs:
-            layer = layer_class(layer_config, **kwargs)
-        else:
-            layer = layer_class(layer_config)
-
-        return layer
+    return layer

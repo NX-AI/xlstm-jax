@@ -95,9 +95,7 @@ class mLSTMLayer(nn.Module):
         self.dropout = nn.Dropout(self.config.dropout)
         self.reset_parameters()
 
-    def forward(self, x: torch.Tensor, **kwargs) -> torch.Tensor:
-        B, S, _ = x.shape
-
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
         # up-projection
         x_inner = self.proj_up(x)
         x_mlstm, z = torch.split(x_inner, split_size_or_sections=self.config._inner_embedding_dim, dim=-1)
@@ -127,8 +125,6 @@ class mLSTMLayer(nn.Module):
         mlstm_state: tuple[torch.Tensor, torch.Tensor, torch.Tensor] = None,
         conv_state: tuple[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, dict[str, tuple[torch.Tensor, ...]]]:
-        B, S, _ = x.shape
-
         # up-projection
         x_inner = self.proj_up(x)
         x_mlstm, z = torch.split(x_inner, split_size_or_sections=self.config._inner_embedding_dim, dim=-1)

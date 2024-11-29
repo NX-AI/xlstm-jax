@@ -1,6 +1,15 @@
 import subprocess
 
+import optax
+
 from xlstm_jax.distributed import set_XLA_flags, simulate_CPU_devices
+from xlstm_jax.models.configs import ParallelConfig
+from xlstm_jax.models.xlstm_parallel.benchmark import benchmark_model
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import mLSTMBackendNameAndKwargs
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
+from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
+from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 try:
     subprocess.check_output("nvidia-smi")
@@ -12,15 +21,6 @@ except Exception:
     simulate_CPU_devices(8)
     USE_CPU = True
 
-import optax
-
-from xlstm_jax.models.configs import ParallelConfig
-from xlstm_jax.models.xlstm_parallel.benchmark import benchmark_model
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import mLSTMBackendNameAndKwargs
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.block import mLSTMBlockConfig
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.layer import mLSTMCellConfig, mLSTMLayerConfig
-from xlstm_jax.models.xlstm_parallel.components.feedforward import FeedForwardConfig
-from xlstm_jax.models.xlstm_parallel.xlstm_lm_model import xLSTMLMModelConfig
 
 MODEL_CONFIGS = {
     "debug": {
@@ -37,7 +37,7 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**8,
             ),
             dtype="float32",
@@ -124,7 +124,7 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
             ),
             scan_blocks=False,
             dtype="bfloat16",
@@ -153,9 +153,9 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
-                remat=(),
+                remat=[],
             ),
             dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
@@ -184,9 +184,9 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
-                remat=("mLSTMBlock"),
+                remat=["mLSTMBlock"],
             ),
             dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
@@ -213,9 +213,9 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
-                remat=(),
+                remat=[],
             ),
             dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
@@ -244,9 +244,9 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=(),
+                fsdp_modules=[],
                 fsdp_min_weight_size=2**18,
-                remat=("xLSTMResBlock", "FFNResBlock"),
+                remat=["xLSTMResBlock", "FFNResBlock"],
             ),
             scan_blocks=True,
             norm_eps=1e-6,
@@ -294,9 +294,9 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
-                remat=(),
+                remat=[],
             ),
             dtype="bfloat16",
             mlstm_block=mLSTMBlockConfig(
@@ -326,10 +326,10 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
                 fsdp_gather_dtype="bfloat16",
-                remat=("mLSTMBlock"),
+                remat=["mLSTMBlock"],
                 tp_async_dense=False,
             ),
             dtype="bfloat16",
@@ -367,10 +367,10 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
                 fsdp_gather_dtype="bfloat16",
-                remat=("xLSTMResBlock", "FFNResBlock"),
+                remat=["xLSTMResBlock", "FFNResBlock"],
                 tp_async_dense=False,
             ),
             scan_blocks=True,
@@ -428,10 +428,10 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
                 fsdp_gather_dtype="bfloat16",
-                remat=("mLSTMBlock"),
+                remat=["mLSTMBlock"],
                 tp_async_dense=False,
             ),
             dtype="bfloat16",
@@ -470,10 +470,10 @@ MODEL_CONFIGS = {
                 fsdp_axis_name="fsdp",
                 model_axis_name="tp",
                 pipeline_axis_name="pp",
-                fsdp_modules=("Embed", "LMHead", "mLSTMBlock"),
+                fsdp_modules=["Embed", "LMHead", "mLSTMBlock"],
                 fsdp_min_weight_size=2**18,
                 fsdp_gather_dtype="bfloat16",
-                remat=("mLSTMBlock"),
+                remat=["mLSTMBlock"],
                 tp_async_dense=False,
             ),
             dtype="bfloat16",

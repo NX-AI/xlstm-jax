@@ -4,11 +4,11 @@ import argparse
 import os
 from pathlib import Path
 
-from scripts.get_cli_command_to_resume_training import get_cli_command
-
 import pytest
 from hydra import compose, initialize
 from omegaconf import OmegaConf
+
+from scripts.get_cli_command_to_resume_training import get_cli_command
 
 from xlstm_jax.define_hydra_schemas import register_configs
 from xlstm_jax.resume_training import resume_training
@@ -45,8 +45,14 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
     # Make sure that the command is correct.
     command = get_cli_command(args)
     assert (
-        command
-        == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py  +experiment=tiny_experiment_for_unit_testing log_path={tmp_path} data.global_batch_size={global_batch_size} data.max_target_length={context_length} +resume_from_folder={tmp_path} +checkpoint_step=-1 data.global_batch_size=2"  # noqa: E501
+        command == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py  "
+        f"+experiment=tiny_experiment_for_unit_testing "
+        f"log_path={tmp_path} "
+        f"data.global_batch_size={global_batch_size} "
+        f"data.max_target_length={context_length} "
+        f"+resume_from_folder={tmp_path} "
+        f"+checkpoint_step=-1 "
+        f"data.global_batch_size=2"
     )
 
     # Test get_cli_command_to_resume_training
@@ -55,8 +61,15 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
     )
     command = get_cli_command(args)
     assert (
-        command
-        == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment=tiny_experiment_for_unit_testing log_path={tmp_path} data.global_batch_size={global_batch_size} data.max_target_length={context_length} +resume_from_folder={tmp_path} +checkpoint_step=95000 lr=3e-5"  # noqa: E501
+        command == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py "
+        f"--multirun hydra/launcher=slurm_launcher "
+        f"+experiment=tiny_experiment_for_unit_testing "
+        f"log_path={tmp_path} "
+        f"data.global_batch_size={global_batch_size} "
+        f"data.max_target_length={context_length} "
+        f"+resume_from_folder={tmp_path} "
+        f"+checkpoint_step=95000 "
+        f"lr=3e-5"
     )
 
 

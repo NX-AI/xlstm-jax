@@ -27,7 +27,7 @@ class ToyLoggerTool(LoggerTool):
         LOGGER.info("ToyLoggerTool: Logging config")
 
     def setup(self):
-        """Setup the logger tool."""
+        """Set up the logger tool."""
         LOGGER.info("ToyLoggerTool: Setup")
 
     def log_metrics(self, metrics: dict, step: int, epoch: int, mode: str):
@@ -35,7 +35,7 @@ class ToyLoggerTool(LoggerTool):
         LOGGER.info(f"ToyLoggerTool: Logging metrics {metrics} at epoch {epoch}, step {step}, mode {mode}")
         assert isinstance(metrics, dict)
         assert all(
-            [isinstance(v, (float, int, str)) for v in metrics.values()]
+            isinstance(v, (float, int, str)) for v in metrics.values()
         ), f"Values are not all float, int, or str, but found types: {[(k, type(v)) for k, v in metrics.items()]}"
         if mode == "train":
             if "epoch_time" in metrics:  # Train epoch logging.

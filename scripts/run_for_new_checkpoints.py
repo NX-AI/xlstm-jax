@@ -38,9 +38,9 @@ def get_subfolders(directory) -> set[str]:
 
 
 def execute_command(command: str, folder_path: str):
-    """Execute the given command with the folder path as an argument.
-    Errors are caught inspecting the return code.
-    Stdout and stderr are shown and not captured.
+    """Execute the given command with the folder path as an argument
+
+    Errors are caught inspecting the return code. Stdout and stderr are shown and not captured.
     Exceptions during run are shown but do not cause a program halt or shutdown.
 
     Args:
@@ -66,9 +66,9 @@ def execute_command(command: str, folder_path: str):
 
 def map_folder_name_sorting(fn: str):
     """
-    Maps a folder name to a string that can be used in sorted()
-    Should reflect numeric ordering. Here, numbers are padded by zeros up to 20 digits
+    Maps a folder name to a string that can be used in sorted().
 
+    Should reflect numeric ordering. Here, numbers are padded by zeros up to 20 digits
     >>> map_folder_name_sorting("ckpt_100")
     'ckpt_00000000000000000100'
 
@@ -119,10 +119,12 @@ def monitor_folder(
     """Monitor the target directory for new subfolders and execute command on them.
 
     Args:
-        target_directory: The directory of which the subdirectories should be checked
-        check_interval: Waiting time in seconds in between checks
-        command: Command to be executed on new directories
+        target_directory: The directory of which the subdirectories should be checked.
+        check_interval: Waiting time in seconds in between checks.
+        command: Command to be executed on new directories.
         run_initially: Whether to run the command on all folders on first invocation.
+        execution_wait_time: Time in seconds to wait between executions.
+        skip_initially_num: Skip number of subfolders initially.
 
     Returns:
         None

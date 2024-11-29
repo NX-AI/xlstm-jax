@@ -62,7 +62,8 @@ def fuse_document_results(
     If the exact sequence is the result of a greedy decoding (i.e. if all single token accuracies of non-masked parts
     are 1), also aggregate "greedy" accuracies.
     Args:
-        resuts_dict: Dictionary of all results in concatenated form.
+        results_dict: Dictionary of all results in concatenated form.
+
     Returns:
         Log-likelihoods and greedy (boolean) Accuracy for documents ordered by index.
     """
@@ -252,7 +253,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
                     ).map(requests)
                     # We have to use the sample distribution as in the training loop,
                     # unless we want a different sharding, which probably doesn't make sense.
-                    # However the worker_count is 0 now by default, but should not be a bottleneck.
+                    # However, the worker_count is 0 now by default, but should not be a bottleneck.
                     process_indices = get_process_loading_data(
                         DataConfig(global_batch_size=batch_size, max_target_length=context_length), mesh=trainer.mesh
                     )
@@ -307,7 +308,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         Create an LLMIndexedBatch from a LLMBatch (for compilation purposes as example).
 
         Args:
-            examp_batch: LLMBatch
+            exmp_batch:
 
         Returns:
             LLMIndexedBatch
@@ -325,10 +326,8 @@ class LMEvalEvaluation(ExtendedEvaluation):
         if self.config.use_infinite_eval:
             if isinstance(exmp_batch, jax.ShapeDtypeStruct):
                 return LLMIndexedBatch.get_dtype_struct(exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize)
-            else:
-                return LLMIndexedBatch.get_sample(exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize)
-        else:
-            return batch
+            return LLMIndexedBatch.get_sample(exmp_batch.inputs.shape[0], self.config.infinite_eval_chunksize)
+        return batch
 
     def run_evaluate(self) -> HostMetrics:
         """
@@ -357,7 +356,8 @@ class LMEvalEvaluation(ExtendedEvaluation):
         log_info(f"LMEval results: {res}")
         return res
 
-    def get_metric_postprocess_fn(self) -> Callable[[HostMetrics], HostMetrics]:
+    @staticmethod
+    def get_metric_postprocess_fn() -> Callable[[HostMetrics], HostMetrics]:
         """
         Get function to post-process metrics with on host.
 
@@ -408,8 +408,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
         if self.config.use_infinite_eval:
             step_metrics = super().init_eval_metrics(alternative_eval_step=self.eval_single_step)
             return {"step_metrics": step_metrics}
-        else:
-            return super().init_eval_metrics()
+        return super().init_eval_metrics()
 
     def aggregate_metrics(self, aggregated_metrics: HostMetrics, eval_metrics: HostMetrics) -> HostMetrics:
         """
@@ -429,8 +428,7 @@ class LMEvalEvaluation(ExtendedEvaluation):
             metrics = eval_metrics.copy()
             metrics.pop("step_metrics")
             return aggregate_metrics(aggregated_metrics, metrics)
-        else:
-            return super().aggregate_metrics(aggregated_metrics, eval_metrics)
+        return super().aggregate_metrics(aggregated_metrics, eval_metrics)
 
     def create_recurrent_evaluation_step_function(
         self,
@@ -595,7 +593,6 @@ class LMEvalEvaluation(ExtendedEvaluation):
             Final metrics that are to be reported / logged.
         """
         if self.config.use_infinite_eval:
-            aggregated_metrics = aggregated_metrics
             if "step_metrics" in aggregated_metrics:
                 aggregated_metrics.pop("step_metrics")
         return get_metrics(aggregated_metrics)[1]
@@ -646,8 +643,8 @@ class LMEvalEvaluation(ExtendedEvaluation):
         targets_mask = batch.targets_segmentation != 0
         targets_mask = split_array_over_mesh(targets_mask, axis_name=self.trainer.pipeline_axis_name, split_axis=1)
         targets_mask = split_array_over_mesh(targets_mask, axis_name=self.trainer.model_axis_name, split_axis=1)
-        loss = loss * targets_mask
-        correct_pred = correct_pred * targets_mask
+        loss *= targets_mask
+        correct_pred *= targets_mask
         num_targets = targets_mask.sum()
         # Collect metrics and return loss.
         step_metrics = {

@@ -37,7 +37,7 @@ def _mlstm_chunkwise_fwbw_generator(
     autocast_kernel_dtype: jnp.dtype = jnp.bfloat16,
     return_last_states: bool = False,
     recompute_states_in_bw: bool = True,
-    chunk_size: int = 64,
+    chunk_size: int = 64,  # pylint: disable=unused-argument
     eps: float = 1e-6,
 ) -> Callable[
     [jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array, jax.Array],
@@ -230,8 +230,7 @@ def _get_chunkwise_fwbw_kernel(autocast_kernel_dtype: jnp.dtype, **kwargs) -> Ca
     """
     if autocast_kernel_dtype in ["float32", "float16", "bfloat16", jnp.float32, jnp.float16, jnp.bfloat16]:
         return _mlstm_chunkwise_fwbw_generator(autocast_kernel_dtype, **kwargs)
-    else:
-        raise ValueError(f"Unsupported kernel dtype {autocast_kernel_dtype}.")
+    raise ValueError(f"Unsupported kernel dtype {autocast_kernel_dtype}.")
 
 
 def mlstm_chunkwise_max_triton(
@@ -291,5 +290,4 @@ def mlstm_chunkwise_max_triton(
     )
     if return_last_states:
         return matH_out, (matC_last, vecN_last, scaM_last)
-    else:
-        return matH_out
+    return matH_out

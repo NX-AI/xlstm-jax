@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 import math
 from dataclasses import dataclass
 
@@ -17,7 +18,6 @@ def parallel_stabilized_simple(
     lower_triangular_matrix: jax.Array = None,
     stabilize_rowwise: bool = True,
     eps: float = 1e-6,
-    **kwargs,
 ) -> jax.Array:
     """
     This is the mLSTM cell in parallel form.
@@ -26,15 +26,15 @@ def parallel_stabilized_simple(
     0.0 by subtracting the maximum.
 
     Args:
-        queries (jax.Array): (B, NH, S, DH)
-        keys (jax.Array): (B, NH, S, DH)
-        values (jax.Array): (B, NH, S, DH)
-        igate_preact (jax.Array): (B, NH, S, 1)
-        fgate_preact (jax.Array): (B, NH, S, 1)
-        lower_triangular_matrix (jax.Array, optional): (S,S). Defaults to None.
-        stabilize_rowwise (bool, optional): Whether to stabilize the combination matrix C row-wise (take maximum per
-            row). Alternative: Subtract the maximum over all rows. Defaults to True.
-
+        queries: (B, NH, S, DH)
+        keys: (B, NH, S, DH)
+        values: (B, NH, S, DH)
+        igate_preact: (B, NH, S, 1)
+        fgate_preact: (B, NH, S, 1)
+        lower_triangular_matrix: (S,S). Defaults to None.
+        stabilize_rowwise: Whether to stabilize the combination matrix C row-wise (take maximum per row).
+            Alternative: Subtract the maximum over all rows. Defaults to True.
+        eps: Epsilon value. Defaults to 1e-6.
     Returns:
         jax.Array: (B, NH, S, DH), h_tilde_state
     """
@@ -110,7 +110,7 @@ def parallel_stabilized_simple(
 class mLSTMBackendJaxConfig:
     context_length: int = -1
 
-    def assign_model_config_params(self, model_config, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         self.context_length = model_config.context_length
 
 
@@ -133,27 +133,27 @@ def recurrent_step_stabilized_simple(
     igate_preact: jax.Array,
     fgate_preact: jax.Array,
     eps: float = 1e-6,
-    **kwargs,
 ) -> tuple[jax.Array, tuple[jax.Array, jax.Array]]:
     """
     This is a single step of the mLSTM operation in recurrent form.
 
     Args:
-        c_state (jax.Array): (B, NH, DH, DH)
-        n_state (jax.Array): (B, NH, DH, 1)
-        m_state (jax.Array): (B, NH, 1, 1)
-        q (jax.Array): (B, NH, 1, DH)
-        k (jax.Array): (B, NH, 1, DH)
-        v (jax.Array): (B, NH, 1, DH)
+        c_state: (B, NH, DH, DH)
+        n_state: (B, NH, DH, 1)
+        m_state: (B, NH, 1, 1)
+        q: (B, NH, 1, DH)
+        k: (B, NH, 1, DH)
+        v: (B, NH, 1, DH)
         igate_preact (jax.Array): (B, NH, 1, 1)
         fgate_preact (jax.Array): (B, NH, 1, 1)
+        eps: Epsilon value. Defaults to 1e-6.
 
     Returns:
         tuple[jax.Array, tuple[jax.Array, jax.Array]]:
-            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new
-            [B, NH, 1, 1]))
+            (hidden_state [B, NH, DH],
+             (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1], m_state_new [B, NH, 1, 1]))
     """
-    B, NH, S, DH = q.shape
+    _B, _NH, _S, DH = q.shape
     # projections
     q, k, v = (
         q.squeeze(2)[..., None],

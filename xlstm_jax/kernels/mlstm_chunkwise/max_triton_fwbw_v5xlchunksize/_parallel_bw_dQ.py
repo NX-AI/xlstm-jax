@@ -1,12 +1,12 @@
-from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_parallel_bw_dQ import (
-    _mlstm_chunkwise_parallel_bw_dQ_kernel,
-)
-
 import jax
 import jax.numpy as jnp
 import jax_triton as jt
 import triton
+
+from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
+from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_parallel_bw_dQ import (
+    _mlstm_chunkwise_parallel_bw_dQ_kernel,
+)
 
 from ...kernel_utils import jax2triton_dtype
 from ...stride_utils import get_stride
@@ -57,15 +57,13 @@ def mlstm_chunkwise__parallel_bw_dQ(
         vecI: Tensor containing the input gate pre-activations. Shape (B, NH, NC, L).
         vecA: Tensor containing the summed input and cumulative forget gate pre-activations. Shape (B, NH, NC, L).
         vecB: Tensor containing the cumulative forget gate pre-activations. Shape (B, NH, NC, L).
-        matCstate_all: Tensor containing the C states at the chunk borders. Shape (B, NH, (NC+1) * DHQK, DHHV).
-        vecNstate_all: Tensor containing the N states at the chunk borders. Shape (B, NH, (NC+1) * DHQK).
-        scaMstate_all: Tensor containing the M states at the chunk borders. Shape (B, NH, (NC+1)).
-        matH_out: Tensor containing the output H. Shape (B, NH, S, DHHV).
+        matC_all: Tensor containing the C states at the chunk borders. Shape (B, NH, (NC+1) * DHQK, DHHV).
+        vecN_all: Tensor containing the N states at the chunk borders. Shape (B, NH, (NC+1) * DHQK).
+        scaM_all: Tensor containing the M states at the chunk borders. Shape (B, NH, (NC+1)).
         vecN_out: Tensor containing the normalizer output N. Shape (B, NH, S).
         vecM_out: Tensor containing the max state M. Shape (B, NH, S).
-        matDeltaH_out: Tensor containing the incoming H gradients. Shape (B, NH, S, DHHV).
+        matDeltaH: Tensor containing the incoming H gradients. Shape (B, NH, S, DHHV).
         matDeltaC_states: Tensor containing the incoming C gradients. Shape (B, NH, (NC+1) * DHQK, DHHV).
-        vecDeltaN_states: Tensor containing the incoming N gradients. Shape (B, NH, (NC+1) * DHQK).
         qk_scale: Scale factor for the QK matrix. Defaults to None.
         chunk_size: Chunk size. Defaults to 64.
         siz_b_LQ: Block size for the chunk dimension LQ. Defaults to 32.
@@ -124,7 +122,7 @@ def mlstm_chunkwise__parallel_bw_dQ(
         vecM_out,
         matDeltaH,
         matDeltaC_states,
-        out_shape=(matDeltaQ),
+        out_shape=matDeltaQ,
         qk_scale=qk_scale,
         str_matQK_B_NH=get_stride(matQ, axis=1),
         str_matQK_S=get_stride(matQ, axis=2),

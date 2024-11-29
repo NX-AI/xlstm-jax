@@ -128,7 +128,7 @@ class SubModelConfig:
             if isinstance(v, ConfigDict) or hasattr(v, "to_dict"):
                 d[k] = v.to_dict()
             elif isinstance(v, (tuple, list)):
-                d[k] = tuple([x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v])
+                d[k] = tuple(x.to_dict() if isinstance(x, ConfigDict) or hasattr(v, "to_dict") else x for x in v)
             elif isinstance(v, (int, float, str, bool)):
                 d[k] = v
             else:

@@ -223,7 +223,7 @@ LARGE_MODEL_CONFIGS = [
 
 def _create_mesh(config: xLSTMLMModelConfig, model_axis_size: int = 1):
     """Create a mesh with the given model axis size."""
-    device_array = np.array(jax.devices()).reshape(-1, 1, 1, model_axis_size)
+    device_array = np.array(jax.devices()).reshape((-1, 1, 1, model_axis_size))
     return Mesh(
         device_array,
         (
@@ -267,7 +267,7 @@ def test_simple_tensor_parallel(config: xLSTMLMModelConfig, gradient_accumulate_
         metrics,
         batch,
     )
-    assert all([m.sharding.spec == P() for m in jax.tree.leaves(metrics)]), (
+    assert all(m.sharding.spec == P() for m in jax.tree.leaves(metrics)), (
         "Metrics should be replicated over axes, but found different sharding: "
         f"{[m.sharding for m in jax.tree.leaves(metrics)]}"
     )

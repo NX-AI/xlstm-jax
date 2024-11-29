@@ -5,7 +5,7 @@ import jax.numpy as jnp
 def bias_linspace_init(start: float, end: float) -> callable:
     """Linearly spaced bias init across dimensions."""
 
-    def init_fn(key, shape, dtype=jnp.float32):
+    def init_fn(key, shape, dtype=jnp.float32):  # pylint: disable=unused-argument
         assert len(shape) == 1, "Linspace init only supports 1D tensors."
         n_dims = shape[0]
         init_vals = jnp.linspace(start, end, num=n_dims, dtype=dtype)

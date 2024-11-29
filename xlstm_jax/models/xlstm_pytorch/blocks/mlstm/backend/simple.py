@@ -15,7 +15,6 @@ def parallel_stabilized_simple(
     lower_triangular_matrix: torch.Tensor = None,
     stabilize_rowwise: bool = True,
     eps: float = 1e-6,
-    **kwargs,
 ) -> torch.Tensor:
     """
     This is the mLSTM cell in parallel form.
@@ -32,6 +31,7 @@ def parallel_stabilized_simple(
         lower_triangular_matrix (torch.Tensor, optional): (S,S). Defaults to None.
         stabilize_rowwise (bool, optional): Wether to stabilize the combination matrix C rowwise (take maximum per row).
             Alternative: Subtract the maximum over all rows. Defaults to True.
+        eps: Epsilon value. Defaults to 1e-6.
 
     Returns:
         torch.Tensor: (B, NH, S, DH), h_tilde_state
@@ -99,7 +99,7 @@ def parallel_stabilized_simple(
 class mLSTMBackendTorchConfig:
     context_length: int = -1
 
-    def assign_model_config_params(self, model_config, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         self.context_length = model_config.context_length
 
 
@@ -131,7 +131,6 @@ def recurrent_step_stabilized_simple(
     igate_preact: torch.Tensor,
     fgate_preact: torch.Tensor,
     eps: float = 1e-6,
-    **kwargs,
 ) -> tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
     """
     This is a single step of the mLSTM operation in recurrent form.
@@ -145,13 +144,14 @@ def recurrent_step_stabilized_simple(
         v (torch.Tensor): (B, NH, 1, DH)
         igate_preact (torch.Tensor): (B, NH, 1, 1)
         fgate_preact (torch.Tensor): (B, NH, 1, 1)
+        eps: Epsilon value. Defaults to 1e-6.
 
     Returns:
         tuple[torch.Tensor, tuple[torch.Tensor, torch.Tensor]]:
-            (hidden_state [B, NH, DH], (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1]], m_state_new
-            [B, NH, 1, 1]))
+            (hidden_state [B, NH, DH],
+             (c_state_new [B, NH, DH, DH], n_state_new [B, NH, DH, 1], m_state_new [B, NH, 1, 1]))
     """
-    B, NH, S, DH = q.shape
+    _B, _NH, _S, DH = q.shape
     # projections
     q, k, v = q.squeeze_(2).unsqueeze(-1), k.squeeze_(2).unsqueeze(-1), v.squeeze_(2).unsqueeze(-1)  # (B, NH, DH, 1)
 

@@ -32,8 +32,7 @@ class LayerNorm(nn.Module):
             return None
         if self.residual_weight:
             return 1.0 + self.weight
-        else:
-            return self.weight
+        return self.weight
 
     def forward(self, input: torch.Tensor) -> torch.Tensor:
         return F.layer_norm(

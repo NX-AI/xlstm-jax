@@ -49,12 +49,9 @@ def mlstm_chunkwise_fw(
         matV: Tensor containing the values. Shape (B, NH, S, DHV).
         vecI: Tensor containing the input gate. Shape (B, NH, S).
         vecF: Tensor containing the forget gate. Shape (B, NH, S).
-        matC_initial: Initial state of the C matrix. Shape (B, NH, DHQK, DHV).
-            Defaults to None.
-        vecN_initial: Initial state of the N vector. Shape (B, NH, DHQK).
-            Defaults to None.
-        scaM_initial: Initial state of the M scalar. Shape (B, NH).
-            Defaults to None.
+        matC_initial: Initial state of the C matrix. Shape (B, NH, DHQK, DHV). Defaults to None.
+        vecN_initial: Initial state of the N vector. Shape (B, NH, DHQK). Defaults to None.
+        scaM_initial: Initial state of the M scalar. Shape (B, NH). Defaults to None.
         qk_scale: Scaling factor for the QK matrix. Defaults to None and will be inferred.
         return_last_states: Whether to return the last states. Defaults to False.
         return_all_states: Whether to return all states. Defaults to False.
@@ -68,6 +65,7 @@ def mlstm_chunkwise_fw(
         num_warps_inter: Number of warps for the inter chunk kernel. Defaults to None.
         num_stages_intra: Number of stages for the intra chunk kernel. Defaults to None.
         num_stages_inter: Number of stages for the inter chunk kernel. Defaults to None.
+        output_dtype: Data type for the output. Defaults to jnp.float32.
         eps: Small value to avoid division by zero. Defaults to 1e-6.
 
     Returns:
@@ -76,7 +74,7 @@ def mlstm_chunkwise_fw(
         vecN_states, scaMinter_states) and optional all states (matC_states, vecN_states,
         scaMinter_states).
     """
-    B, NH, S, DHQK = matQ.shape
+    _B, _NH, S, DHQK = matQ.shape
 
     if chunk_size_inter is None:
         chunk_size_inter = min(128, S)

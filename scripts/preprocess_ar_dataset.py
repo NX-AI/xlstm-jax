@@ -5,9 +5,6 @@ import os
 import sys
 from pathlib import Path
 
-os.environ["JAX_PLATFORMS"] = "cpu"
-# flake8: noqa E402
-
 import numpy as np
 import tqdm
 from array_record.python.array_record_module import ArrayRecordWriter
@@ -17,6 +14,9 @@ from xlstm_jax.dataset.grain_transforms import ParseTokenizedArrayRecords
 from xlstm_jax.dataset.input_pipeline_interface import create_data_iterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
+
+os.environ["JAX_PLATFORMS"] = "cpu"
+
 
 LOGGER = logging.getLogger(__name__)
 

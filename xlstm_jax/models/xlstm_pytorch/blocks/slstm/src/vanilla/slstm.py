@@ -14,7 +14,7 @@ def slstm_forward_pointwise(
 ]:
     _ = constants
     raw = Wx + Ry + b
-    y, c, n, m = torch.unbind(states.view(4, states.shape[1], -1), dim=0)
+    _y, c, n, m = torch.unbind(states.view(4, states.shape[1], -1), dim=0)
     # raw = raw.view(-1, 4, -1)
     iraw, fraw, zraw, oraw = torch.unbind(raw.view(raw.shape[0], 4, -1), dim=1)
     # with torch.no_grad():  # THE difference to maxg aka max_gradient (here max / max_static)

@@ -1,12 +1,12 @@
-from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_recurrent_bw import (
-    _mlstm_chunkwise__recurrent_bw_dC_kernel,
-)
-
 import jax
 import jax.numpy as jnp
 import jax_triton as jt
 import triton
+
+from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
+from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v5xlchunksize._triton_recurrent_bw import (
+    _mlstm_chunkwise__recurrent_bw_dC_kernel,
+)
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride
@@ -35,7 +35,7 @@ def mlstm_chunkwise__recurrent_bw_dC(
 
     Args:
         matQ: Tensor containing the query vectors. Shape (B, NH, S, DHQK).
-        vecF: Tensor containing theforget gate pre-activations. Shape (B, NH, NC * L) = (B, NH, S).
+        vecF: Tensor containing the forget gate pre-activations. Shape (B, NH, NC * L) = (B, NH, S).
         scaM_inter: States of the M scalar. Shape (B, NH, NC+1).
         vecM_combine: Combined M states. Shape (B, NH, S).
         matDeltaH: Tensor containing the H gradients. Shape (B, NH, S, DHHV).
@@ -99,7 +99,7 @@ def mlstm_chunkwise__recurrent_bw_dC(
         vecN_out,
         matDeltaC_last,
         matDeltaC_states,
-        out_shape=(matDeltaC_states),
+        out_shape=matDeltaC_states,
         qk_scale=qk_scale,
         str_matQ_B_NH=get_stride(matQ, axis=1),
         str_matQ_S=get_stride(matQ, axis=2),

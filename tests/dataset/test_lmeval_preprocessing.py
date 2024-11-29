@@ -20,19 +20,19 @@ def test_lmeval_preprocessing():
 
     llr = HFTokenizeLogLikelihoodRolling(tokenizer_path="gpt2", max_length=max_length)
 
-    inst1 = Instance(request_type="loglikelihood_rolling", doc={}, idx=0, arguments=("This is some exemplary text."))
+    inst1 = Instance(request_type="loglikelihood_rolling", doc={}, idx=0, arguments=("This is some exemplary text.",))
     inst2 = Instance(
         request_type="loglikelihood_rolling",
         doc={},
         idx=1,
-        arguments=("This is actually a sequence beyond the maximum sequence length."),
+        arguments=("This is actually a sequence beyond the maximum sequence length.",),
     )
-    inst3 = Instance(request_type="loglikelihood_rolling", doc={}, idx=2, arguments=("This is some exemplary text."))
+    inst3 = Instance(request_type="loglikelihood_rolling", doc={}, idx=2, arguments=("This is some exemplary text.",))
     inst4 = Instance(
         request_type="loglikelihood_rolling",
         doc={},
         idx=1,
-        arguments=("This is actually a sequence beyond the maximum sequence length at the right."),
+        arguments=("This is actually a sequence beyond the maximum sequence length at the right.",),
     )
 
     tok_seq = llr.map([inst1, inst2, inst3, inst4])
@@ -118,7 +118,7 @@ def test_lmeval_iterator(dataloading_host_count: int):
     # adding text with % 5 and len=12 are chosen to fulfill this purpose, but there is room for improvement to
     # specifically test all possibilities
     dataset = [
-        Instance(request_type="loglikelihood_rolling", doc={}, idx=0, arguments=("This is some exemplary text.")),
+        Instance(request_type="loglikelihood_rolling", doc={}, idx=0, arguments=("This is some exemplary text.",)),
     ] + [
         Instance(
             request_type="loglikelihood_rolling",
@@ -126,7 +126,7 @@ def test_lmeval_iterator(dataloading_host_count: int):
             idx=0,
             arguments=(
                 "This is some exemplary text. This is longer to test padding."
-                + "Really a lot more text repeated" * (sample_len % 5)
+                + "Really a lot more text repeated" * (sample_len % 5),
             ),
         )
         for sample_len in range(12)
@@ -166,7 +166,7 @@ def test_lmeval_iterator(dataloading_host_count: int):
                 tokenizer_path="gpt2",
                 padding_multiple=4,
             )
-            all_batches[host_index] = [batch for batch in pipeline]
+            all_batches[host_index] = list(pipeline)
 
         all_batches = jax.device_get(all_batches)
         all_document_idx = np.concatenate(

@@ -72,7 +72,8 @@ class CompleteLLMIndexedBatch(grain.MapTransform):
     ...      "_document_borders": np.array([[False, False]])})
     """
 
-    def map(self, item: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    @staticmethod
+    def map(item: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         """
         Converts an incomplete dict to a dictionary with all components for an LLMIndexedBatch
         """
@@ -115,10 +116,10 @@ def token_length(item: dict[str, np.ndarray]) -> int:
     Get the token length of a data item for sorting (grouping) the dataset.
 
     Args:
-        item: A dataset item that contains an inputs element.
+        item: A dataset item that contains an `inputs` element.
 
     Returns:
-        Length of the inputs element.
+        Length of the `inputs` element.
 
     >>> token_length({"inputs": np.array([[1, 2, 3]])})
     3
@@ -157,10 +158,9 @@ class PadBatchDataset(grain.MapDataset):
         """
         if idx < len(self.dataset):
             return self.dataset[idx]
-        elif idx < ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of:
+        if idx < ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of:
             return self.pad_elem
-        else:
-            raise IndexError
+        raise IndexError
 
     def __len__(self):
         return ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of
@@ -194,13 +194,11 @@ def _pad_batch_multiple(
     if batch[0].ndim == 0:
         if batch_size_pad is not None:
             return np.pad(np.stack(batch, axis=0), ((0, batch_size_pad - len(batch)),), constant_values=pad_value)
-        else:
-            return np.stack(batch, axis=0)
+        return np.stack(batch, axis=0)
     if axis >= batch[0].ndim:
         if batch_size_pad is not None:
             return np.pad(np.concatenate(batch, axis=0), ((0, batch_size_pad - len(batch)),), constant_values=pad_value)
-        else:
-            return np.concatenate(batch, axis=0)
+        return np.concatenate(batch, axis=0)
 
     max_len = max(item.shape[axis] for item in batch)
     pad_len = ((max_len - 1) // multiple_of + 1) * multiple_of
@@ -226,14 +224,16 @@ def _pad_batch_multiple(
 
 class PadSequenceInBatchDataset(grain.MapDataset):
     """
-    Creates a dataset that has only full batches by adding padding elements.
-    This pads single elements (no batches yet). That enables having distributed
-    batches over more devices.
+    Creates a dataset that has only full batches by padding elements.
+
+    This pads single elements (no batches) enabling having distributed batches over more devices.
     Assumes a dataset that consists of a flat dictionary of arrays.
 
     Args:
         dataset: The existing dataset, items are assumed to be dicts of array.
-        split_num: Number of sub-batches
+        batch_size: The batch size to pad towards.
+        multiple_of: A number that the padded size should be a multiple of.
+        pad_value:  Value to pad with.
 
     >>> from xlstm_jax.utils.pytree_diff import pytree_diff
     >>> pytree_diff(list(PadSequenceInBatchDataset(grain.MapDataset.source(
@@ -257,7 +257,7 @@ class PadSequenceInBatchDataset(grain.MapDataset):
 
     def __getitem__(self, idx: int) -> Any:
         """
-        Currently this actually creates a fully batch and returns the single element later on.
+        Currently this actually creates a full batch and returns the single element later on.
 
         Args:
             idx: Item index
@@ -424,6 +424,19 @@ def lmeval_preprocessing_pipeline(
             shard size. In JAX, this is equivalent to :func:`jax.process_count()`.
         global_mesh: The global mesh to shard the data over.
         dataset: The dataset to load. Should provide a `__getitem__` method to access elements.
+        global_batch_size: The global batch size.
+        tokenizer_path: Path to the tokenizer.
+        hf_access_token: The access token for HuggingFace.
+        tokenizer_cache_dir: The cache directory for the tokenizer.
+        eos_token_id: The token ID to use for the end-of-sequence token. If `tokenizer_path` is
+            provided, the tokenizer's EOS token ID is used.
+        bos_token_id: The token ID to use for the beginning-of-sequence token. If `tokenizer_path` is
+            provided, the tokenizer's BOS token ID is used.
+        worker_count: The number of workers to use. In grain, a single worker is usually
+            sufficient, as the data loading is done in parallel across hosts.
+        worker_buffer_size: The buffer size for the workers.
+        padding_multiple: Pad to size being a multiple of.
+        use_thread_prefetch: Use thread prefetching instead of multiprocessing.
 
     Returns:
         MultiHostDataLoadIterator for the lmeval dataset.
@@ -464,7 +477,7 @@ def lmeval_preprocessing_pipeline(
 
     grain_dataset = PadBatchDataset(grain_dataset, multiple_of=global_batch_size, pad_elem=empty_llm_indexed_sample())
 
-    # Sort dataset for token sequence length, enables minimal padding, make it longest first
+    # Sort dataset wrt. token sequence length (longest sequence first), enables minimal padding
     grain_dataset = SortedDataset(grain_dataset, key=token_length, reverse=True)
 
     grain_dataset = PadSequenceInBatchDataset(

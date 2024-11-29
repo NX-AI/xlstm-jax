@@ -50,9 +50,9 @@ class ToyCallback(Callback):
             jax.process_index() == 0
         ), "Validation epoch start should only be called in the main process."
 
-    def on_filtered_validation_epoch_end(self, val_metrics: Metrics, epoch_idx: int, step_idx: int):
+    def on_filtered_validation_epoch_end(self, eval_metrics: Metrics, epoch_idx: int, step_idx: int):
         """Test function for validation epoch end."""
-        del val_metrics, step_idx
+        del eval_metrics, step_idx
         assert self._every_n_epochs > 0, "Validation epoch end should not be called if every_n_epochs is not active."
         assert (
             epoch_idx % self._every_n_epochs == 0

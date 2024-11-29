@@ -97,7 +97,7 @@ class TrainerConfig(ConfigDict):
 class TrainerModule:
     """
     A basic Trainer module summarizing most common training functionalities like logging, model initialization, training
-    loop, etc..
+    loop, etc.
 
     Args:
         trainer_config: A dictionary containing the trainer configuration.
@@ -122,23 +122,33 @@ class TrainerModule:
         self.model_config = model_config
         self.optimizer_config = optimizer_config
         self.exmp_batch = batch
+        self._train_metric_shapes = None
+        self._eval_metric_shapes = None
         # Init logger first, if a LoggerConfig was supplied
         if self.trainer_config.logger is not None:
             self.init_logger(self.trainer_config.logger)
         # Setup parallel mesh
+        self.mesh = mesh
         self.init_mesh(model_config, mesh)
+        # Create batch specs for sharding.
+        self.batch_partition_specs = P(self.mesh.axis_names)
         # Create empty model. Note: no parameters yet
         self.build_model(model_config)
         # Init trainer parts
         self.init_optimizer(optimizer_config)
+        self.state = None
         self.init_model(batch)
         self.create_jitted_functions()
+        # Init callbacks
+        self.callbacks = None
         self.init_callbacks(self.trainer_config.callbacks)
         # Set first step to True to log compilation time of the first step.
         self.first_step = True
         self.global_step = 0
+        self.dataset = None
 
-    def batch_to_input(self, batch: Batch) -> Any:
+    @staticmethod
+    def batch_to_input(batch: Batch) -> Any:
         """
         Convert a batch to the input format expected by the model.
 
@@ -162,17 +172,13 @@ class TrainerModule:
         """
         if mesh is None:
             self.mesh = initialize_mesh(parallel_config=model_config.parallel)
-        else:
-            self.mesh = mesh
 
         # Save axis names to trainer for easier usage.
-        self.data_axis_name = model_config.parallel.data_axis_name
-        self.fsdp_axis_name = model_config.parallel.fsdp_axis_name
-        self.pipeline_axis_name = model_config.parallel.pipeline_axis_name
-        self.model_axis_name = model_config.parallel.model_axis_name
+        self.data_axis_name = self.mesh.axis_names[0]
+        self.fsdp_axis_name = self.mesh.axis_names[1]
+        self.pipeline_axis_name = self.mesh.axis_names[2]
+        self.model_axis_name = self.mesh.axis_names[3]
 
-        # Create batch specs for sharding.
-        self.batch_partition_specs = P(self.mesh.axis_names)
         if jax.process_index() == 0:
             LOGGER.info(f"Initialized mesh with {self.mesh}.")
 
@@ -192,7 +198,8 @@ class TrainerModule:
         Initialize a logger and creates a logging directory.
 
         Args:
-            logger_params: A dictionary containing the specification of the logger.
+            logger_config:
+
         """
         self.logger: Logger = Logger(logger_config, metric_postprocess_fn=self.get_metric_postprocess_fn())
         self.logger.log_config(
@@ -308,15 +315,15 @@ class TrainerModule:
         Returns:
             A dictionary of metrics with the same shape as the train metrics.
         """
-        if not hasattr(self, "train_metric_shapes"):
-            self.train_metric_shapes = None
-        if self.train_metric_shapes is None:
+        if not hasattr(self, "_train_metric_shapes"):
+            self._train_metric_shapes = None
+        if self._train_metric_shapes is None:
             if batch is None:
                 batch = self.exmp_batch
-            _, self.train_metric_shapes = jax.eval_shape(self.train_step, self.state, batch, None)
-            LOGGER.info(f"Initialized train metrics with keys {self.train_metric_shapes.keys()}.")
+            _, self._train_metric_shapes = jax.eval_shape(self.train_step, self.state, batch, None)
+            LOGGER.info(f"Initialized train metrics with keys {self._train_metric_shapes.keys()}.")
         metric_sharding = jax.sharding.NamedSharding(self.mesh, P())
-        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self.train_metric_shapes)
+        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self._train_metric_shapes)
 
     def init_eval_metrics(self, batch: Batch | None = None) -> FrozenDict:
         """
@@ -330,15 +337,13 @@ class TrainerModule:
         Returns:
             A dictionary of metrics with the same shape as the eval metrics.
         """
-        if not hasattr(self, "eval_metric_shapes"):
-            self.eval_metric_shapes = None
-        if self.eval_metric_shapes is None:
+        if self._eval_metric_shapes is None:
             if batch is None:
                 batch = self.exmp_batch
-            self.eval_metric_shapes = jax.eval_shape(self.eval_step, self.state, batch, None)
-            LOGGER.info(f"Initialized eval metrics with keys {self.eval_metric_shapes.keys()}.")
+            self._eval_metric_shapes = jax.eval_shape(self.eval_step, self.state, batch, None)
+            LOGGER.info(f"Initialized eval metrics with keys {self._eval_metric_shapes.keys()}.")
         metric_sharding = jax.sharding.NamedSharding(self.mesh, P())
-        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self.eval_metric_shapes)
+        return jax.tree.map(lambda x: jnp.zeros_like(x, device=metric_sharding), self._eval_metric_shapes)
 
     def set_dataset(self, dataset: Any):
         """
@@ -351,7 +356,8 @@ class TrainerModule:
             callback.set_dataset(dataset)
         self.dataset = dataset
 
-    def get_model_rng(self, rng: jax.Array) -> dict[str, random.PRNGKey]:
+    @staticmethod
+    def get_model_rng(rng: jax.Array) -> dict[str, random.PRNGKey]:
         """
         Return a dictionary of PRNGKey for init and tabulate.
 
@@ -690,7 +696,7 @@ class TrainerModule:
                     "Steps per epoch could not be inferred by the training loader. Epoch index will be inferred by "
                     "breaks of iterator, but likely incorrect if you loaded a pre-trained model."
                 )
-                epoch_idx = epoch_idx + 1
+                epoch_idx += 1
             self.on_training_epoch_start(epoch_idx)
             self.logger.start_epoch(epoch=epoch_idx, step=self.global_step, mode="train")
 
@@ -924,8 +930,7 @@ class TrainerModule:
         """
         if self.trainer_config.enable_progress_bar and jax.process_index() == 0:
             return tqdm(iterator, **kwargs)
-        else:
-            return iterator
+        return iterator
 
     def log_training_info(
         self,
@@ -1018,6 +1023,7 @@ class TrainerModule:
         Method called at the end of each training epoch. Can be used for additional logging or similar.
 
         Args:
+            train_metrics: A dictionary with training metrics. Newly added metrics will be logged as well.
             epoch_idx: Index of the training epoch that has finished.
         """
         LOGGER.info(f"Finished training epoch {epoch_idx}")
@@ -1041,8 +1047,7 @@ class TrainerModule:
         Method called at the end of each validation epoch. Can be used for additional logging and evaluation.
 
         Args:
-            eval_metrics: A dictionary of the validation metrics. New metrics added to this dictionary will be logged as
-                well.
+            eval_metrics: A dictionary with validation metrics. Newly added metrics will be logged as well.
             epoch_idx: Index of the training epoch at which validation was performed.
             step_idx: Index of the training step at which validation was performed.
         """
@@ -1066,8 +1071,8 @@ class TrainerModule:
         Method called at the end of each test epoch. Can be used for additional logging and evaluation.
 
         Args:
+            test_metrics: A dictionary with test metrics. Newly added metrics will be logged as well.
             epoch_idx: Index of the training epoch at which testing was performed.
-            test_metrics: A dictionary of the test metrics. New metrics added to this dictionary will be logged as well.
         """
         LOGGER.info(f"Finished test epoch {epoch_idx}")
         for callback in self.callbacks:
@@ -1094,8 +1099,7 @@ class TrainerModule:
         if state_dict is None:
             if raise_if_not_found:
                 raise ValueError("No model checkpoint callback found in callbacks.")
-            else:
-                LOGGER.warning("No model checkpoint callback found in callbacks.")
+            LOGGER.warning("No model checkpoint callback found in callbacks.")
         else:
             self.restore_model(state_dict)
 
@@ -1142,7 +1146,7 @@ class TrainerModule:
             state_dict: State dictionary to restore from. Must contain the key "params" with the model parameters.
                 Optional keys that overwrite the trainer state are "step", "opt_state", "mutable_variables", "rng".
         """
-        LOGGER.info("Restoring trainer state with keys " + str(state_dict.keys()))
+        LOGGER.info(f"Restoring trainer state with keys {state_dict.keys()}")
         assert "params" in state_dict, "State dictionary must contain the key 'params'."
         state_dict = freeze(state_dict)
 
@@ -1162,8 +1166,8 @@ class TrainerModule:
         )
         self.global_step = jax.device_get(self.state.step).item()
 
+    @staticmethod
     def restore_data_loaders(
-        self,
         state_dict: dict[str, Any],
         train_loader: DataIterator | dict[str, DataIterator] | None = None,
         val_loader: DataIterator | dict[str, DataIterator] | None = None,
@@ -1190,12 +1194,11 @@ class TrainerModule:
                         "Skipping."
                     )
                     continue
-                elif not hasattr(loader, "set_state"):
+                if not hasattr(loader, "set_state"):
                     LOGGER.warning(f"Data loader {key} had saved state dict, but no set_state method. Skipping.")
                     continue
-                else:
-                    LOGGER.info(f"Restoring data loader {key}")
-                    loader.set_state(state_dict[key])
+                LOGGER.info(f"Restoring data loader {key}")
+                loader.set_state(state_dict[key])
 
     def load_pretrained_model(
         self,
@@ -1266,7 +1269,7 @@ class TrainerModule:
         with open(metadata_file, "rb") as f:
             config = ConfigDict(json.load(f))
 
-        # Adjust log dir to where its loaded from.
+        # Adjust log dir to where it's loaded from.
         adjusted_checkpoint = checkpoint.split("/")
         if adjusted_checkpoint[-1] == "":
             adjusted_checkpoint = adjusted_checkpoint[:-1]

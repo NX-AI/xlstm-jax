@@ -122,7 +122,7 @@ def make_grain_llm_dataset(
         shift: Whether to shift the input data to create the target data.
         shift_target: Whether to shift the targets left (True) or inputs right (False).
         eod_token_id: The token ID to use for the end-of-document token. Used if shifting the
-            the inputs right and adding an end-of-document token to the sequence. If not
+            inputs right and adding an end-of-document token to the sequence. If not
             provided, the default value of 0 will be used. Recommended to set this to a value
             explicitly with the tokenizer's EOD token ID.
         apply_padding:  Pad sequence to the maximum target length.
@@ -233,10 +233,10 @@ def make_grain_multihost_iterator(
             the iterator will start from the beginning of the dataset after each epoch. If set
             to `False`, the iterator will continue from where it left off in the dataset. Note
             that resetting the iterator can be expensive in a multi-host setup and can fail if
-            the multi-processing pool could not be set up.
-        use_thread_prefetch: Whether to use thread prefetching instead of multi-processing.
+            the multiprocessing pool could not be set up.
+        use_thread_prefetch: Whether to use thread prefetching instead of multiprocessing.
         batch_rampup_factors: A dictionary of boundaries and scales for the batch
-            rampup schedule. If provided, the batch size will be ramped up according to the
+            ramp-up schedule. If provided, the batch size will be ramped up according to the
             schedule. The boundaries are the steps at which the batch size will be increased,
             and the scales are the factors by which the batch size will be scaled. Note that
             the factors are not accumulated, but applied to the initial batch size. If not provided,
@@ -367,7 +367,7 @@ def make_grain_llm_iterator(
             bins to reduce padding.
         shift: Whether to shift the input data to create the target data.
         shift_target: Whether to shift the targets left (True) or inputs right (False).
-        eod_token_id: The token ID to use for the end-of-document token. Used if shifting the
+        eod_token_id: The token ID to use for the end-of-document token. Used if shifting
             the inputs right and adding an end-of-document token to the sequence. If not
             provided, the default value of 0 will be used. Recommended to set this to a value
             explicitly with the tokenizer's EOD token ID.
@@ -384,8 +384,8 @@ def make_grain_llm_iterator(
             the iterator will start from the beginning of the dataset after each epoch. If set
             to `False`, the iterator will continue from where it left off in the dataset. Note
             that resetting the iterator can be expensive in a multi-host setup and can fail if
-            the multi-processing pool could not be set up.
-        use_thread_prefetch: Whether to use thread prefetching instead of multi-processing.
+            the multiprocessing pool could not be set up.
+        use_thread_prefetch: Whether to use thread prefetching instead of multiprocessing.
         batch_rampup_factors: A dictionary of boundaries and scales for the batch
             rampup schedule. If provided, the batch size will be ramped up according to the
             schedule. The boundaries are the steps at which the batch size will be increased,

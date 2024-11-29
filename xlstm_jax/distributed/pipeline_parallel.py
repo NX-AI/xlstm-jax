@@ -48,7 +48,7 @@ def execute_pipeline_step(
         model_axis_name,
         perm=[(i, (i + 1) % num_stages) for i in range(num_stages)],
     )
-    return (state, output)
+    return state, output
 
 
 @jax.named_scope("pipeline")  # Naming scope for profiling.

@@ -35,7 +35,7 @@ class mLSTMBackendTritonConfig:
     stabilize_correctly: bool = True
     """Whether to stabilize correctly, i.e. scale norm_val with the maximizer state - see above"""
 
-    def assign_model_config_params(self, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         pass
 
 
@@ -98,7 +98,7 @@ class mLSTMBackendTriton(mLSTMBackend):
                 eps=self.config.eps,
                 stabilize_correctly=self.config.stabilize_correctly,
             )
-        elif self.config.backend_name == "max_triton":
+        if self.config.backend_name == "max_triton":
             return mlstm_chunkwise_max_triton(
                 q,
                 k,
@@ -113,7 +113,7 @@ class mLSTMBackendTriton(mLSTMBackend):
                 autocast_kernel_dtype=autocast_kernel_dtype,
                 reduce_slicing=self.config.reduce_slicing,
             )
-        elif self.config.backend_name == "max_triton_noslice":
+        if self.config.backend_name == "max_triton_noslice":
             return mlstm_chunkwise_max_triton_noslice(
                 q,
                 k,
@@ -127,7 +127,7 @@ class mLSTMBackendTriton(mLSTMBackend):
                 chunk_size=self.config.chunk_size,
                 autocast_kernel_dtype=autocast_kernel_dtype,
             )
-        elif self.config.backend_name == "max_triton_xlchunksize":
+        if self.config.backend_name == "max_triton_xlchunksize":
             return mlstm_chunkwise_max_triton_xlchunksize(
                 q,
                 k,
@@ -141,8 +141,7 @@ class mLSTMBackendTriton(mLSTMBackend):
                 chunk_size=self.config.chunk_size,
                 autocast_kernel_dtype=autocast_kernel_dtype,
             )
-        else:
-            raise ValueError(f"Bad kernels backend name {self.config.backend_name}")
+        raise ValueError(f"Bad kernels backend name {self.config.backend_name}")
 
     @property
     def can_vmap_over_heads(self) -> bool:

@@ -93,8 +93,8 @@ class LLMTrainer(TrainerModule):
         targets_mask = batch.targets_segmentation != 0
         targets_mask = split_array_over_mesh(targets_mask, axis_name=self.pipeline_axis_name, split_axis=1)
         targets_mask = split_array_over_mesh(targets_mask, axis_name=self.model_axis_name, split_axis=1)
-        loss = loss * targets_mask
-        correct_pred = correct_pred * targets_mask
+        loss *= targets_mask
+        correct_pred *= targets_mask
         num_targets = targets_mask.sum()
         avg_loss = jnp.where(num_targets > 0, loss.sum() / num_targets, 0.0)
         # Collect metrics and return loss.

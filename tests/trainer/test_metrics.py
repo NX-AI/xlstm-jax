@@ -81,7 +81,7 @@ def test_update_and_get_metrics_multi_metric(default_log_modes: list[str]):
         }
         return update_metrics(global_metrics, step_metrics, default_log_modes=default_log_modes)
 
-    global_metrics = _update_fn1(dict())
+    global_metrics = _update_fn1({})
     global_metrics = _update_fn2(global_metrics)
     _, host_metrics = get_metrics(global_metrics)
 

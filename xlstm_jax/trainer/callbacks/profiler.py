@@ -26,7 +26,7 @@ class JaxProfilerConfig(CallbackConfig):
             is only done once at the beginning.
         profile_first_step: The first step to start profiling.
         profile_n_steps: Number of steps to profile.
-        profile_log_dir: Directory to save the profiler logs. By default set to
+        profile_log_dir: Directory to save the profiler logs. By default` set to
             "tensorboard", where also the TensorBoard logs are saved.
     """
 
@@ -100,7 +100,7 @@ class JaxProfiler(Callback):
         """
         del step_metrics, epoch_idx
         if self.profiler_active:
-            if step_idx >= self.profile_start_step + self.profile_n_steps:
+            if step_idx >= self.profile_first_step + self.profile_n_steps:
                 self.stop_trace()
         else:
             if (step_idx == self.profile_first_step) or (
@@ -153,7 +153,7 @@ class JaxProfiler(Callback):
             LOGGER.info(f"Starting trace at step {step_idx}.")
             jax.profiler.start_trace(self.log_path)
             self.profiler_active = True
-            self.profile_start_step = step_idx
+            self.profile_first_step = step_idx
         else:
             LOGGER.warning(f"Trace already active at step {step_idx}.")
 

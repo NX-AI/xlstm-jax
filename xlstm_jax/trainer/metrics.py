@@ -117,16 +117,15 @@ def aggregate_metrics(aggregated_metrics: HostMetrics, batch_metrics: ImmutableM
 def _empty_val(value: Any) -> Any:
     if isinstance(value, int):
         return 0
-    elif isinstance(value, str):
+    if isinstance(value, str):
         return ""
-    elif isinstance(value, float):
+    if isinstance(value, float):
         return 0.0
-    elif isinstance(value, np.ndarray):
+    if isinstance(value, np.ndarray):
         return np.zeros_like(value)
-    elif isinstance(value, jax.Array):
+    if isinstance(value, jax.Array):
         return jnp.zeros_like(value)
-    else:
-        return value
+    return value
 
 
 def _update_single_metric(
@@ -157,11 +156,11 @@ def _update_single_metric(
     # Update each log mode.
     for log_mode in log_modes:
         mode_dict = metrics_dict[log_mode]
-        if log_mode == "mean" or log_mode == "mean_nopostfix":
+        if "mean" in log_mode:
             # For mean, we store the sum of the values and the count.
             mode_dict["count"] += count
             mode_dict["value"] += value
-        elif log_mode == "single":
+        elif "single" in log_mode:
             # For single, we store the last value.
             mode_dict["count"] = count
             mode_dict["value"] = value
@@ -174,12 +173,6 @@ def _update_single_metric(
             mode_dict["count"] += 1
             mode_dict["value"] += value / count
             mode_dict["value2"] = mode_dict.get("value2", 0.0) + (value / count) ** 2
-        elif log_mode == "single_noreduce":
-            mode_dict["value"] = value
-            mode_dict["count"] = count
-        elif log_mode == "single_noreduce_wcount":
-            mode_dict["value"] = value
-            mode_dict["count"] = count
         else:
             raise ValueError(f"Invalid log mode {log_mode}.")
 

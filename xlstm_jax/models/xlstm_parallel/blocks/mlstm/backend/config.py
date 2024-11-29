@@ -31,7 +31,6 @@ class mLSTMBackend(nn.Module):
         Returns:
             Output tensor of shape (B, NH, S, DH).
         """
-        pass
 
     @property
     def can_vmap_over_heads(self) -> bool:

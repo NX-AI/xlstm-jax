@@ -218,7 +218,7 @@ class ModelCheckpoint(Callback):
             if loader is None:
                 # Test loader might be None.
                 continue
-            elif hasattr(loader, "get_state"):
+            if hasattr(loader, "get_state"):
                 state_dict = loader.get_state()
                 # Save with pickle to support custom objects.
                 dir_path = checkpoint_path / name
@@ -372,7 +372,6 @@ def load_pretrained_model(
     Args:
         checkpoint_path: Path to the checkpoint directory.
         trainer: Trainer object.
-        data_module (optional): Data module object.
         step_idx: Index of the step to load. If -1, loads the latest step by default.
         load_optimizer: If True the optimizer state is loaded from the checkpoint.
         load_best: If True and step_idx is -1, loads the best checkpoint
@@ -392,4 +391,4 @@ def load_pretrained_model(
     state_dict = callback.load_model(step_idx, delete_params_before_loading=delete_params_before_loading)
     data_module_state = callback.load_dataloader(step_idx)
     callback.finalize()
-    return (state_dict, data_module_state, step_idx)
+    return state_dict, data_module_state, step_idx

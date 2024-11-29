@@ -68,7 +68,7 @@ class xLSTMBlock(nn.Module):
             raise ValueError("Either mlstm or slstm must be provided")
         x_norm = xlstm_norm(x)
         x_xlstm = xlstm(x_norm, **kwargs)
-        x = x + x_xlstm
+        x += x_xlstm
 
         if self.config.feedforward is not None:
             ffn_norm = LayerNorm(weight=True, bias=False, dtype=self.config._dtype, name="ffn_norm")

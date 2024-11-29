@@ -180,7 +180,7 @@ def test_xLSTMLMModel(config_torch):
     )
     grads_jax = flatten_dict(grads_jax)
     grads_torch_to_jax = flatten_dict(grads_torch_to_jax)
-    for key in grads_torch_to_jax.keys():
+    for key in grads_torch_to_jax:
         g_torch = grads_torch_to_jax[key]
         g_jax = grads_jax[key]
         np.testing.assert_allclose(g_torch, g_jax, atol=1e-5, rtol=1e-5, err_msg=f"Gradient deviates for key: {key}")
@@ -230,7 +230,7 @@ def test_xLSTMLMModel_initialization(config_torch):
     )
     params_jax = flatten_dict(params_jax)
     params_torch_to_jax = flatten_dict(params_torch_to_jax)
-    for key in params_torch_to_jax.keys():
+    for key in params_torch_to_jax:
         p_torch = params_torch_to_jax[key]
         p_jax = params_jax[key]
         p_torch_mean, p_jax_mean = p_torch.mean(), p_jax.mean()
@@ -279,9 +279,9 @@ def _convert_params_torch_to_jax(
     params_jax: PyTree | None = None,
     config: xLSTMLMModelConfig_torch | None = None,
     is_grad: bool = False,
-):
+) -> object:
     """Convert PyTorch parameters to JAX parameters."""
-    params_jax_new = dict()
+    params_jax_new = {}
     for key, p_torch in params_torch.items():
         param = p_torch.data.numpy()
         if key == "token_embedding.weight":
@@ -295,7 +295,7 @@ def _convert_params_torch_to_jax(
                 param = param.reshape(config.mlstm_block.mlstm.num_heads, -1)
         elif key.endswith(".weight"):
             key = key[: -len(".weight")] + ".kernel"
-            if not any([key.endswith(f".{proj}_proj.kernel") for proj in ["q", "k", "v"]]):
+            if not any(key.endswith(f".{proj}_proj.kernel") for proj in ["q", "k", "v"]):
                 param = np.swapaxes(param, 0, -1)
             else:
                 pass
@@ -311,7 +311,7 @@ def _add_nested_param_to_dict(param_dict: dict[str, Any], key: str, param: Any) 
     if "." in key:
         sub_key, key = key.split(".", 1)
         if sub_key not in param_dict:
-            param_dict[sub_key] = dict()
+            param_dict[sub_key] = {}
         _add_nested_param_to_dict(param_dict[sub_key], key, param)
     else:
         if key in param_dict:

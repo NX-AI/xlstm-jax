@@ -19,7 +19,7 @@ defaults:
 # Device. cpu or gpu
 device: gpu
 device_count: 1   # note: this is only used when using device=cpu and specifies the number of devices
-                  #       that jax simulates on a CPU. Useful for multi-process debugging.
+                  #       that jax simulates on a CPU. Useful for multiprocess debugging.
 n_gpus: 8
 # TODO: having device_count and n_gpus is confusing. We have to decide on a naming scheme that encompasses
 #       both jax-simulated CPU and GPU devices.

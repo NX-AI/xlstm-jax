@@ -16,7 +16,7 @@ def initialize_mesh(
     Args:
         parallel_config: A dictionary containing the parallelization parameters.
         device_array: A numpy array containing the device structure. If None, all global devices are used.
-        init_distributed_on_slurm: Whether to initialize the JAX distributed system, i.e. multi-process training,
+        init_distributed_on_slurm: Whether to initialize the JAX distributed system, i.e. multiprocess training,
             if SLURM environment variables are present. If False, the JAX distributed system is not initialized.
 
     Returns:

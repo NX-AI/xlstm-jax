@@ -165,11 +165,10 @@ def accumulate_gradients(
             num_minibatches=num_minibatches,
             loss_fn=loss_fn,
         )
-    else:
-        return accumulate_gradients_loop(
-            state=state,
-            batch=batch,
-            rng=rng,
-            num_minibatches=num_minibatches,
-            loss_fn=loss_fn,
-        )
+    return accumulate_gradients_loop(
+        state=state,
+        batch=batch,
+        rng=rng,
+        num_minibatches=num_minibatches,
+        loss_fn=loss_fn,
+    )

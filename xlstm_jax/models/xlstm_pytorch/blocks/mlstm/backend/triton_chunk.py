@@ -1,4 +1,4 @@
-#
+# pylint: disable=unused-argument
 # Adapted from flash-linear-attention
 
 import torch
@@ -840,7 +840,7 @@ def mLSTMFunc(chunk_size, save_states: bool = True):
                 return x.flip(dims=(-1,)).cumsum(-1).flip(dims=(-1,))
 
             df = rev_cumsum(df)
-            df = df * torch.nn.functional.sigmoid(-f_orig)
+            df *= torch.nn.functional.sigmoid(-f_orig)
             return (
                 dq.to(q.dtype),
                 dk.to(k.dtype),
@@ -883,5 +883,4 @@ def mlstm_triton(
     )
     if output_final_state:
         return h, (final_C, final_n, final_m)
-    else:
-        return h
+    return h

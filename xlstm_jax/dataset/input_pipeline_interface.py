@@ -67,7 +67,7 @@ def get_process_loading_data(config: DataConfig, mesh: Mesh) -> list[int]:
 def create_data_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
     if isinstance(config, SyntheticDataConfig):
         return SyntheticDataIterator(config, mesh)
-    elif isinstance(config, (HFHubDataConfig, GrainArrayRecordsDataConfig)):
+    if isinstance(config, (HFHubDataConfig, GrainArrayRecordsDataConfig)):
         if not GRAIN_AVAILABLE:  # Was checked before during import, but just in case.
             raise NotImplementedError("Grain is not available, multi-host data loading are disabled. Exiting.")
         process_indices = get_process_loading_data(config, mesh)
@@ -77,8 +77,7 @@ def create_data_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
                 f"Global batch size must be larger than the number of hosts. Hosts not loading data is not supported."
             )
         return make_grain_iterator(config, mesh, process_indices)
-    else:
-        raise NotImplementedError(f"Unknown dataset_type {type(config)}, dataset_type must be synthetic or hf.")
+    raise NotImplementedError(f"Unknown dataset_type {type(config)}, dataset_type must be synthetic or hf.")
 
 
 def create_mixed_data_iterator(

@@ -24,7 +24,6 @@ set_XLA_flags()  # Must be executed before any JAX operation.
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.INFO)
 
-
 MODEL_CONFIGS = {
     "120M": {
         "model_config": lambda parallel, context_length: xLSTMLMModelConfig(
@@ -344,14 +343,8 @@ def main_train(args: argparse.Namespace):
         grain_packing=False,  # by default, we don't use packing for HF datasets preprocessing.
     )
     ar_train_config, ar_eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
-        train_kwargs=dict(
-            grain_packing=True,
-            grain_packing_bin_count=batch_size_per_device * 8,
-        ),
-        eval_kwargs=dict(
-            # Packing is deactivated for eval to make it reproducible across epochs.
-            grain_packing=False,
-        ),
+        train_kwargs={"grain_packing": True, "grain_packing_bin_count": batch_size_per_device * 8},
+        eval_kwargs={"grain_packing": False},  # Packing is deactivated for eval to make it reproducible across epochs
         global_batch_size=batch_size,
         data_path=Path("/nfs-gpu/xlstm/data/array_records/") / dataset_name.replace("/", "_"),
         max_target_length=context_length,
@@ -382,17 +375,9 @@ def main_train(args: argparse.Namespace):
 
     # Optimizer config
     if args.use_ademamix:
-        optimizer_kwargs = dict(
-            name="ademamix",
-            beta2=0.999,
-            beta3=0.9999,
-        )
+        optimizer_kwargs = {"name": "ademamix", "beta2": 0.999, "beta3": 0.9999}
     else:
-        optimizer_kwargs = dict(
-            name="adamw",
-            beta2=0.95,
-            eps=1e-8,
-        )
+        optimizer_kwargs = {"name": "adamw", "beta2": 0.95, "eps": 1e-08}
 
     # Create trainer with sub-configs.
     log_info("Creating trainer.")

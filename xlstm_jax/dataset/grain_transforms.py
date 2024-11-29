@@ -62,7 +62,6 @@ class HFPrefixTokenize(grain.MapTransform):
         eos_token_id: int | None = None,
         max_length: int | None = None,
         max_length_prefix: int | None = None,
-        keep_other_inputs: bool = True,
     ):
         """
         Args:
@@ -70,9 +69,12 @@ class HFPrefixTokenize(grain.MapTransform):
             prefix_tokenizer: HuggingFace prefix tokenizer
             prefix_column_name: Column Name in the dataframe for the prefix
             text_column_name: Column Name in the dataframe for the text
-            add_bos_toke: If to add a bos token.
+            add_bos_token: Whether to add a beginning-of-sequence (BOS) token.
+            add_eos_token: Whether to add an end-of-sequence (EOS) token.
+            bos_token_id: ID of beginning-of-sequence (BOS) token.
+            eos_token_id: ID of end-of-sequence (EOS) token.
             max_length: Maximal total length (context_length)
-            max_length_prefix: Maximal length of the prefix - all prefixes are added+padded such that
+            max_length_prefix: Maximal length of the prefix - all prefixes are added + padded such that
                 the texts start at the same position
         """
         self.tokenizer = tokenizer
@@ -95,7 +97,6 @@ class HFPrefixTokenize(grain.MapTransform):
                 self.tokenizer.bos_token_id if self.tokenizer.bos_token_id is not None else self.tokenizer.eos_token_id
             )
         )
-        self.keep_other_inputs = keep_other_inputs
 
     def map(self, features: dict[str, str]) -> dict[str, np.ndarray]:
         """
@@ -212,7 +213,7 @@ class ParseTokenizedArrayRecords(grain.MapTransform):
         """Map to parse array records.
 
         Args:
-            data: The bytestring-serialized data that has been tokenized, e.g. b'[0, 9392, 1823]'
+            data: The bytestring-serialized data that has been tokenized, e.g. `b'[0, 9392, 1823]'`.
 
         Returns:
             Parsed data, a dictionary mapping the column_name to the deserialized string (text).
@@ -261,15 +262,15 @@ class NormalizeFeatures(grain.MapTransform):
                 "inputs": features[self.column_name].numpy()[0].decode(),
                 "targets": features[self.column_name].numpy()[0].decode(),
             }
-        else:
-            return {"inputs": features[self.column_name].numpy(), "targets": features[self.column_name].numpy()}
+        return {"inputs": features[self.column_name].numpy(), "targets": features[self.column_name].numpy()}
 
 
 @dataclasses.dataclass
 class ReformatPacking(grain.MapTransform):
     """Reformat packing outputs."""
 
-    def map(self, data: tuple[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
+    @staticmethod
+    def map(data: tuple[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
         return {
             "inputs": data[0]["inputs"],
             "targets": data[0]["targets"],
@@ -284,7 +285,8 @@ class ReformatPacking(grain.MapTransform):
 class ReformatLazyPacking(grain.MapTransform):
     """Reformat packing outputs for the lazy API."""
 
-    def map(self, data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+    @staticmethod
+    def map(data: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
         for old_key, new_key in [
             ("inputs_segment_ids", "inputs_segmentation"),
             ("targets_segment_ids", "targets_segmentation"),
@@ -334,7 +336,7 @@ def shift_right(x: np.ndarray, axis: int = 1, padding_value: int = 0, pad_by_fir
         Shifted array.
     """
     if axis < 0:
-        axis = x.ndim + axis
+        axis += x.ndim
     assert axis < x.ndim, f"Axis {axis} is out of bounds for array of shape {x.shape}."
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (1, 0)
@@ -362,7 +364,7 @@ def shift_left(x: np.ndarray, axis: int = 1, padding_value: int = 0) -> np.ndarr
         Shifted array.
     """
     if axis < 0:
-        axis = x.ndim + axis
+        axis += x.ndim
     assert axis < x.ndim, f"Axis {axis} is out of bounds for array of shape {x.shape}."
     pad_widths = [(0, 0)] * len(x.shape)
     pad_widths[axis] = (0, 1)
@@ -465,7 +467,8 @@ class InferSegmentations(grain.MapTransform):
         data["targets_position"] *= out_padding_mask
         return data
 
-    def _get_positions(self, eod_mask: np.ndarray) -> np.ndarray:
+    @staticmethod
+    def _get_positions(eod_mask: np.ndarray) -> np.ndarray:
         """Infer positions from end-of-document mask."""
         seq_len = eod_mask.shape[0]
         # Correcting the positions to start counting from 0 at each new document. Example:
@@ -559,8 +562,7 @@ class HFTokenize(grain.MapTransform):
                 for key, val in tokenized_data.items()
             }
             return tokenized_data_with_eod
-        else:
-            return tokenized_data
+        return tokenized_data
 
 
 @dataclasses.dataclass

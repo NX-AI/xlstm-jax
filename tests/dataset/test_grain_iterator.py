@@ -63,7 +63,7 @@ def test_grain_dataloader_process_split(
             drop_remainder=drop_remainder,
             worker_count=0,
         )
-        all_batches[host_index] = [batch for batch in dataloader]
+        all_batches[host_index] = list(dataloader)
 
     # Check that the data is loaded correctly.
     all_batches = jax.device_get(all_batches)
@@ -157,7 +157,7 @@ def test_grain_dataloader_shuffling_over_epochs(num_elements: int, global_batch_
     it_len = dataloader.iterator_length
     batches_per_epoch = {}
     for epoch_idx in range(4):
-        batches_per_epoch[epoch_idx] = [batch for batch in dataloader]
+        batches_per_epoch[epoch_idx] = list(dataloader)
         assert (
             len(batches_per_epoch[epoch_idx]) == it_len
         ), f"Expected {it_len} batches, but got {len(batches_per_epoch[epoch_idx])}."
@@ -229,7 +229,7 @@ def test_grain_dataloader_states(switch_after_num_batches: int, use_packing: boo
     )
     dataloader = make_dataloader_fn()
 
-    # Load couple of batches and save the state.
+    # Load a couple of batches and save the state.
     batch_idx = 0
     next_batches = []
     save_state = None
@@ -307,7 +307,7 @@ def test_grain_dataloader_rampup(global_batch_size: int, drop_remainder: bool, b
         worker_count=0,
         batch_rampup_factors=batch_rampup_factors,
     )
-    all_batches = [batch for batch in dataloader]
+    all_batches = list(dataloader)
 
     expected_batch_size = global_batch_size
     for step in range(len(all_batches)):

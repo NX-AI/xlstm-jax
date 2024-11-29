@@ -1,14 +1,8 @@
-import os
-
-# We disable GPU usage for this script, as it is not needed.
-os.environ["CUDA_VISIBLE_DEVICES"] = ""
-os.environ["JAX_PLATFORMS"] = "cpu"
-
-# flake8: noqa E402
 import argparse
 import enum
 import itertools
 import json
+import os
 from collections import defaultdict
 from datetime import datetime
 from pathlib import Path
@@ -31,6 +25,10 @@ from xlstm_jax.dataset import (
 from xlstm_jax.dataset.multihost_dataloading import MultiHostDataLoadIterator
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
+
+# We disable GPU usage for this script, as it is not needed.
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
+os.environ["JAX_PLATFORMS"] = "cpu"
 
 
 class DatasetNameToHFPath(enum.StrEnum):
@@ -198,18 +196,16 @@ def compute_packed_batch_statistics(
     num_batches = len(batches)
     batch_size, context_length = batches[0].inputs.shape
     # Padded and EOD tokens.
-    n_padded = sum([(batch.inputs_segmentation == 0).sum().item() for batch in batches])
-    n_eod = sum([((batch.inputs == eod_token_id) * (batch.inputs_segmentation != 0)).sum().item() for batch in batches])
+    n_padded = sum((batch.inputs_segmentation == 0).sum().item() for batch in batches)
+    n_eod = sum(((batch.inputs == eod_token_id) * (batch.inputs_segmentation != 0)).sum().item() for batch in batches)
     n_total = num_batches * batch_size * context_length
     # Num documents per sequence.
-    n_docs = sum([jnp.max(batch.targets_segmentation, axis=-1).sum().item() for batch in batches])
+    n_docs = sum(jnp.max(batch.targets_segmentation, axis=-1).sum().item() for batch in batches)
     n_docs_per_seq = n_docs / (batch_size * num_batches)
     # Document lengths.
     n_full_seqs = sum(
-        [
-            ((batch.targets_segmentation[:, -1] != 0) * (batch.targets[:, -1] != eod_token_id)).sum().item()
-            for batch in batches
-        ]
+        ((batch.targets_segmentation[:, -1] != 0) * (batch.targets[:, -1] != eod_token_id)).sum().item()
+        for batch in batches
     )
     doc_lens = [
         batch.targets_position[np.logical_and(batch.targets == eod_token_id, batch.targets_segmentation != 0)].flatten()
@@ -233,45 +229,45 @@ def compute_packed_batch_statistics(
     tokens_lost = full_token_count - tokens_kept
     frac_tokens_lost = tokens_lost / full_token_count
     # Token entropy.
-    max_token = max([batch.targets.max().item() for batch in batches])
+    max_token = max(batch.targets.max().item() for batch in batches)
     token_counts = np.zeros(max_token + 1, dtype=np.float32)
     for batch in batches:
         token_counts += np.bincount(batch.targets.flatten(), minlength=max_token + 1)
     token_counts = token_counts / token_counts.sum()
     token_entropy = -np.sum(token_counts * np.log(token_counts + 1e-12)).item()
     # Compute final stats.
-    stats = dict(
-        frac_padded=n_padded / n_total,
-        frac_eod=n_eod / n_total,
-        frac_full_seqs=n_full_seqs / (num_batches * batch_size),
-        frac_full_docs=n_full_seqs / n_docs,
-        n_docs_per_seq=n_docs_per_seq,
-        token_entropy=token_entropy,
-        doc_lens=dict(
-            type="hist",
-            data=doc_lens,
-            bins=128,
-            xlim=(0, context_length),
-            title="Document Lengths",
-            xlabel="Document Length",
-        ),
-        acc_token_count=dict(
-            type="line",
-            data=frac_acc_token_count,
-            xlim=(0, context_length),
-            ylim=(0, 1),
-            title="Accumulative Token Count",
-            xlabel="Document Length",
-        ),
-        frac_tokens_lost=dict(
-            type="line",
-            data=frac_tokens_lost,
-            xlim=(0, context_length),
-            ylim=(0, 1),
-            title="Fraction of Tokens Lost at Document Length",
-            xlabel="Document Length",
-        ),
-    )
+    stats = {
+        "frac_padded": n_padded / n_total,
+        "frac_eod": n_eod / n_total,
+        "frac_full_seqs": n_full_seqs / (num_batches * batch_size),
+        "frac_full_docs": n_full_seqs / n_docs,
+        "n_docs_per_seq": n_docs_per_seq,
+        "token_entropy": token_entropy,
+        "doc_lens": {
+            "type": "hist",
+            "data": doc_lens,
+            "bins": 128,
+            "xlim": (0, context_length),
+            "title": "Document Lengths",
+            "xlabel": "Document Length",
+        },
+        "acc_token_count": {
+            "type": "line",
+            "data": frac_acc_token_count,
+            "xlim": (0, context_length),
+            "ylim": (0, 1),
+            "title": "Accumulative Token Count",
+            "xlabel": "Document Length",
+        },
+        "frac_tokens_lost": {
+            "type": "line",
+            "data": frac_tokens_lost,
+            "xlim": (0, context_length),
+            "ylim": (0, 1),
+            "title": "Fraction of Tokens Lost at Document Length",
+            "xlabel": "Document Length",
+        },
+    }
     return stats
 
 
@@ -294,19 +290,19 @@ def _create_data_config(
     Returns:
         tuple of train and eval HFHubDataConfig objects with dataset configurations.
     """
-    shared_config = dict(
-        global_batch_size=global_batch_size,
-        max_target_length=context_length,
-        hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
-        data_column="text",
-        tokenize_data=True,
-        tokenizer_path=tokenizer_path,
-        add_bos=False,
-        add_eos=False,
-        add_eod=True,
-        grain_packing=True,
-        worker_count=0,  # Preprocessing can be done in main process.
-    )
+    shared_config = {
+        "global_batch_size": global_batch_size,
+        "max_target_length": context_length,
+        "hf_cache_dir": "/nfs-gpu/xlstm/data/hf_cache",
+        "data_column": "text",
+        "tokenize_data": True,
+        "tokenizer_path": tokenizer_path,
+        "add_bos": False,
+        "add_eos": False,
+        "add_eod": True,
+        "grain_packing": True,
+        "worker_count": 0,
+    }
     if use_array_records:
         train_config, eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
             data_path=Path(DatasetNameToArrayRecordsPath[dataset_name]),

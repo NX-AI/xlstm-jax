@@ -1,3 +1,4 @@
+# pylint: disable=invalid-name
 """Triton backend for the backward pass of the mLSTM chunkwise formulation.
 
 This file has been adapted from the original PyTorch Triton implementation to JAX.
@@ -17,16 +18,16 @@ Dimensions:
 
 """
 
+import jax
+import jax.numpy as jnp
+import jax_triton as jt
+import triton
+
 from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
 from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.triton_fwbw_stablef import (
     chunk_mlstm_fwd_kernel_C,
     chunk_mlstm_fwd_kernel_h,
 )
-
-import jax
-import jax.numpy as jnp
-import jax_triton as jt
-import triton
 
 from xlstm_jax.kernels.stride_utils import get_stride
 
@@ -108,30 +109,30 @@ def _mlstm_chunkwise__recurrent_fw_C(
 
     # Shared kwargs for the triton call.
     grid = (NK, NV, B * H)
-    triton_kwargs = dict(
-        str_QK_H=get_stride(matK, axis=1),
-        str_QK_t=get_stride(matK, axis=2),
-        str_QK_d=get_stride(matK, axis=3),
-        str_VH_H=get_stride(matV, axis=1),
-        str_VH_t=get_stride(matV, axis=2),
-        str_VH_d=get_stride(matV, axis=3),
-        str_C_H=get_stride(matC_states, axis=1),
-        str_C_K=get_stride(matC_states, axis=2),
-        str_N_H=get_stride(vecN_states, axis=1),
-        T=T,
-        K=K,
-        V=V,
-        BT=BT,
-        BHQK=BHQK,
-        BHHV=BHHV,
-        NT=NT,
-        USE_INITIAL_STATE=USE_INITIAL_STATE,
-        STORE_FINAL_STATE=store_final_state,
-        num_stages=num_stages,
-        num_warps=num_warps,
-        grid=grid,
-        kernel=chunk_mlstm_fwd_kernel_C,
-    )
+    triton_kwargs = {
+        "str_QK_H": get_stride(matK, axis=1),
+        "str_QK_t": get_stride(matK, axis=2),
+        "str_QK_d": get_stride(matK, axis=3),
+        "str_VH_H": get_stride(matV, axis=1),
+        "str_VH_t": get_stride(matV, axis=2),
+        "str_VH_d": get_stride(matV, axis=3),
+        "str_C_H": get_stride(matC_states, axis=1),
+        "str_C_K": get_stride(matC_states, axis=2),
+        "str_N_H": get_stride(vecN_states, axis=1),
+        "T": T,
+        "K": K,
+        "V": V,
+        "BT": BT,
+        "BHQK": BHQK,
+        "BHHV": BHHV,
+        "NT": NT,
+        "USE_INITIAL_STATE": USE_INITIAL_STATE,
+        "STORE_FINAL_STATE": store_final_state,
+        "num_stages": num_stages,
+        "num_warps": num_warps,
+        "grid": grid,
+        "kernel": chunk_mlstm_fwd_kernel_C,
+    }
 
     matC_final_state = jax.ShapeDtypeStruct((B, H, K, V), dtype=jnp.float32)
     vecN_final_state = jax.ShapeDtypeStruct((B, H, K), dtype=jnp.float32)
@@ -173,8 +174,7 @@ def _mlstm_chunkwise__recurrent_fw_C(
     matC_states, vecN_states, scaMinter_states, matC_final_state, vecN_final_state, scaMinter_final_state = res
     if store_final_state:
         return matC_states, vecN_states, scaMinter_states, matC_final_state, vecN_final_state, scaMinter_final_state
-    else:
-        return matC_states, vecN_states, scaMinter_states
+    return matC_states, vecN_states, scaMinter_states
 
 
 def _mlstm_chunkwise__parallel_fw_H(

@@ -28,17 +28,14 @@ class UpProjConfigMixin:
 
 
 class WeightDecayOptimGroupMixin(nn.Module, ABC):
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-
-    def get_weight_decay_optim_groups(self, **kwargs) -> tuple[Sequence[nn.Parameter], Sequence[nn.Parameter]]:
+    def get_weight_decay_optim_groups(self) -> tuple[Sequence[nn.Parameter], Sequence[nn.Parameter]]:
         """
         Return a tuple of two sequences, one for parameters with weight decay and one for parameters without weight
         decay.
 
         Performs checks to ensure that each parameter is only in one of the two sequences.
         """
-        weight_decay, no_weight_decay = self._create_weight_decay_optim_groups(**kwargs)
+        weight_decay, no_weight_decay = self._create_weight_decay_optim_groups()
 
         # Check that parameters have been assigned correctly.
         # Each parameter can only be in one optim group.
@@ -49,19 +46,19 @@ class WeightDecayOptimGroupMixin(nn.Module, ABC):
         )
 
         union_params = set(weight_decay).union(set(no_weight_decay))
-        param_dict = {pn: p for pn, p in self.named_parameters()}
+        param_dict = dict(self.named_parameters())
         unassigned_params = set(param_dict.values()) - union_params
         unassigned_params = [up for up in unassigned_params if not hasattr(up, "requires_grad") or up.requires_grad]
         # We have parameters that were not assigned to either weight decay or no weight decay.
         # Find the parameter names and raise an error.
         assert len(unassigned_params) == 0, (
-            f"Parameters {[pn for pn, p in self.named_parameters() if all([p is not q for q in unassigned_params])]} "
+            f"Parameters {[pn for pn, p in self.named_parameters() if all(p is not q for q in unassigned_params)]} "
             f"were not separated into either decay/no_decay set!"
         )
 
         return weight_decay, no_weight_decay
 
-    def get_weight_decay_optim_group_param_names(self, **kwargs) -> tuple[Sequence[str], Sequence[str]]:
+    def get_weight_decay_optim_group_param_names(self) -> tuple[Sequence[str], Sequence[str]]:
         """
         Return a tuple of two sequences, one for parameter names with weight decay and one for parameter names without
         weight decay.
@@ -75,12 +72,12 @@ class WeightDecayOptimGroupMixin(nn.Module, ABC):
                     return True
             return False
 
-        weight_decay, no_weight_decay = self.get_weight_decay_optim_groups(**kwargs)
+        weight_decay, no_weight_decay = self.get_weight_decay_optim_groups()
         names_weight_decay = [pn for pn, p in self.named_parameters() if _is_in_sequence(p, weight_decay)]
         names_no_weight_decay = [pn for pn, p in self.named_parameters() if _is_in_sequence(p, no_weight_decay)]
         return names_weight_decay, names_no_weight_decay
 
-    def _create_weight_decay_optim_groups(self, **kwargs) -> tuple[Sequence[nn.Parameter], Sequence[nn.Parameter]]:
+    def _create_weight_decay_optim_groups(self) -> tuple[Sequence[nn.Parameter], Sequence[nn.Parameter]]:
         """
         Return a tuple of two sequences, one for parameters with weight decay and one for parameters without weight
         decay.
@@ -102,8 +99,9 @@ class WeightDecayOptimGroupMixin(nn.Module, ABC):
                     no_decay.add(param)
         return tuple(decay), tuple(no_decay)
 
+    @staticmethod
     def _get_weight_decay_optim_groups_for_modules(
-        self, modules: list["WeightDecayOptimGroupMixin"], **kwargs
+        modules: list["WeightDecayOptimGroupMixin"], **kwargs
     ) -> tuple[Sequence[nn.Parameter], Sequence[nn.Parameter]]:
         weight_decay, no_weight_decay = (), ()
         for module in modules:

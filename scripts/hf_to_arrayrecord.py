@@ -206,10 +206,10 @@ def convert_dataset(
 
         out_path = base_out_path / config.hf_path.replace("/", "_")
         if hf_data_name is not None:
-            out_path = out_path / hf_data_name
+            out_path /= hf_data_name
         if hf_data_dir is not None:
-            out_path = out_path / hf_data_dir
-        out_path = out_path / split
+            out_path /= hf_data_dir
+        out_path /= split
         # Allow creating the directory if it does not exist. But assert that it is empty to avoid overwriting data.
         out_path.mkdir(parents=True, exist_ok=True)
         assert os.listdir(out_path) == [], f"Output directory ({out_path}) is not empty: {os.listdir(out_path)}"

@@ -12,10 +12,16 @@ import grain.python as grain
 import jax
 from jax.sharding import Mesh
 
-from xlstm_jax.dataset import grain_transforms, load_tokenizer
-
 from .configs import GrainArrayRecordsDataConfig, HFHubDataConfig
 from .grain_iterator import make_grain_llm_dataset, make_grain_multihost_iterator
+from .grain_transforms import (
+    AddEODToken,
+    HFNormalizeFeatures,
+    HFTokenize,
+    ParseArrayRecords,
+    ParseTokenizedArrayRecords,
+)
+from .hf_tokenizer import load_tokenizer
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
@@ -52,7 +58,6 @@ def preprocess_dataset(
             correct shard of the dataset. In JAX, this is equivalent to :func:`jax.process_index()`.
         dataloading_host_count: The number of data loading hosts. Will be used to determine the
             shard size. In JAX, this is equivalent to :func:`jax.process_count()`.
-        global_mesh: The global mesh to shard the data over.
         dataset: The dataset to load. Should provide a `__getitem__` method to access elements.
         data_column_name: The column name for the data in the dataset.
         tokenize: Whether to tokenize the data.
@@ -67,31 +72,23 @@ def preprocess_dataset(
         add_eod: Whether to add an end of document token.
         grain_packing: Whether to perform packing of the data. This is useful for datasets
             with a lot of padding, as batch elements will be packed together in a sequence
-            to reduce the amount of padding. This can improve throughput efficiency. NOTE:
+            to reduce the amount of padding. This can improve throughput efficiency. Note:
             if packing is enabled, the length of the iterator cannot be determined in advance
             and is likely incorrect in the iterator (will be set to maximum number of batches).
         grain_packing_bin_count: The number of packing bins to use. If not provided, the
             bin count will be set to the batch size. It can be beneficial to increase the packing
             bins to reduce padding.
         shift: Whether to shift the input data to create the target data.
-        worker_count: The number of workers to use. In grain, a single worker is usually
-            sufficient, as the data loading is done in parallel across hosts.
-        worker_buffer_size: The buffer size for the workers.
         drop_remainder: Whether to drop the remainder of the dataset. Note that in case of
             providing a number of epochs, the last batch of all epochs together will be
-            dropped if this is set to True. If set to False, the last batch of all epochs
+            dropped if this is set to `True`. If set to `False`, the last batch of all epochs
             together will be included in the iterator.
         tokenizer_cache_dir: The cache directory for the tokenizer.
         max_steps_per_epoch: The maximum number of steps per epoch. If provided, the iterator
             will stop after this many steps with a :class:`StopIteration` exception. Otherwise,
             will continue over the iterator until all batches are consumed.
-        eod_token_id: The token ID to use for the end-of-document token. If tokenizer_path is
-            provided, the tokenizer's EOD token ID is used. If neither the tokenizer nor the
-            EOD token ID is provided, an error is raised.
-        batch_rampup_factors: The batch rampup factors. If provided, the batch size will be
-            ramped up according to the factors. The dictionary maps the step count to the
-            scaling factor. See the `boundaries_and_scales` doc in
-            :func:`grain_batch_rampup.create_batch_rampup_schedule` for more details.
+        eod_token_id: The token ID to use for the end-of-document token. If `tokenizer_path` is
+            provided, the tokenizer's EOD token ID is used.
 
     Returns:
         The preprocessed grain dataset and the original data source.
@@ -122,27 +119,27 @@ def preprocess_dataset(
         # Create initial operations before those from make_grain_llm_iterator.
         operations = []
         if isinstance(dataset, grain.ArrayRecordDataSource):
-            operations.append(grain_transforms.ParseArrayRecords(column_name=data_column_name))
+            operations.append(ParseArrayRecords(column_name=data_column_name))
         else:
             dataset = dataset.select_columns([data_column_name])
         operations.extend(
             [
-                grain_transforms.HFTokenize(
+                HFTokenize(
                     create_tokenizer_fn=create_tokenizer_fn,
                     column_name=data_column_name,
                     max_length=max_target_length,
                     add_eod=add_eod,
                     eod_token_id=eod_token_id,
                 ),
-                grain_transforms.HFNormalizeFeatures("input_ids"),
+                HFNormalizeFeatures("input_ids"),
             ]
         )
     else:
         assert isinstance(dataset, grain.ArrayRecordDataSource), "Pre-processed datasets must be ArrayRecordDataSource."
         operations = [
-            grain_transforms.ParseTokenizedArrayRecords(column_name="input_ids"),
-            grain_transforms.AddEODToken(eod_token_id=eod_token_id, add_eod=add_eod, max_length=max_target_length),
-            grain_transforms.HFNormalizeFeatures("input_ids"),
+            ParseTokenizedArrayRecords(column_name="input_ids"),
+            AddEODToken(eod_token_id=eod_token_id, add_eod=add_eod, max_length=max_target_length),
+            HFNormalizeFeatures("input_ids"),
         ]
 
     if not drop_remainder:
@@ -203,7 +200,7 @@ def make_grain_iterator(
     """Load a dataset, create the preprocessing pipeline and return a multihost data-loading iterator.
 
     Args:
-        config: dataset configuration object for huggingface or arrayrecords dataset. If multiple configs are provided,
+        configs: dataset configuration object for huggingface or arrayrecords dataset. If multiple configs are provided,
             the datasets will be loaded in parallel and the data will be interleaved in a mixing style. NOTE: the
             global batch size, worker count, worker buffer size, drop remainder, and batch rampup will be only used
             from the first config. The other configs are assumed to have the same values. Otherwise, warnings will be
@@ -298,8 +295,7 @@ def make_grain_iterator(
 
 
 class PaddedDataset(grain.RandomAccessDataSource):
-    """Dataset wrapper to pad the dataset to be a multiple of the global batch
-    size."""
+    """Dataset wrapper to pad the dataset to be a multiple of the global batch size."""
 
     def __init__(
         self,
@@ -312,7 +308,7 @@ class PaddedDataset(grain.RandomAccessDataSource):
         Args:
             dataset: The dataset to pad.
             full_dataset_length: The full dataset length, including padding. Should be a multiple of the global
-                batch size with which the dataset is loaded. Also lengths smaller than the dataset are supported
+                batch size with which the dataset is loaded. Also, lengths smaller than the dataset are supported
                 and will return the smaller length.
             column_name: The column name in the dataset that is returned.
         """
@@ -326,12 +322,10 @@ class PaddedDataset(grain.RandomAccessDataSource):
         return self.full_dataset_length
 
     def __getitem__(self, record_key: SupportsIndex) -> Any:
-        """Returns padding if the record key is out of bounds, otherwise
-        returns the dataset record."""
+        """Returns padding if the record key is out of bounds, otherwise returns the dataset record."""
         if record_key >= len(self.dataset):
             return self.empty_sequence
-        else:
-            return self.dataset[record_key]
+        return self.dataset[record_key]
 
     def __repr__(self):
         return (
@@ -345,11 +339,10 @@ class PaddedDataset(grain.RandomAccessDataSource):
         if isinstance(self.dataset, grain.ArrayRecordDataSource):
             # AR datasets return bytestrings. We return an empty bytestring for padding.
             return b""
-        elif isinstance(self.dataset, datasets.Dataset):
+        if isinstance(self.dataset, datasets.Dataset):
             # HF datasets return dicts {self.column_name: some_text}. We return a dict with an empty string for padding.
             return {self.column_name: ""}
-        else:
-            raise ValueError(f"Unsupported dataset type {type(self.dataset)}.")
+        raise ValueError(f"Unsupported dataset type {type(self.dataset)}.")
 
 
 def pad_dataset(

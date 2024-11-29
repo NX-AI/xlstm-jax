@@ -286,9 +286,9 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(
                             name=cfg.model.backend,
-                            kwargs=dict(backend_name=cfg.model.backend_name)
+                            kwargs={"backend_name": cfg.model.backend_name}
                             if cfg.model.backend == "triton_kernels"
-                            else dict(),
+                            else {},
                         ),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
@@ -343,9 +343,9 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(
                             name=cfg.model.backend,
-                            kwargs=dict(backend_name=cfg.model.backend_name)
+                            kwargs={"backend_name": cfg.model.backend_name}
                             if cfg.model.backend == "triton_kernels"
-                            else dict(),
+                            else {},
                         ),
                         igate_bias_init_range=cfg.model.igate_bias_init_range,
                         add_qk_norm=cfg.model.add_qk_norm,
@@ -419,6 +419,7 @@ def init_scheduler_config(cfg: DictConfig, data_iterator: DataIterator) -> Sched
     """Instantiate scheduler configuration.
 
     Args:
+        data_iterator:
         cfg: Config assembled by Hydra.
 
     Returns:

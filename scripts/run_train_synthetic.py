@@ -46,8 +46,8 @@ def main_train(args: argparse.Namespace):
 
     # Create data iterator.
     train_config, eval_config = SyntheticDataConfig.create_train_eval_configs(
-        train_kwargs=dict(num_batches=252),
-        eval_kwargs=dict(num_batches=53),
+        train_kwargs={"num_batches": 252},
+        eval_kwargs={"num_batches": 53},
         global_batch_size=32,
         max_target_length=context_length,
         data_shuffle_seed=42,

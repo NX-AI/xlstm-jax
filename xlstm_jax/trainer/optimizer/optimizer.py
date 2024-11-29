@@ -251,7 +251,6 @@ def clip_by_global_norm_sharded(max_norm: float) -> optax.GradientTransformation
 
     Args:
         max_norm (float): Maximum norm.
-        parallel (ParallelConfig): Parallel configuration.
 
     Returns:
         optax.GradientTransformation: Gradient transformation.

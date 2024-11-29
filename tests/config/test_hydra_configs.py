@@ -31,13 +31,13 @@ def discover_config_files(config_dir: str):
 
 
 @pytest.mark.parametrize("config_name", discover_config_files("configs"))
-def test_sub_configs(hydra_setup, config_name):
+def test_sub_configs(hydra_setup, config_name):  # pylint: disable=unused-argument
     # Checkpointing
     cfg = compose(config_name=config_name, return_hydra_config=True)
     assert isinstance(cfg, DictConfig)
 
 
-def test_invalid_override_type(hydra_setup):
+def test_invalid_override_type(hydra_setup):  # pylint: disable=unused-argument
     # Test that an error is raised when the override type is invalid. This is only performed for one
     # example for now to check whether the type checking works.
     with pytest.raises(ConfigCompositionException) as e:

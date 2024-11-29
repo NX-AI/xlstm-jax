@@ -66,6 +66,23 @@ whitelist-regex = []
 color = true
 omit-covered-files = false
 
+# pylint
+[tool.pylint.main]
+fail-under = 9
+max-line-length = 120
+py-version = "3.11"
+disable = [
+    "duplicate-code",  # TODO: enable after directory structure cleanup
+    "invalid-name",
+    "logging-fstring-interpolation",
+    "missing-module-docstring",
+    "missing-class-docstring",
+    "missing-function-docstring",
+    "too-many-arguments",
+    "too-many-locals",
+    "too-many-positional-arguments",
+]
+
 # ruff
 [tool.ruff]
 exclude = [
@@ -94,7 +111,7 @@ max-complexity = 18
 
 [tool.ruff.lint.isort]
 combine-as-imports = true
-section-order = ["future", "standard-library", "first-party", "third-party", "xlstm_jax", "local-folder"]
+section-order = ["future", "standard-library", "third-party", "first-party", "xlstm_jax", "local-folder"]
 
 [tool.ruff.lint.isort.sections]
 "xlstm_jax" = ["xlstm_jax"]

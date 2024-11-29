@@ -26,7 +26,7 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     eod_token_id = 50256  # for "gpt2" tokenizer
 
     # Prepare the dataset and dataloaders for the test.
-    parallel, mesh, train_ds, eval_ds, train_iterator, eval_iterator, tokenizer = _setup_data(
+    parallel, mesh, _train_ds, eval_ds, train_iterator, eval_iterator, tokenizer = _setup_data(
         tmp_path=tmp_path,
         batch_size_per_device=batch_size_per_device,
         context_length=context_length,
@@ -54,9 +54,9 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     # Compute the fraction of padding and EOD tokens in the dataset.
     stats = {"train": {}, "validation": {}}
     for split, batches in loaded_batches.items():
-        n_padded = sum([(batch.inputs == padding_token_id).sum() for batch in batches])
-        n_eod = sum([(batch.inputs == tokenizer.eos_token_id).sum() for batch in batches])
-        n_total = sum([batch.inputs.size for batch in batches])
+        n_padded = sum((batch.inputs == padding_token_id).sum() for batch in batches)
+        n_eod = sum((batch.inputs == tokenizer.eos_token_id).sum() for batch in batches)
+        n_total = sum(batch.inputs.size for batch in batches)
         stats[split]["frac_padded"] = n_padded / n_total
         stats[split]["frac_eod"] = n_eod / n_total
 
@@ -75,7 +75,7 @@ def test_hf_dataset_with_packing(tmp_path: Path):
         is_new_sequence = (batch.targets_segmentation[:, 1:] - batch.targets_segmentation[:, :-1]) == 1
         assert np.all(
             batch.targets[:, :-1][is_new_sequence] == tokenizer.eos_token_id
-        ), "Expected EOD token at positions where the segmentation increases. Found othe tokens."
+        ), "Expected EOD token at positions where the segmentation increases. Found other tokens."
         # 5) Check that targets are invalidated at positions where the targets_segmentation mask is 0.
         assert np.all(
             batch.targets[batch.targets_segmentation == 0] == padding_token_id
@@ -97,9 +97,9 @@ def test_hf_dataset_with_packing(tmp_path: Path):
             subsequences.append(example.inputs[is_subsequence])
 
     # First sanity-check that we extracted all subsequences and paddings correctly before testing.
-    n_subsequences = sum([len(ex) for ex in subsequences])
-    n_paddings = sum([len(ex) for ex in paddings])
-    n_eod_positions = sum([len(ex) for ex in eod_positions])
+    n_subsequences = sum(len(ex) for ex in subsequences)
+    n_paddings = sum(len(ex) for ex in paddings)
+    n_eod_positions = sum(len(ex) for ex in eod_positions)
     assert n_subsequences + n_paddings + n_eod_positions == batch.targets.size, (
         f"A sanity check that extracted subsequences and paddings cover the entire batch failed: "
         f"Got {n_subsequences} subsequences, {n_subsequences} paddings, {n_eod_positions} eod tokens "
@@ -132,7 +132,7 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     # But we test that we have close to the same number of batches for each epoch.
     n_batches_per_epoch = [0 for _ in range(3)]
     for epoch_idx in range(3):
-        for batch in eval_iterator:
+        for _batch in eval_iterator:
             n_batches_per_epoch[epoch_idx] += 1
             assert n_batches_per_epoch[epoch_idx] < 1000, "Eval iterator loaded more than 1k batches."
     # assert that we have +-2 difference in numbers of batches
@@ -141,7 +141,7 @@ def test_hf_dataset_with_packing(tmp_path: Path):
     ), f"Difference in number of batches is too large. Got {n_batches_per_epoch} batches per epoch."
 
     # Test if document borders are correctly computed.
-    eval_batches = [batch for batch in eval_iterator]
+    eval_batches = list(eval_iterator)
     _check_document_borders(batches=eval_batches + [train_batch], eod_token_id=eod_token_id)
 
 
@@ -180,7 +180,7 @@ def _setup_data(
     different datasets. So keep it separate for now.
 
     Args:
-        tmp_path: Temporary path for pytests storing cache files.
+        tmp_path: Temporary path for pytest storing cache files.
         batch_size_per_device: The (local) batch size per device.
         context_length: The context/sequence length.
 

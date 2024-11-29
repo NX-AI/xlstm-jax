@@ -24,16 +24,16 @@ Variables:
     matD, D: gating matrix for the parallel form.
 """
 
+import jax
+import jax.numpy as jnp
+import jax_triton as jt
+import triton
+
 from mlstm_kernels.mlstm_kernels.kernel_utils import is_power_of_2
 from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v3._triton_bw import (
     _mlstm_chunkwise__parallel_bw_dQKV_kernel,
     _mlstm_chunkwise__recurrent_bw_dC_kernel,
 )
-
-import jax
-import jax.numpy as jnp
-import jax_triton as jt
-import triton
 
 from xlstm_jax.kernels.kernel_utils import jax2triton_dtype
 from xlstm_jax.kernels.stride_utils import get_stride

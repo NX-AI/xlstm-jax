@@ -21,7 +21,7 @@ class mLSTMBackendRecurrentTritonConfig:
     use_scan: bool = False
     """Whether to use scan for the recurrent sequence."""
 
-    def assign_model_config_params(self, *args, **kwargs):
+    def assign_model_config_params(self, model_config):
         pass
 
 

@@ -25,11 +25,10 @@ def temperature_sampling(logits: jax.Array, rng: jax.Array, temperature: float =
     if temperature == 0.0:
         # Temperature 0 is equivalent to greedy sampling.
         return greedy_sampling(logits, rng)
-    else:
-        # Apply temperature
-        logits = logits / temperature
-        # Sample from the logits
-        return jax.random.categorical(rng, logits, axis=-1)
+    # Apply temperature
+    logits /= temperature
+    # Sample from the logits
+    return jax.random.categorical(rng, logits, axis=-1)
 
 
 def greedy_sampling(logits: jax.Array, rng: jax.Array | None = None) -> jax.Array:

@@ -45,7 +45,7 @@ def test_norm_variants(add_post_norm: bool, add_qk_norm: bool, norm_type: str, l
     )
     block = mLSTMBlock(block_config)
     x = jax.random.normal(jax.random.PRNGKey(0), (mesh.size, 32, 16), jnp.float32)
-    x = x - x.mean(axis=-1, keepdims=True)
+    x -= x.mean(axis=-1, keepdims=True)
 
     def execute_fn(rng: jnp.ndarray, x: jnp.ndarray) -> PyTree:
         return block.init_with_output(rng, x)
@@ -86,8 +86,7 @@ def test_norm_variants(add_post_norm: bool, add_qk_norm: bool, norm_type: str, l
             assert np.abs(y.mean(axis=-1)).max() > 1e-3, "RMSNorm applied to post norm should not have zero mean."
 
     y_shifted, _ = init_model_fn(jax.random.PRNGKey(0), x + 1)
-    y_shifted = jax.device_get(y_shifted.astype(jnp.float32))
-    y_shifted = y_shifted - 1
+    y_shifted = jax.device_get(y_shifted.astype(jnp.float32)) - 1
     if norm_type == "layernorm":
         # TODO: these are suspiciously high!
         np.testing.assert_allclose(

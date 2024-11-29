@@ -35,8 +35,8 @@ def test_synthetic_dataloader(
     # Specify the configuration for the synthetic data.
     max_target_length = 128
     train_config, val_config = SyntheticDataConfig.create_train_eval_configs(
-        train_kwargs=dict(num_batches=num_train_batches),
-        eval_kwargs=dict(num_batches=num_val_batches),
+        train_kwargs={"num_batches": num_train_batches},
+        eval_kwargs={"num_batches": num_val_batches},
         global_batch_size=global_batch_size,
         max_target_length=max_target_length,
         data_shuffle_seed=42,

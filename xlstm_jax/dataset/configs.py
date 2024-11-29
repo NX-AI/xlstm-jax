@@ -1,15 +1,9 @@
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, TypeVar
+from typing import TypeVar
 
 # Create a generic variable that can be 'DataConfig', or any subclass.
 T = TypeVar("T", bound="DataConfig")
-
-
-def _update_dict_default(d: dict, key: Any, value: Any) -> None:
-    """Update a dictionary with a default value."""
-    if key not in d:
-        d[key] = value
 
 
 @dataclass(kw_only=True, frozen=False)
@@ -51,16 +45,16 @@ class DataConfig:
         train_kwargs.update(kwargs)
         eval_kwargs.update(kwargs)
         # Shuffle
-        _update_dict_default(train_kwargs, "shuffle_data", True)
-        _update_dict_default(eval_kwargs, "shuffle_data", False)
+        train_kwargs.setdefault("shuffle_data", True)
+        eval_kwargs.setdefault("shuffle_data", False)
         # Drop remainder
         if hasattr(cls, "drop_remainder"):
-            _update_dict_default(train_kwargs, "drop_remainder", True)
-            _update_dict_default(eval_kwargs, "drop_remainder", False)
+            train_kwargs.setdefault("drop_remainder", True)
+            eval_kwargs.setdefault("drop_remainder", False)
         # Split
         if hasattr(cls, "split"):
-            _update_dict_default(train_kwargs, "split", "train")
-            _update_dict_default(eval_kwargs, "split", "validation")
+            train_kwargs.setdefault("split", "train")
+            eval_kwargs.setdefault("split", "validation")
         return cls(**train_kwargs), cls(**eval_kwargs)
 
 

@@ -32,7 +32,7 @@ def params_to_safetensors(
     Convert an orbax checkpoint to one or more safetensors checkpoints, used in PyTorch / HuggingFace.
 
     Args:
-        checkpoint_path: The Orbax checkpoint path.
+        params: JAX parameters to convert.
         output_path: The resulting .safetensors file path. Should contain this file ending.
         max_shard_size_bytes: Size limit for a single .safetensors file in bytes, 0 means no limit.
         split_blocks: If to split a 'blocks' parameter as typically in PyTorch multi-block models are not merged.

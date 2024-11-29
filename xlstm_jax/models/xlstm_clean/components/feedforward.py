@@ -83,5 +83,4 @@ class GatedFeedForward(nn.Module):
 def create_feedforward(config: FeedForwardConfig) -> nn.Module:
     if config.ff_type == "ffn_gated":
         return GatedFeedForward(config)
-    else:
-        raise ValueError(f"Unknown feedforward type {config.ff_type}")
+    raise ValueError(f"Unknown feedforward type {config.ff_type}")

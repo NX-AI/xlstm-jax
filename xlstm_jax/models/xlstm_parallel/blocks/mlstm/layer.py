@@ -109,7 +109,6 @@ class mLSTMLayer(nn.Module):
         Returns:
             The output tensor of the mLSTM layer, shape (batch_size, context_length, embedding_dim).
         """
-        B, S, _ = x.shape
         tp_size = jax.lax.psum(1, self.config.parallel.model_axis_name)
         assert self.config.num_heads % tp_size == 0, "num_heads must be divisible by the number of model replicas"
         embedding_dim = x.shape[-1] * tp_size

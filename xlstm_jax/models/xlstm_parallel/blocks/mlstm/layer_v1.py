@@ -51,83 +51,82 @@ class mLSTMLayerV1(nn.Module):
         # up-projection
         if self.config.parallel.tp_async_dense:
             raise NotImplementedError("Async dense not supported for mLSTMLayerSimple")
-        else:
-            # split projection up into two smaller matrices, as splitting large feature vector costs time.
-            x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
+        # split projection up into two smaller matrices, as splitting large feature vector costs time.
+        x = jax.lax.all_gather(x, self.config.parallel.model_axis_name, axis=-1, tiled=True)
 
-            # Projection up layers
-            def proj_up_layer(name, kernel_init, scale: float = 1.0):
-                return TPDense(
-                    dense_fn=partial(
-                        nn.Dense,
-                        dtype=self.config._dtype,
-                        features=int(embedding_dim * scale) // tp_size,
-                    ),
-                    model_axis_name=self.config.parallel.model_axis_name,
-                    tp_mode="gather",
-                    kernel_init=kernel_init,
-                    use_bias=self.config.bias,
-                    skip_communication=True,
-                    name=name,
-                )
+        # Projection up layers
+        def proj_up_layer(name, kernel_init, scale: float = 1.0):
+            return TPDense(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config._dtype,
+                    features=int(embedding_dim * scale) // tp_size,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                kernel_init=kernel_init,
+                use_bias=self.config.bias,
+                skip_communication=True,
+                name=name,
+            )
 
-            # QKV layers
-            qkv_init = small_init(embedding_dim, distribution=self.config.init_distribution)
-            q = proj_up_layer(name="dense_q", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
-            k = proj_up_layer(name="dense_k", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
-            v = proj_up_layer(name="dense_v", kernel_init=qkv_init, scale=self.config.v_dim_factor)(x)
+        # QKV layers
+        qkv_init = small_init(embedding_dim, distribution=self.config.init_distribution)
+        q = proj_up_layer(name="dense_q", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
+        k = proj_up_layer(name="dense_k", kernel_init=qkv_init, scale=self.config.qk_dim_factor)(x)
+        v = proj_up_layer(name="dense_v", kernel_init=qkv_init, scale=self.config.v_dim_factor)(x)
 
-            # Output layer
-            o = proj_up_layer(name="dense_o", kernel_init=nn.initializers.zeros, scale=self.config.v_dim_factor)(x)
+        # Output layer
+        o = proj_up_layer(name="dense_o", kernel_init=nn.initializers.zeros, scale=self.config.v_dim_factor)(x)
 
-            # Gates
-            def gate_layer(name, bias_init):
-                return TPDense(
-                    dense_fn=partial(
-                        nn.Dense,
-                        dtype=self.config.mlstm_cell.gate_dtype,
-                        features=num_local_heads,
-                        bias_init=bias_init,
-                    ),
-                    model_axis_name=self.config.parallel.model_axis_name,
-                    tp_mode="gather",
-                    kernel_init=nn.initializers.zeros,
-                    use_bias=True,
-                    skip_communication=True,
-                    name=name,
-                )
+        # Gates
+        def gate_layer(name, bias_init):
+            return TPDense(
+                dense_fn=partial(
+                    nn.Dense,
+                    dtype=self.config.mlstm_cell.gate_dtype,
+                    features=num_local_heads,
+                    bias_init=bias_init,
+                ),
+                model_axis_name=self.config.parallel.model_axis_name,
+                tp_mode="gather",
+                kernel_init=nn.initializers.zeros,
+                use_bias=True,
+                skip_communication=True,
+                name=name,
+            )
 
-            # Initialization function for the gate biases.
-            def gate_init(init_range):
-                if init_range is None:
-                    # Previous default behavior for input gate.
-                    init_fn = nn.initializers.normal(stddev=0.1)
-                elif isinstance(init_range, tuple):
-                    init_fn = bias_linspace_init(*init_range, axis_name=self.config.parallel.model_axis_name)
-                else:
-                    init_fn = nn.initializers.constant(init_range)
-                return init_fn
+        # Initialization function for the gate biases.
+        def gate_init(init_range):
+            if init_range is None:
+                # Previous default behavior for input gate.
+                init_fn = nn.initializers.normal(stddev=0.1)
+            elif isinstance(init_range, tuple):
+                init_fn = bias_linspace_init(*init_range, axis_name=self.config.parallel.model_axis_name)
+            else:
+                init_fn = nn.initializers.constant(init_range)
+            return init_fn
 
-            # Compute the gate pre-activations.
-            igate_preact = gate_layer(
-                bias_init=gate_init(self.config.mlstm_cell.igate_bias_init_range),
-                name="igate",
-            )(x)
-            fgate_preact = gate_layer(
-                bias_init=gate_init(self.config.mlstm_cell.fgate_bias_init_range),
-                name="fgate",
-            )(x)
+        # Compute the gate pre-activations.
+        igate_preact = gate_layer(
+            bias_init=gate_init(self.config.mlstm_cell.igate_bias_init_range),
+            name="igate",
+        )(x)
+        fgate_preact = gate_layer(
+            bias_init=gate_init(self.config.mlstm_cell.fgate_bias_init_range),
+            name="fgate",
+        )(x)
 
-            # Apply soft cap to the gate pre-activations.
-            igate_preact = soft_cap_logits(igate_preact, self.config.mlstm_cell.gate_soft_cap)
-            fgate_preact = soft_cap_logits(fgate_preact, self.config.mlstm_cell.gate_soft_cap)
+        # Apply soft cap to the gate pre-activations.
+        igate_preact = soft_cap_logits(igate_preact, self.config.mlstm_cell.gate_soft_cap)
+        fgate_preact = soft_cap_logits(fgate_preact, self.config.mlstm_cell.gate_soft_cap)
 
-            # Reset memory at document boundaries.
-            if document_borders is not None and self.config.mlstm_cell.reset_at_document_boundaries:
-                # Set forget gate to 0 at document boundaries.
-                fgate_preact = jnp.where(
-                    document_borders[..., None], self.config.mlstm_cell.reset_fgate_value, fgate_preact
-                )
+        # Reset memory at document boundaries.
+        if document_borders is not None and self.config.mlstm_cell.reset_at_document_boundaries:
+            # Set forget gate to 0 at document boundaries.
+            fgate_preact = jnp.where(
+                document_borders[..., None], self.config.mlstm_cell.reset_fgate_value, fgate_preact
+            )
 
         # mlstm branch
         q = q.reshape(B, S, num_local_heads, -1)  # (B, S, NH, DHQK)

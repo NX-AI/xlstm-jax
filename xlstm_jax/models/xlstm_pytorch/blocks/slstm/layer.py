@@ -88,7 +88,6 @@ class sLSTMLayer(nn.Module):
         x: torch.Tensor,
         initial_state: torch.Tensor | None = None,
         return_last_state=False,
-        **kwargs,
     ) -> torch.Tensor:
         B, S, _ = x.shape
 
@@ -112,5 +111,4 @@ class sLSTMLayer(nn.Module):
 
         if return_last_state:
             return out, last_state
-        else:
-            return out
+        return out
