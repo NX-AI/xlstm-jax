@@ -232,8 +232,8 @@ class ParseTokenizedArrayRecords(grain.MapTransform):
         """
         if isinstance(sequence, np.ndarray):
             assert sequence.ndim == 1, "Sequence must be one-dimensional."
-        assert np.max(sequence) <= np.iinfo(np.uint16).max, "Tokenizer above max vocab size for encoding."
-        return np.array(sequence, dtype=np.uint16).tobytes()
+        assert np.max(sequence).item() <= np.iinfo(np.int32).max, "Tokenizer above max vocab size for encoding."
+        return np.array(sequence, dtype=np.int32).tobytes()
 
     @staticmethod
     def bytestring_to_sequence(bytestring: bytes) -> list[int]:
@@ -245,7 +245,7 @@ class ParseTokenizedArrayRecords(grain.MapTransform):
         Returns:
             The token sequence.
         """
-        return np.frombuffer(bytestring, dtype=np.uint16).tolist()
+        return np.frombuffer(bytestring, dtype=np.int32).tolist()
 
 
 @dataclasses.dataclass

@@ -47,7 +47,7 @@ def preprocess_validation_set(
     """
     # Define paths
     data_path = Path(DatasetNameToArrayRecordsPath[dataset_name])  # path from which we load the dataset
-    out_path = Path(f"{data_path}-preprocessed_tok-{tokenizer_path.replace('/', '_')}_cl-{context_length}")
+    out_path = Path(f"{data_path}-preprocessed_tok-{tokenizer_path.replace('/', '_')}_ctx-{context_length}")
     out_path.mkdir(parents=True, exist_ok=True)
 
     # Define data configuration.
