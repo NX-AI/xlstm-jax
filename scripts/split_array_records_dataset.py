@@ -17,23 +17,18 @@ LOGGER = logging.getLogger(__name__)
 
 
 class DatasetNameToArrayRecordsPath(enum.StrEnum):
-    SlimPajama6B = "/nfs-gpu/xlstm/data/array_records/DKYoon_SlimPajama-6B"
-    SlimPajama627B = "/nfs-gpu/xlstm/data/array_records/cerebras_SlimPajama-627B"
     DCLM = "/nfs-gpu/xlstm/data/array_records/mlfoundations_dclm-baseline-1.0-parquet"
 
 
 class DatasetNameToSize(enum.IntEnum):
     """The number of examples in each dataset. Required because loading dataset in main and sub-processes gets stuck"""
 
-    SlimPajama6B = 5_489_000
-    SlimPajama627B = 590_394_625
     DCLM = 2_949_254_346
 
 
 SPLIT_FILES_FOLDER = "split_indices"
 
 
-# TODO: some duplication with hf_to_arrayrecord.py. But atm not worth refactoring. Leaving this TODO to check later.
 def split_array_records_dataset(
     dataset_name: DatasetNameToArrayRecordsPath,
     num_processes: int = None,
@@ -116,10 +111,6 @@ def split_array_records_dataset(
             assert num_shards_per_process.sum() == num_shards, "shards per process does not sum to total shards."
             shard_start_indices = np.cumsum(num_shards_per_process) - num_shards_per_process
 
-            # TODO: the variable name 'indices' has double-meaning:
-            #  1) randomly shuffled indices of the actual dataset and
-            #  2) the start and end indices of the numpy array holding the example indices.
-            #  This is confusing. Rename the variable to avoid confusion.
             # Start and end indices of the numpy array holding the random/shuffled example indices.
             iter_start_indices = shard_size * shard_start_indices
             iter_end_indices = iter_start_indices + shard_size * num_shards_per_process
