@@ -1,0 +1,4 @@
+defaults:
+  - small_sft_datasets_extended_arrayrecord
+  - default_arrayrecord_train
+  - _self_

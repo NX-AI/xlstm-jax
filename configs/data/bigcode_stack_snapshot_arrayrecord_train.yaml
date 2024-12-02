@@ -1,0 +1,4 @@
+defaults:
+  - bigcode_stack_snapshot_arrayrecord
+  - default_arrayrecord_train
+  - _self_

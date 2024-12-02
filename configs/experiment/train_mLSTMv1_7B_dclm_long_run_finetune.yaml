@@ -1,0 +1,92 @@
+# @package _global_
+defaults:
+  - /data@data_train.val1: dclm_arrayrecord_train
+  - /data@data_train.val2: smol_fineweb_edu_arrayrecord_train
+  - /data@data_train.val3: smol_cosmopedia_arrayrecord_train
+  - /data@data_train.val4: proofpile2_arrayrecord_train
+  - /data@data_train.val5: bigcode_stack_snapshot_arrayrecord_train
+  - /data@data_train.val6: small_sft_datasets_extended_arrayrecord_train
+  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - override /parallel: mLSTMv1_7B
+  - override /model: mLSTMv1_7B
+  - override /data: dclm_arrayrecord_train
+  - override /optimizer: adamw
+  - override /profiling: jax_profiling
+  - override /hydra/launcher: slurm_launcher
+  - _self_
+
+# specify the deltas from the defaults:
+task_name: DCLM
+logging_name: ${data.name}_${model.name}_ctx${context_length}_sep_finetune
+batch_size_per_device: 4
+context_length: 8192
+num_epochs: 1000
+num_train_steps: 550_000
+lr: 4e-4
+
+scheduler:
+  # Scheduler is set to reach 0.1 * lr after 495k decay steps (excludes the 3k warmup + 2k cooldown).
+  # To continue training with a new number of decay steps, need to adjust end lr factor to
+  # 0.1 ^ (new_decay_steps / 495_000).
+  end_lr_factor: 0.0811
+  warmup_steps: 3_000
+  cooldown_steps: 7_000
+
+trainer:
+  gradient_accumulate_steps: 1
+  check_val_every_n_steps: 2_500
+  log_logit_stats: false
+  log_intermediates: false
+  seed: 0
+
+checkpointing:
+  monitor: null
+  max_to_keep: 1
+
+data:
+  tokenizer_path: "EleutherAI/gpt-neox-20b"
+  data_shuffle_seed: 0
+
+data_train:
+  val1:
+    data_shuffle_seed: 2324
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight1: 0.4
+  val2:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight2: 0.15
+  val3:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight3: 0.10
+  val4:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight4: 0.15
+  val5:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight5: 0.15
+  val6:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  weight6: 0.05
+
+model:
+  reset_at_document_boundaries: true
+  vocab_size: -1
+  num_heads: 8
+
+profiling:
+  # Not profiling to reduce time and potential failure points.
+  profile_every_n_minutes: -1
+
+# Run command:
+# PYTHONPATH=. python scripts/resume_training_with_hydra.py  +experiment=train_mLSTMv1_7B_dclm_long_run_finetune.yaml +resume_from_folder=/nfs-gpu/xlstm/logs/outputs/xlstm-jax/DCLM/dclm_mLSTMv1_7B_ctx8192_2024-11-15T12:48:22/0 +checkpoint_step=497500 +load_dataloaders=False
+hydra:
+  launcher:
+    nodes: 16
+    additional_parameters: {
+      "gpu-bind": "closest",
+      "wait-all-nodes": "1",
+      "time": "21-00:00:00",
+      "exclusive": "",
+    }
+  mode: MULTIRUN
