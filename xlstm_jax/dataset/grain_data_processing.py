@@ -46,6 +46,7 @@ def preprocess_dataset(
     grain_packing_bin_count: int | None = None,
     shift: bool = True,
     drop_remainder: bool = True,
+    num_epochs: int | None = None,
     tokenizer_cache_dir: str | None = None,
     max_steps_per_epoch: int | None = None,
     eod_token_id: int | None = None,
@@ -83,6 +84,12 @@ def preprocess_dataset(
             providing a number of epochs, the last batch of all epochs together will be
             dropped if this is set to `True`. If set to `False`, the last batch of all epochs
             together will be included in the iterator.
+        num_epochs: The number of epochs to train for. The dataset will be repeated for so
+            many epochs, and the shuffle order will be different for each epoch. If None,
+            the dataset will be repeated infinitely. Note that batches of an epoch can
+            spill over into the first batch of the next epoch, to avoid dropping data.
+            The argument `drop_remainder` controls whether the very last batch of all epochs
+            together is dropped. By default, use None (infinite epochs) for training and validation.
         tokenizer_cache_dir: The cache directory for the tokenizer.
         max_steps_per_epoch: The maximum number of steps per epoch. If provided, the iterator
             will stop after this many steps with a :class:`StopIteration` exception. Otherwise,
@@ -178,7 +185,7 @@ def preprocess_dataset(
         max_target_length,
         shuffle,
         data_shuffle_seed,
-        num_epochs=None,  # Infinite epochs
+        num_epochs=num_epochs,
         operations=operations,
         grain_packing=grain_packing,
         grain_packing_bin_count=grain_packing_bin_count,
@@ -272,6 +279,7 @@ def make_grain_iterator(
             grain_packing=config.grain_packing,
             grain_packing_bin_count=config.grain_packing_bin_count,
             drop_remainder=config.drop_remainder,
+            num_epochs=None,
             tokenizer_cache_dir=config.hf_cache_dir,
             max_steps_per_epoch=config.max_steps_per_epoch,
         )

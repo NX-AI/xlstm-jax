@@ -5,13 +5,22 @@ import os
 import sys
 from pathlib import Path
 
+os.environ["JAX_PLATFORMS"] = "cpu"
+# flake8: noqa E402
+
+import jax
 import numpy as np
 import tqdm
 from array_record.python.array_record_module import ArrayRecordWriter
 
 from xlstm_jax.dataset.configs import GrainArrayRecordsDataConfig
+from xlstm_jax.dataset.grain_data_processing import (
+    load_array_record_dataset,
+    make_grain_multihost_iterator,
+    preprocess_dataset,
+)
 from xlstm_jax.dataset.grain_transforms import ParseTokenizedArrayRecords
-from xlstm_jax.dataset.input_pipeline_interface import create_data_iterator
+from xlstm_jax.dataset.input_pipeline_interface import get_process_loading_data
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models.configs import ParallelConfig
 
@@ -84,7 +93,46 @@ def preprocess_validation_set(
     )
 
     # Create validation iterator
-    eval_iterator = create_data_iterator(config=eval_data_config, mesh=mesh)
+    config = eval_data_config
+    process_indices = get_process_loading_data(config=eval_data_config, mesh=mesh)
+    dataset = load_array_record_dataset(dataset_path=config.data_path / config.split)
+
+    # The below code is almost identical to create_data_iterator, except that here num_epochs=1 instead of None.
+    # In create_data_iterator, it is hardcoded to None (infinite eval),
+    # because it is assumed that we pad and manually raise a StopIteration.
+    grain_dataset, dataset = preprocess_dataset(
+        dataloading_host_index=process_indices.index(jax.process_index()),
+        dataloading_host_count=len(process_indices),
+        dataset=dataset,
+        data_column_name=config.data_column,
+        tokenize=config.tokenize_data,
+        global_batch_size=config.global_batch_size,
+        max_target_length=config.max_target_length,
+        shuffle=config.shuffle_data,
+        data_shuffle_seed=config.data_shuffle_seed,
+        tokenizer_path=config.tokenizer_path,
+        hf_access_token=config.hf_access_token,
+        add_bos=config.add_bos,
+        add_eos=config.add_eos,
+        add_eod=config.add_eod,
+        grain_packing=config.grain_packing,
+        grain_packing_bin_count=config.grain_packing_bin_count,
+        drop_remainder=config.drop_remainder,
+        num_epochs=1,
+        tokenizer_cache_dir=config.hf_cache_dir,
+        max_steps_per_epoch=config.max_steps_per_epoch,
+    )
+    eval_iterator = make_grain_multihost_iterator(
+        grain_datasets=[grain_dataset],
+        dataset_lengths=[len(dataset)],
+        global_mesh=mesh,
+        global_batch_size=config.global_batch_size,
+        dataloading_host_count=len(process_indices),
+        worker_count=config.worker_count,
+        worker_buffer_size=config.worker_buffer_size,
+        drop_remainder=config.drop_remainder,
+        batch_rampup_factors=config.batch_rampup_factors,
+    )
 
     # Write to disk. Since it is only the eval set, we just write into one file with a single process for simplicity.
     split_path = out_path / eval_data_config.split
@@ -138,7 +186,7 @@ if __name__ == "__main__":
     parser.add_argument("--context_length", type=int, default=8192, help="Context length.")
     parser.add_argument("--tokenizer_path", type=str, default="EleutherAI/gpt-neox-20b", help="Path to the tokenizer.")
     parser.add_argument("--grain_packing_batch_size", type=int, default=1024, help="Batch size for grain packing.")
-    parser.add_argument("--allow_overwrite", type=str, default=True, help="Whether existing file may be overwritten")
+    parser.add_argument("--allow_overwrite", type=str, default=False, help="Whether existing file may be overwritten")
     args = parser.parse_args()
 
     if args.tokenizer_path == "gpt2":
