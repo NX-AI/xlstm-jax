@@ -44,3 +44,27 @@ def test_invalid_override_type(hydra_setup):  # pylint: disable=unused-argument
         compose(config_name="parallel/synthetic", overrides=["parallel.fsdp_axis_size=1.5"])
 
     assert e.value.args[0] == "Error merging override parallel.fsdp_axis_size=1.5"
+
+
+def test_wrong_key_in_config(hydra_setup):
+    # Test that an error is raised when a wrong key is used in the config file.
+    with pytest.raises(ConfigCompositionException) as e:
+        compose(config_name="parallel/synthetic", overrides=["parallel.wrong_key=1"])
+
+    assert (
+        e.value.args[0]
+        == "Could not override 'parallel.wrong_key'.\nTo append to your config use +parallel.wrong_key=1"
+    )
+
+
+def test_wrong_comma_in_override(hydra_setup):
+    # Test that an error is raised when a comma is used in the overrides when
+    # a single value is expected.
+    with pytest.raises(ConfigCompositionException) as e:
+        compose(config_name="parallel/synthetic", overrides=["parallel.fsdp_axis_size=1,2"])
+
+    assert e.value.args[0] == (
+        "Ambiguous value for argument 'parallel.fsdp_axis_size=1,2'\n1. To use it as a list, "
+        "use key=[value1,value2]\n2. To use it as string, quote the value: key='value1,value2'\n3."
+        " To sweep over it, add --multirun to your command line"
+    )
