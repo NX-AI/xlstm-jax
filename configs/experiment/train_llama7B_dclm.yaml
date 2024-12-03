@@ -7,6 +7,7 @@ defaults:
   - override /data: dclm_arrayrecord_train
   - override /optimizer: adamw
   - override /scheduler: exponential_decay
+  - override /hydra/launcher: slurm_launcher
   - _self_
 
 # specify the deltas from the defaults:

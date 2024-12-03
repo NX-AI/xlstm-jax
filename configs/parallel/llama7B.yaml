@@ -1,0 +1,15 @@
+defaults:
+  - parallel_schema
+  - _self_
+
+
+fsdp_modules:
+  - "Embed"
+  - "LMHead"
+  - "TransformerBlock"
+remat:
+  - "AttnBlock"
+  - "FFNBlock"
+fsdp_axis_size: 8
+model_axis_size: 1
+data_axis_size: -1

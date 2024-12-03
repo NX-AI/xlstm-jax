@@ -14,7 +14,9 @@ context_length: 8192
 num_epochs: 1000
 num_train_steps: 95_000
 lr: 5e-4
-warmup_steps: 2000
+
+scheduler:
+  warmup_steps: 2000
 
 trainer:
   gradient_accumulate_steps: 1
