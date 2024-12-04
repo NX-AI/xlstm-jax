@@ -6,6 +6,8 @@ if __name__ == "__main__":
         ["AI-MO/NuminaMath-CoT", None],
         ["meta-math/MetaMathQA", None],
         ["HuggingFaceTB/smoltalk", "smol-magpie-ultra"],
+        ["HuggingFaceTB/smoltalk", "self-oss-instruct"],
+        ["HuggingFaceTB/smoltalk", "longalign"],
         ["allenai/tulu-v3.1-mix-preview-4096-OLMoE", None],
         ["teknium/OpenHermes-2.5", None],
         ["openai/gsm8k", "main"],
@@ -19,7 +21,7 @@ if __name__ == "__main__":
 
     base_path = "/nfs-gpu/xlstm/data/array_records_cooldown"
     base_path_ar = "/nfs-gpu/xlstm/data/array_records"
-    small_dataset_path = f"{base_path_ar}/small_sft_datasets/train"
+    small_dataset_path = f"{base_path_ar}/small_sft_datasets_extended/train"
     large_dataset_path = f"{base_path_ar}/large_sft_datasets/train"
 
     os.makedirs(small_dataset_path, exist_ok=True)
