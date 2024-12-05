@@ -28,8 +28,8 @@ from xlstm_jax.trainer.optimizer.scheduler import SchedulerConfig
 
 
 @dataclass
-class QuickHackModelConfig:
-    """TODO: This class will be deleted once Hydra instantiate or our own Registry is used."""
+class CombinedModelConfig:
+    """This class is a flat config that combines several sub-configs."""
 
     name: str
     vocab_size: int
@@ -82,9 +82,8 @@ class QuickHackModelConfig:
     theta: float
 
     def __post_init__(self):
-        """Once this class is removed due to Hydra instantiate or our own Registry, make sure that the
-        allowed backends are checked, similar to this"""
-        # Do the same for other parameters.
+        """make sure that the allowed backends are checked"""
+
         assert self.backend in typing.get_args(BackendType)
         assert self.backend_name in typing.get_args(BackendNameType)
         assert self.output_init_fn in typing.get_args(InitFnName)
@@ -92,6 +91,7 @@ class QuickHackModelConfig:
         assert self.init_distribution_embed in typing.get_args(InitDistribution)
         assert self.norm_type in typing.get_args(NormType)
         assert self.norm_type_v1 in typing.get_args(NormType)
+
         # If the soft caps are set to 0.0, set them to None.
         if self.logits_soft_cap <= 0.0:
             self.logits_soft_cap = None
@@ -124,36 +124,36 @@ class BaseLoggerConfig(LoggerConfig):
 class DataEvalConfig:
     """Supports maximum of 5 data evaluation configurations."""
 
-    val1: DataConfig | None = None
-    val2: DataConfig | None = None
-    val3: DataConfig | None = None
-    val4: DataConfig | None = None
-    val5: DataConfig | None = None
+    ds1: DataConfig | None = None
+    ds2: DataConfig | None = None
+    ds3: DataConfig | None = None
+    ds4: DataConfig | None = None
+    ds5: DataConfig | None = None
 
 
 @dataclass
 class DataTrainConfig:
     """Supports maximum of 10 data training configurations."""
 
-    val1: DataConfig | None = None
+    ds1: DataConfig | None = None
     weight1: float = 1.0
-    val2: DataConfig | None = None
+    ds2: DataConfig | None = None
     weight2: float = 1.0
-    val3: DataConfig | None = None
+    ds3: DataConfig | None = None
     weight3: float = 1.0
-    val4: DataConfig | None = None
+    ds4: DataConfig | None = None
     weight4: float = 1.0
-    val5: DataConfig | None = None
+    ds5: DataConfig | None = None
     weight5: float = 1.0
-    val6: DataConfig | None = None
+    ds6: DataConfig | None = None
     weight6: float = 1.0
-    val7: DataConfig | None = None
+    ds7: DataConfig | None = None
     weight7: float = 1.0
-    val8: DataConfig | None = None
+    ds8: DataConfig | None = None
     weight8: float = 1.0
-    val9: DataConfig | None = None
+    ds9: DataConfig | None = None
     weight9: float = 1.0
-    val10: DataConfig | None = None
+    ds10: DataConfig | None = None
     weight10: float = 1.0
 
 
@@ -162,8 +162,7 @@ class Config:
     """The base config class."""
 
     parallel: ParallelConfig = MISSING
-    data: DataConfig = MISSING
-    model: QuickHackModelConfig = MISSING
+    model: CombinedModelConfig = MISSING
     scheduler: SchedulerConfig = MISSING
     optimizer: OptimizerConfig = MISSING
     checkpointing: ModelCheckpointConfig = MISSING
@@ -200,7 +199,7 @@ def register_configs() -> None:
     cs.store(name="synthetic_data_schema", group="data", node=SyntheticDataConfig)
     cs.store(name="huggingface_hub_data_schema", group="data", node=HFHubDataConfig)
     cs.store(name="grain_arrayrecord_data_schema", group="data", node=GrainArrayRecordsDataConfig)
-    cs.store(name="model_schema", group="model", node=QuickHackModelConfig)
+    cs.store(name="model_schema", group="model", node=CombinedModelConfig)
     cs.store(name="scheduler_schema", group="scheduler", node=SchedulerConfig)
     cs.store(name="optimizer_schema", group="optimizer", node=OptimizerConfig)
 

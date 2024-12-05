@@ -1,16 +1,15 @@
 # @package _global_
 defaults:
-  - /data@data_train.val1: dclm_arrayrecord_train
-  - /data@data_train.val2: smol_fineweb_edu_arrayrecord_train
-  - /data@data_train.val3: smol_cosmopedia_arrayrecord_train
-  - /data@data_train.val4: proofpile2_arrayrecord_train
-  - /data@data_train.val5: bigcode_stack_snapshot_arrayrecord_train
-  - /data@data_train.val6: small_sft_datasets_extended_arrayrecord_train
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_train.ds1: dclm_arrayrecord_train
+  - /data@data_train.ds2: smol_fineweb_edu_arrayrecord_train
+  - /data@data_train.ds3: smol_cosmopedia_arrayrecord_train
+  - /data@data_train.ds4: proofpile2_arrayrecord_train
+  - /data@data_train.ds5: bigcode_stack_snapshot_arrayrecord_train
+  - /data@data_train.ds6: small_sft_datasets_extended_arrayrecord_train
+  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_7B
   - override /model: mLSTMv1_7B
-  - override /data: dclm_arrayrecord_train
   - override /optimizer: adamw
   - override /profiling: jax_profiling
   - override /hydra/launcher: slurm_launcher
@@ -18,7 +17,7 @@ defaults:
 
 # specify the deltas from the defaults:
 task_name: DCLM
-logging_name: ${data.name}_${model.name}_ctx${context_length}_sep_finetune
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_sep_finetune
 batch_size_per_device: 4
 context_length: 8192
 num_epochs: 1000
@@ -44,28 +43,24 @@ checkpointing:
   monitor: null
   max_to_keep: 1
 
-data:
-  tokenizer_path: "EleutherAI/gpt-neox-20b"
-  data_shuffle_seed: 0
-
 data_train:
-  val1:
+  ds1:
     data_shuffle_seed: 2324
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight1: 0.4
-  val2:
+  ds2:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight2: 0.15
-  val3:
+  ds3:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight3: 0.10
-  val4:
+  ds4:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight4: 0.15
-  val5:
+  ds5:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight5: 0.15
-  val6:
+  ds6:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight6: 0.05
 

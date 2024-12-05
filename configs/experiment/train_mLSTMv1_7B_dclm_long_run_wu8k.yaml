@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_train.ds1: dclm_arrayrecord_train
+  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_7B
   - override /model: mLSTMv1_7B
-  - override /data: dclm_arrayrecord_train
   - override /optimizer: adamw
   - override /profiling: jax_profiling
   - override /hydra/launcher: slurm_launcher
@@ -32,18 +32,19 @@ checkpointing:
   max_to_keep: null
   monitor: null
 
-data:
-  tokenizer_path: "EleutherAI/gpt-neox-20b"
-  data_shuffle_seed: 0
-  batch_rampup_factors:
-    0: 0.25
-    2_000: 0.5
-    4_000: 1.0
+data_train:
+  ds1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+    data_shuffle_seed: 0
+    batch_rampup_factors:
+      0: 0.25
+      2_000: 0.5
+      4_000: 1.0
 
 data_eval:
-  val1:
+  ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  val2:
+  ds2:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:

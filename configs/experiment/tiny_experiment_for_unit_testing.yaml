@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
+  - /data@data_train.ds1: synthetic
   - override /parallel: synthetic
-  - override /data: synthetic
   - override /model: mLSTMv1_165M
   - override /optimizer: adamw
 
@@ -15,10 +15,11 @@ parallel:
   fsdp_axis_size: 1
   data_axis_size: -1
 
-data:
-  max_target_length: ${context_length}
-  data_shuffle_seed: 42
-  num_batches: 10
+data_train:
+  ds1:
+    max_target_length: ${context_length}
+    data_shuffle_seed: 42
+    num_batches: 10
 
 model:
   name: mLSTMv1Debug

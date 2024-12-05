@@ -1,15 +1,14 @@
 # @package _global_
 defaults:
-  - /data@data_train.val1: fineweb_edu_arrayrecord_train
-  - /data@data_train.val2: dclm_arrayrecord_train
-  - /data@data_train.val3: zyda2_zyda_arrayrecord_train
-  - /data@data_train.val4: zyda2_dolmacc_arrayrecord_train
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_train.ds1: fineweb_edu_arrayrecord_train
+  - /data@data_train.ds2: dclm_arrayrecord_train
+  - /data@data_train.ds3: zyda2_zyda_arrayrecord_train
+  - /data@data_train.ds4: zyda2_dolmacc_arrayrecord_train
+  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_1.3B
   - override /model: mLSTMv1_1.3B
   - override /optimizer: adamw
-  - override /data: dclm_arrayrecord_train
   - _self_
 
 # specify the deltas from the defaults:
@@ -29,30 +28,25 @@ trainer:
 checkpointing:
   monitor: dclm_perplexity
 
-# The following is not directly used in the experiment, but for logging purposes.
-data:
-  # Name of the dataset. Used for logging.
-  name: zyda
-  tokenizer_path: "EleutherAI/gpt-neox-20b"
-
 data_train:
-  val1:
+  ds1:
+    name: zyda
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight1: 4.0
-  val2:
+  ds2:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight2: 4.0
-  val3:
+  ds3:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight3: 0.16
-  val4:
+  ds4:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
   weight4: 0.24
 
 data_eval:
-  val1:
+  ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  val2:
+  ds2:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:

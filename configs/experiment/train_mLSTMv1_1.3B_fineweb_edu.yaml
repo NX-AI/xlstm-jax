@@ -1,10 +1,10 @@
 # @package _global_
 defaults:
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.val2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_train.ds1: fineweb_edu_arrayrecord_train
+  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_1.3B
   - override /model: mLSTMv1_1.3B
-  - override /data: fineweb_edu_arrayrecord_train
   - override /optimizer: adamw
   - override /hydra/launcher: slurm_launcher
   - _self_
@@ -26,13 +26,14 @@ trainer:
 checkpointing:
   monitor: dclm_perplexity
 
-data:
-  tokenizer_path: "EleutherAI/gpt-neox-20b"
+data_train:
+  ds1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 data_eval:
-  val1:
+  ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  val2:
+  ds2:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:

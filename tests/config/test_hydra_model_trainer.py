@@ -24,8 +24,8 @@ def test_hydra_trainer(tmp_path: Path, model_name: str):
             overrides=[
                 "+experiment=tiny_experiment_for_unit_testing",
                 f"log_path={tmp_path}",
-                f"data.global_batch_size={global_batch_size}",
-                f"data.max_target_length={context_length}",
+                f"data_train.ds1.global_batch_size={global_batch_size}",
+                f"data_train.ds1.max_target_length={context_length}",
                 f"model.name={model_name}",
             ],
             return_hydra_config=True,

@@ -1,7 +1,7 @@
 # @package _global_
 defaults:
+  - /data@data_train.ds1: synthetic
   - override /parallel: synthetic
-  - override /data: synthetic
   - override /model: mLSTMv1_165M
   - _self_
 

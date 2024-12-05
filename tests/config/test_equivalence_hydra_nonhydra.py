@@ -136,6 +136,7 @@ def train_with_hydra(tmpdir):
         cfg = compose(
             config_name="config",
             overrides=[
+                "+experiment=data_for_unit_test",
                 f"batch_size_per_device={batch_size_per_device}",
                 f"context_length={context_length}",
                 f"log_path={tmpdir}",
@@ -144,10 +145,10 @@ def train_with_hydra(tmpdir):
                 "parallel.fsdp_axis_size=1",
                 "parallel.model_axis_size=1",
                 "parallel.data_axis_size=-1",
-                f"data.global_batch_size={pytest.num_devices * 2}",
-                f"data.max_target_length={context_length}",
-                "data.data_shuffle_seed=42",
-                "data.num_batches=53",
+                f"data_train.ds1.global_batch_size={pytest.num_devices * 2}",
+                f"data_train.ds1.max_target_length={context_length}",
+                "data_train.ds1.data_shuffle_seed=42",
+                "data_train.ds1.num_batches=53",
                 "model.vocab_size=20",
                 "model.embedding_dim=128",
                 "model.num_blocks=2",

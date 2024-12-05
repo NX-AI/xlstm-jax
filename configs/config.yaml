@@ -2,7 +2,6 @@
 defaults:
   - config_schema
   - parallel: synthetic
-  - data: synthetic
   - model: mLSTM120M
   - scheduler: exponential_decay
   - optimizer: adamw
@@ -34,7 +33,7 @@ num_epochs: 1000
 
 # Task name determines output directory
 task_name: ??? # must be set in the experiment file
-logging_name: ${data.name}_${model.name}_ctx${context_length}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}
 
 # Set hydra working dir
 base_dir: /nfs-gpu/xlstm/logs/outputs/xlstm-jax # this should be changed when running local experiments

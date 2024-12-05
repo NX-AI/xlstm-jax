@@ -28,8 +28,8 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
     overrides = [
         "+experiment=tiny_experiment_for_unit_testing",
         f"log_path={tmp_path}",
-        f"data.global_batch_size={global_batch_size}",
-        f"data.max_target_length={context_length}",
+        f"data_train.ds1.global_batch_size={global_batch_size}",
+        f"data_train.ds1.max_target_length={context_length}",
     ]
 
     # Save overrides in tmp_folder at same location where hydra would save them.
@@ -39,7 +39,10 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
 
     # Test get_cli_command_to_resume_training
     args = argparse.Namespace(
-        resume_from_folder=tmp_path, checkpoint_step=-1, new_overrides="data.global_batch_size=2", use_slurm=False
+        resume_from_folder=tmp_path,
+        checkpoint_step=-1,
+        new_overrides="data_train.ds1.global_batch_size=2",
+        use_slurm=False,
     )
 
     # Make sure that the command is correct.
@@ -48,11 +51,11 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
         command == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py  "
         f"+experiment=tiny_experiment_for_unit_testing "
         f"log_path={tmp_path} "
-        f"data.global_batch_size={global_batch_size} "
-        f"data.max_target_length={context_length} "
+        f"data_train.ds1.global_batch_size={global_batch_size} "
+        f"data_train.ds1.max_target_length={context_length} "
         f"+resume_from_folder={tmp_path} "
         f"+checkpoint_step=-1 "
-        f"data.global_batch_size=2"
+        f"data_train.ds1.global_batch_size=2"
     )
 
     # Test get_cli_command_to_resume_training
@@ -65,8 +68,8 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
         f"--multirun hydra/launcher=slurm_launcher "
         f"+experiment=tiny_experiment_for_unit_testing "
         f"log_path={tmp_path} "
-        f"data.global_batch_size={global_batch_size} "
-        f"data.max_target_length={context_length} "
+        f"data_train.ds1.global_batch_size={global_batch_size} "
+        f"data_train.ds1.max_target_length={context_length} "
         f"+resume_from_folder={tmp_path} "
         f"+checkpoint_step=95000 "
         f"lr=3e-5"
@@ -88,8 +91,8 @@ def test_training_continuation_with_cli_command(tmp_path: Path):
     overrides = [
         "+experiment=tiny_experiment_for_unit_testing",
         f"log_path={tmp_path}",
-        f"data.global_batch_size={global_batch_size}",
-        f"data.max_target_length={context_length}",
+        f"data_train.ds1.global_batch_size={global_batch_size}",
+        f"data_train.ds1.max_target_length={context_length}",
         "logger.cmd_logging_name=unit_test",
         "num_train_steps=10",
     ]

@@ -1,9 +1,9 @@
 # @package _global_
 defaults:
-  - /data@data_eval.val1: slimpajama_627B_arrayrecord_eval_preprocessed_gpt2
+  - /data@data_train.ds1: slimpajama_627B_arrayrecord_train  # uses gpt2 by default
+  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed_gpt2
   - override /parallel: mLSTMv1_1.3B
   - override /model: mLSTMv1_1.3B
-  - override /data: slimpajama_627B_arrayrecord_train  # uses gpt2 by default
   - override /optimizer: adamw
   - _self_
 

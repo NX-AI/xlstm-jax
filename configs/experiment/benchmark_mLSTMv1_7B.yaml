@@ -1,5 +1,6 @@
 # @package _global_
 defaults:
+  - /data@data_train.ds1: synthetic
   - override /parallel: mLSTMv1_1.3B  # No need for FSDP, thus selecting smaller model config here.
   - override /model: mLSTMv1_7B
   - override /optimizer: sgd

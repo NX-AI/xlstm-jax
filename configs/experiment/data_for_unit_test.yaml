@@ -1,0 +1,3 @@
+# @package _global_
+defaults:
+  - /data@data_train.ds1: synthetic

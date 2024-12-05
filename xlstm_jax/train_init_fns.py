@@ -62,14 +62,20 @@ def init_data_iterator(
     Returns:
         Training and evaluation data iterators.
     """
-    if cfg.data_eval is None and cfg.data_train is None:
-        # If config eval is None, we use the config class to split the data into train and eval.
-        train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="train")
-        eval_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh, create_split="eval")
+    # Get number of training datasets.
+    n_train_datasets = len(
+        [key for key in cfg.data_train.keys() if key.startswith("ds") and cfg.data_train[key] is not None]
+    )
+
+    if cfg.data_eval is None and n_train_datasets == 1:
+        # If config eval is None, we use the train data config class to split the data into train and eval.
+        train_data_iterator = init_single_data_iterator(cfg=cfg.data_train.ds1, mesh=mesh, create_split="train")
+        eval_data_iterator = init_single_data_iterator(cfg=cfg.data_train.ds1, mesh=mesh, create_split="eval")
     else:
-        # Create train data iterator.
-        if cfg.data_train is None:
-            train_data_iterator = init_single_data_iterator(cfg=cfg.data, mesh=mesh)
+        # Create train data iterator. Depending on whether we have a single or multiple datasets, we need to use
+        # either init_single_data_iterator or init_mixed_data_iterator.
+        if n_train_datasets == 1:
+            train_data_iterator = init_single_data_iterator(cfg=cfg.data_train.ds1, mesh=mesh)
         else:
             train_data_iterator = init_mixed_data_iterator(cfg=cfg.data_train, mesh=mesh)
 
@@ -165,7 +171,7 @@ def init_mixed_data_iterator(
 
     data_configs, data_weights = [], []
     for key in cfg:
-        if not key.startswith("val") or cfg[key] is None:
+        if not key.startswith("ds") or cfg[key] is None:
             continue
         data_config = cfg[key]
         if data_config.data_config_type not in config_classes:
@@ -196,17 +202,17 @@ def get_tokenizer_vocab_size(cfg: DictConfig, next_multiple_of: int = 1) -> int:
         The vocabulary size, increased to the next multiple of `next_multiple_of`.
     """
     assert hasattr(
-        cfg.data, "tokenizer_path"
+        cfg.data_train.ds1, "tokenizer_path"
     ), "Tokenizer path is not defined in the config, cannot determine vocab size."
     tokenizer = load_tokenizer(
-        cfg.data.tokenizer_path,
-        add_bos=cfg.data.get("add_bos", False),
-        add_eos=cfg.data.get("add_eos", False),
-        hf_access_token=cfg.data.get("hf_access_token", None),
-        cache_dir=cfg.data.get("hf_cache_dir", None),
+        cfg.data_train.ds1.tokenizer_path,
+        add_bos=cfg.data_train.ds1.get("add_bos", False),
+        add_eos=cfg.data_train.ds1.get("add_eos", False),
+        hf_access_token=cfg.data_train.ds1.get("hf_access_token", None),
+        cache_dir=cfg.data_train.ds1.get("hf_cache_dir", None),
     )
     vocab_size = tokenizer.vocab_size
-    log_info(f"Tokenizer {cfg.data.tokenizer_path} has vocabulary size: {vocab_size}.")
+    log_info(f"Tokenizer {cfg.data_train.ds1.tokenizer_path} has vocabulary size: {vocab_size}.")
     # Round up to the next multiple.
     if next_multiple_of > 1:
         vocab_size = int(math.ceil(vocab_size / next_multiple_of) * next_multiple_of)
@@ -224,11 +230,6 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
     Returns:
         Initialized model configuration.
     """
-    # Update the model config with the vocabulary size.
-    if cfg.model.vocab_size <= 0:
-        log_info("Vocabulary size not set in config. Determining vocabulary size from tokenizer.")
-        cfg.model.vocab_size = get_tokenizer_vocab_size(cfg, next_multiple_of=64)
-        log_info(f"Vocabulary size: {cfg.model.vocab_size}.")
     # Update the model config with the vocabulary size.
     if cfg.model.vocab_size <= 0:
         log_info("Vocabulary size not set in config. Determining vocabulary size from tokenizer.")
