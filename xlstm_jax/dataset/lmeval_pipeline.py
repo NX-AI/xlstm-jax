@@ -12,6 +12,7 @@ from xlstm_jax.dataset import grain_transforms
 from xlstm_jax.dataset.batch import LLMIndexedBatch
 from xlstm_jax.dataset.hf_tokenizer import load_tokenizer
 
+from .grain_iterator import shard_grain_dataset
 from .multihost_dataloading import MultiHostDataLoadIterator
 
 LOGGER = logging.getLogger(__name__)
@@ -98,6 +99,13 @@ class CompleteLLMIndexedBatch(grain.MapTransform):
 
 
 def empty_llm_indexed_sample():
+    """
+    Generator for an empty llm_indexed sample that is used in paddings.
+    This creates just the data for a single sample not a full batch object.
+
+    Returns:
+        An empty / padding sample for an LLMIndexedBatch
+    """
     return {
         "sequence_idx": np.zeros([1], dtype=np.int32),
         "document_idx": np.zeros([1], dtype=np.int32),
@@ -132,9 +140,10 @@ class PadBatchDataset(grain.MapDataset):
     Creates a dataset that has only full batches by adding padding elements.
 
     Args:
-        dataset: The existing dataset
-        multiple_of:  Global batch size to be padded towards
-        pad_elem:  Empty element to be appended
+        dataset: The existing dataset.
+        multiple_of: Global batch size to be padded towards.
+        min_length: Minimum (padded) length/size of the dataset.
+        pad_elem: Empty element to be appended.
 
     >>> PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, pad_elem=0)[3]
     0
@@ -142,10 +151,11 @@ class PadBatchDataset(grain.MapDataset):
     4
     """
 
-    def __init__(self, dataset: grain.MapDataset, multiple_of: int, pad_elem: Any):
+    def __init__(self, dataset: grain.MapDataset, multiple_of: int, min_length: int, pad_elem: Any):
         super().__init__(dataset)
         self.dataset = dataset
         self.multiple_of = multiple_of
+        self.min_length = min_length
         self.pad_elem = pad_elem
 
     def __getitem__(self, idx: int) -> Any:
@@ -158,12 +168,12 @@ class PadBatchDataset(grain.MapDataset):
         """
         if idx < len(self.dataset):
             return self.dataset[idx]
-        if idx < ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of:
+        if idx < ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of or idx < self.min_length:
             return self.pad_elem
         raise IndexError
 
     def __len__(self):
-        return ((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of
+        return max(((len(self.dataset) - 1) // self.multiple_of + 1) * self.multiple_of, self.min_length)
 
 
 def _pad_batch_multiple(
@@ -409,13 +419,9 @@ def lmeval_preprocessing_pipeline(
     """
     Create a mult-host dataloader for LMEval datasets for loglikelihood and
     loglikelihood_rolling tasks. This does not support generation tasks currently.
-    Also, it just supports recurrent models that can take infinite sequence lengths.
+    Also, it just support recurrent models that can take infinite sequence lengths.
     For sequence_length limited models use the `HFTokenizeLogLikelihoodRolling` from
     `lmeval_dataset.py`.
-    Internal Operation:
-    The dataset is fully loaded on all hosts / workers, sorted by sequence length,
-    padded in batch and sequence length. Only then it is sharded for a combined global
-    batch that has consistent sequence length over all hosts.
 
     Args:
         dataloading_host_index: The index of the dataloading host. Will be used to select the
@@ -442,8 +448,14 @@ def lmeval_preprocessing_pipeline(
         MultiHostDataLoadIterator for the lmeval dataset.
     """
     grain_dataset = grain.MapDataset.source(dataset).map_with_index(lambda idx, x: {"idx": idx, "req": x})
-    dataset_size = len(grain_dataset)
-    # do NOT! slice dataset here as single sequences have to have the same padded length for proper batching
+    # effectively all shards have to be padded to the same size to enable proper sharded batching
+    slice_size = ((len(grain_dataset) - 1) // dataloading_host_count) + 1
+    # shard the dataset
+    grain_dataset = shard_grain_dataset(
+        grain_dataset=grain_dataset,
+        dataloading_host_index=dataloading_host_index,
+        dataloading_host_count=dataloading_host_count,
+    )
 
     if tokenizer_path is not None:
         tokenizer = load_tokenizer(tokenizer_path, hf_access_token, tokenizer_cache_dir)
@@ -475,41 +487,31 @@ def lmeval_preprocessing_pipeline(
         for operation in operations:
             grain_dataset = grain_dataset.map(operation)
 
-    grain_dataset = PadBatchDataset(grain_dataset, multiple_of=global_batch_size, pad_elem=empty_llm_indexed_sample())
+    grain_dataset = PadBatchDataset(
+        grain_dataset,
+        multiple_of=global_batch_size // dataloading_host_count,
+        min_length=slice_size,
+        pad_elem=empty_llm_indexed_sample(),
+    )
 
     # Sort dataset wrt. token sequence length (longest sequence first), enables minimal padding
     grain_dataset = SortedDataset(grain_dataset, key=token_length, reverse=True)
 
-    grain_dataset = PadSequenceInBatchDataset(
-        grain_dataset, batch_size=global_batch_size, multiple_of=padding_multiple, pad_value=0
-    )
-
-    # Re-Shuffle indices such that ordering is kept inside a global batch
-    grain_dataset = MultihostSortedRemapDataset(
-        grain_dataset, global_batch_size=global_batch_size, dataloader_host_count=dataloading_host_count
-    )
-
-    def batch_concatenate(inp: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
-        return {key: np.concatenate([elem[key] for elem in inp], axis=0) for key in inp[0]}
-
-    # Moved from the early sequence processing to this point after tokenization+padding+batching
-    dataset_size = len(grain_dataset)
-    slice_size = dataset_size // dataloading_host_count
-    slice_remainder = dataset_size % dataloading_host_count
-    assert slice_remainder == 0, "Padding should have taken care of remaining sliced samples"
-    host_slice_start = dataloading_host_index * slice_size
-    host_slice_end = host_slice_start + slice_size
-    host_slice = slice(host_slice_start, host_slice_end)
-    grain_dataset = grain_dataset.slice(host_slice)
-    LOGGER.info(f"Host {dataloading_host_index} has slice {host_slice} with global dataset size {dataset_size}.")
-    assert slice_remainder == 0, (
-        f"Bad Padding, the should actually be no leftover slice ds: {dataset_size}, "
-        f"sl: {slice_size}, dl: {dataloading_host_count}"
-    )
+    def batch_pad(batch: list[dict[str, np.ndarray]]) -> dict[str, np.ndarray]:
+        return {
+            key: _pad_batch_multiple(
+                [item[key] for item in batch],
+                multiple_of=padding_multiple,
+                batch_size_pad=global_batch_size // dataloading_host_count,
+                axis=1,
+            )
+            for key in batch[0]
+        }
 
     grain_dataset = grain_dataset.batch(
-        global_batch_size // dataloading_host_count, drop_remainder=False, batch_fn=batch_concatenate
+        global_batch_size // dataloading_host_count, drop_remainder=False, batch_fn=batch_pad
     )
+
     grain_dataset = grain_dataset.map(grain_transforms.InferSegmentations(eod_token_id=eos_token_id))
 
     iterator_length = (len(dataset) - 1) // global_batch_size + 1
@@ -542,6 +544,8 @@ def lmeval_preprocessing_pipeline(
         iterator_length=iterator_length,
         dataset_size=len(dataset),
         reset_after_epoch=True,
+        pad_shapes=True,
+        pad_value=0,
     )
 
     return multihost_gen

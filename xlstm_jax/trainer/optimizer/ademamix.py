@@ -13,7 +13,6 @@ import chex
 import jax
 import jax.numpy as jnp
 import optax
-from jax import tree_util as jtu
 from optax._src import base, combine, numerics, transform, utils
 
 from xlstm_jax.common_types import PyTree
@@ -194,7 +193,7 @@ def scale_by_ademamix(
         count_m2_inc = numerics.safe_int32_increment(state.count_m2)
         m1_hat = tree_bias_correction(m1, b1, count_inc)
         nu_hat = tree_bias_correction(nu, b2, count_inc)
-        updates = jtu.tree_map(
+        updates = jax.tree.map(
             lambda m1_, m2_, v_: (m1_ + c_alpha * m2_) / (jnp.sqrt(v_ + eps_root) + eps), m1_hat, m2, nu_hat
         )
         m1 = tree_cast(m1, mu_dtype)
@@ -207,7 +206,7 @@ def scale_by_ademamix(
 def tree_cast(tree: PyTree, dtype: jnp.dtype) -> PyTree:
     """Cast tree to given dtype, skip if None."""
     if dtype is not None:
-        return jtu.tree_map(lambda t: t.astype(dtype), tree)
+        return jax.tree.map(lambda t: t.astype(dtype), tree)
     return tree
 
 
@@ -224,7 +223,7 @@ def tree_zeros_like(
     Returns:
         an all-zeros tree with the same structure as ``tree``.
     """
-    return jtu.tree_map(lambda x: jnp.zeros_like(x, dtype=dtype), tree)
+    return jax.tree.map(lambda x: jnp.zeros_like(x, dtype=dtype), tree)
 
 
 def tree_update_moment(updates: PyTree, moments: PyTree, decay: float | jax.Array, order: float | jax.Array) -> PyTree:
@@ -239,7 +238,7 @@ def tree_update_moment(updates: PyTree, moments: PyTree, decay: float | jax.Arra
     Returns:
         The updated moments.
     """
-    return jtu.tree_map(lambda g, t: (1 - decay) * (g**order) + decay * t, updates, moments)
+    return jax.tree.map(lambda g, t: (1 - decay) * (g**order) + decay * t, updates, moments)
 
 
 def tree_update_moment_per_elem_norm(
@@ -266,7 +265,7 @@ def tree_update_moment_per_elem_norm(
             half_order = int(half_order)
         return numerics.abs_sq(g) ** half_order
 
-    return jtu.tree_map(lambda g, t: (1 - decay) * orderth_norm(g) + decay * t, updates, moments)
+    return jax.tree.map(lambda g, t: (1 - decay) * orderth_norm(g) + decay * t, updates, moments)
 
 
 @functools.partial(jax.jit, inline=True)

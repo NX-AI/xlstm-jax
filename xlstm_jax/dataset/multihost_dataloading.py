@@ -33,12 +33,23 @@ import numpy as np
 import tensorflow as tf  # pylint: disable=g-import-not-at-top
 from jax.sharding import Mesh, NamedSharding, PartitionSpec
 
+from xlstm_jax.common_types import PyTree
+
 LOGGER = logging.getLogger(__name__)
 
 
 def _build_global_shape_and_sharding(
     local_shape: tuple[int, ...], global_mesh: Mesh
 ) -> tuple[tuple[int, ...], NamedSharding]:
+    """Create the global_shape and sharding based on the local_shape and global_mesh.
+
+    Args:
+        local_shape: Local tensor shape
+        global_mesh: Global mesh of devices
+
+    Returns:
+        Global tensor shape, Named Sharding of the mesh
+    """
     sharding = NamedSharding(global_mesh, PartitionSpec(global_mesh.axis_names))
 
     global_shape = (jax.process_count() * local_shape[0],) + local_shape[1:]
@@ -47,7 +58,16 @@ def _build_global_shape_and_sharding(
 
 
 def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
-    """Put local sharded array into local devices"""
+    """Put host sharded array into devices within a global sharded array.
+
+    Args:
+        path: Tree def path of the array in a PyTree struct (for debugging purposes only)
+        array: Distributed host array.
+        global_mesh: Global mesh for the distributed array.
+
+    Returns:
+        Distributed device array
+    """
     global_shape, sharding = _build_global_shape_and_sharding(np.shape(array), global_mesh)
 
     try:
@@ -63,8 +83,43 @@ def _form_global_array(path, array: np.ndarray, global_mesh: Mesh) -> jax.Array:
     return jax.make_array_from_single_device_arrays(global_shape, sharding, local_device_buffers)
 
 
-def get_next_batch_sharded(local_iterator: Iterator, global_mesh: Mesh) -> jax.Array:
-    """Splits the host loaded data equally over all devices."""
+def _pad_array_to_shape(array_and_shape: tuple[np.ndarray, tuple[int, ...]], pad_value: int | float = 0):
+    """Pad an array to a given shape by given values. Array and shape are inside a shared tuple to
+    enable easier mapping from a zip().
+
+    Args:
+        array_and_shape: The array and shape it should be padded to.
+        pad_value: Padding value.
+
+    Returns:
+        Padded array.
+
+    >>> np.allclose(
+    ...     _pad_array_to_shape((np.array([[1], [2]]), (3, 2)), pad_value=0),
+    ...     np.array([[1, 0], [2, 0], [0, 0]]))
+    True
+
+    """
+    array, shape = array_and_shape
+    assert array.ndim == len(shape), f"Array dims {array.ndim} != {len(shape)}, for shapes {array.shape}, {shape}"
+    assert all((array.shape[i] <= s for i, s in enumerate(shape))), "Array has to be smaller than final padded shape."
+    return np.pad(array, tuple((0, s - array.shape[i]) for i, s in enumerate(shape)), constant_values=pad_value)
+
+
+def get_next_batch_sharded(
+    local_iterator: Iterator, global_mesh: Mesh, pad: bool = False, pad_value: int = 0
+) -> PyTree:
+    """Splits the host loaded data equally over all devices. Optionally pad arrays for equal sizes.
+
+    Args:
+        local_iterator: Local dataloader iterator.
+        global_mesh: Global device mesh.
+        pad: Whether to pad the batch.
+        pad_value: Value to pad the batch with. Defaults to zero.
+
+    Returns:
+        Optionally padded, sharded data array.
+    """
 
     SLEEP_TIME = 10
     MAX_DATA_LOAD_ATTEMPTS = 30
@@ -83,6 +138,22 @@ def get_next_batch_sharded(local_iterator: Iterator, global_mesh: Mesh) -> jax.A
     # Try one last time, if this fails we will see the full stack trace.
     if not loaded_data_success:
         local_data = next(local_iterator)
+
+    # potentially pad device batches to one largest common shape on all devices
+    if pad:
+        shape_struct = jax.tree.map(lambda x: np.array(np.shape(x)), local_data)
+        if jax.process_count() > 1:
+            all_shapes = jax.experimental.multihost_utils.process_allgather(shape_struct, tiled=False)
+        else:
+            all_shapes = jax.tree.map(lambda x: x[None, :], shape_struct)
+        reduce_shapes = jax.tree.map(partial(np.max, axis=0), all_shapes)
+        leave_shapes, treedef = jax.tree.flatten(reduce_shapes)
+        local_data_flat, _ = jax.tree.flatten(local_data)
+
+        local_data_padded_flat = map(
+            partial(_pad_array_to_shape, pad_value=pad_value), zip(local_data_flat, leave_shapes)
+        )
+        local_data = jax.tree.unflatten(treedef, local_data_padded_flat)
 
     input_gdas = jtu.tree_map_with_path(partial(_form_global_array, global_mesh=global_mesh), local_data)
 
@@ -108,6 +179,8 @@ class MultiHostDataLoadIterator:
             after each epoch, otherwise it will continue from where it left off. If you have an indefinite iterator
             (e.g. train iterator with grain and shuffle), this should be set to `False`. For un-shuffled iterators in
             grain (e.g. validation), this should be set to `True`.
+        pad_shapes: Whether to pad arrays to a common shape across all devices before merging.
+        pad_value: Value to use for padding. Defaults to zero.
     """
 
     def __init__(
@@ -117,6 +190,8 @@ class MultiHostDataLoadIterator:
         iterator_length: int | None = None,
         dataset_size: int | None = None,
         reset_after_epoch: bool = False,
+        pad_shapes: bool = False,
+        pad_value: int | float = 0,
     ):
         self.global_mesh = global_mesh
         self.dataloader = dataloader
@@ -125,6 +200,8 @@ class MultiHostDataLoadIterator:
         self.reset_after_epoch = reset_after_epoch
         self.state_set = False
         self.step_counter = 0
+        self.pad_shapes = pad_shapes
+        self.pad_value = pad_value
         if isinstance(self.dataloader, tf.data.Dataset):
             self.local_iterator = self.dataloader.as_numpy_iterator()
         elif isinstance(self.dataloader, Iterable):
@@ -176,4 +253,6 @@ class MultiHostDataLoadIterator:
         if self.iterator_length is not None and self.step_counter >= self.iterator_length:
             raise StopIteration
         self.step_counter += 1
-        return get_next_batch_sharded(self.local_iterator, self.global_mesh)
+        return get_next_batch_sharded(
+            self.local_iterator, self.global_mesh, pad=self.pad_shapes, pad_value=self.pad_value
+        )
