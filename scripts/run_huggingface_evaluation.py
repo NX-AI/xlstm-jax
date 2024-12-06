@@ -9,7 +9,19 @@ LOGGER = logging.getLogger(__file__)
 
 
 def main():
-    parser = argparse.ArgumentParser("Run the default evaluation for a checkpoint via LightEval")
+    """
+    Script for running the the HuggingFace Leaderboard tasks, using lighteval and LM Evaluation Harness lm_eval scripts.
+    For the new leaderboard it is using lm_eval (assuming it is installed from the HF github repo according to
+    https://huggingface.co/docs/leaderboards/open_llm_leaderboard/about#reproducibility
+
+    For the old leaderboard, we use lighteval with the tasks according to the standard settings from:
+    https://huggingface.co/spaces/open-llm-leaderboard-old/open_llm_leaderboard
+
+    This script assumes a `transformers` library to be installed that contains `xLSTMForCausalLM`.
+
+    Please use your own `eval_output_dir`, `checkpoint_dir` and `default_converted_checkpoint_dir` flags.
+    """
+    parser = argparse.ArgumentParser("Run the default evaluation for a checkpoint via LightEval or HuggingFace lm_eval")
     parser.add_argument("--checkpoint_dir", help="Original Orbax checkpoint dir including the step idx")
     parser.add_argument(
         "--default_converted_checkpoint_dir", type=str, default="/nfs-gpu/xlstm/converted_model_checkpoints"
@@ -32,7 +44,7 @@ def main():
 
     if args.eval_output_dir is None:
         if args.old_leaderboard:
-            eval_output_dir = "/nfs-gpu/xlstm/logs/evals/"
+            eval_output_dir = "/nfs-gpu/xlstm/logs/evals_leaderboardv1/"
         else:
             eval_output_dir = "/nfs-gpu/xlstm/logs/evals_leaderboard/"
     else:
