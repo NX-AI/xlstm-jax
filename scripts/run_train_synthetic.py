@@ -81,7 +81,7 @@ def main_train(args: argparse.Namespace):
     # Create trainer with sub-configs.
     trainer = LLMTrainer(
         LLMTrainerConfig(
-            callbacks=(
+            callbacks=[
                 ModelCheckpointConfig(
                     monitor="perplexity",
                     max_to_keep=4,
@@ -90,7 +90,7 @@ def main_train(args: argparse.Namespace):
                 ),
                 LearningRateMonitorConfig(),
                 JaxProfilerConfig(),
-            ),
+            ],
             logger=LoggerConfig(
                 log_path=log_path,
                 log_every_n_steps=20,
@@ -106,7 +106,7 @@ def main_train(args: argparse.Namespace):
             log_grad_norm_per_param=False,
             log_param_norm=True,
             log_param_norm_per_param=False,
-            default_train_log_modes=("mean", "std", "max"),
+            default_train_log_modes=["mean", "std", "max"],
             log_logit_stats=True,
             log_intermediates=True,
         ),

@@ -4,7 +4,7 @@ from pathlib import Path
 
 import jax
 
-from xlstm_jax.dataset import HFHubDataConfig, LLMBatch, create_data_iterator
+from xlstm_jax.dataset import GrainArrayRecordsDataConfig, LLMBatch, create_data_iterator
 from xlstm_jax.distributed import set_XLA_flags
 from xlstm_jax.distributed.mesh_utils import initialize_mesh
 from xlstm_jax.models import ModelConfig
@@ -87,39 +87,40 @@ def main_train(args: argparse.Namespace):
     log_info(f"Devices: {jax.devices()}")
 
     # General hyperparameters.
-    batch_size = global_model_config["batch_size_per_device"] * len(jax.devices())
+    batch_size_per_device = global_model_config["batch_size_per_device"]
+    batch_size = batch_size_per_device * len(jax.devices())
     context_length = 2048
-    num_train_steps = 300_000
+    num_train_steps = 95_000
     lr = global_model_config.get("lr", 1e-3)
     log_path = Path(args.log_dir)
 
     # Create data iterator.
     log_info("Creating data iterator.")
-    data_name = "600B" if args.use_full_dataset else "6B"
+    data_name = "627B" if args.use_full_dataset else "6B"
     dataset_name = "cerebras/SlimPajama-627B" if args.use_full_dataset else "DKYoon/SlimPajama-6B"
-    train_config, eval_config = HFHubDataConfig.create_train_eval_configs(
+    train_config, eval_config = GrainArrayRecordsDataConfig.create_train_eval_configs(
+        train_kwargs={"grain_packing": True, "grain_packing_bin_count": batch_size_per_device * 8},
+        eval_kwargs={"grain_packing": False},  # Packing is deactivated for eval to make it reproducible across epochs
         global_batch_size=batch_size,
-        hf_path=dataset_name,
-        hf_cache_dir="/nfs-gpu/xlstm/data/hf_cache",
+        data_path=Path("/nfs-gpu/xlstm/data/array_records/") / dataset_name.replace("/", "_"),
         max_target_length=context_length,
         data_column="text",
-        tokenizer_path="gpt2",
+        tokenizer_path=args.tokenizer,
         data_shuffle_seed=123,
-        grain_packing=False,
+        worker_buffer_size=8,
     )
-
     train_data_iterator = create_data_iterator(config=train_config, mesh=mesh)
     eval_data_iterator = create_data_iterator(config=eval_config, mesh=mesh)
 
     # Define model config.
-    llama_config = global_model_config["model_config"](parallel=parallel)
+    model_config = global_model_config["model_config"](parallel=parallel)
     wb_name = f"llama_slimpajama{data_name}_{args.model}_gbs{int(batch_size)}_ctx{context_length}_lr{lr}"
 
     # Create trainer with sub-configs.
     log_info("Creating trainer.")
     trainer = LLMTrainer(
         LLMTrainerConfig(
-            callbacks=(
+            callbacks=[
                 ModelCheckpointConfig(
                     every_n_epochs=1,
                     monitor="perplexity",
@@ -135,7 +136,7 @@ def main_train(args: argparse.Namespace):
                 JaxProfilerConfig(
                     profile_every_n_minutes=60,
                 ),
-            ),
+            ],
             logger=LoggerConfig(
                 log_path=log_path,
                 log_every_n_steps=50,
@@ -150,33 +151,33 @@ def main_train(args: argparse.Namespace):
                     ),
                 ],
             ),
-            check_val_every_n_steps=2_000,
+            check_val_every_n_steps=5_000,
             enable_progress_bar=False,
             check_for_nan=True,
             log_grad_norm=True,
             log_grad_norm_per_param=True,
             log_param_norm=True,
             log_param_norm_per_param=True,
-            default_train_log_modes=("mean", "std", "max"),
+            default_train_log_modes=["mean", "std", "max"],
             log_logit_stats=True,
             log_intermediates=True,
         ),
         ModelConfig(
             model_class=LlamaTransformer,
             parallel=parallel,
-            model_config=llama_config,
+            model_config=model_config,
         ),
         OptimizerConfig(
             name="adamw",
             scheduler=SchedulerConfig(
-                name="cosine_decay",
+                name="exponential_decay",
                 lr=lr,
                 decay_steps=num_train_steps,
                 end_lr_factor=0.1,
                 warmup_steps=750,
                 cooldown_steps=2_000,
             ),
-            grad_clip_norm=1.0,
+            grad_clip_norm=0.5,
             weight_decay=0.1,
             weight_decay_include=[r".*kernel"],
             beta2=0.95,
@@ -207,11 +208,10 @@ def main_train(args: argparse.Namespace):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train Llama model on SlimPajama6B dataset.")
+    parser.add_argument("--log_dir", type=str)
     parser.add_argument("--model", type=str, choices=MODEL_CONFIGS.keys(), default="165M")
-    parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/llama/")
-    parser.add_argument(
-        "--use_full_dataset", action="store_true", help="If True, uses the 600B dataset instead of the 6B version."
-    )
+    parser.add_argument("--use_full_dataset", action="store_true", help="Use the 627B dataset instead of 6B version.")
     parser.add_argument("--load_checkpoint_from", type=str, default="")
+    parser.add_argument("--tokenizer", type=str, choices=["gpt2", "EleutherAI/gpt-neox-20b"], default="gpt2")
     args = parser.parse_args()
     main_train(args)

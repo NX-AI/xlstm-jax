@@ -97,7 +97,7 @@ def main_train(args: argparse.Namespace):
     log_info("Creating trainer.")
     trainer = LLMTrainer(
         LLMTrainerConfig(
-            callbacks=(
+            callbacks=[
                 ModelCheckpointConfig(
                     every_n_epochs=5,
                     monitor="perplexity",
@@ -113,7 +113,7 @@ def main_train(args: argparse.Namespace):
                 JaxProfilerConfig(
                     profile_every_n_minutes=60,
                 ),
-            ),
+            ],
             logger=LoggerConfig(
                 log_path=log_path,
                 log_every_n_steps=20,
@@ -135,7 +135,7 @@ def main_train(args: argparse.Namespace):
             log_grad_norm_per_param=False,
             log_param_norm=True,
             log_param_norm_per_param=False,
-            default_train_log_modes=("mean", "std", "max"),
+            default_train_log_modes=["mean", "std", "max"],
             log_logit_stats=True,
             log_intermediates=True,
         ),
@@ -175,6 +175,6 @@ def main_train(args: argparse.Namespace):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Train xLSTM model on WikiText-103 dataset.")
-    parser.add_argument("--log_dir", type=str, default="/nfs-gpu/xlstm/logs/outputs/xlstm-jax/wikitext103")
+    parser.add_argument("--log_dir", type=str)
     args = parser.parse_args()
     main_train(args)
