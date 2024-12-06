@@ -10,7 +10,7 @@ from jax.sharding import PartitionSpec as P
 
 # For now, we load MODEL_CONFIGS from this training script
 #  In future the config should be loaded from the checkpoint or a configuration library.
-from scripts.run_train_slimpajama import MODEL_CONFIGS
+from scripts.training.run_train_slimpajama import MODEL_CONFIGS
 
 from xlstm_jax.configs import ConfigDict
 from xlstm_jax.dataset import LLMBatch

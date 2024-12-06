@@ -13,7 +13,7 @@ set_XLA_flags()  # Must be executed before any JAX operation.
 register_configs()
 
 
-@hydra.main(config_path="../configs", config_name="config", version_base="1.3")
+@hydra.main(config_path="../../configs", config_name="config", version_base="1.3")
 def init_hydra_for_resume(cfg: DictConfig):
     """Resumes training from a checkpoint that is specified in the configuration.
 

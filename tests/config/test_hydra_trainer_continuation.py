@@ -8,7 +8,7 @@ import pytest
 from hydra import compose, initialize
 from omegaconf import OmegaConf
 
-from scripts.get_cli_command_to_resume_training import get_cli_command
+from scripts.training.get_cli_command_to_resume_training import get_cli_command
 
 from xlstm_jax.define_hydra_schemas import register_configs
 from xlstm_jax.resume_training import resume_training

@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from jax.sharding import Mesh
 
-from scripts.hf_to_arrayrecord import convert_dataset
+from scripts.data_processing.hf_to_arrayrecord import convert_dataset
 from tests.dataset.test_hf_data_processing import _setup_data as _hf_setup_data
 
 from xlstm_jax.dataset import grain_data_processing

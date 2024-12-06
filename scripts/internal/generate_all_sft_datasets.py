@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from scripts.hf_to_arrayrecord import convert_dataset
+from scripts.data_processing.hf_to_arrayrecord import convert_dataset
 
 if __name__ == "__main__":
     args = [

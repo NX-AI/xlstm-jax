@@ -57,11 +57,6 @@ def main():
                 "leaderboard|winogrande|5|0,leaderboard|gsm8k|5|0,"
                 "lighteval|piqa|5|0,lighteval|openbookqa|5|0"
             )
-            # tasks = (
-            #     "leaderboard|winogrande|5|0,leaderboard|hellaswag|5|0,"
-            #     "leaderboard|arc:challenge|5|0,lighteval|arc:easy|5|0,leaderboard|mmlu|5|0,lighteval|openbookqa|5|0,"
-            #     "lighteval|piqa|5|0"
-            # )
         else:
             tasks = "leaderboard"
     else:
@@ -81,7 +76,7 @@ def main():
         os.environ["JAX_PLATFORMS"] = "cpu"
         run_args = [
             "python3",
-            "scripts/convert_mlstm_checkpoint_jax_to_torch_simple.py",
+            "scripts/checkpoint_conversion/convert_mlstm_checkpoint_jax_to_torch_simple.py",
             "--checkpoint_dir",
             str(checkpoint_dir),
             "--output_path",
@@ -91,16 +86,7 @@ def main():
         ]
         LOGGER.info("Running:\n" + " ".join(run_args))
         subprocess.run(
-            [
-                "python3",
-                "scripts/convert_mlstm_checkpoint_jax_to_torch_simple.py",
-                "--checkpoint_dir",
-                str(checkpoint_dir),
-                "--output_path",
-                str(output_path),
-                "--checkpoint_type",
-                "huggingface",
-            ],
+            run_args,
             check=True,
         )
         if previous_jax_platforms is not None:

@@ -136,7 +136,7 @@ def benchmark_generate(trainer: LLMTrainer, cfg: DictConfig):
     log_info("Benchmark complete.")
 
 
-@hydra.main(config_path="../configs", config_name="config", version_base="1.3")
+@hydra.main(config_path="../../configs", config_name="config", version_base="1.3")
 def init_hydra(cfg: DictConfig):
     # Create mesh. Needs to be done before any JAX operation due to distribute initialize.
     parallel = init_parallel(cfg=cfg)
