@@ -40,7 +40,7 @@ class ParseLMEval(grain.MapTransform):
         Returns:
             dict[str, str | int]: Resulting item dictionary
 
-        >>> from xlstm_jax.utils import pytree_diff
+        >>> from xlstm_jax.utils.pytree_utils import pytree_diff
         >>> pytree_diff(ParseLMEval().map(
         ...     {"idx": 1,
         ...      "req": Instance(
@@ -63,7 +63,7 @@ class CompleteLLMIndexedBatch(grain.MapTransform):
     Grain Transform that uses an indexed dataset (with "idx") and fills it towards all
     components of a LLMIndexedBatch.
 
-    >>> from xlstm_jax.utils import pytree_diff
+    >>> from xlstm_jax.utils.pytree_utils import pytree_diff
     >>> pytree_diff(
     ...     CompleteLLMIndexedBatch().map(
     ...         {"inputs": np.array([[1, 2]]), "targets": np.array([[1, 2]]), "idx": np.array(0)}),
@@ -145,9 +145,9 @@ class PadBatchDataset(grain.MapDataset):
         min_length: Minimum (padded) length/size of the dataset.
         pad_elem: Empty element to be appended.
 
-    >>> PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, pad_elem=0)[3]
+    >>> PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, min_length=0, pad_elem=0)[3]
     0
-    >>> len(PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, pad_elem=0))
+    >>> len(PadBatchDataset(grain.MapDataset.source([3, 1, 2]), multiple_of=4, min_length=0, pad_elem=0))
     4
     """
 
@@ -245,7 +245,7 @@ class PadSequenceInBatchDataset(grain.MapDataset):
         multiple_of: A number that the padded size should be a multiple of.
         pad_value:  Value to pad with.
 
-    >>> from xlstm_jax.utils.pytree_diff import pytree_diff
+    >>> from xlstm_jax.utils.pytree_utils import pytree_diff
     >>> pytree_diff(list(PadSequenceInBatchDataset(grain.MapDataset.source(
     ...     [{"a": np.array([[3, 1, 5]])},
     ...      {"a": np.array([[2, 4]])},

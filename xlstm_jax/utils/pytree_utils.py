@@ -54,7 +54,10 @@ def pytree_diff(tree1: PyTree, tree2: PyTree) -> PyTree:
                 if a.shape != b.shape:
                     return {"shape_mismatch": (a.shape, b.shape)}
             try:
-                diff = a - b
+                if a.dtype == bool:
+                    diff = a ^ b
+                else:
+                    diff = a - b
             except ValueError:
                 return {"array_difference": (a, b)}
             if isinstance(diff, jax.Array):
