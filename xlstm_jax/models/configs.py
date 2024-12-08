@@ -23,7 +23,7 @@ class ParallelConfig:
     """Name of the data axis."""
     fsdp_axis_name: str = "fsdp"
     """Name of the FSDP axis."""
-    pipeline_axis_name: str = "pipe"
+    pipeline_axis_name: str = "pp"
     """Name of the pipeline axis."""
     model_axis_name: str = "tp"
     """Name of the model axis."""
