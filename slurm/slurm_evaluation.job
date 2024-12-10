@@ -116,4 +116,4 @@ echo $mpivars_path
 # run
 srun --kill-on-bad-exit=1 --cpu-bind=none --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/run_lmeval.py --log_dir=$LOG_DIR --fsdp_size=1 --batch_size_per_device=16 --tokenizer=EleutherAI/gpt-neox-20b '"$WANDB_ID"' --load_checkpoint_from_subdir '$CHECKPOINT_DIR' --tasks wikitext hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande lambada'
+     bash -c 'source $mpivars_path && echo RUNNING IN $(pwd) && Starting run; HF_DATASETS_OFFLINE=1 TOKENIZERS_PARALLELISM=false PYTHONPATH=. python scripts/evaluation/run_lmeval.py --log_dir=$LOG_DIR --fsdp_size=1 --batch_size_per_device=16 --tokenizer=EleutherAI/gpt-neox-20b '"$WANDB_ID"' --load_checkpoint_from_subdir '$CHECKPOINT_DIR' --tasks wikitext hellaswag mmlu piqa openbookqa arc_easy arc_challenge winogrande lambada'

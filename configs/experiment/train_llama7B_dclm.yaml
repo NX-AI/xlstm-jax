@@ -46,7 +46,7 @@ model:
   theta: 500_000
 
 # Run command:
-# PYTHONPATH=. python scripts/train_with_hydra.py +experiment=train_llama7B_dclm.yaml
+# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_llama7B_dclm.yaml
 hydra:
   launcher:
     nodes: 16

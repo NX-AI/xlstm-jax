@@ -17,9 +17,9 @@ The configuration files are organized in the `configs` directory. For now, the s
 
 ## How to Run Experiments
 
-The principal entry point for hydra is the script `scripts/train_with_hydra.py`. On the command line, you can start a run locally by executing
+The principal entry point for hydra is the script `scripts/training/train_with_hydra.py`. On the command line, you can start a run locally by executing
 
-```PYTHONPATH=. python scripts/train_with_hydra.py```.
+```PYTHONPATH=. python scripts/training/train_with_hydra.py```.
 
 Note that currently, in order for the Triton kernels to work, the xlstm root folder must be added to
 your `PYTHONPATH`.
@@ -81,7 +81,7 @@ This is where Hydra stops. Everything coming after in the `main_train` function 
 
 ### Remarks
 - It is possible to overwrite every parameter from the command line. So you can, for example, execute
-```python scripts/train_with_hydra device=gpu model.num_heads=42```
+```python scripts/training/train_with_hydra.py device=gpu model.num_heads=42```
 to substitute `cpu`
 from the `config.yaml` with `gpu` and to substitute 42 for whatever value for `num_heads` was given in `mLSTM120M.yaml` file. This is probably not the approach you want to use to start experiments though.
 
@@ -115,7 +115,7 @@ trainer:
 
 To use this file, you execute the following:
 
-```PYTHONPATH=. python scripts/train_with_hydra.py +experiment=train_mLSTM7B_slimpajama6b.yaml ```
+```PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTM7B_slimpajama6b.yaml ```
 
 Note the + before experiment, that's not a typo!
 Hydra now checks the defaults list of the experiment file and replaces the respective fields from the general
@@ -198,7 +198,7 @@ Here, you can supply (or rather overwrite in an experment file!) the things you 
 script. To use the `submitit_launcher` you have to execute the following with the conda env
 activated that you want to use for the experiment:
 
-```PYTHONPATH=. python scripts/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
+```PYTHONPATH=. python scripts/training/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
 
 So the only thing you have to add is ```--multirun hydra/launcher=slurm_launcher``` (and to overwrite SLURM-specific parameters as the number of nodes, for example, in your experiment file).
 
@@ -209,7 +209,7 @@ To resume an experiment you need to know the path to the output
 folder of the experiment. You then execute
 
 ```python
-python scripts/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN
+python scripts/traininig/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN
 ```
 
 If you want to use SLURM, set the flag `--use_slurm`.
@@ -233,14 +233,14 @@ have to execute to continue the training run.
 A full example to call is
 
 ```python
-python scripts/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN --use_slurm --checkpoint_step=95000 --new_overrides="num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"
+python scripts/training/get_cli_command_to_resume_training.py --resume_from_folder=PATH_TO_RUN --use_slurm --checkpoint_step=95000 --new_overrides="num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"
 ```
 
 What the script does is to look in the specified folder and obtain the overrides (including the experiment file)
 that were used to start the previous run. It then compiles a new command from these, which, for the current
 example would look something like this:
 
-`PYTHONPATH=. python scripts/resume_training_with_hydra.py        -m hydra/launcher=slurm_launcher +experiment=synthetic_experiment_slurm +resume_from_folder=PATH_TO_RUN        +checkpoint_step=95000 num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10`
+`PYTHONPATH=. python scripts/training/resume_training_with_hydra.py        -m hydra/launcher=slurm_launcher +experiment=synthetic_experiment_slurm +resume_from_folder=PATH_TO_RUN        +checkpoint_step=95000 num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10`
 
 This is the actual command you have to run to resume the experiment. Keep in mind that you can still
 use any other CLI overrides at this point so using them in the previous step is not strictly necessary.

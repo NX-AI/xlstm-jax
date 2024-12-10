@@ -18,7 +18,7 @@ set_XLA_flags()  # Must be executed before any JAX operation.
 register_configs()
 
 # Path to the configs directory.
-CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "configs"))
+CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "configs"))
 
 
 def copy_experiment_file_to_out_folder(cfg: DictConfig) -> None:

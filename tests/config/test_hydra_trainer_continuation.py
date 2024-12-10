@@ -48,7 +48,7 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
     # Make sure that the command is correct.
     command = get_cli_command(args)
     assert (
-        command == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py  "
+        command == f"PYTHONPATH=. python scripts/training/resume_training_with_hydra.py  "
         f"+experiment=tiny_experiment_for_unit_testing "
         f"log_path={tmp_path} "
         f"data_train.ds1.global_batch_size={global_batch_size} "
@@ -64,7 +64,7 @@ def test_get_cli_command_to_resume_training(tmp_path: Path):
     )
     command = get_cli_command(args)
     assert (
-        command == f"PYTHONPATH=. python scripts/resume_training_with_hydra.py "
+        command == f"PYTHONPATH=. python scripts/training/resume_training_with_hydra.py "
         f"--multirun hydra/launcher=slurm_launcher "
         f"+experiment=tiny_experiment_for_unit_testing "
         f"log_path={tmp_path} "

@@ -1,15 +1,15 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: synthetic
-  - override /parallel: mLSTMv1_1.3B  # No need for FSDP, thus selecting smaller model config here.
+  - override /parallel: mLSTMv1_1.3B # No need for FSDP, thus selecting smaller model config here.
   - override /model: mLSTMv1_7B
   - override /optimizer: sgd
   - _self_
 
 # specify the deltas from the defaults:
 task_name: benchmark
-batch_size_per_device: 64  # Max batch size to test.
-context_length: 64  # Only used for init.
+batch_size_per_device: 64 # Max batch size to test.
+context_length: 64 # Only used for init.
 num_epochs: 1000
 num_train_steps: 95_000
 lr: 1e-2
@@ -24,6 +24,5 @@ model:
 
 parallel:
   remat: []
-
 # Run command:
-# PYTHONPATH=. python scripts/benchmark_with_hydra.py +experiment=benchmark_mLSTMv1_7B.yaml
+# PYTHONPATH=. python scripts/speed_benchmark/benchmark_with_hydra.py +experiment=benchmark_mLSTMv1_7B.yaml

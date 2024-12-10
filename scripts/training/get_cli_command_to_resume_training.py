@@ -47,7 +47,7 @@ def get_cli_command(args: Any) -> str:
 
     # Create the CLI command.
     command_str = (
-        f"PYTHONPATH=. python scripts/resume_training_with_hydra.py {slurm_str} {old_overrides} "
+        f"PYTHONPATH=. python scripts/training/resume_training_with_hydra.py {slurm_str} {old_overrides} "
         f"+resume_from_folder={args.resume_from_folder} +checkpoint_step={args.checkpoint_step} "
         f"{args.new_overrides}"
     )

@@ -101,4 +101,4 @@ sleep 5  # synchronize all nodes on the folder creation
 # run
 srun --kill-on-bad-exit=1 --mpi=pmi2 --gpus-per-node=$SBATCH_GPUS_PER_NODE \
      --ntasks-per-node=$SLURM_NTASKS_PER_NODE \
-     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/run_train_wikitext103.py --log_dir=$LOG_DIR'
+     bash -c 'source $mpivars_path && Starting run; PYTHONPATH=. python scripts/training/run_train_wikitext103.py --log_dir=$LOG_DIR'

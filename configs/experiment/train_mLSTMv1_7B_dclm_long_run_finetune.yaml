@@ -74,14 +74,15 @@ profiling:
   profile_every_n_minutes: -1
 
 # Run command:
-# PYTHONPATH=. python scripts/resume_training_with_hydra.py  +experiment=train_mLSTMv1_7B_dclm_long_run_finetune.yaml +resume_from_folder=/nfs-gpu/xlstm/logs/outputs/xlstm-jax/DCLM/dclm_mLSTMv1_7B_ctx8192_2024-11-15T12:48:22/0 +checkpoint_step=497500 +load_dataloaders=False
+# PYTHONPATH=. python scripts/training/resume_training_with_hydra.py  +experiment=train_mLSTMv1_7B_dclm_long_run_finetune.yaml +resume_from_folder=/nfs-gpu/xlstm/logs/outputs/xlstm-jax/DCLM/dclm_mLSTMv1_7B_ctx8192_2024-11-15T12:48:22/0 +checkpoint_step=497500 +load_dataloaders=False
 hydra:
   launcher:
     nodes: 16
-    additional_parameters: {
-      "gpu-bind": "closest",
-      "wait-all-nodes": "1",
-      "time": "21-00:00:00",
-      "exclusive": "",
-    }
+    additional_parameters:
+      {
+        "gpu-bind": "closest",
+        "wait-all-nodes": "1",
+        "time": "21-00:00:00",
+        "exclusive": "",
+      }
   mode: MULTIRUN
