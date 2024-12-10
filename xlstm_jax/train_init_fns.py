@@ -184,7 +184,7 @@ def init_mixed_data_iterator(
         data_config = config_class(**data_config)
         LOGGER.info(f"Data config: {data_config}.")
         data_configs.append(data_config)
-        data_weights.append(float(cfg[key.replace("val", "weight")]))
+        data_weights.append(float(cfg[key.replace("ds", "weight")]))
     assert len(data_configs) > 0, "No datasets found in the config."
 
     data_iterator = create_mixed_data_iterator(configs=data_configs, mesh=mesh, dataset_weights=data_weights)
