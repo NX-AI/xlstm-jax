@@ -23,8 +23,7 @@ xlstm_jax.dataset.multihost_dataloading
 
    SPMD Multihost Dataloading Utilities.
 
-   Adapted from Sholto's:
-   https://github.com/sholtodouglas/multihost_dataloading
+   See https://github.com/sholtodouglas/multihost_dataloading for a similar approach.
 
 
 
