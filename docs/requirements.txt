@@ -1,4 +1,4 @@
 sphinx
-sphinx-rtd-theme
+sphinx-book-theme
 sphinx-autoapi
 myst-parser
