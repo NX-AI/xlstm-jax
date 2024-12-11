@@ -2,7 +2,12 @@
 name = "xlstm-jax"
 version = "0.0.1"
 authors = [
-  { name="NXAI", email="info@nx-ai.com" },
+  { name="Phillip Lippe", email="phillip.lippe@nx-ai.com" },
+  { name="Richard Kurle", email="richard.kurle@nx-ai.com" },
+  { name="Patrick Blies", email="patrick.blies@nx-ai.com" },
+  { name="Korbinian Pöppel", email="korbinian.poeppel@nx-ai.com" },
+  { name="Sebastian Böck", email="sebastian.boeck@nx-ai.com" },
+  { name="Maximilian Beck", email="maximilian.beck@nx-ai.com" },
 ]
 description = "xLSTM implementation in JAX"
 readme = "README.md"
