@@ -1,3 +1,6 @@
+#  Copyright (c) NXAI GmbH.
+#  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
+
 """Loads checkpoint and data loaders from a logging directory and continues training model."""
 
 import hydra

@@ -1,0 +1,34 @@
+[
+    {
+        "include": [
+            "**/*.py",
+        ],
+        "exclude": [
+            "**/venv/**",
+            "xlstm_jax/dataset/grain_iterator.py",
+            "xlstm_jax/dataset/grain_transforms.py",
+            "xlstm_jax/dataset/input_pipeline_interface.py",
+            "xlstm_jax/dataset/multihost_dataloading.py",
+            "xlstm_jax/dataset/synthetic_dataloading.py",
+        ],
+        "license": "./.github/license-check/header_python.txt"
+    },
+    {
+        "include": [
+            "**/*.h",
+            "**/*.cc",
+            "**/*.cu",
+            "**/*.cuh"
+        ],
+        "exclude": [
+            "**/venv/**",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/cuda/*",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/util/blas.cu",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/util/blas.h",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/util/device_assert.h",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/util/inline_ops*",
+            "xlstm_jax/models/xlstm_pytorch/blocks/slstm/src/util/support.h"
+        ],
+        "license": "./.github/license-check/header_c.txt"
+    }
+]

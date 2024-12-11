@@ -15,6 +15,9 @@ limitations under the License.
 
 ---
 
+This file is a modified version of the file input_pipeline_interface.py from the maxtext project
+https://github.com/AI-Hypercomputer/maxtext/blob/main/MaxText/input_pipeline/input_pipeline_interface.py.
+
 Input pipeline
 """
 
@@ -38,9 +41,9 @@ except ImportError:
     # Set variable to remind user of this.
     GRAIN_AVAILABLE = False
 
+
     def make_grain_iterator(*args, **kwargs):
         raise NotImplementedError("Grain not found, multi-host data loading and non-synthetic dataset is disabled.")
-
 
 DataIterator = MultiHostDataLoadIterator | SyntheticDataIterator
 
@@ -81,7 +84,8 @@ def create_data_iterator(config: DataConfig, mesh: Mesh) -> DataIterator:
 
 
 def create_mixed_data_iterator(
-    configs: list[HFHubDataConfig | GrainArrayRecordsDataConfig], mesh: Mesh, dataset_weights: list[float] | None = None
+        configs: list[HFHubDataConfig | GrainArrayRecordsDataConfig], mesh: Mesh,
+        dataset_weights: list[float] | None = None
 ) -> DataIterator:
     """Create a data iterator that mixes multiple datasets.
 

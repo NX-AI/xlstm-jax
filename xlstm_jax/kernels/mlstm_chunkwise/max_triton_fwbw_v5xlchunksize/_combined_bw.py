@@ -1,3 +1,6 @@
+#  Copyright (c) NXAI GmbH.
+#  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
+
 """This file contains the kernel that combines the recurrent and parallel
 part of the forward pass of the mLSTM chunkwise formulation.
 It should allow arbitrary large chunk sizes and head dimensions.

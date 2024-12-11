@@ -1,3 +1,6 @@
+#  Copyright (c) NXAI GmbH.
+#  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
+
 """Logging setup for the command line interface.
 
 Ported from https://github.com/NX-AI/xlstm-dev/blob/main/xlstm/ml_utils/log_utils/log_cmd.py
