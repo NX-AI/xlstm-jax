@@ -1,3 +1,6 @@
+#  Copyright (c) NXAI GmbH.
+#  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
+
 from .array_utils import fold_rng_over_axis, split_array_over_mesh
 from .data_parallel import shard_module_params, sync_gradients
 from .pipeline_parallel import PipelineModule, execute_pipeline

@@ -56,4 +56,4 @@ If you use this codebase, or otherwise find our work valuable, please cite the x
 ```
 
 ## License
-This project is licensed under a custom license, please see [LICENSE](https://github.com/NX-AI/xlstm-jax/blob/main/LICENSE).
+This project is licensed under the NXAI Community License, please see [LICENSE](https://github.com/NX-AI/xlstm-jax/blob/main/LICENSE).

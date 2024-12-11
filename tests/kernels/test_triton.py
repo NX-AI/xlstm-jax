@@ -1,3 +1,5 @@
+#  Copyright (c) NXAI GmbH.
+#  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
 """Test to check if jax-triton works correctly"""
 
 import jax

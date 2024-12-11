@@ -14,6 +14,9 @@ limitations under the License.
 
 ---
 
+This file contains code from the maxtext project (https://github.com/AI-Hypercomputer/maxtext).
+Especially the file https://github.com/AI-Hypercomputer/maxtext/MaxText/input_pipeline/_input_pipeline_utils.py.
+
 Operations used by Grain
 """
 
