@@ -47,6 +47,4 @@ hydra:
       - export RX_QUEUE_LEN=8192
       - export IB_RX_QUEUE_LEN=8192
       - export OMPI_MCA_coll=^hcoll
-      - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat
       - export TOKENIZERS_PARALLELISM=0
-      - export JAX_COMPILATION_CACHE_DIR=/nfs-gpu/xlstm/data/jax_compilation_cache

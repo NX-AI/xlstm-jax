@@ -36,7 +36,7 @@ task_name: ??? # must be set in the experiment file
 logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}
 
 # Set hydra working dir
-base_dir: /nfs-gpu/xlstm/logs/outputs/xlstm-jax # this should be changed when running local experiments
+base_dir: outputs
 hydra:
   run:
     dir: ${base_dir}/${task_name}/${logging_name}_${now:%Y-%m-%dT%H:%M:%S}
