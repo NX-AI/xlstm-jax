@@ -1,0 +1,1490 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer" href="../layer/index.html" />
+    <link rel="prev" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.block" href="../block/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../../../index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">xlstm_jax.models</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax.models.xlstm_pytorch</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.models.xlstm_pytorch.blocks</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.models.xlstm_pytorch.blocks.slstm</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../../_sources/autoapi/xlstm_jax/models/xlstm_pytorch/blocks/slstm/cell/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell">
+<span id="xlstm-jax-models-xlstm-pytorch-blocks-slstm-cell"></span><h1>xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell<a class="headerlink" href="#module-xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.LOGGER" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPE_DICT" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPE_DICT"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTYPE_DICT</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPES" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPES"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DTYPES</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.curdir" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.curdir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">curdir</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.rnn_function_registry" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.rnn_function_registry"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rnn_function_registry</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell._python_dtype_to_cuda_dtype" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell._python_dtype_to_cuda_dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_python_dtype_to_cuda_dtype</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellConfig</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellBase</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellCUDA</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCell_vanilla</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCell_cuda</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCell</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellFuncGenerator" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellFuncGenerator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellFuncGenerator</span></code></a>(training, config)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPE_DICT">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">DTYPE_DICT</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPE_DICT" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPES">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">DTYPES</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.DTYPES" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.curdir">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">curdir</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.curdir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.rnn_function_registry">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">rnn_function_registry</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.rnn_function_registry" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell._python_dtype_to_cuda_dtype">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">_python_dtype_to_cuda_dtype</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell._python_dtype_to_cuda_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCellConfig</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.hidden_size">
+<span class="sig-name descname"><span class="pre">hidden_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.hidden_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_heads">
+<span class="sig-name descname"><span class="pre">num_heads</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_heads" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_states">
+<span class="sig-name descname"><span class="pre">num_states</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_states" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.backend">
+<span class="sig-name descname"><span class="pre">backend</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'vanilla'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'cuda'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'cuda'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.backend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.function">
+<span class="sig-name descname"><span class="pre">function</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'slstm'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.function" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.bias_init">
+<span class="sig-name descname"><span class="pre">bias_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'powerlaw_blockdependent'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'small_init'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'powerlaw_blockdependent'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.bias_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.recurrent_weight_init">
+<span class="sig-name descname"><span class="pre">recurrent_weight_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'zeros'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'standard'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'zeros'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.recurrent_weight_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig._block_idx">
+<span class="sig-name descname"><span class="pre">_block_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig._block_idx" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig._num_blocks">
+<span class="sig-name descname"><span class="pre">_num_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig._num_blocks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_gates">
+<span class="sig-name descname"><span class="pre">num_gates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.num_gates" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.gradient_recurrent_cut">
+<span class="sig-name descname"><span class="pre">gradient_recurrent_cut</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.gradient_recurrent_cut" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.gradient_recurrent_clipval">
+<span class="sig-name descname"><span class="pre">gradient_recurrent_clipval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.gradient_recurrent_clipval" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.forward_clipval">
+<span class="sig-name descname"><span class="pre">forward_clipval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.forward_clipval" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.batch_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.input_shape">
+<span class="sig-name descname"><span class="pre">input_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'BSGNH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SBGNH'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BSGNH'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.input_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.internal_input_shape">
+<span class="sig-name descname"><span class="pre">internal_input_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'SBNGH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SBGNH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SBNHG'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SBNGH'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.internal_input_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.output_shape">
+<span class="sig-name descname"><span class="pre">output_shape</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'BNSH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SBH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'BSH'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'SBNH'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'BNSH'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.output_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.constants">
+<span class="sig-name descname"><span class="pre">constants</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.constants" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'bfloat16'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_b">
+<span class="sig-name descname"><span class="pre">dtype_b</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'float32'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_b" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_r">
+<span class="sig-name descname"><span class="pre">dtype_r</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_r" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_w">
+<span class="sig-name descname"><span class="pre">dtype_w</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_w" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_g">
+<span class="sig-name descname"><span class="pre">dtype_g</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_g" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_s">
+<span class="sig-name descname"><span class="pre">dtype_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_s" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_a">
+<span class="sig-name descname"><span class="pre">dtype_a</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">DTYPES</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.dtype_a" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.enable_automatic_mixed_precision">
+<span class="sig-name descname"><span class="pre">enable_automatic_mixed_precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.enable_automatic_mixed_precision" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.initial_val">
+<span class="sig-name descname"><span class="pre">initial_val</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><span class="pre">collections.abc.Sequence</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.initial_val" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.head_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.input_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">input_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.input_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torch_dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><span class="pre">torch.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)">torch.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_b">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torch_dtype_b</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><span class="pre">torch.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_b" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)">torch.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_r">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torch_dtype_r</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><span class="pre">torch.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_r" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)">torch.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_w">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torch_dtype_w</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><span class="pre">torch.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_w" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)">torch.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_s">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">torch_dtype_s</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><span class="pre">torch.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.torch_dtype_s" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)">torch.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.defines">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">defines</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig.defines" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCellBase</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.recurrent_kernel">
+<span class="sig-name descname"><span class="pre">recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_">
+<span class="sig-name descname"><span class="pre">_bias_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.bias">
+<span class="sig-name descname"><span class="pre">bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_ext2int">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_ext2int">
+<span class="sig-name descname"><span class="pre">_bias_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_int2ext">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._recurrent_kernel_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_int2ext">
+<span class="sig-name descname"><span class="pre">_bias_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._bias_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.parameters_to_dtype">
+<span class="sig-name descname"><span class="pre">parameters_to_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.parameters_to_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.head_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._permute_input">
+<span class="sig-name descname"><span class="pre">_permute_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._permute_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._permute_output">
+<span class="sig-name descname"><span class="pre">_permute_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._permute_output" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Resets this layer’s parameters to their initial values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._check_input">
+<span class="sig-name descname"><span class="pre">_check_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._check_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._zero_state">
+<span class="sig-name descname"><span class="pre">_zero_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._zero_state" title="Link to this definition"></a></dt>
+<dd><p>Return a zero state matching dtype and batch size of <cite>input</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>) – Tensor, to specify the device and dtype of the returned tensors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a nested structure of zero Tensors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>zero_state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._get_state">
+<span class="sig-name descname"><span class="pre">_get_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._get_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._get_final_state">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_final_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._get_final_state" title="Link to this definition"></a></dt>
+<dd><p>All states have the structure [STATES, SEQUENCE, BATCH, HIDDEN]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_states</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._is_cuda">
+<span class="sig-name descname"><span class="pre">_is_cuda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase._is_cuda" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>, <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCellCUDA</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA" title="Link to this definition"></a></dt>
+<dd><dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA.mod">
+<span class="sig-name descname"><span class="pre">mod</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA.mod" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA.instance">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">instance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellCUDA.instance" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellFuncGenerator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCellFuncGenerator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellFuncGenerator" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCell_vanilla</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellBase</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.pointwise">
+<span class="sig-name descname"><span class="pre">pointwise</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.pointwise" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_ext2int">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_int2ext">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_ext2int">
+<span class="sig-name descname"><span class="pre">_bias_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_int2ext">
+<span class="sig-name descname"><span class="pre">_bias_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._impl">
+<span class="sig-name descname"><span class="pre">_impl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._impl" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._impl_step">
+<span class="sig-name descname"><span class="pre">_impl_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._impl_step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.recurrent_kernel">
+<span class="sig-name descname"><span class="pre">recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_">
+<span class="sig-name descname"><span class="pre">_bias_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.bias">
+<span class="sig-name descname"><span class="pre">bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.parameters_to_dtype">
+<span class="sig-name descname"><span class="pre">parameters_to_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.parameters_to_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.head_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._permute_input">
+<span class="sig-name descname"><span class="pre">_permute_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._permute_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._permute_output">
+<span class="sig-name descname"><span class="pre">_permute_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._permute_output" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Resets this layer’s parameters to their initial values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._check_input">
+<span class="sig-name descname"><span class="pre">_check_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._check_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._zero_state">
+<span class="sig-name descname"><span class="pre">_zero_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._zero_state" title="Link to this definition"></a></dt>
+<dd><p>Return a zero state matching dtype and batch size of <cite>input</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>) – Tensor, to specify the device and dtype of the returned tensors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a nested structure of zero Tensors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>zero_state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._get_state">
+<span class="sig-name descname"><span class="pre">_get_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._get_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._get_final_state">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_final_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._get_final_state" title="Link to this definition"></a></dt>
+<dd><p>All states have the structure [STATES, SEQUENCE, BATCH, HIDDEN]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_states</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._is_cuda">
+<span class="sig-name descname"><span class="pre">_is_cuda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla._is_cuda" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>, <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_vanilla.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCell_cuda</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">skip_backend_init</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellBase</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p></li>
+<li><p><strong>skip_backend_init</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.internal_input_shape">
+<span class="sig-name descname"><span class="pre">internal_input_shape</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'SBNGH'</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.internal_input_shape" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_ext2int">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_int2ext">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_int</strong> (<em>torch.tensor</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_ext2int">
+<span class="sig-name descname"><span class="pre">_bias_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_int2ext">
+<span class="sig-name descname"><span class="pre">_bias_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._impl_step">
+<span class="sig-name descname"><span class="pre">_impl_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._impl_step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._impl">
+<span class="sig-name descname"><span class="pre">_impl</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">training</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._impl" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>training</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.recurrent_kernel">
+<span class="sig-name descname"><span class="pre">recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_">
+<span class="sig-name descname"><span class="pre">_bias_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.bias">
+<span class="sig-name descname"><span class="pre">bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.parameters_to_dtype">
+<span class="sig-name descname"><span class="pre">parameters_to_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.parameters_to_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.head_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._permute_input">
+<span class="sig-name descname"><span class="pre">_permute_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._permute_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._permute_output">
+<span class="sig-name descname"><span class="pre">_permute_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._permute_output" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Resets this layer’s parameters to their initial values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._check_input">
+<span class="sig-name descname"><span class="pre">_check_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._check_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._zero_state">
+<span class="sig-name descname"><span class="pre">_zero_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._zero_state" title="Link to this definition"></a></dt>
+<dd><p>Return a zero state matching dtype and batch size of <cite>input</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>) – Tensor, to specify the device and dtype of the returned tensors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a nested structure of zero Tensors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>zero_state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._get_state">
+<span class="sig-name descname"><span class="pre">_get_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._get_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._get_final_state">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_final_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._get_final_state" title="Link to this definition"></a></dt>
+<dd><p>All states have the structure [STATES, SEQUENCE, BATCH, HIDDEN]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_states</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._is_cuda">
+<span class="sig-name descname"><span class="pre">_is_cuda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda._is_cuda" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>, <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell_cuda.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.</span></span><span class="sig-name descname"><span class="pre">sLSTMCell</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellBase"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMCellBase</span></code></a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><em>sLSTMCellConfig</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.config_class">
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.config_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.recurrent_kernel">
+<span class="sig-name descname"><span class="pre">recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_">
+<span class="sig-name descname"><span class="pre">_bias_</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.bias">
+<span class="sig-name descname"><span class="pre">bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_recurrent_kernel</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_bias</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_ext2int">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_ext2int">
+<span class="sig-name descname"><span class="pre">_bias_ext2int</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_ext</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_ext2int" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_ext</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_int2ext">
+<span class="sig-name descname"><span class="pre">_recurrent_kernel_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">recurrent_kernel_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._recurrent_kernel_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>recurrent_kernel_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_int2ext">
+<span class="sig-name descname"><span class="pre">_bias_int2ext</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bias_int</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._bias_int2ext" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bias_int</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.parameters_to_dtype">
+<span class="sig-name descname"><span class="pre">parameters_to_dtype</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.parameters_to_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.head_dim">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">head_dim</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._permute_input">
+<span class="sig-name descname"><span class="pre">_permute_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._permute_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._permute_output">
+<span class="sig-name descname"><span class="pre">_permute_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._permute_output" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.reset_parameters">
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.reset_parameters" title="Link to this definition"></a></dt>
+<dd><p>Resets this layer’s parameters to their initial values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._check_input">
+<span class="sig-name descname"><span class="pre">_check_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._check_input" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._zero_state">
+<span class="sig-name descname"><span class="pre">_zero_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._zero_state" title="Link to this definition"></a></dt>
+<dd><p>Return a zero state matching dtype and batch size of <cite>input</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>) – Tensor, to specify the device and dtype of the returned tensors.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a nested structure of zero Tensors.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>zero_state</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._get_state">
+<span class="sig-name descname"><span class="pre">_get_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._get_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._get_final_state">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_final_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">all_states</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._get_final_state" title="Link to this definition"></a></dt>
+<dd><p>All states have the structure [STATES, SEQUENCE, BATCH, HIDDEN]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>all_states</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._is_cuda">
+<span class="sig-name descname"><span class="pre">_is_cuda</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell._is_cuda" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.step" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>state</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>, <a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.forward">
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCell.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../block/index.html" class="btn btn-neutral float-left" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.block" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../layer/index.html" class="btn btn-neutral float-right" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

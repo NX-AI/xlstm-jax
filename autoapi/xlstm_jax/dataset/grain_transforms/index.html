@@ -1,0 +1,886 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.grain_transforms &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.hf_tokenizer" href="../hf_tokenizer/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.grain_iterator" href="../grain_iterator/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.grain_transforms</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/grain_transforms/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.grain_transforms">
+<span id="xlstm-jax-dataset-grain-transforms"></span><h1>xlstm_jax.dataset.grain_transforms<a class="headerlink" href="#module-xlstm_jax.dataset.grain_transforms" title="Link to this heading"></a></h1>
+<p>Copyright 2023 Google LLC.</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a></p>
+</div></blockquote>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<p>—</p>
+<p>Operations used by Grain</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures" title="xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HFNormalizeFeatures</span></code></a></p></td>
+<td><p>Normalize feature keys for HuggingFace input.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize" title="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HFPrefixTokenize</span></code></a></p></td>
+<td><p>Merge prefix and predicted text</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ParseFeatures" title="xlstm_jax.dataset.grain_transforms.ParseFeatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParseFeatures</span></code></a></p></td>
+<td><p>Parse serialized example.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ParseArrayRecords" title="xlstm_jax.dataset.grain_transforms.ParseArrayRecords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParseArrayRecords</span></code></a></p></td>
+<td><p>Parse serialized example from array_records dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords" title="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParseTokenizedArrayRecords</span></code></a></p></td>
+<td><p>Parse serialized example from array_records dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.NormalizeFeatures" title="xlstm_jax.dataset.grain_transforms.NormalizeFeatures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">NormalizeFeatures</span></code></a></p></td>
+<td><p>Normalize text feature keys.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ReformatPacking" title="xlstm_jax.dataset.grain_transforms.ReformatPacking"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReformatPacking</span></code></a></p></td>
+<td><p>Reformat packing outputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ReformatLazyPacking" title="xlstm_jax.dataset.grain_transforms.ReformatLazyPacking"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReformatLazyPacking</span></code></a></p></td>
+<td><p>Reformat packing outputs for the lazy API.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.PadToMaxLength" title="xlstm_jax.dataset.grain_transforms.PadToMaxLength"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PadToMaxLength</span></code></a></p></td>
+<td><p>Pads each input to the specified length.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.ShiftData" title="xlstm_jax.dataset.grain_transforms.ShiftData"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ShiftData</span></code></a></p></td>
+<td><p>Shift inputs/targets and refine annotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.InferSegmentations" title="xlstm_jax.dataset.grain_transforms.InferSegmentations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InferSegmentations</span></code></a></p></td>
+<td><p>Infer the segmentation, i.e. document numbers, from the inputs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.CollateToBatch" title="xlstm_jax.dataset.grain_transforms.CollateToBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CollateToBatch</span></code></a></p></td>
+<td><p>Collate data to batch.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.HFTokenize" title="xlstm_jax.dataset.grain_transforms.HFTokenize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HFTokenize</span></code></a></p></td>
+<td><p>Tokenize text feature keys.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.AddEODToken" title="xlstm_jax.dataset.grain_transforms.AddEODToken"><code class="xref py py-obj docutils literal notranslate"><span class="pre">AddEODToken</span></code></a></p></td>
+<td><p>Add an end-of-document token to the inputs and targets.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.shift_right" title="xlstm_jax.dataset.grain_transforms.shift_right"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_right</span></code></a>(x[, axis, padding_value, pad_by_first_element])</p></td>
+<td><p>Shift the input to the right by padding and slicing on axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.shift_left" title="xlstm_jax.dataset.grain_transforms.shift_left"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_left</span></code></a>(x[, axis, padding_value])</p></td>
+<td><p>Shift the input to the left by padding and slicing on axis.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_transforms.shift_and_refine" title="xlstm_jax.dataset.grain_transforms.shift_and_refine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shift_and_refine</span></code></a>(x[, shift_target, axis, padding_value])</p></td>
+<td><p>Shift inputs or targets, and adjust segmentation.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">HFNormalizeFeatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Normalize feature keys for HuggingFace input.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFNormalizeFeatures.map" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">HFPrefixTokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_tokenizer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefix_column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'prefix'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">text_column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_bos_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eos_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bos_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eos_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length_prefix</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Merge prefix and predicted text</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>prefix_column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+<li><p><strong>text_column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+<li><p><strong>add_bos_token</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>add_eos_token</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>bos_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>eos_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>max_length_prefix</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.tokenizer">
+<span class="sig-name descname"><span class="pre">tokenizer</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.tokenizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.prefix_tokenizer">
+<span class="sig-name descname"><span class="pre">prefix_tokenizer</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.prefix_tokenizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.prefix_column_name">
+<span class="sig-name descname"><span class="pre">prefix_column_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'prefix'</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.prefix_column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.text_column_name">
+<span class="sig-name descname"><span class="pre">text_column_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.text_column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.max_length_prefix">
+<span class="sig-name descname"><span class="pre">max_length_prefix</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.max_length_prefix" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.add_bos_token">
+<span class="sig-name descname"><span class="pre">add_bos_token</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.add_bos_token" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.add_eos_token">
+<span class="sig-name descname"><span class="pre">add_eos_token</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.add_eos_token" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.eos_token_id">
+<span class="sig-name descname"><span class="pre">eos_token_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.eos_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.bos_token_id">
+<span class="sig-name descname"><span class="pre">bos_token_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.bos_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFPrefixTokenize.map" title="Link to this definition"></a></dt>
+<dd><p>Map prefix / text string to fully padded and tokenized sequence.
+Prefixes are aligned in the array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>features</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – Dictionary of inputs</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of the outputs</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseFeatures">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ParseFeatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_column</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseFeatures" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Parse serialized example.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_column</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+<li><p><strong>tokenize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseFeatures.data_column">
+<span class="sig-name descname"><span class="pre">data_column</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseFeatures.data_column" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseFeatures.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseFeatures.map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseArrayRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ParseArrayRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseArrayRecords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Parse serialized example from array_records dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseArrayRecords.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseArrayRecords.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseArrayRecords.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseArrayRecords.map" title="Link to this definition"></a></dt>
+<dd><p>Map to parse array records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><em>bytes</em></a>) – The bytestring-serialized example, e.g. b’Some Text’.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed data, a dictionary mapping the column_name to the deserialized string (text).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ParseTokenizedArrayRecords</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Parse serialized example from array_records dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.map" title="Link to this definition"></a></dt>
+<dd><p>Map to parse array records.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><em>bytes</em></a>) – The bytestring-serialized data that has been tokenized, e.g. <cite>b’[0, 9392, 1823]’</cite>.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Parsed data, a dictionary mapping the column_name to the deserialized string (text).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.sequence_to_bytestring">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">sequence_to_bytestring</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequence</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.sequence_to_bytestring" title="Link to this definition"></a></dt>
+<dd><p>Convert a token sequence to a numpy bytestring.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sequence</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>] </em><em>| </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a>) – The sequence of tokens. If a numpy array is provided, it must be one-dimensional.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The bytestring.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)">bytes</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.bytestring_to_sequence">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">bytestring_to_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bytestring</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ParseTokenizedArrayRecords.bytestring_to_sequence" title="Link to this definition"></a></dt>
+<dd><p>Convert a numpy bytestring to a token sequence.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>bytestring</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#bytes" title="(in Python v3.13)"><em>bytes</em></a>) – The bytestring.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The token sequence.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.NormalizeFeatures">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">NormalizeFeatures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenize</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.NormalizeFeatures" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Normalize text feature keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+<li><p><strong>tokenize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.NormalizeFeatures.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.NormalizeFeatures.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.NormalizeFeatures.tokenize">
+<span class="sig-name descname"><span class="pre">tokenize</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.NormalizeFeatures.tokenize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.NormalizeFeatures.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.NormalizeFeatures.map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ReformatPacking">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ReformatPacking</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ReformatPacking" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Reformat packing outputs.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ReformatPacking.map">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ReformatPacking.map" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ReformatLazyPacking">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ReformatLazyPacking</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ReformatLazyPacking" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Reformat packing outputs for the lazy API.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ReformatLazyPacking.map">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ReformatLazyPacking.map" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.PadToMaxLength">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">PadToMaxLength</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.PadToMaxLength" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Pads each input to the specified length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.PadToMaxLength.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.PadToMaxLength.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.PadToMaxLength.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.PadToMaxLength.map" title="Link to this definition"></a></dt>
+<dd><p>Map to each element.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.shift_right">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">shift_right</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_by_first_element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.shift_right" title="Link to this definition"></a></dt>
+<dd><p>Shift the input to the right by padding and slicing on axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a>) – Input array to shift.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Axis to shift along.</p></li>
+<li><p><strong>padding_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Value to use for padding.</p></li>
+<li><p><strong>pad_by_first_element</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, does not use padding_value but instead the first element of the array on the
+axis.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shifted array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.shift_left">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">shift_left</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.shift_left" title="Link to this definition"></a></dt>
+<dd><p>Shift the input to the left by padding and slicing on axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a>) – Input array to shift.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Axis to shift along.</p></li>
+<li><p><strong>padding_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Value to use for padding.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Shifted array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.shift_and_refine">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">shift_and_refine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.shift_and_refine" title="Link to this definition"></a></dt>
+<dd><p>Shift inputs or targets, and adjust segmentation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>)</p></li>
+<li><p><strong>shift_target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+<li><p><strong>padding_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">ShiftData</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shift_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Shift inputs/targets and refine annotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shift_target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+<li><p><strong>pad_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData.shift_target">
+<span class="sig-name descname"><span class="pre">shift_target</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData.shift_target" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData.eod_token_id">
+<span class="sig-name descname"><span class="pre">eod_token_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData.eod_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData.pad_token_id">
+<span class="sig-name descname"><span class="pre">pad_token_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData.pad_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData.axis">
+<span class="sig-name descname"><span class="pre">axis</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData.axis" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.ShiftData.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.ShiftData.map" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.InferSegmentations">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">InferSegmentations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.InferSegmentations" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Infer the segmentation, i.e. document numbers, from the inputs.</p>
+<p>Uses the end-of-document token to infer breaks between documents. This is not needed
+when performing packing, where the segmentations are already set correctly, but is
+useful for grouped text preprocessed datasets, which do not have the segmentations set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The token ID to use for the end-of-document token.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.InferSegmentations.eod_token_id">
+<span class="sig-name descname"><span class="pre">eod_token_id</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.InferSegmentations.eod_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.InferSegmentations.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.InferSegmentations.map" title="Link to this definition"></a></dt>
+<dd><p>Map to infer segmentations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.InferSegmentations._get_positions">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_get_positions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eod_mask</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.InferSegmentations._get_positions" title="Link to this definition"></a></dt>
+<dd><p>Infer positions from end-of-document mask.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>eod_mask</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.CollateToBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">CollateToBatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.CollateToBatch" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Collate data to batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_class</strong> (<em>NamedTuple</em>) – A NamedTuple or dataclass to hold the batch data.</p></li>
+<li><p><strong>key_map</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>] </em><em>| </em><em>None</em>) – Dictionary to map input to batch keys. Keys that are not found in the dictionary will be used as is.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.CollateToBatch.batch_class">
+<span class="sig-name descname"><span class="pre">batch_class</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.CollateToBatch.batch_class" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.CollateToBatch.key_map">
+<span class="sig-name descname"><span class="pre">key_map</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.CollateToBatch.key_map" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.CollateToBatch.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.CollateToBatch.map" title="Link to this definition"></a></dt>
+<dd><p>Map to collate data to batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="../batch/index.html#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch">xlstm_jax.dataset.batch.LLMBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">HFTokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">create_tokenizer_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'text'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Tokenize text feature keys.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>create_tokenizer_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>Ellipsis</em><em>, </em><em>transformers.AutoTokenizer</em><em>]</em>)</p></li>
+<li><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+<li><p><strong>add_eod</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.create_tokenizer_fn">
+<span class="sig-name descname"><span class="pre">create_tokenizer_fn</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.create_tokenizer_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.tokenizer">
+<span class="sig-name descname"><span class="pre">tokenizer</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.tokenizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.add_eod">
+<span class="sig-name descname"><span class="pre">add_eod</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.add_eod" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.eod_token_id">
+<span class="sig-name descname"><span class="pre">eod_token_id</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.eod_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize._lazy_init">
+<span class="sig-name descname"><span class="pre">_lazy_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize._lazy_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize._tokenize">
+<span class="sig-name descname"><span class="pre">_tokenize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">example</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize._tokenize" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>example</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>transformers.tokenization_utils_base.BatchEncoding[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.HFTokenize.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.HFTokenize.map" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.AddEODToken">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_transforms.</span></span><span class="sig-name descname"><span class="pre">AddEODToken</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.AddEODToken" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Add an end-of-document token to the inputs and targets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The token ID to use for the end-of-document token.</p></li>
+<li><p><strong>add_eod</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to add the EOD token. If false, the transform is a no-op.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Maximum length of the sequence. If None, no truncation is performed.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.AddEODToken.eod_token_id">
+<span class="sig-name descname"><span class="pre">eod_token_id</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.AddEODToken.eod_token_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.AddEODToken.add_eod">
+<span class="sig-name descname"><span class="pre">add_eod</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.AddEODToken.add_eod" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.AddEODToken.max_length">
+<span class="sig-name descname"><span class="pre">max_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.AddEODToken.max_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_transforms.AddEODToken.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_transforms.AddEODToken.map" title="Link to this definition"></a></dt>
+<dd><p>Map to add EOD token.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../grain_iterator/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.grain_iterator" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../hf_tokenizer/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.hf_tokenizer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,696 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.define_hydra_schemas &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="xlstm_jax.distributed" href="../distributed/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.synthetic_dataloading" href="../dataset/synthetic_dataloading/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.define_hydra_schemas</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/xlstm_jax/define_hydra_schemas/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.define_hydra_schemas">
+<span id="xlstm-jax-define-hydra-schemas"></span><h1>xlstm_jax.define_hydra_schemas<a class="headerlink" href="#module-xlstm_jax.define_hydra_schemas" title="Link to this heading"></a></h1>
+<p>Register all config dataclasses in the project to Hydra’s ConfigStore and define hydra config schemas.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig" title="xlstm_jax.define_hydra_schemas.CombinedModelConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CombinedModelConfig</span></code></a></p></td>
+<td><p>This class is a flat config that combines several sub-configs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig" title="xlstm_jax.define_hydra_schemas.BaseLoggerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BaseLoggerConfig</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig" title="xlstm_jax.define_hydra_schemas.DataEvalConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataEvalConfig</span></code></a></p></td>
+<td><p>Supports maximum of 5 data evaluation configurations.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig" title="xlstm_jax.define_hydra_schemas.DataTrainConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataTrainConfig</span></code></a></p></td>
+<td><p>Supports maximum of 10 data training configurations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.Config" title="xlstm_jax.define_hydra_schemas.Config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Config</span></code></a></p></td>
+<td><p>The base config class.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.register_configs" title="xlstm_jax.define_hydra_schemas.register_configs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_configs</span></code></a>()</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">CombinedModelConfig</span></span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig" title="Link to this definition"></a></dt>
+<dd><p>This class is a flat config that combines several sub-configs.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.vocab_size">
+<span class="sig-name descname"><span class="pre">vocab_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.vocab_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.embedding_dim">
+<span class="sig-name descname"><span class="pre">embedding_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.embedding_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.num_blocks">
+<span class="sig-name descname"><span class="pre">num_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.num_blocks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.context_length">
+<span class="sig-name descname"><span class="pre">context_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.context_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.tie_weights">
+<span class="sig-name descname"><span class="pre">tie_weights</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.tie_weights" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_embedding_dropout">
+<span class="sig-name descname"><span class="pre">add_embedding_dropout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_embedding_dropout" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_post_blocks_norm">
+<span class="sig-name descname"><span class="pre">add_post_blocks_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_post_blocks_norm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.scan_blocks">
+<span class="sig-name descname"><span class="pre">scan_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.scan_blocks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.norm_eps">
+<span class="sig-name descname"><span class="pre">norm_eps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.norm_eps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.norm_type">
+<span class="sig-name descname"><span class="pre">norm_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.norm_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.init_distribution_embed">
+<span class="sig-name descname"><span class="pre">init_distribution_embed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.init_distribution_embed" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.logits_soft_cap">
+<span class="sig-name descname"><span class="pre">logits_soft_cap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.logits_soft_cap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.lm_head_dtype">
+<span class="sig-name descname"><span class="pre">lm_head_dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.lm_head_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_post_norm">
+<span class="sig-name descname"><span class="pre">add_post_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_post_norm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.layer_type">
+<span class="sig-name descname"><span class="pre">layer_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.layer_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.num_heads">
+<span class="sig-name descname"><span class="pre">num_heads</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.num_heads" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.output_init_fn">
+<span class="sig-name descname"><span class="pre">output_init_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.output_init_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.init_distribution">
+<span class="sig-name descname"><span class="pre">init_distribution</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.init_distribution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.qk_dim_factor">
+<span class="sig-name descname"><span class="pre">qk_dim_factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.qk_dim_factor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.v_dim_factor">
+<span class="sig-name descname"><span class="pre">v_dim_factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.v_dim_factor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.gate_dtype">
+<span class="sig-name descname"><span class="pre">gate_dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.gate_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.backend">
+<span class="sig-name descname"><span class="pre">backend</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.backend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.backend_name">
+<span class="sig-name descname"><span class="pre">backend_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.backend_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.igate_bias_init_range">
+<span class="sig-name descname"><span class="pre">igate_bias_init_range</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.igate_bias_init_range" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_qk_norm">
+<span class="sig-name descname"><span class="pre">add_qk_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.add_qk_norm" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_type">
+<span class="sig-name descname"><span class="pre">cell_norm_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_type_v1">
+<span class="sig-name descname"><span class="pre">cell_norm_type_v1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_type_v1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_eps">
+<span class="sig-name descname"><span class="pre">cell_norm_eps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.cell_norm_eps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.gate_soft_cap">
+<span class="sig-name descname"><span class="pre">gate_soft_cap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.gate_soft_cap" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.reset_at_document_boundaries">
+<span class="sig-name descname"><span class="pre">reset_at_document_boundaries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.reset_at_document_boundaries" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.proj_factor">
+<span class="sig-name descname"><span class="pre">proj_factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.proj_factor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.act_fn">
+<span class="sig-name descname"><span class="pre">act_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.act_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.ff_type">
+<span class="sig-name descname"><span class="pre">ff_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.ff_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.ff_dtype">
+<span class="sig-name descname"><span class="pre">ff_dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.ff_dtype" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.head_dim">
+<span class="sig-name descname"><span class="pre">head_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.head_dim" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.attention_backend">
+<span class="sig-name descname"><span class="pre">attention_backend</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.attention_backend" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.CombinedModelConfig.theta">
+<span class="sig-name descname"><span class="pre">theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig.theta" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">BaseLoggerConfig</span></span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../trainer/logger/base_logger/index.html#xlstm_jax.trainer.logger.base_logger.LoggerConfig" title="xlstm_jax.trainer.logger.base_logger.LoggerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.trainer.logger.base_logger.LoggerConfig</span></code></a></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.loggers_to_use">
+<span class="sig-name descname"><span class="pre">loggers_to_use</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.loggers_to_use" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.file_logger_log_dir">
+<span class="sig-name descname"><span class="pre">file_logger_log_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.file_logger_log_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.file_logger_config_format">
+<span class="sig-name descname"><span class="pre">file_logger_config_format</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.file_logger_config_format" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.tb_log_dir">
+<span class="sig-name descname"><span class="pre">tb_log_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.tb_log_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.tb_flush_secs">
+<span class="sig-name descname"><span class="pre">tb_flush_secs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.tb_flush_secs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_project">
+<span class="sig-name descname"><span class="pre">wb_project</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_project" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_entity">
+<span class="sig-name descname"><span class="pre">wb_entity</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_entity" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_name">
+<span class="sig-name descname"><span class="pre">wb_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_tags">
+<span class="sig-name descname"><span class="pre">wb_tags</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.BaseLoggerConfig.wb_tags" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">DataEvalConfig</span></span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig" title="Link to this definition"></a></dt>
+<dd><p>Supports maximum of 5 data evaluation configurations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig.ds1">
+<span class="sig-name descname"><span class="pre">ds1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig.ds1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig.ds2">
+<span class="sig-name descname"><span class="pre">ds2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig.ds2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig.ds3">
+<span class="sig-name descname"><span class="pre">ds3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig.ds3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig.ds4">
+<span class="sig-name descname"><span class="pre">ds4</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig.ds4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataEvalConfig.ds5">
+<span class="sig-name descname"><span class="pre">ds5</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig.ds5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">DataTrainConfig</span></span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig" title="Link to this definition"></a></dt>
+<dd><p>Supports maximum of 10 data training configurations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds1">
+<span class="sig-name descname"><span class="pre">ds1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight1">
+<span class="sig-name descname"><span class="pre">weight1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds2">
+<span class="sig-name descname"><span class="pre">ds2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight2">
+<span class="sig-name descname"><span class="pre">weight2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds3">
+<span class="sig-name descname"><span class="pre">ds3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight3">
+<span class="sig-name descname"><span class="pre">weight3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds4">
+<span class="sig-name descname"><span class="pre">ds4</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight4">
+<span class="sig-name descname"><span class="pre">weight4</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds5">
+<span class="sig-name descname"><span class="pre">ds5</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight5">
+<span class="sig-name descname"><span class="pre">weight5</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds6">
+<span class="sig-name descname"><span class="pre">ds6</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight6">
+<span class="sig-name descname"><span class="pre">weight6</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds7">
+<span class="sig-name descname"><span class="pre">ds7</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight7">
+<span class="sig-name descname"><span class="pre">weight7</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds8">
+<span class="sig-name descname"><span class="pre">ds8</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight8">
+<span class="sig-name descname"><span class="pre">weight8</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds9">
+<span class="sig-name descname"><span class="pre">ds9</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds9" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight9">
+<span class="sig-name descname"><span class="pre">weight9</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight9" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.ds10">
+<span class="sig-name descname"><span class="pre">ds10</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../dataset/configs/index.html#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><span class="pre">xlstm_jax.dataset.configs.DataConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.ds10" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.DataTrainConfig.weight10">
+<span class="sig-name descname"><span class="pre">weight10</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig.weight10" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">Config</span></span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config" title="Link to this definition"></a></dt>
+<dd><p>The base config class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.parallel">
+<span class="sig-name descname"><span class="pre">parallel</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../models/configs/index.html#xlstm_jax.models.configs.ParallelConfig" title="xlstm_jax.models.configs.ParallelConfig"><span class="pre">xlstm_jax.models.configs.ParallelConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.parallel" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.model">
+<span class="sig-name descname"><span class="pre">model</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.CombinedModelConfig" title="xlstm_jax.define_hydra_schemas.CombinedModelConfig"><span class="pre">CombinedModelConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.model" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.scheduler">
+<span class="sig-name descname"><span class="pre">scheduler</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/optimizer/scheduler/index.html#xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig" title="xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig"><span class="pre">xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.scheduler" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.optimizer">
+<span class="sig-name descname"><span class="pre">optimizer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/optimizer/optimizer/index.html#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig" title="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.optimizer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.checkpointing">
+<span class="sig-name descname"><span class="pre">checkpointing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/callbacks/checkpointing/index.html#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig" title="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig"><span class="pre">xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.checkpointing" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.lr_monitor">
+<span class="sig-name descname"><span class="pre">lr_monitor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/callbacks/lr_monitor/index.html#xlstm_jax.trainer.callbacks.lr_monitor.LearningRateMonitorConfig" title="xlstm_jax.trainer.callbacks.lr_monitor.LearningRateMonitorConfig"><span class="pre">xlstm_jax.trainer.callbacks.lr_monitor.LearningRateMonitorConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.lr_monitor" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.profiling">
+<span class="sig-name descname"><span class="pre">profiling</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/callbacks/profiler/index.html#xlstm_jax.trainer.callbacks.profiler.JaxProfilerConfig" title="xlstm_jax.trainer.callbacks.profiler.JaxProfilerConfig"><span class="pre">xlstm_jax.trainer.callbacks.profiler.JaxProfilerConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.profiling" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/logger/base_logger/index.html#xlstm_jax.trainer.logger.base_logger.LoggerConfig" title="xlstm_jax.trainer.logger.base_logger.LoggerConfig"><span class="pre">xlstm_jax.trainer.logger.base_logger.LoggerConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.logger" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.trainer">
+<span class="sig-name descname"><span class="pre">trainer</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../trainer/base/trainer/index.html#xlstm_jax.trainer.base.trainer.TrainerConfig" title="xlstm_jax.trainer.base.trainer.TrainerConfig"><span class="pre">xlstm_jax.trainer.base.trainer.TrainerConfig</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.trainer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.device">
+<span class="sig-name descname"><span class="pre">device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.device" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.device_count">
+<span class="sig-name descname"><span class="pre">device_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.device_count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.n_gpus">
+<span class="sig-name descname"><span class="pre">n_gpus</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.n_gpus" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.batch_size_per_device">
+<span class="sig-name descname"><span class="pre">batch_size_per_device</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.batch_size_per_device" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.global_batch_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.lr">
+<span class="sig-name descname"><span class="pre">lr</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.lr" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.context_length">
+<span class="sig-name descname"><span class="pre">context_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.context_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.num_epochs">
+<span class="sig-name descname"><span class="pre">num_epochs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.num_epochs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.num_train_steps">
+<span class="sig-name descname"><span class="pre">num_train_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.num_train_steps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.log_path">
+<span class="sig-name descname"><span class="pre">log_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.log_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.base_dir">
+<span class="sig-name descname"><span class="pre">base_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.base_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.task_name">
+<span class="sig-name descname"><span class="pre">task_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.task_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.logging_name">
+<span class="sig-name descname"><span class="pre">logging_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.logging_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.data_train">
+<span class="sig-name descname"><span class="pre">data_train</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.DataTrainConfig" title="xlstm_jax.define_hydra_schemas.DataTrainConfig"><span class="pre">DataTrainConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.data_train" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.Config.data_eval">
+<span class="sig-name descname"><span class="pre">data_eval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.define_hydra_schemas.DataEvalConfig" title="xlstm_jax.define_hydra_schemas.DataEvalConfig"><span class="pre">DataEvalConfig</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.Config.data_eval" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.define_hydra_schemas.register_configs">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.define_hydra_schemas.</span></span><span class="sig-name descname"><span class="pre">register_configs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.define_hydra_schemas.register_configs" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../dataset/synthetic_dataloading/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.synthetic_dataloading" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../distributed/index.html" class="btn btn-neutral float-right" title="xlstm_jax.distributed" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

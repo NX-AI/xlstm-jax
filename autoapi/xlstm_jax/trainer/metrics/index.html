@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.metrics &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.optimizer" href="../optimizer/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.logger.wandb_logger" href="../logger/wandb_logger/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.metrics</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/trainer/metrics/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.metrics">
+<span id="xlstm-jax-trainer-metrics"></span><h1>xlstm_jax.trainer.metrics<a class="headerlink" href="#module-xlstm_jax.trainer.metrics" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics.LOGGER" title="xlstm_jax.trainer.metrics.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics.update_metrics" title="xlstm_jax.trainer.metrics.update_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_metrics</span></code></a>(global_metrics, step_metrics[, ...])</p></td>
+<td><p>Update metrics with new values.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics.aggregate_metrics" title="xlstm_jax.trainer.metrics.aggregate_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">aggregate_metrics</span></code></a>(aggregated_metrics, batch_metrics)</p></td>
+<td><p>This function aggregates multiple metrics for the <cite>single_noreduce</cite> and <cite>single_noreduce_wcount</cite> case.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics._empty_val" title="xlstm_jax.trainer.metrics._empty_val"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_empty_val</span></code></a>(value)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics._update_single_metric" title="xlstm_jax.trainer.metrics._update_single_metric"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_update_single_metric</span></code></a>(global_metrics, key, value, count)</p></td>
+<td><p>Update a single metric.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.metrics.get_metrics" title="xlstm_jax.trainer.metrics.get_metrics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_metrics</span></code></a>(global_metrics[, reset_metrics])</p></td>
+<td><p>Calculates metrics to log from global metrics.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.trainer.metrics.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics.update_metrics">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">update_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default_log_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.metrics.update_metrics" title="Link to this definition"></a></dt>
+<dd><p>Update metrics with new values.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>global_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em><em> | </em><em>None</em>) – Global metrics to update. If <cite>None</cite>, a new dictionary is created.</p></li>
+<li><p><strong>step_metrics</strong> (<em>xlstm_jax.common_types.StepMetrics</em>) – Metrics to update with.</p></li>
+<li><p><strong>default_log_modes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>xlstm_jax.common_types.LogMode</em><em>] </em><em>| </em><em>None</em>) – The default log mode for the metrics. If <cite>None</cite>, only the mean will be logged. Otherwise, we
+log each of the modes specified. The metric key will be appended with the log mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Updated global metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.ImmutableMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics.aggregate_metrics">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">aggregate_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aggregated_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_metrics</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.metrics.aggregate_metrics" title="Link to this definition"></a></dt>
+<dd><p>This function aggregates multiple metrics for the <cite>single_noreduce</cite> and <cite>single_noreduce_wcount</cite> case.
+For <cite>single_noreduce</cite> batches of single values are concatenated. The count is the number of samples.
+For <cite>single_noreduce_wcount</cite> batches of values are concatenated, as well as counts for each sample.
+This is needed for e.g. the loglikelihood per sequence.
+Concatenation happens in CPU memory after a conversion.</p>
+<p>The function returns batch_metrics in all other cases and moves them to CPU memory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>aggregated_metrics</strong> (<em>xlstm_jax.common_types.HostMetrics</em>) – Previously aggregated metrics to append to potentially.</p></li>
+<li><p><strong>batch_metrics</strong> (<em>xlstm_jax.common_types.ImmutableMetrics</em>) – Metrics from a batch</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Newly aggregated metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.HostMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics._empty_val">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">_empty_val</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.metrics._empty_val" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>Any</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics._update_single_metric">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">_update_single_metric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log_modes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.metrics._update_single_metric" title="Link to this definition"></a></dt>
+<dd><p>Update a single metric.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>global_metrics</strong> (<em>xlstm_jax.common_types.MutableMetrics</em>) – Global metrics to update.</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Key of the metric to update.</p></li>
+<li><p><strong>value</strong> (<em>Any</em>) – Value of the metric to update.</p></li>
+<li><p><strong>count</strong> (<em>Any</em>) – Count of the metric to update.</p></li>
+<li><p><strong>log_modes</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>xlstm_jax.common_types.LogMode</em><em>] </em><em>| </em><em>None</em>) – The log modes for the metric.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>xlstm_jax.common_types.MutableMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.metrics.get_metrics">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.metrics.</span></span><span class="sig-name descname"><span class="pre">get_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">global_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_metrics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.metrics.get_metrics" title="Link to this definition"></a></dt>
+<dd><p>Calculates metrics to log from global metrics.</p>
+<p>Supports resetting the global metrics after logging. For example, if the global metrics are logged every epoch, the
+global metrics can be reset after obtaining the metrics to log such that the next epoch starts with empty metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>global_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Global metrics to log.</p></li>
+<li><p><strong>reset_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to reset the metrics after logging.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated global metrics if reset_metrics is <cite>True</cite>, otherwise the original global metrics.
+Additionally, the metrics to log on the host device are returned.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[xlstm_jax.common_types.ImmutableMetrics, xlstm_jax.common_types.HostMetrics]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../logger/wandb_logger/index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.logger.wandb_logger" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../optimizer/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.optimizer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

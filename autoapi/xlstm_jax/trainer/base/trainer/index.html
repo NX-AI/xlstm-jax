@@ -1,0 +1,1089 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.base.trainer &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.callbacks" href="../../callbacks/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.base.param_utils" href="../param_utils/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.base</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.base.trainer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/base/trainer/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.base.trainer">
+<span id="xlstm-jax-trainer-base-trainer"></span><h1>xlstm_jax.trainer.base.trainer<a class="headerlink" href="#module-xlstm_jax.trainer.base.trainer" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.base.trainer.LOGGER" title="xlstm_jax.trainer.base.trainer.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.base.trainer.TrainerConfig" title="xlstm_jax.trainer.base.trainer.TrainerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainerConfig</span></code></a></p></td>
+<td><p>Configuration for the Trainer module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.base.trainer.TrainerModule" title="xlstm_jax.trainer.base.trainer.TrainerModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TrainerModule</span></code></a></p></td>
+<td><p>A basic Trainer module summarizing most common training functionalities like logging, model initialization, training</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.base.trainer.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.base.trainer.</span></span><span class="sig-name descname"><span class="pre">TrainerConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.configs.ConfigDict</span></code></a></p>
+<p>Configuration for the Trainer module.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.seed">
+<span class="sig-name descname"><span class="pre">seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.seed" title="Link to this definition"></a></dt>
+<dd><p>Random seed for reproducibility. To be used in the model init and training step.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.debug">
+<span class="sig-name descname"><span class="pre">debug</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.debug" title="Link to this definition"></a></dt>
+<dd><p>Whether to run in debug mode. This disables jitting of the training and evaluation functions, which will slow
+down the training significantly but makes debugging easier.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.donate_train_state">
+<span class="sig-name descname"><span class="pre">donate_train_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.donate_train_state" title="Link to this definition"></a></dt>
+<dd><p>Whether to donate the train state in the training step. This can reduce memory usage as the parameters and
+optimizer states are in-place updated in the training step. However, this prevents using the previous train state
+after calling the training step (not used in Trainer, but keep in mind for custom training loops and callbacks).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.enable_progress_bar">
+<span class="sig-name descname"><span class="pre">enable_progress_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.enable_progress_bar" title="Link to this definition"></a></dt>
+<dd><p>Whether to enable the progress bar. For multiprocess training, only the main process will show the progress bar.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.gradient_accumulate_steps">
+<span class="sig-name descname"><span class="pre">gradient_accumulate_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.gradient_accumulate_steps" title="Link to this definition"></a></dt>
+<dd><p>Number of steps to accumulate gradients before updating the parameters.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.gradient_accumulate_scan">
+<span class="sig-name descname"><span class="pre">gradient_accumulate_scan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.gradient_accumulate_scan" title="Link to this definition"></a></dt>
+<dd><p>Whether to use scan for gradient accumulation. This can be more memory efficient and significantly faster to
+compile for large models, but can be slighlty slower due to memory slicing.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.check_val_every_n_epoch">
+<span class="sig-name descname"><span class="pre">check_val_every_n_epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.check_val_every_n_epoch" title="Link to this definition"></a></dt>
+<dd><p>Check validation every N training epochs. If -1, no validation is performed after an epoch. Note that this is
+not mutually exclusive with check_val_every_n_steps, and both can be used.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.check_val_every_n_steps">
+<span class="sig-name descname"><span class="pre">check_val_every_n_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.check_val_every_n_steps" title="Link to this definition"></a></dt>
+<dd><p>Check validation every N training steps. If -1, no validation is performed on a per-step basis. Note that this
+is not mutually exclusive with check_val_every_n_epoch, and both can be used.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.check_for_nan">
+<span class="sig-name descname"><span class="pre">check_for_nan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.check_for_nan" title="Link to this definition"></a></dt>
+<dd><p>Whether to check for NaN values in the loss during training. If NaNs are found, training will be stopped.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.log_grad_norm">
+<span class="sig-name descname"><span class="pre">log_grad_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.log_grad_norm" title="Link to this definition"></a></dt>
+<dd><p>Whether to log the gradient norm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.log_grad_norm_per_param">
+<span class="sig-name descname"><span class="pre">log_grad_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.log_grad_norm_per_param" title="Link to this definition"></a></dt>
+<dd><p>Whether to log the gradient norm per parameter. If the model has many parameters, this can lead to a large log
+file.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.log_param_norm">
+<span class="sig-name descname"><span class="pre">log_param_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.log_param_norm" title="Link to this definition"></a></dt>
+<dd><p>Whether to log the parameter norm.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.log_param_norm_per_param">
+<span class="sig-name descname"><span class="pre">log_param_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.log_param_norm_per_param" title="Link to this definition"></a></dt>
+<dd><p>Whether to log the parameter norm per parameter. If the model has many parameters, this can lead to a large log
+file.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.log_intermediates">
+<span class="sig-name descname"><span class="pre">log_intermediates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.log_intermediates" title="Link to this definition"></a></dt>
+<dd><p>Whether to log intermediate values during training. This is useful for debugging, but can lead to a large log
+file and a bit of overhead during training, if intermediates are complex to compute. Intermediates can be recorded
+by using the <code class="docutils literal notranslate"><span class="pre">self.sow(&quot;intermediates&quot;,</span> <span class="pre">&quot;KEY&quot;,</span> <span class="pre">VALUE)</span></code> method in the model. The intermediate values are
+automatically registered and logged. Note that the values should be scalars.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.default_train_log_modes">
+<span class="sig-name descname"><span class="pre">default_train_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.default_train_log_modes" title="Link to this definition"></a></dt>
+<dd><p>Default logging modes for training metrics. Can be <cite>mean</cite>, <cite>mean_nopostfix</cite>, <cite>single</cite>, <cite>max</cite>, or <cite>std</cite>. See
+metrics for more information. Each selected mode will be logged with the corresponding postfix. During validation,
+we only log the <cite>mean</cite> of the metrics.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.intermediates_log_modes">
+<span class="sig-name descname"><span class="pre">intermediates_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.intermediates_log_modes" title="Link to this definition"></a></dt>
+<dd><p>Logging modes for intermediate values. See <cite>default_train_log_modes</cite> for more information.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.logger">
+<span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xlstm_jax.trainer.logger.LoggerConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.logger" title="Link to this definition"></a></dt>
+<dd><p>Configuration for the logger.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.callbacks">
+<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">xlstm_jax.trainer.callbacks.CallbackConfig</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.callbacks" title="Link to this definition"></a></dt>
+<dd><p>List of callbacks to apply.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.seed_eval">
+<span class="sig-name descname"><span class="pre">seed_eval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.seed_eval" title="Link to this definition"></a></dt>
+<dd><p>Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
+reproducibility of evaluation metrics.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.get" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Converts the config to a dictionary.</p>
+<p>Helpful for saving to disk or logging.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerConfig.from_dict">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_classname_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_extensive_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">none_to_zero_for_ints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerConfig.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Utility for parsing dictionaries back into a nested dataclass structure, including arbitrary classes and types.</p>
+<p>Currently, this is tailored towards the current logging system with the “hardly” invertible to_dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – Typically a dataclass, but can be any other type as well
+If it is another type, the parser tries to create an object via
+config_class(<a href="#id1"><span class="problematic" id="id2">**</span></a>data) if data is a dictionary or config_class(data) else.</p></li>
+<li><p><strong>data</strong> (<em>Any</em>) – Typically a dictionary that contains attributes of the dataclass.
+Can be any other kind of data.</p></li>
+<li><p><strong>strict_classname_parsing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Parse class names strictly.</p></li>
+<li><p><strong>ignore_extensive_attributes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Ignore attributes that are not defined in the dataclass.</p></li>
+<li><p><strong>none_to_zero_for_ints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Convert None to 0 for integer types.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of type <cite>config_class</cite> that contains the data as attributes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.base.trainer.</span></span><span class="sig-name descname"><span class="pre">TrainerModule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule" title="Link to this definition"></a></dt>
+<dd><p>A basic Trainer module summarizing most common training functionalities like logging, model initialization, training
+loop, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer_config</strong> (<a class="reference internal" href="#xlstm_jax.trainer.base.trainer.TrainerConfig" title="xlstm_jax.trainer.base.trainer.TrainerConfig"><em>TrainerConfig</em></a>) – A dictionary containing the trainer configuration.</p></li>
+<li><p><strong>model_config</strong> (<em>xlstm_jax.models.ModelConfig</em>) – A dictionary containing the model configuration.</p></li>
+<li><p><strong>optimizer_config</strong> (<em>xlstm_jax.trainer.optimizer.OptimizerConfig</em>) – A dictionary containing the optimizer configuration.</p></li>
+<li><p><strong>batch</strong> (<em>xlstm_jax.dataset.Batch</em>) – An input to the model with which the shapes are inferred. Can be a <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.ShapeDtypeStruct.html#jax.ShapeDtypeStruct" title="(in JAX)"><code class="xref py py-class docutils literal notranslate"><span class="pre">jax.ShapeDtypeStruct</span></code></a> instead
+of actual full arrays for efficiency. Must NOT be a jax.ShapeDtypeStruct if jax.debug.* statements are used
+inside the model code.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a><em> | </em><em>None</em>) – A mesh object to use for parallel training. If <cite>None</cite>, a new mesh will be created.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.trainer_config">
+<span class="sig-name descname"><span class="pre">trainer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.trainer_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.model_config">
+<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.model_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.optimizer_config">
+<span class="sig-name descname"><span class="pre">optimizer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.optimizer_config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch">
+<span class="sig-name descname"><span class="pre">exmp_batch</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule._train_metric_shapes">
+<span class="sig-name descname"><span class="pre">_train_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule._train_metric_shapes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule._eval_metric_shapes">
+<span class="sig-name descname"><span class="pre">_eval_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule._eval_metric_shapes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.mesh">
+<span class="sig-name descname"><span class="pre">mesh</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.mesh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.batch_partition_specs">
+<span class="sig-name descname"><span class="pre">batch_partition_specs</span></span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.batch_partition_specs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.state">
+<span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.state" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.callbacks">
+<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.callbacks" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.first_step">
+<span class="sig-name descname"><span class="pre">first_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.first_step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.global_step">
+<span class="sig-name descname"><span class="pre">global_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.global_step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.batch_to_input">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_to_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.batch_to_input" title="Link to this definition"></a></dt>
+<dd><p>Convert a batch to the input format expected by the model.</p>
+<p>Needs to be implemented by the subclass if <cite>batch.inputs</cite> is not sufficient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>xlstm_jax.dataset.Batch</em>) – A batch of data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The input to the model.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_mesh">
+<span class="sig-name descname"><span class="pre">init_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_mesh" title="Link to this definition"></a></dt>
+<dd><p>Initialize the mesh for parallel training if no mesh is supplied.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_config</strong> (<a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><em>xlstm_jax.configs.ConfigDict</em></a>) – A dictionary containing the model configuration, including the parallelization parameters.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a><em> | </em><em>None</em>) – A mesh object to use for parallel training. If <cite>None</cite>, a new mesh is created.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.build_model">
+<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.build_model" title="Link to this definition"></a></dt>
+<dd><p>Create the model class from the model_config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>model_config</strong> (<a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><em>xlstm_jax.configs.ConfigDict</em></a>) – A dictionary containing the model configuration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_logger">
+<span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_logger" title="Link to this definition"></a></dt>
+<dd><p>Initialize a logger and creates a logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>logger_config</strong> (<a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><em>xlstm_jax.configs.ConfigDict</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.get_metric_postprocess_fn">
+<span class="sig-name descname"><span class="pre">get_metric_postprocess_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.get_metric_postprocess_fn" title="Link to this definition"></a></dt>
+<dd><p>Get function to post-process metrics with on host.</p>
+<p>Will be passed to logger. Default implementation returns the identity function.
+Can be overwritten by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The postprocess metric function.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callable[[HostMetrics], HostMetrics]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_callbacks">
+<span class="sig-name descname"><span class="pre">init_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_configs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_callbacks" title="Link to this definition"></a></dt>
+<dd><p>Initialize the callbacks defined in the trainer config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>callback_configs</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>xlstm_jax.trainer.callbacks.CallbackConfig</em><em>]</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_optimizer">
+<span class="sig-name descname"><span class="pre">init_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_optimizer" title="Link to this definition"></a></dt>
+<dd><p>Initialize the optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer_config</strong> (<a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><em>xlstm_jax.configs.ConfigDict</em></a>) – A dictionary containing the optimizer configuration.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_model">
+<span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_model" title="Link to this definition"></a></dt>
+<dd><p>Create an initial training state with newly generated network parameters.</p>
+<p>This function is parallelized over the mesh to initialize the per-device parameters. It also initializes the
+optimizer parameters. As a result, it sets the training state of the trainer with the initialized parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>exmp_input</strong> (<em>xlstm_jax.dataset.Batch</em>) – An input to the model with which the shapes are inferred.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_train_metrics">
+<span class="sig-name descname"><span class="pre">init_train_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_train_metrics" title="Link to this definition"></a></dt>
+<dd><p>Initialize the training metrics with zeros.</p>
+<p>We infer the training metric shape from the train_step function. This is done to prevent a double-compilation of
+the train_step function, where the first step has to be done with metrics None, and the next one with the
+metrics shape.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>xlstm_jax.dataset.Batch</em><em> | </em><em>None</em>) – An input to the model with which the shapes are inferred. If None, the <a class="reference internal" href="#xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch" title="xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exmp_batch</span></code></a> is used.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of metrics with the same shape as the train metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flax.core.FrozenDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.init_eval_metrics">
+<span class="sig-name descname"><span class="pre">init_eval_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.init_eval_metrics" title="Link to this definition"></a></dt>
+<dd><p>Initialize the evaluation metrics with zeros.</p>
+<p>See init_train_metrics for more details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch</strong> (<em>xlstm_jax.dataset.Batch</em><em> | </em><em>None</em>) – An input to the model with which the shapes are inferred. If None, the <a class="reference internal" href="#xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch" title="xlstm_jax.trainer.base.trainer.TrainerModule.exmp_batch"><code class="xref py py-attr docutils literal notranslate"><span class="pre">exmp_batch</span></code></a> is used.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of metrics with the same shape as the eval metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flax.core.FrozenDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.set_dataset">
+<span class="sig-name descname"><span class="pre">set_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.set_dataset" title="Link to this definition"></a></dt>
+<dd><p>Set the dataset for the trainer and the callbacks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>dataset</strong> (<em>Any</em>) – The dataset to set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.get_model_rng">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_model_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.get_model_rng" title="Link to this definition"></a></dt>
+<dd><p>Return a dictionary of PRNGKey for init and tabulate.</p>
+<p>By default, adds a key for the parameters and one for dropout. If more keys are needed, this function should be
+overwritten.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>rng</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The current PRNGKey.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dict of PRNG Keys.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, jax.random.PRNGKey]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.run_model_init">
+<span class="sig-name descname"><span class="pre">run_model_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.run_model_init" title="Link to this definition"></a></dt>
+<dd><p>The model initialization call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exmp_input</strong> (<em>xlstm_jax.dataset.Batch</em>) – An input to the model with which the shapes are inferred.</p></li>
+<li><p><strong>init_rng</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – A jax.random.PRNGKey.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The initialized variable dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flax.core.FrozenDict</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.tabulate_params">
+<span class="sig-name descname"><span class="pre">tabulate_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.tabulate_params" title="Link to this definition"></a></dt>
+<dd><p>Return a string summary of the parameters represented as table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A string representation of the parameters.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.get_num_params">
+<span class="sig-name descname"><span class="pre">get_num_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.get_num_params" title="Link to this definition"></a></dt>
+<dd><p>Return the number of parameters in the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of parameters.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.create_jitted_functions">
+<span class="sig-name descname"><span class="pre">create_jitted_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.create_jitted_functions" title="Link to this definition"></a></dt>
+<dd><p>Create jitted versions of the training and evaluation functions.</p>
+<p>If self.trainer_config.debug is True, not jitting is applied.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.loss_function">
+<span class="sig-name descname"><span class="pre">loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.loss_function" title="Link to this definition"></a></dt>
+<dd><p>The loss function that is used for training.</p>
+<p>This function needs to be overwritten by a subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>Any</em>) – The model parameters.</p></li>
+<li><p><strong>apply_fn</strong> (<em>Any</em>) – The apply function of the state.</p></li>
+<li><p><strong>batch</strong> (<em>xlstm_jax.dataset.Batch</em>) – The current batch.</p></li>
+<li><p><strong>rng</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The random number generator.</p></li>
+<li><p><strong>train</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether the model is in training mode.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loss and a tuple of metrics and mutable variables.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[xlstm_jax.common_types.Metrics, xlstm_jax.common_types.PyTree]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.create_training_step_function">
+<span class="sig-name descname"><span class="pre">create_training_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.create_training_step_function" title="Link to this definition"></a></dt>
+<dd><p>Create and return a function for the training step.</p>
+<p>The function takes as input the training state and a batch from the train loader. The function is expected to
+return a dictionary of logging metrics, and a new train state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a>[[<a class="reference internal" href="../../../common_types/index.html#xlstm_jax.common_types.TrainState" title="xlstm_jax.common_types.TrainState">xlstm_jax.common_types.TrainState</a>, xlstm_jax.dataset.Batch, xlstm_jax.common_types.ImmutableMetrics | None], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference internal" href="../../../common_types/index.html#xlstm_jax.common_types.TrainState" title="xlstm_jax.common_types.TrainState">xlstm_jax.common_types.TrainState</a>, xlstm_jax.common_types.ImmutableMetrics]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.create_evaluation_step_function">
+<span class="sig-name descname"><span class="pre">create_evaluation_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.create_evaluation_step_function" title="Link to this definition"></a></dt>
+<dd><p>Create and return a function for the evaluation step.</p>
+<p>The function takes as input the training state and a batch from the val/test loader. The function is expected to
+return a dictionary of logging metrics, and a new train state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a>[[<a class="reference internal" href="../../../common_types/index.html#xlstm_jax.common_types.TrainState" title="xlstm_jax.common_types.TrainState">xlstm_jax.common_types.TrainState</a>, xlstm_jax.dataset.Batch, xlstm_jax.common_types.ImmutableMetrics | None], xlstm_jax.common_types.ImmutableMetrics]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.train_model">
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.train_model" title="Link to this definition"></a></dt>
+<dd><p>Start a training loop for the given number of epochs.</p>
+<p>Inside the training loop, we use an epoch index and a global step index. Both indices are starting to count
+at 1 (i.e. first epoch is “epoch 1”, not “epoch 0”).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em>) – Data loader of the training set.</p></li>
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>]</em>) – Data loader of the validation set. If a dictionary is given, the model is evaluated on all
+datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics
+(<cite>DATAKEY_METRICKEY</cite>). Note that these naming differences also need to be considered for the callbacks,
+such as the Model Checkpoint with tracking the best metric if used.</p></li>
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, best model will be evaluated on the test set. Similar to val_loader, if a dictionary
+is given, the model is evaluated on all datasets in the dictionary, and the key of the dataset is used
+as a prefix for the metrics.</p></li>
+<li><p><strong>num_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Number of epochs for which to train the model. If None, will use num_train_steps.</p></li>
+<li><p><strong>num_train_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Number of training steps for which to train the model. If None, will use num_epochs.</p></li>
+<li><p><strong>steps_per_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Number of steps per epoch. If None, will use the length of the train_loader.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of the train, validation and evt. test metrics for the
+best model on the validation set.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule._eval_model_in_train_loop">
+<span class="sig-name descname"><span class="pre">_eval_model_in_train_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule._eval_model_in_train_loop" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the model on the validation set during the training loop.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>]</em>) – Data loader of the validation set. If a dictionary is given, the model is evaluated on all
+datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Current epoch index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of the evaluation metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.HostMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.test_model">
+<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.test_model" title="Link to this definition"></a></dt>
+<dd><p>Tests the model on the given test set.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>]</em>) – Data loader of the test set. If a dictionary is given, the model is evaluated on all datasets
+in the dictionary, and the key of the dataset is used as a prefix for the metrics.</p></li>
+<li><p><strong>apply_callbacks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, the callbacks will be applied.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The epoch index to use for the callbacks and logging.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of the evaluation metrics.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.HostMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.test_eval_function">
+<span class="sig-name descname"><span class="pre">test_eval_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.test_eval_function" title="Link to this definition"></a></dt>
+<dd><p>Test the evaluation function on a single batch.</p>
+<p>This is useful to check if the functions have the correct signature and return the correct values. This prevents
+annoying errors that occur at the first evaluation step.</p>
+<p>This function does not test the training function anymore. This is because the training function is already
+executed in the first epoch, and we change its jit signature to donate the train state and metrics. Thus,
+executing a training step requires updating the train state, which we would not want to do here. The compilation
+time is logged during the very first training step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>]</em>) – Data loader of the validation set.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.eval_model">
+<span class="sig-name descname"><span class="pre">eval_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.eval_model" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the model on a dataset.</p>
+<p>If multiple datasets are given, the evaluation is performed on all datasets and the metrics are prefixed with
+the dataset key (i.e. <cite>DATAKEY_METRICKEY</cite>). The evaluation metrics are logged and returned as host metrics.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>]</em>) – Data loader of the dataset to evaluate on. If a dictionary is given, the model is evaluated on
+all datasets in the dictionary, and the key of the dataset is used as a prefix for the metrics.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The mode to use for logging, commonly “val” or “test”.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Current epoch index.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A dictionary of the evaluation metrics on the host, averaged over data points in the dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.HostMetrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule._run_model_eval">
+<span class="sig-name descname"><span class="pre">_run_model_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule._run_model_eval" title="Link to this definition"></a></dt>
+<dd><p>Evaluate the model on a single dataset.</p>
+<p>In contrast to eval_model, this function does not log the metrics and returns the on-device metrics. It also
+does not support evaluation on multiple datasets. For this, use eval_model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em>) – Data loader of the dataset to evaluate on.</p></li>
+<li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Mode to show in the progress bar and logging. Default is empty string.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Current epoch index. Only used for logging, default is -1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The on-device metrics after the full evaluation epoch.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.Metrics</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.tracker">
+<span class="sig-name descname"><span class="pre">tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.tracker" title="Link to this definition"></a></dt>
+<dd><p>Wrap an iterator in a progress bar tracker (tqdm) if the progress bar is enabled.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterator</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.13)"><em>collections.abc.Iterator</em></a>) – Iterator to wrap in tqdm.</p></li>
+<li><p><strong>kwargs</strong> – Additional arguments to tqdm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Wrapped iterator if progress bar is enabled, otherwise same iterator as input.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.13)">collections.abc.Iterator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.log_training_info">
+<span class="sig-name descname"><span class="pre">log_training_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.log_training_info" title="Link to this definition"></a></dt>
+<dd><p>Log the general training information.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>num_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Number of epochs for which to train the model.</p></li>
+<li><p><strong>num_train_steps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of training steps for which to train the model.</p></li>
+<li><p><strong>steps_per_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – Number of steps per epoch.</p></li>
+<li><p><strong>train_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em>) – Data loader of the training set.</p></li>
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em>) – Data loader of the validation set.</p></li>
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><em>None</em>) – Data loader of the test set.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_training_start">
+<span class="sig-name descname"><span class="pre">on_training_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_training_start" title="Link to this definition"></a></dt>
+<dd><p>Method called before training is started.</p>
+<p>Can be used for additional initialization operations etc.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_training_end">
+<span class="sig-name descname"><span class="pre">on_training_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_training_end" title="Link to this definition"></a></dt>
+<dd><p>Method called after training has finished.</p>
+<p>Can be used for additional logging or similar.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_training_epoch_start">
+<span class="sig-name descname"><span class="pre">on_training_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_training_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Method called at the start of each training epoch. Can be used for additional logging or similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch that has started.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_training_epoch_end">
+<span class="sig-name descname"><span class="pre">on_training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_training_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Method called at the end of each training epoch. Can be used for additional logging or similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – A dictionary with training metrics. Newly added metrics will be logged as well.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch that has finished.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_validation_epoch_start">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_validation_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Method called at the start of each validation epoch. Can be used for additional logging or similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch at which validation was started.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training step at which validation was started.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_validation_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Method called at the end of each validation epoch. Can be used for additional logging and evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – A dictionary with validation metrics. Newly added metrics will be logged as well.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch at which validation was performed.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training step at which validation was performed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_test_epoch_start">
+<span class="sig-name descname"><span class="pre">on_test_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_test_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Method called at the start of each test epoch. Can be used for additional logging or similar.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch at which testing was started.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.on_test_epoch_end">
+<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.on_test_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Method called at the end of each test epoch. Can be used for additional logging and evaluation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test_metrics</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – A dictionary with test metrics. Newly added metrics will be logged as well.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the training epoch at which testing was performed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_if_not_found</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.load_model" title="Link to this definition"></a></dt>
+<dd><p>Load model parameters and batch statistics from the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Step index to load the model from. If -1, the latest model is loaded.</p></li>
+<li><p><strong>raise_if_not_found</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, raises an error if no model is found. If False, logs a warning instead.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.load_data_loaders">
+<span class="sig-name descname"><span class="pre">load_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.load_data_loaders" title="Link to this definition"></a></dt>
+<dd><p>Load states of the data loaders from the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Step index to load the data loaders from. If -1, uses the global train step.</p></li>
+<li><p><strong>train_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the training data loader is set to this value.</p></li>
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the validation data loader is set to this value.</p></li>
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the test data loader is set to this value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.restore_model">
+<span class="sig-name descname"><span class="pre">restore_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.restore_model" title="Link to this definition"></a></dt>
+<dd><p>Restore the state of the trainer from a state dictionary.
+Only if the current trainer state has a tx and opt_state attribute, update these.
+Re-use the class of the current trainer state to allow such a pruned one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>] </em><em>| </em><em>flax.core.FrozenDict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – State dictionary to restore from. Must contain the key “params” with the model parameters.
+Optional keys that overwrite the trainer state are “step”, “opt_state”, “mutable_variables”, “rng”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.restore_data_loaders">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">restore_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.restore_data_loaders" title="Link to this definition"></a></dt>
+<dd><p>Restore the state of the data loaders from a state dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>state_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – State dictionary to restore from. Should contain the keys “train”, “val” and “test” with
+the data loader states.</p></li>
+<li><p><strong>train_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the training data loader is set to this value.</p></li>
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the validation data loader is set to this value.</p></li>
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the test data loader is set to this value.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.load_pretrained_model">
+<span class="sig-name descname"><span class="pre">load_pretrained_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_params_before_loading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.load_pretrained_model" title="Link to this definition"></a></dt>
+<dd><p>Load a pretrained model from a checkpoint directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a>) – Path to the checkpoint directory.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Step index to load the model from. If -1, the latest model is loaded.</p></li>
+<li><p><strong>load_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, loads the best model instead of the latest model.</p></li>
+<li><p><strong>load_optimizer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, load the optimizer state with the pretrained model.</p></li>
+<li><p><strong>train_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the training data loader is set to the state of the pretrained model.</p></li>
+<li><p><strong>val_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the validation data loader is set to the state of the pretrained model.</p></li>
+<li><p><strong>test_loader</strong> (<em>xlstm_jax.trainer.data_module.DataIterator</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>xlstm_jax.trainer.data_module.DataIterator</em><em>] </em><em>| </em><em>None</em>) – If given, the test data loader is set to the state of the pretrained model.</p></li>
+<li><p><strong>delete_params_before_loading</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, delete the current model parameters before loading the pretrained
+model. Saves memory on the device, but original model parameters cannot be used anymore.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The step index of the loaded model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.base.trainer.TrainerModule.load_from_checkpoint">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_from_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.base.trainer.TrainerModule.load_from_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Create a Trainer object with same hyperparameters and loaded model from a checkpoint directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Folder in which the checkpoint and hyperparameter file is stored.</p></li>
+<li><p><strong>exmp_input</strong> (<em>xlstm_jax.dataset.Batch</em>) – An input to the model for shape inference.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Batch size to use for shape inference. If -1, the full exmp_input is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A Trainer object with model loaded from the checkpoint folder.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../param_utils/index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.base.param_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../callbacks/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.callbacks" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

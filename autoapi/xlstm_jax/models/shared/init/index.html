@@ -1,0 +1,300 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.models.shared.init &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.models.shared.lm_head" href="../lm_head/index.html" />
+    <link rel="prev" title="xlstm_jax.models.shared" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.models</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.models.shared</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.models.shared.init</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/models/shared/init/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.models.shared.init">
+<span id="xlstm-jax-models-shared-init"></span><h1>xlstm_jax.models.shared.init<a class="headerlink" href="#module-xlstm_jax.models.shared.init" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.InitDistribution" title="xlstm_jax.models.shared.init.InitDistribution"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InitDistribution</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.InitFnName" title="xlstm_jax.models.shared.init.InitFnName"><code class="xref py py-obj docutils literal notranslate"><span class="pre">InitFnName</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.small_init" title="xlstm_jax.models.shared.init.small_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">small_init</span></code></a>(dim[, distribution])</p></td>
+<td><p>Create initializer of Nguyen et al. (2019).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.wang_init" title="xlstm_jax.models.shared.init.wang_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wang_init</span></code></a>(dim, num_blocks[, distribution])</p></td>
+<td><p>Create Wang initializer.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.create_common_init_fn" title="xlstm_jax.models.shared.init.create_common_init_fn"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_common_init_fn</span></code></a>(fn_name, dim, num_blocks[, ...])</p></td>
+<td><p>Create common initializer function.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init._dist_from_stddev" title="xlstm_jax.models.shared.init._dist_from_stddev"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_dist_from_stddev</span></code></a>(stddev, distribution)</p></td>
+<td><p>Create initializer with specified standard deviation and distribution.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.shared.init.uniform_init" title="xlstm_jax.models.shared.init.uniform_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">uniform_init</span></code></a>(min_val, max_val)</p></td>
+<td><p>Create uniform initializer.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.InitDistribution">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">InitDistribution</span></span><a class="headerlink" href="#xlstm_jax.models.shared.init.InitDistribution" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.InitFnName">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">InitFnName</span></span><a class="headerlink" href="#xlstm_jax.models.shared.init.InitFnName" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.small_init">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">small_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'normal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.shared.init.small_init" title="Link to this definition"></a></dt>
+<dd><p>Create initializer of Nguyen et al. (2019).</p>
+<p>Adopted from <a class="reference external" href="https://github.com/EleutherAI/gpt-neox/blob/main/megatron/model/init_functions.py">https://github.com/EleutherAI/gpt-neox/blob/main/megatron/model/init_functions.py</a>.
+The initializer creates an array with values according to the method described in:
+“Transformers without Tears: Improving the Normalization of Self-Attention”, Nguyen, T. &amp; Salazar, J. (2019).
+The array values are sampled with a standard deviation of sqrt(2 / (5 * dim)).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Feature dimensionality to use in the initializer.</p></li>
+<li><p><strong>distribution</strong> (<em>InitDistribution</em>) – The distribution to sample from. Supported are normal, truncated normal, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initializer function following the above described method.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.nn.initializers.Initializer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.wang_init">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">wang_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'normal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.shared.init.wang_init" title="Link to this definition"></a></dt>
+<dd><p>Create Wang initializer.</p>
+<p>Adopted from <a class="reference external" href="https://github.com/EleutherAI/gpt-neox/blob/main/megatron/model/init_functions.py">https://github.com/EleutherAI/gpt-neox/blob/main/megatron/model/init_functions.py</a>.
+Commonly used for the output layers of residual blocks. The array values are sampled with a standard deviation
+of 2 / num_blocks / sqrt(dim).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Feature dimensionality to use in the initializer.</p></li>
+<li><p><strong>num_blocks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of layers / blocks in the model.</p></li>
+<li><p><strong>distribution</strong> (<em>InitDistribution</em>) – The distribution to sample from. Supported are normal, truncated normal, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initializer function of the wang init.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.nn.initializers.Initializer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.create_common_init_fn">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">create_common_init_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dim</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_blocks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'normal'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.shared.init.create_common_init_fn" title="Link to this definition"></a></dt>
+<dd><p>Create common initializer function.</p>
+<p>Allows to create different types of initializers with a single function call.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>fn_name</strong> (<em>InitFnName</em>) – Name of the initializer function to create. Supported are “small” (<a class="reference internal" href="#xlstm_jax.models.shared.init.small_init" title="xlstm_jax.models.shared.init.small_init"><code class="xref py py-func docutils literal notranslate"><span class="pre">small_init()</span></code></a>),
+“wang” (<a class="reference internal" href="#xlstm_jax.models.shared.init.wang_init" title="xlstm_jax.models.shared.init.wang_init"><code class="xref py py-func docutils literal notranslate"><span class="pre">wang_init()</span></code></a>), “wang2” (<a class="reference internal" href="#xlstm_jax.models.shared.init.wang_init" title="xlstm_jax.models.shared.init.wang_init"><code class="xref py py-func docutils literal notranslate"><span class="pre">wang_init()</span></code></a> with 2x block num), and
+“zeros” (zero initializer).</p></li>
+<li><p><strong>dim</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Feature dimensionality to use in the initializer.</p></li>
+<li><p><strong>num_blocks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of layers / blocks in the model.</p></li>
+<li><p><strong>distribution</strong> (<em>InitDistribution</em>) – The distribution to sample from. Supported are normal, truncated normal, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initializer function of the specified type.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.nn.initializers.Initializer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init._dist_from_stddev">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">_dist_from_stddev</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">stddev</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distribution</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.shared.init._dist_from_stddev" title="Link to this definition"></a></dt>
+<dd><p>Create initializer with specified standard deviation and distribution.</p>
+<p>The distribution has a zero mean and specified standard deviation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>stddev</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The standard deviation of the distribution.</p></li>
+<li><p><strong>distribution</strong> (<em>InitDistribution</em>) – The distribution to sample from. Supported are normal, truncated normal, and uniform.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initializer function that samples the array value from the specified distribution with the given standard
+deviation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.nn.initializers.Initializer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.shared.init.uniform_init">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.shared.init.</span></span><span class="sig-name descname"><span class="pre">uniform_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">min_val</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_val</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.shared.init.uniform_init" title="Link to this definition"></a></dt>
+<dd><p>Create uniform initializer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>min_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Minimum value of the uniform distribution.</p></li>
+<li><p><strong>max_val</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Maximum value of the uniform distribution.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An initializer function which samples values randomly between min_val and max_val.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>jax.nn.initializers.Initializer</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="xlstm_jax.models.shared" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../lm_head/index.html" class="btn btn-neutral float-right" title="xlstm_jax.models.shared.lm_head" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

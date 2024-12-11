@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.distributed.tensor_parallel &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.distributed.xla_utils" href="../xla_utils/index.html" />
+    <link rel="prev" title="xlstm_jax.distributed.single_gpu" href="../single_gpu/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.distributed</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.distributed.tensor_parallel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/distributed/tensor_parallel/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.distributed.tensor_parallel">
+<span id="xlstm-jax-distributed-tensor-parallel"></span><h1>xlstm_jax.distributed.tensor_parallel<a class="headerlink" href="#module-xlstm_jax.distributed.tensor_parallel" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper" title="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelParallelismWrapper</span></code></a></p></td>
+<td><p>Wrapper for adding model parallelism to a module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.TPDense" title="xlstm_jax.distributed.tensor_parallel.TPDense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TPDense</span></code></a></p></td>
+<td><p>Dense layer with Tensor Parallelism support.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense" title="xlstm_jax.distributed.tensor_parallel.TPAsyncDense"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TPAsyncDense</span></code></a></p></td>
+<td><p>Tensor-Parallel Dense Layer with Asynchronous Communication.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.scale_init" title="xlstm_jax.distributed.tensor_parallel.scale_init"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_init</span></code></a>(init_fn[, scale_factor])</p></td>
+<td><p>Scales the output of the given init function by the given factor.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.async_gather" title="xlstm_jax.distributed.tensor_parallel.async_gather"><code class="xref py py-obj docutils literal notranslate"><span class="pre">async_gather</span></code></a>(x, axis_name[, shift_up])</p></td>
+<td><p>All gather using ring permutation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.async_gather_bidirectional" title="xlstm_jax.distributed.tensor_parallel.async_gather_bidirectional"><code class="xref py py-obj docutils literal notranslate"><span class="pre">async_gather_bidirectional</span></code></a>(x, axis_name[, shift_up])</p></td>
+<td><p>All gather using ring permutation with bidirectional communication.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.async_gather_split" title="xlstm_jax.distributed.tensor_parallel.async_gather_split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">async_gather_split</span></code></a>(x, axis_name)</p></td>
+<td><p>All gather using ring permutation with features split for bidirectional communication.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.async_scatter" title="xlstm_jax.distributed.tensor_parallel.async_scatter"><code class="xref py py-obj docutils literal notranslate"><span class="pre">async_scatter</span></code></a>(xs, axis_name[, shift_up])</p></td>
+<td><p>Scatter sum using ring permutation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.tensor_parallel.async_scatter_split" title="xlstm_jax.distributed.tensor_parallel.async_scatter_split"><code class="xref py py-obj docutils literal notranslate"><span class="pre">async_scatter_split</span></code></a>(xs, axis_name)</p></td>
+<td><p>Scatter sum using ring permutation with features split for bidirectional communication.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">ModelParallelismWrapper</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Wrapper for adding model parallelism to a module.</p>
+<p>This wrapper adds sharding over the model axis to the parameters of the module and initializes the module with
+different parameters across the model axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_axis_name</strong> – Name of the model axis to shard over.</p></li>
+<li><p><strong>module_fn</strong> – Function that returns the Flax module to wrap.</p></li>
+<li><p><strong>mask_except_model_idx</strong> – If not None, only the <cite>mask_except_model_idx</cite>-th shard will be non-zero.</p></li>
+<li><p><strong>split_rngs</strong> – If True, split the random number generators across the model axis.</p></li>
+<li><p><strong>module_kwargs</strong> – Additional keyword arguments to pass to the module function.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.model_axis_name">
+<span class="sig-name descname"><span class="pre">model_axis_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.model_axis_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.module_fn">
+<span class="sig-name descname"><span class="pre">module_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">collections.abc.Callable</span></a><span class="p"><span class="pre">[</span></span><span class="pre">Ellipsis</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">flax.linen.Module</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.module_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.mask_except_model_idx">
+<span class="sig-name descname"><span class="pre">mask_except_model_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.mask_except_model_idx" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.split_rngs">
+<span class="sig-name descname"><span class="pre">split_rngs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.split_rngs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.module_kwargs">
+<span class="sig-name descname"><span class="pre">module_kwargs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://flax.readthedocs.io/en/latest/api_reference/flax.core.frozen_dict.html#flax.core.frozen_dict.FrozenDict" title="(in Flax)"><span class="pre">flax.core.frozen_dict.FrozenDict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.ModelParallelismWrapper.module_kwargs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.scale_init">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">scale_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.scale_init" title="Link to this definition"></a></dt>
+<dd><p>Scales the output of the given init function by the given factor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>init_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a>) – The init function to scale.</p></li>
+<li><p><strong>scale_factor</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The factor to scale the output of the init function by.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new init function that scales the output of the given init function by the given factor.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">TPDense</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Dense layer with Tensor Parallelism support.</p>
+<p>This layer can be used to perform a dense layer with Tensor Parallelism support.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.dense_fn">
+<span class="sig-name descname"><span class="pre">dense_fn</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.dense_fn" title="Link to this definition"></a></dt>
+<dd><p>Constructor function of the dense layer to use. Needs to support the keyword argument <cite>kernel_init</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.model_axis_name">
+<span class="sig-name descname"><span class="pre">model_axis_name</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.model_axis_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the model axis.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.tp_mode">
+<span class="sig-name descname"><span class="pre">tp_mode</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.tp_mode" title="Link to this definition"></a></dt>
+<dd><p>The Tensor Parallelism mode to use. Can be “scatter”, “gather”, or “none”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.skip_communication">
+<span class="sig-name descname"><span class="pre">skip_communication</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.skip_communication" title="Link to this definition"></a></dt>
+<dd><p>Whether to skip communication in the Tensor Parallelism strategy. Useful for layers with
+custom communication or where input has been already gathered beforehand.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.kernel_init">
+<span class="sig-name descname"><span class="pre">kernel_init</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.kernel_init" title="Link to this definition"></a></dt>
+<dd><p>The initializer to use for the kernel of the dense layer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.kernel_init_adjustment">
+<span class="sig-name descname"><span class="pre">kernel_init_adjustment</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.kernel_init_adjustment" title="Link to this definition"></a></dt>
+<dd><p>The adjustment factor to use for the kernel initializer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.use_bias">
+<span class="sig-name descname"><span class="pre">use_bias</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.use_bias" title="Link to this definition"></a></dt>
+<dd><p>Whether to use a bias in the dense layer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPDense.dense_name">
+<span class="sig-name descname"><span class="pre">dense_name</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPDense.dense_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the dense layer module.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">dense_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">model_axis_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">tp_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'scatter'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'gather'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'none'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">skip_communication</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">kernel_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">collections.abc.Callable</span></a></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">kernel_init_adjustment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">use_bias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">dense_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'module'</span></em><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.async_gather">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">async_gather</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_up</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.async_gather" title="Link to this definition"></a></dt>
+<dd><p>All gather using ring permutation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<em>xlstm_jax.common_types.PyTree</em>) – The input to gather.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to gather along.</p></li>
+<li><p><strong>shift_up</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift up (device 0 send to device 1) or down (device 1 send to device 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of gathered inputs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[xlstm_jax.common_types.PyTree]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.async_gather_bidirectional">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">async_gather_bidirectional</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_up</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.async_gather_bidirectional" title="Link to this definition"></a></dt>
+<dd><p>All gather using ring permutation with bidirectional communication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The input to gather.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to gather along.</p></li>
+<li><p><strong>shift_up</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to return the order of tensors that complies with the unidirectional version of shift up
+(device 0 send to device 1) or down (device 1 send to device 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of gathered inputs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.async_gather_split">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">async_gather_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.async_gather_split" title="Link to this definition"></a></dt>
+<dd><p>All gather using ring permutation with features split for bidirectional communication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The input to gather.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to gather along.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>List of gathered inputs. Length is 2 * axis size - 1.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.async_scatter">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">async_scatter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_up</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.async_scatter" title="Link to this definition"></a></dt>
+<dd><p>Scatter sum using ring permutation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xs</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>xlstm_jax.common_types.PyTree</em><em>]</em>) – The inputs to scatter sum. The length of the list should match the size of the axis.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to scatter sum along.</p></li>
+<li><p><strong>shift_up</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift up (device 0 send to device 1) or down (device 1 send to device 0).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scatter summed output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.async_scatter_split">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">async_scatter_split</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">xs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.async_scatter_split" title="Link to this definition"></a></dt>
+<dd><p>Scatter sum using ring permutation with features split for bidirectional communication.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>xs</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>xlstm_jax.common_types.PyTree</em><em>]</em>) – The inputs to scatter sum. The length of the list should match the size of the axis.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to scatter sum along.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The scatter summed output.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.tensor_parallel.</span></span><span class="sig-name descname"><span class="pre">TPAsyncDense</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Tensor-Parallel Dense Layer with Asynchronous Communication.</p>
+<p>This layer can be used to perform a dense layer with Tensor Parallelism support, and overlaps communication with
+computation whenever possible.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.dense_fn">
+<span class="sig-name descname"><span class="pre">dense_fn</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.dense_fn" title="Link to this definition"></a></dt>
+<dd><p>Constructor function of the dense layer to use. Needs to support the keyword argument <cite>kernel_init</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.model_axis_name">
+<span class="sig-name descname"><span class="pre">model_axis_name</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.model_axis_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the model axis.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.tp_mode">
+<span class="sig-name descname"><span class="pre">tp_mode</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.tp_mode" title="Link to this definition"></a></dt>
+<dd><p>The Tensor Parallelism mode to use. Can be “scatter”, “gather”, or “none”.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.kernel_init">
+<span class="sig-name descname"><span class="pre">kernel_init</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.kernel_init" title="Link to this definition"></a></dt>
+<dd><p>The initializer to use for the kernel of the dense layer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.kernel_init_adjustment">
+<span class="sig-name descname"><span class="pre">kernel_init_adjustment</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.kernel_init_adjustment" title="Link to this definition"></a></dt>
+<dd><p>The adjustment factor to use for the kernel initializer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bias">
+<span class="sig-name descname"><span class="pre">use_bias</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bias" title="Link to this definition"></a></dt>
+<dd><p>Whether to use a bias in the dense layer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.dense_name">
+<span class="sig-name descname"><span class="pre">dense_name</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.dense_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the dense layer module.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bidirectional_gather">
+<span class="sig-name descname"><span class="pre">use_bidirectional_gather</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bidirectional_gather" title="Link to this definition"></a></dt>
+<dd><p>Whether to use bidirectional or unidirectional gather over the device ring for
+communication.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bidirectional_scatter">
+<span class="sig-name descname"><span class="pre">use_bidirectional_scatter</span></span><a class="headerlink" href="#xlstm_jax.distributed.tensor_parallel.TPAsyncDense.use_bidirectional_scatter" title="Link to this definition"></a></dt>
+<dd><p>Whether to use bidirectional or unidirectional scatter over the device ring for
+communication.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">dense_fn</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Any</span></em><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">model_axis_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">tp_mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Literal</span><span class="p"><span class="pre">[</span></span><span class="s"><span class="pre">'scatter'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'gather'</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="s"><span class="pre">'none'</span></span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'none'</span></em><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">kernel_init</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><span class="pre">collections.abc.Callable</span></a></em><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">kernel_init_adjustment</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">use_bias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id14">
+<span class="sig-name descname"><span class="pre">dense_name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'module'</span></em><a class="headerlink" href="#id14" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id15">
+<span class="sig-name descname"><span class="pre">use_bidirectional_gather</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id15" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id16">
+<span class="sig-name descname"><span class="pre">use_bidirectional_scatter</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id16" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../single_gpu/index.html" class="btn btn-neutral float-left" title="xlstm_jax.distributed.single_gpu" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../xla_utils/index.html" class="btn btn-neutral float-right" title="xlstm_jax.distributed.xla_utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

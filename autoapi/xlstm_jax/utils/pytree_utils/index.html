@@ -1,0 +1,336 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.utils.pytree_utils &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="lmeval_extended_evaluation" href="../../../lmeval_extended_evaluation/index.html" />
+    <link rel="prev" title="xlstm_jax.utils.model_param_handling.store" href="../model_param_handling/store/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.utils</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.utils.pytree_utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/utils/pytree_utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.utils.pytree_utils">
+<span id="xlstm-jax-utils-pytree-utils"></span><h1>xlstm_jax.utils.pytree_utils<a class="headerlink" href="#module-xlstm_jax.utils.pytree_utils" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.LOGGER" title="xlstm_jax.utils.pytree_utils.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.RecursionLimit" title="xlstm_jax.utils.pytree_utils.RecursionLimit"><code class="xref py py-obj docutils literal notranslate"><span class="pre">RecursionLimit</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.pytree_diff" title="xlstm_jax.utils.pytree_utils.pytree_diff"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pytree_diff</span></code></a>(tree1, tree2)</p></td>
+<td><p>Computes the difference between two PyTrees.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.pytree_key_path_to_str" title="xlstm_jax.utils.pytree_utils.pytree_key_path_to_str"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pytree_key_path_to_str</span></code></a>(path[, separator])</p></td>
+<td><p>Converts a path to a string.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.flatten_pytree" title="xlstm_jax.utils.pytree_utils.flatten_pytree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_pytree</span></code></a>(pytree[, separator, is_leaf])</p></td>
+<td><p>Flattens a PyTree into a dict.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.flatten_dict" title="xlstm_jax.utils.pytree_utils.flatten_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">flatten_dict</span></code></a>(d[, separator])</p></td>
+<td><p>Flattens a nested dictionary.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.get_shape_dtype_pytree" title="xlstm_jax.utils.pytree_utils.get_shape_dtype_pytree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_shape_dtype_pytree</span></code></a>(x)</p></td>
+<td><p>Converts a PyTree of jax.Array objects to a PyTree of ShapeDtypeStruct objects.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.pytree_utils.delete_arrays_in_pytree" title="xlstm_jax.utils.pytree_utils.delete_arrays_in_pytree"><code class="xref py py-obj docutils literal notranslate"><span class="pre">delete_arrays_in_pytree</span></code></a>(x)</p></td>
+<td><p>Deletes and frees all jax.Array objects in a PyTree from the device memory.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.RecursionLimit">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">RecursionLimit</span></span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.RecursionLimit" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.pytree_diff">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">pytree_diff</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tree2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.pytree_diff" title="Link to this definition"></a></dt>
+<dd><p>Computes the difference between two PyTrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree1</strong> (<em>xlstm_jax.common_types.PyTree</em>) – First PyTree.</p></li>
+<li><p><strong>tree2</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Second PyTree.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A PyTree of the same structure, with only differing leaves.
+Returns None if no differences are found.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>
+<span class="go">{&#39;a&#39;: (1, 2)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="go">{&#39;length_mismatch&#39;: (3, 2)}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]))</span>
+<span class="go">{&#39;shape_mismatch&#39;: ((3,), (2,))}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.pytree_key_path_to_str">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">pytree_key_path_to_str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.pytree_key_path_to_str" title="Link to this definition"></a></dt>
+<dd><p>Converts a path to a string.</p>
+<p>An adjusted version of jax.tree_util.keystr to support different separators and easier to read output.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>jax.tree_util.KeyPath</em>) – Path.</p></li>
+<li><p><strong>separator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Separator for the keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Path as string.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.flatten_pytree">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">flatten_pytree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pytree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_leaf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.flatten_pytree" title="Link to this definition"></a></dt>
+<dd><p>Flattens a PyTree into a dict.</p>
+<p>Supports PyTrees with nested dictionaries, lists, tuples, and more. The keys are created by concatenating the
+path to the leaf with the separator. For sequences, the index is used as key (see examples below).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>pytree</strong> (<em>xlstm_jax.common_types.PyTree</em>) – PyTree to be flattened.</p></li>
+<li><p><strong>separator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Separator for the keys.</p></li>
+<li><p><strong>is_leaf</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><em>Any</em><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>] </em><em>| </em><em>None</em>) – Function that determines if a node is a leaf. If None, uses default PyTree leaf detection.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened PyTree. In case of duplicate keys, a ValueError is raised.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flatten_pytree</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">}})</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b.c&#39;: 2}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flatten_pytree</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)},</span> <span class="n">separator</span><span class="o">=</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
+<span class="go">{&#39;a&#39;: 1, &#39;b/0&#39;: 2, &#39;b/1&#39;: 3, &#39;b/2&#39;: 4}</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">flatten_pytree</span><span class="p">((</span><span class="s2">&quot;a&quot;</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">))</span>
+<span class="go">{&#39;0&#39;: &#39;a&#39;, &#39;1&#39;: &#39;b&#39;, &#39;2&#39;: &#39;c&#39;}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.flatten_dict">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">flatten_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">separator</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.flatten_dict" title="Link to this definition"></a></dt>
+<dd><p>Flattens a nested dictionary.</p>
+<p>In contrast to flatten_pytree, this function is specifically designed for dictionaries and does not flatten
+sequences by default. It is equivalent to setting the is_leaf function in flatten_pytree to:
+<cite>flatten_pytree(d, is_leaf=lambda x: not isinstance(x, (dict, FrozenDict)))</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>d</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>flax.core.FrozenDict</em>) – Dictionary to be flattened.</p></li>
+<li><p><strong>separator</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Separator for the keys.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Flattened dictionary.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">flatten_dict</span><span class="p">({</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">},</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)})</span>
+<span class="go">{&#39;a.b&#39;: 1, &#39;c&#39;: (2, 3, 4)}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.get_shape_dtype_pytree">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">get_shape_dtype_pytree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.get_shape_dtype_pytree" title="Link to this definition"></a></dt>
+<dd><p>Converts a PyTree of jax.Array objects to a PyTree of ShapeDtypeStruct objects.</p>
+<p>Leaf nodes of the PyTree that are not jax.Array objects are left unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>xlstm_jax.common_types.PyTree</em>) – PyTree of jax.Array objects.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>PyTree of ShapeDtypeStruct objects.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.pytree_utils.delete_arrays_in_pytree">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.pytree_utils.</span></span><span class="sig-name descname"><span class="pre">delete_arrays_in_pytree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.pytree_utils.delete_arrays_in_pytree" title="Link to this definition"></a></dt>
+<dd><p>Deletes and frees all jax.Array objects in a PyTree from the device memory.</p>
+<p>Leaf nodes of the PyTree that are not jax.Array objects are left unchanged.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>x</strong> (<em>xlstm_jax.common_types.PyTree</em>) – PyTree of jax.Array objects.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../model_param_handling/store/index.html" class="btn btn-neutral float-left" title="xlstm_jax.utils.model_param_handling.store" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../../lmeval_extended_evaluation/index.html" class="btn btn-neutral float-right" title="lmeval_extended_evaluation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

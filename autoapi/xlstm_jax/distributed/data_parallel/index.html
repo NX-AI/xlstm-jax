@@ -1,0 +1,275 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.distributed.data_parallel &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.distributed.mesh_utils" href="../mesh_utils/index.html" />
+    <link rel="prev" title="xlstm_jax.distributed.array_utils" href="../array_utils/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.distributed</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.distributed.data_parallel</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/distributed/data_parallel/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.distributed.data_parallel">
+<span id="xlstm-jax-distributed-data-parallel"></span><h1>xlstm_jax.distributed.data_parallel<a class="headerlink" href="#module-xlstm_jax.distributed.data_parallel" title="Link to this heading"></a></h1>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.data_parallel.shard_params" title="xlstm_jax.distributed.data_parallel.shard_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shard_params</span></code></a>(params, axis_name[, min_weight_size])</p></td>
+<td><p>Shard parameters across the given mesh axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.data_parallel.gather_array_with_mean_grads" title="xlstm_jax.distributed.data_parallel.gather_array_with_mean_grads"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gather_array_with_mean_grads</span></code></a>(x, axis, axis_name[, ...])</p></td>
+<td><p>Gathering with averaging gradients across replicas.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.data_parallel.gather_params" title="xlstm_jax.distributed.data_parallel.gather_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gather_params</span></code></a>(params, axis_name[, gather_dtype, ...])</p></td>
+<td><p>Gather parameters from all replicas across the given axis.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.distributed.data_parallel.shard_module_params" title="xlstm_jax.distributed.data_parallel.shard_module_params"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shard_module_params</span></code></a>(target, axis_name[, ...])</p></td>
+<td><p>Shard parameters of a module across replicas.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.distributed.data_parallel.sync_gradients" title="xlstm_jax.distributed.data_parallel.sync_gradients"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sync_gradients</span></code></a>(grads, axis_names)</p></td>
+<td><p>Synchronize gradients across devices.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.data_parallel.shard_params">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.data_parallel.</span></span><span class="sig-name descname"><span class="pre">shard_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_weight_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2**18</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.data_parallel.shard_params" title="Link to this definition"></a></dt>
+<dd><p>Shard parameters across the given mesh axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>xlstm_jax.common_types.PyTree</em>) – The parameters to shard.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis to shard parameters across.</p></li>
+<li><p><strong>min_weight_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The minimum size of a parameter to shard. Parameters with fewer values will not be sharded.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>PyTree of same structure as params, but with leaves sharded over new axis if possible.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.data_parallel.gather_array_with_mean_grads">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.data_parallel.</span></span><span class="sig-name descname"><span class="pre">gather_array_with_mean_grads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_scatter_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.data_parallel.gather_array_with_mean_grads" title="Link to this definition"></a></dt>
+<dd><p>Gathering with averaging gradients across replicas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The array to gather.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The axis of the array to gather across.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name of the mesh to gather across.</p></li>
+<li><p><strong>gather_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the array to before gathering. If None, no casting is performed.</p></li>
+<li><p><strong>grad_scatter_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the gradients to before scattering. If None, the dtype of x is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The gathered array with a gradient function that averages across replicas.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.data_parallel.gather_params">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.data_parallel.</span></span><span class="sig-name descname"><span class="pre">gather_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_scatter_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.data_parallel.gather_params" title="Link to this definition"></a></dt>
+<dd><p>Gather parameters from all replicas across the given axis.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>params</strong> (<em>xlstm_jax.common_types.PyTree</em>) – The parameters to gather.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis to gather parameters across.</p></li>
+<li><p><strong>gather_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the parameters to before gathering. If None, no casting is performed.</p></li>
+<li><p><strong>grad_scatter_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the gradients to before scattering. If None, the dtype of the parameters
+is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>PyTree of same structure as params, but with leaves gathered if they were a nn.Partitioned object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.data_parallel.shard_module_params">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.data_parallel.</span></span><span class="sig-name descname"><span class="pre">shard_module_params</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_weight_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2**18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grad_scatter_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.data_parallel.shard_module_params" title="Link to this definition"></a></dt>
+<dd><p>Shard parameters of a module across replicas.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>target</strong> (<em>flax.linen.Module</em><em> | </em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a>) – The module to shard.</p></li>
+<li><p><strong>axis_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The axis name to shard parameters across.</p></li>
+<li><p><strong>min_weight_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The minimum size of a parameter to shard. Parameters with fewer values will not be sharded.</p></li>
+<li><p><strong>gather_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the parameters to before gathering. If None, no casting is performed.</p></li>
+<li><p><strong>grad_scatter_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – The dtype to cast the gradients to before scattering. If None, the dtype of the parameters
+is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The module with sharded parameters.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>flax.linen.Module | <a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.distributed.data_parallel.sync_gradients">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.distributed.data_parallel.</span></span><span class="sig-name descname"><span class="pre">sync_gradients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grads</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis_names</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.distributed.data_parallel.sync_gradients" title="Link to this definition"></a></dt>
+<dd><p>Synchronize gradients across devices.</p>
+<p>Gradients for parameters that are replicated over a given axis are averaged across devices.
+Parameters that are partitioned over a given axis are considered to already have a mean of
+the gradients on each device, and hence do not need to be altered.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grads</strong> (<em>xlstm_jax.common_types.PyTree</em>) – The gradients to synchronize.</p></li>
+<li><p><strong>axis_names</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>]</em>) – The axis names to synchronize gradients across.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The gradients averaged over the specified axes if they are replicated.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../array_utils/index.html" class="btn btn-neutral float-left" title="xlstm_jax.distributed.array_utils" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../mesh_utils/index.html" class="btn btn-neutral float-right" title="xlstm_jax.distributed.mesh_utils" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

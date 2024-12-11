@@ -1,0 +1,445 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.optimizer.ademamix &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.optimizer.optimizer" href="../optimizer/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.optimizer" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.optimizer</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.optimizer.ademamix</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/optimizer/ademamix/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.optimizer.ademamix">
+<span id="xlstm-jax-trainer-optimizer-ademamix"></span><h1>xlstm_jax.trainer.optimizer.ademamix<a class="headerlink" href="#module-xlstm_jax.trainer.optimizer.ademamix" title="Link to this heading"></a></h1>
+<p>Adapted from Apple’s official AdeMAMix implementation:
+<a class="reference external" href="https://github.com/apple/ml-ademamix/blob/main/optax/ademamix.py">https://github.com/apple/ml-ademamix/blob/main/optax/ademamix.py</a></p>
+<p>TODO: Check license and add it here.</p>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState" title="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ScaleByAdemamixState</span></code></a></p></td>
+<td><p>State for the AdEMAMix algorithm.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.alpha_scheduler" title="xlstm_jax.trainer.optimizer.ademamix.alpha_scheduler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">alpha_scheduler</span></code></a>(alpha[, alpha_start, warmup])</p></td>
+<td><p>Linear scheduler for the mixing coefficient alpha in AdEMAMix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.beta3_scheduler" title="xlstm_jax.trainer.optimizer.ademamix.beta3_scheduler"><code class="xref py py-obj docutils literal notranslate"><span class="pre">beta3_scheduler</span></code></a>(beta_end[, beta_start, warmup])</p></td>
+<td><p>Linear scheduler for the EMA parameter beta3 in AdEMAMix.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.ademamix" title="xlstm_jax.trainer.optimizer.ademamix.ademamix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ademamix</span></code></a>(lr[, b1, b2, b3, alpha, b3_scheduler, ...])</p></td>
+<td><p>AdEMAMix.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.scale_by_ademamix" title="xlstm_jax.trainer.optimizer.ademamix.scale_by_ademamix"><code class="xref py py-obj docutils literal notranslate"><span class="pre">scale_by_ademamix</span></code></a>(b1, b2, b3, alpha, b3_scheduler, ...)</p></td>
+<td><p>Scales updates by the AdEMAMix algorithm.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.tree_cast" title="xlstm_jax.trainer.optimizer.ademamix.tree_cast"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_cast</span></code></a>(tree, dtype)</p></td>
+<td><p>Cast tree to given dtype, skip if None.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.tree_zeros_like" title="xlstm_jax.trainer.optimizer.ademamix.tree_zeros_like"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_zeros_like</span></code></a>(tree[, dtype])</p></td>
+<td><p>Creates an all-zeros tree with the same structure.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.tree_update_moment" title="xlstm_jax.trainer.optimizer.ademamix.tree_update_moment"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_update_moment</span></code></a>(updates, moments, decay, order)</p></td>
+<td><p>Compute the exponential moving average of the <cite>order</cite>-th moment.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.tree_update_moment_per_elem_norm" title="xlstm_jax.trainer.optimizer.ademamix.tree_update_moment_per_elem_norm"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_update_moment_per_elem_norm</span></code></a>(updates, moments, ...)</p></td>
+<td><p>Compute the EMA of the <cite>order</cite>-th moment of the element-wise norm.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.ademamix.tree_bias_correction" title="xlstm_jax.trainer.optimizer.ademamix.tree_bias_correction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tree_bias_correction</span></code></a>(moment, decay, count)</p></td>
+<td><p>Performs bias correction. It becomes a no-op as count goes to infinity.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.alpha_scheduler">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">alpha_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.alpha_scheduler" title="Link to this definition"></a></dt>
+<dd><p>Linear scheduler for the mixing coefficient alpha in AdEMAMix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Final value of alpha.</p></li>
+<li><p><strong>alpha_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Initial value of alpha.</p></li>
+<li><p><strong>warmup</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of steps for the warmup phase. Often set equal to the number of training steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A scheduler function that takes a step and returns the value of alpha.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>optax.Schedule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.beta3_scheduler">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">beta3_scheduler</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">beta_end</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">beta_start</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">warmup</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.beta3_scheduler" title="Link to this definition"></a></dt>
+<dd><p>Linear scheduler for the EMA parameter beta3 in AdEMAMix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>beta_end</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Final value of beta3.</p></li>
+<li><p><strong>beta_start</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Initial value of beta3. Often set equal to beta1.</p></li>
+<li><p><strong>warmup</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of steps for the warmup phase. Often set equal to the number of training steps.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A scheduler function that takes a step and returns the value of beta3.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>optax.Schedule</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">ScaleByAdemamixState</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">NamedTuple</span></code></p>
+<p>State for the AdEMAMix algorithm.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.count">
+<span class="sig-name descname"><span class="pre">count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">chex.Array</span></em><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.count" title="Link to this definition"></a></dt>
+<dd><p>Step counter for the first momentum and adaptive learning rate.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.count_m2">
+<span class="sig-name descname"><span class="pre">count_m2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">chex.Array</span></em><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.count_m2" title="Link to this definition"></a></dt>
+<dd><p>Step counter for the slower momentum.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.m1">
+<span class="sig-name descname"><span class="pre">m1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">optax._src.base.Updates</span></em><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.m1" title="Link to this definition"></a></dt>
+<dd><p>Fast EMA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.m2">
+<span class="sig-name descname"><span class="pre">m2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">optax._src.base.Updates</span></em><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.m2" title="Link to this definition"></a></dt>
+<dd><p>Slow EMA.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.nu">
+<span class="sig-name descname"><span class="pre">nu</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">optax._src.base.Updates</span></em><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ScaleByAdemamixState.nu" title="Link to this definition"></a></dt>
+<dd><p>Second moment estimate.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.ademamix">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">ademamix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b3</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.9999</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b3_scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_scheduler</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight_decay</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.ademamix" title="Link to this definition"></a></dt>
+<dd><p>AdEMAMix.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lr</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>optax.Schedule</em>) – A global scaling factor, either fixed or evolving along
+iterations with a scheduler, see <a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.scale_by_learning_rate" title="(in Optax)"><code class="xref py py-func docutils literal notranslate"><span class="pre">optax.scale_by_learning_rate()</span></code></a>.</p></li>
+<li><p><strong>b1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the fast EMA.</p></li>
+<li><p><strong>b2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the second moment of past gradients.</p></li>
+<li><p><strong>b3</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the slow EMA.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Mixing coeficient use for the linear combination of the fast and slow EMAs.</p></li>
+<li><p><strong>b3_scheduler</strong> (<em>optax.Schedule</em><em> | </em><em>None</em>) – an optional scheduler function, given a timestep, returns the
+value of b3. Use <cite>beta3_scheduler(b3,b1,T_b3)</cite> to follow the AdEMAMix paper.</p></li>
+<li><p><strong>alpha_scheduler</strong> (<em>optax.Schedule</em><em> | </em><em>None</em>) – an optional scheduler function, given a timestep, returns the
+value of alpha. Use <cite>alpha_scheduler(alpha,0,T_alpha)</cite> to follow the
+AdEMAMix paper.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – A small constant applied to denominator outside the square root
+(as in the Adam paper) to avoid dividing by zero when rescaling.</p></li>
+<li><p><strong>eps_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – A small constant applied to denominator inside the square root (as
+in RMSProp), to avoid dividing by zero when rescaling. This is needed for
+instance when computing (meta-)gradients through Adam.</p></li>
+<li><p><strong>mu_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – Optional <cite>dtype</cite> to be used for the first order accumulator; if
+<cite>None</cite> then the <cite>dtype</cite> is inferred from <cite>params</cite> and <cite>updates</cite>.</p></li>
+<li><p><strong>weight_decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Strength of the weight decay regularization. Note that this
+weight decay is multiplied with the learning rate. This is consistent
+with other frameworks such as PyTorch, but different from
+(Loshchilov et al., 2019) where the weight decay is only multiplied with
+the “schedule multiplier”, but not the base learning rate.</p></li>
+<li><p><strong>mask</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><em>xlstm_jax.common_types.PyTree</em><em>]</em><em>, </em><em>xlstm_jax.common_types.PyTree</em><em>] </em><em>| </em><em>None</em>) – A tree with same structure as (or a prefix of) the params PyTree,
+or a Callable that returns such a pytree given the params/updates.
+The leaves should be booleans, <cite>True</cite> for leaves/subtrees you want to
+apply the weight decay to, and <cite>False</cite> for those you want to skip. Note
+that the Adam gradient transformations are applied to all parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding <cite>GradientTransformation</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.scale_by_ademamix">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">scale_by_ademamix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">b1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b3_scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">alpha_scheduler</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps_root</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mu_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.scale_by_ademamix" title="Link to this definition"></a></dt>
+<dd><p>Scales updates by the AdEMAMix algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>b1</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the fast EMA.</p></li>
+<li><p><strong>b2</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the second moment of past gradients.</p></li>
+<li><p><strong>b3</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Exponential decay rate to track the slow EMA.</p></li>
+<li><p><strong>alpha</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Mixing coeficient use for the linear combination of the fast and slow EMAs.</p></li>
+<li><p><strong>b3_scheduler</strong> (<em>optax.Schedule</em><em> | </em><em>None</em>) – an optional scheduler function, given a timestep, returns the
+value of b3. Use <cite>beta3_scheduler(b3,b1,T_b3)</cite> to follow the AdEMAMix paper.</p></li>
+<li><p><strong>alpha_scheduler</strong> (<em>optax.Schedule</em><em> | </em><em>None</em>) – an optional scheduler function, given a timestep, returns the
+value of alpha. Use <cite>alpha_scheduler(alpha,0,T_alpha)</cite> to follow the
+AdEMAMix paper.</p></li>
+<li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – A small constant applied to denominator outside the square root
+(as in the Adam paper) to avoid dividing by zero when rescaling.</p></li>
+<li><p><strong>eps_root</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – A small constant applied to denominator inside the square root (as
+in RMSProp), to avoid dividing by zero when rescaling. This is needed for
+instance when computing (meta-)gradients through Adam.</p></li>
+<li><p><strong>mu_dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – Optional <cite>dtype</cite> to be used for the first order accumulator; if
+<cite>None</cite> then the <cite>dtype</cite> is inferred from <cite>params</cite> and <cite>updates</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The corresponding <cite>GradientTransformation</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.tree_cast">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">tree_cast</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.tree_cast" title="Link to this definition"></a></dt>
+<dd><p>Cast tree to given dtype, skip if None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> (<em>xlstm_jax.common_types.PyTree</em>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.tree_zeros_like">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">tree_zeros_like</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tree</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.tree_zeros_like" title="Link to this definition"></a></dt>
+<dd><p>Creates an all-zeros tree with the same structure.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>tree</strong> (<em>xlstm_jax.common_types.PyTree</em>) – pytree.</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><em>jax.numpy.dtype</em></a><em> | </em><em>None</em>) – optional dtype to use for the tree of zeros.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>an all-zeros tree with the same structure as <code class="docutils literal notranslate"><span class="pre">tree</span></code>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.tree_update_moment">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">tree_update_moment</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">updates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.tree_update_moment" title="Link to this definition"></a></dt>
+<dd><p>Compute the exponential moving average of the <cite>order</cite>-th moment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>updates</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Gradients.</p></li>
+<li><p><strong>moments</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Moments.</p></li>
+<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Decay rate.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Order of the moment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated moments.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.tree_update_moment_per_elem_norm">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">tree_update_moment_per_elem_norm</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">updates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">moments</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.tree_update_moment_per_elem_norm" title="Link to this definition"></a></dt>
+<dd><p>Compute the EMA of the <cite>order</cite>-th moment of the element-wise norm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>updates</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Gradients.</p></li>
+<li><p><strong>moments</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Moments.</p></li>
+<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Decay rate.</p></li>
+<li><p><strong>order</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Order of the moment.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The updated moments.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.ademamix.tree_bias_correction">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.ademamix.</span></span><span class="sig-name descname"><span class="pre">tree_bias_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">moment</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">decay</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.ademamix.tree_bias_correction" title="Link to this definition"></a></dt>
+<dd><p>Performs bias correction. It becomes a no-op as count goes to infinity.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>moment</strong> (<em>xlstm_jax.common_types.PyTree</em>) – Moments.</p></li>
+<li><p><strong>decay</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Decay rate.</p></li>
+<li><p><strong>count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Step count.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The bias-corrected moments.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.optimizer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../optimizer/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.optimizer.optimizer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

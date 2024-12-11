@@ -1,0 +1,461 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.train_init_fns &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer" href="../trainer/index.html" />
+    <link rel="prev" title="xlstm_jax.start_training" href="../start_training/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.train_init_fns</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../_sources/autoapi/xlstm_jax/train_init_fns/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.train_init_fns">
+<span id="xlstm-jax-train-init-fns"></span><h1>xlstm_jax.train_init_fns<a class="headerlink" href="#module-xlstm_jax.train_init_fns" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.LOGGER" title="xlstm_jax.train_init_fns.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_parallel" title="xlstm_jax.train_init_fns.init_parallel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_parallel</span></code></a>(cfg)</p></td>
+<td><p>Initialize configuration for parallelism.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_data_iterator" title="xlstm_jax.train_init_fns.init_data_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_data_iterator</span></code></a>(cfg, mesh)</p></td>
+<td><p>Initialize data iterators.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_single_data_iterator" title="xlstm_jax.train_init_fns.init_single_data_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_single_data_iterator</span></code></a>(cfg, mesh[, create_split])</p></td>
+<td><p>Initialize a single data iterator.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_mixed_data_iterator" title="xlstm_jax.train_init_fns.init_mixed_data_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_mixed_data_iterator</span></code></a>(cfg, mesh)</p></td>
+<td><p>Initialize a data iterator with mixed data sources.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.get_tokenizer_vocab_size" title="xlstm_jax.train_init_fns.get_tokenizer_vocab_size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_tokenizer_vocab_size</span></code></a>(cfg[, next_multiple_of])</p></td>
+<td><p>Get the vocabulary size from the tokenizer.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_model_config" title="xlstm_jax.train_init_fns.init_model_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_model_config</span></code></a>(cfg, parallel)</p></td>
+<td><p>Instantiate the model configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_logger_config" title="xlstm_jax.train_init_fns.init_logger_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_logger_config</span></code></a>(cfg)</p></td>
+<td><p>Instantiate logger configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_scheduler_config" title="xlstm_jax.train_init_fns.init_scheduler_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_scheduler_config</span></code></a>(cfg, data_iterator)</p></td>
+<td><p>Instantiate scheduler configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_optimizer_config" title="xlstm_jax.train_init_fns.init_optimizer_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_optimizer_config</span></code></a>(cfg)</p></td>
+<td><p>Instantiate optimizer configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_model_checkpointing" title="xlstm_jax.train_init_fns.init_model_checkpointing"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_model_checkpointing</span></code></a>(cfg)</p></td>
+<td><p>Instantiate model checkpointing configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_lr_monitor_config" title="xlstm_jax.train_init_fns.init_lr_monitor_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_lr_monitor_config</span></code></a>(cfg)</p></td>
+<td><p>Instantiate learning rate monitor configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_profiler_config" title="xlstm_jax.train_init_fns.init_profiler_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_profiler_config</span></code></a>(cfg)</p></td>
+<td><p>Instantiate profiler configuration.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.init_trainer" title="xlstm_jax.train_init_fns.init_trainer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">init_trainer</span></code></a>(cfg, data_iterator, model_config, mesh)</p></td>
+<td><p>Initializes the LLMTrainer with all sub-configs.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.train_init_fns.log_info" title="xlstm_jax.train_init_fns.log_info"><code class="xref py py-obj docutils literal notranslate"><span class="pre">log_info</span></code></a>(msg)</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.train_init_fns.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_parallel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_parallel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_parallel" title="Link to this definition"></a></dt>
+<dd><p>Initialize configuration for parallelism.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>Hydra.</strong> (<em>cfg  Config assembled by</em>)</p></li>
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initialized parallel configuration.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../models/configs/index.html#xlstm_jax.models.configs.ParallelConfig" title="xlstm_jax.models.configs.ParallelConfig">xlstm_jax.models.configs.ParallelConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_data_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_data_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_data_iterator" title="Link to this definition"></a></dt>
+<dd><p>Initialize data iterators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Config assembled by Hydra.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The jax device mesh.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training and evaluation data iterators.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[xlstm_jax.dataset.DataIterator, xlstm_jax.dataset.DataIterator | <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, xlstm_jax.dataset.DataIterator] | None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_single_data_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_single_data_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">create_split</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_single_data_iterator" title="Link to this definition"></a></dt>
+<dd><p>Initialize a single data iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Data configuration.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The jax device mesh.</p></li>
+<li><p><strong>create_split</strong> (<em>Literal</em><em>[</em><em>'train'</em><em>, </em><em>'eval'</em><em>, </em><em>None</em><em>]</em>) – Whether to create a train or eval config from the config class, using the
+<cite>create_train_eval_configs</cite> method. If None, the config is used as is.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data iterator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.dataset.DataIterator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_mixed_data_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_mixed_data_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_mixed_data_iterator" title="Link to this definition"></a></dt>
+<dd><p>Initialize a data iterator with mixed data sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Data configuration.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The jax device mesh.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data iterator.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.dataset.DataIterator</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.get_tokenizer_vocab_size">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">get_tokenizer_vocab_size</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">next_multiple_of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.get_tokenizer_vocab_size" title="Link to this definition"></a></dt>
+<dd><p>Get the vocabulary size from the tokenizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Config assembled by Hydra.</p></li>
+<li><p><strong>next_multiple_of</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The vocabulary size will be increased to the next multiple of this number.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The vocabulary size, increased to the next multiple of <cite>next_multiple_of</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_model_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_model_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parallel</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_model_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate the model configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Config assembled by Hydra.</p></li>
+<li><p><strong>parallel</strong> (<a class="reference internal" href="../models/configs/index.html#xlstm_jax.models.configs.ParallelConfig" title="xlstm_jax.models.configs.ParallelConfig"><em>xlstm_jax.models.configs.ParallelConfig</em></a>) – Parallel configuration.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Initialized model configuration.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.models.ModelConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_logger_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_logger_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_logger_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate logger configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Config assembled by Hydra.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of LoggerConfig.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.logger.LoggerConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_scheduler_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_scheduler_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_iterator</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_scheduler_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate scheduler configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data_iterator</strong> (<em>xlstm_jax.dataset.DataIterator</em>)</p></li>
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Config assembled by Hydra.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of SchedulerConfig following the provided config.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.optimizer.SchedulerConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_optimizer_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_optimizer_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_optimizer_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate optimizer configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Full Hydra config.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of OptimizerConfig.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.optimizer.OptimizerConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_model_checkpointing">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_model_checkpointing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_model_checkpointing" title="Link to this definition"></a></dt>
+<dd><p>Instantiate model checkpointing configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Full Hydra config.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of ModelCheckpointConfig.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.callbacks.ModelCheckpointConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_lr_monitor_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_lr_monitor_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_lr_monitor_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate learning rate monitor configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Full Hydra config.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of LearningRateMonitorConfig.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.callbacks.LearningRateMonitorConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_profiler_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_profiler_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_profiler_config" title="Link to this definition"></a></dt>
+<dd><p>Instantiate profiler configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Full Hydra config.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of JaxProfilerConfig.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.trainer.callbacks.JaxProfilerConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.init_trainer">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">init_trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cfg</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_iterator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.init_trainer" title="Link to this definition"></a></dt>
+<dd><p>Initializes the LLMTrainer with all sub-configs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cfg</strong> (<em>omegaconf.DictConfig</em>) – Full Hydra config.</p></li>
+<li><p><strong>data_iterator</strong> (<em>xlstm_jax.dataset.DataIterator</em>) – A data iterator.</p></li>
+<li><p><strong>model_config</strong> (<em>xlstm_jax.models.ModelConfig</em>) – A model config.</p></li>
+<li><p><strong>mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – A device mesh.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Instance of LLM trainer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../trainer/llm/trainer/index.html#xlstm_jax.trainer.llm.trainer.LLMTrainer" title="xlstm_jax.trainer.llm.trainer.LLMTrainer">xlstm_jax.trainer.llm.trainer.LLMTrainer</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.train_init_fns.log_info">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.train_init_fns.</span></span><span class="sig-name descname"><span class="pre">log_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">msg</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.train_init_fns.log_info" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>msg</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../start_training/index.html" class="btn btn-neutral float-left" title="xlstm_jax.start_training" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../trainer/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

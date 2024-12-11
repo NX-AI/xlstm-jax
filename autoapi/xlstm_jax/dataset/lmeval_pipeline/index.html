@@ -1,0 +1,565 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.lmeval_pipeline &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.multihost_dataloading" href="../multihost_dataloading/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.lmeval_dataset" href="../lmeval_dataset/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.lmeval_pipeline</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/lmeval_pipeline/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.lmeval_pipeline">
+<span id="xlstm-jax-dataset-lmeval-pipeline"></span><h1>xlstm_jax.dataset.lmeval_pipeline<a class="headerlink" href="#module-xlstm_jax.dataset.lmeval_pipeline" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.LOGGER" title="xlstm_jax.dataset.lmeval_pipeline.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.ParseLMEval" title="xlstm_jax.dataset.lmeval_pipeline.ParseLMEval"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ParseLMEval</span></code></a></p></td>
+<td><p>Parses an LMEval request into a simple dictionary format with prefix and text.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch" title="xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CompleteLLMIndexedBatch</span></code></a></p></td>
+<td><p>Grain Transform that uses an indexed dataset (with &quot;idx&quot;) and fills it towards all</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset" title="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PadBatchDataset</span></code></a></p></td>
+<td><p>Creates a dataset that has only full batches by adding padding elements.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset" title="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PadSequenceInBatchDataset</span></code></a></p></td>
+<td><p>Creates a dataset that has only full batches by padding elements.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.SortedDataset" title="xlstm_jax.dataset.lmeval_pipeline.SortedDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SortedDataset</span></code></a></p></td>
+<td><p>Creates a sorted dataset based on a key (applied to all items) and an existing dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset" title="xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultihostSortedRemapDataset</span></code></a></p></td>
+<td><p>This implements an index re-shuffling for a SortedDataset.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.empty_llm_indexed_sample" title="xlstm_jax.dataset.lmeval_pipeline.empty_llm_indexed_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">empty_llm_indexed_sample</span></code></a>()</p></td>
+<td><p>Generator for an empty llm_indexed sample that is used in paddings.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.token_length" title="xlstm_jax.dataset.lmeval_pipeline.token_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">token_length</span></code></a>(item)</p></td>
+<td><p>Get the token length of a data item for sorting (grouping) the dataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline._pad_batch_multiple" title="xlstm_jax.dataset.lmeval_pipeline._pad_batch_multiple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pad_batch_multiple</span></code></a>(batch[, multiple_of, axis, ...])</p></td>
+<td><p>Pads a list of arrays to a common length defined as a multiple of a pad_mulitple value, with a certain value.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.lmeval_pipeline.lmeval_preprocessing_pipeline" title="xlstm_jax.dataset.lmeval_pipeline.lmeval_preprocessing_pipeline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lmeval_preprocessing_pipeline</span></code></a>(dataloading_host_index, ...)</p></td>
+<td><p>Create a mult-host dataloader for LMEval datasets for loglikelihood and</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.ParseLMEval">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">ParseLMEval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">request_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'req'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.ParseLMEval" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Parses an LMEval request into a simple dictionary format with prefix and text.
+If there is no prefix, it is simply an empty string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>request_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The key in the input dictionary which corresponds to the LMEval Request.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.ParseLMEval.request_name">
+<span class="sig-name descname"><span class="pre">request_name</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'req'</span></em><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.ParseLMEval.request_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.ParseLMEval.map">
+<span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.ParseLMEval.map" title="Link to this definition"></a></dt>
+<dd><p>Maps a single request to a dictionary of prefix and text.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dict</strong><strong>[</strong><strong>str</strong> – LMEval request instance in a dictionary with the index</p></li>
+<li><p><strong>Instance</strong><strong>]</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> |</em>) – LMEval request instance in a dictionary with the index</p></li>
+<li><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>lm_eval.api.instance.Instance</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Resulting item dictionary</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span><span class="n">ParseLMEval</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;idx&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+<span class="gp">... </span>     <span class="s2">&quot;req&quot;</span><span class="p">:</span> <span class="n">Instance</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="n">request_type</span><span class="o">=</span><span class="s2">&quot;loglikelihood_rolling&quot;</span><span class="p">,</span> <span class="n">doc</span><span class="o">=</span><span class="p">{},</span>
+<span class="gp">... </span>        <span class="n">idx</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">arguments</span><span class="o">=</span><span class="p">(</span><span class="s2">&quot;Prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;Main&quot;</span><span class="p">))}),</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;idx&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;Prefix&quot;</span><span class="p">,</span> <span class="s2">&quot;text&quot;</span><span class="p">:</span> <span class="s2">&quot;Main&quot;</span><span class="p">})</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">CompleteLLMIndexedBatch</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
+<p>Grain Transform that uses an indexed dataset (with “idx”) and fills it towards all
+components of a LLMIndexedBatch.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">CompleteLLMIndexedBatch</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+<span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="s2">&quot;idx&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)}),</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span>
+<span class="gp">... </span>     <span class="s2">&quot;document_idx&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">]),</span> <span class="s2">&quot;inputs_position&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span>
+<span class="gp">... </span>     <span class="s2">&quot;targets_position&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]]),</span> <span class="s2">&quot;sequence_idx&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span>
+<span class="gp">... </span>     <span class="s2">&quot;_document_borders&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]])})</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch.map">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.CompleteLLMIndexedBatch.map" title="Link to this definition"></a></dt>
+<dd><p>Converts an incomplete dict to a dictionary with all components for an LLMIndexedBatch</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.empty_llm_indexed_sample">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">empty_llm_indexed_sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.empty_llm_indexed_sample" title="Link to this definition"></a></dt>
+<dd><p>Generator for an empty llm_indexed sample that is used in paddings.
+This creates just the data for a single sample not a full batch object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An empty / padding sample for an LLMIndexedBatch</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.token_length">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">token_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">item</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.token_length" title="Link to this definition"></a></dt>
+<dd><p>Get the token length of a data item for sorting (grouping) the dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>item</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>) – A dataset item that contains an <cite>inputs</cite> element.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Length of the <cite>inputs</cite> element.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">token_length</span><span class="p">({</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])})</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">PadBatchDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple_of</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapDataset</span></code></p>
+<p>Creates a dataset that has only full batches by adding padding elements.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.MapDataset</em>) – The existing dataset.</p></li>
+<li><p><strong>multiple_of</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Global batch size to be padded towards.</p></li>
+<li><p><strong>min_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Minimum (padded) length/size of the dataset.</p></li>
+<li><p><strong>pad_elem</strong> (<em>Any</em>) – Empty element to be appended.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">PadBatchDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">multiple_of</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_elem</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">3</span><span class="p">]</span>
+<span class="go">0</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">PadBatchDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">multiple_of</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">min_length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_elem</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.multiple_of">
+<span class="sig-name descname"><span class="pre">multiple_of</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.multiple_of" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.min_length">
+<span class="sig-name descname"><span class="pre">min_length</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.min_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.pad_elem">
+<span class="sig-name descname"><span class="pre">pad_elem</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadBatchDataset.pad_elem" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline._pad_batch_multiple">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">_pad_batch_multiple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple_of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size_pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline._pad_batch_multiple" title="Link to this definition"></a></dt>
+<dd><p>Pads a list of arrays to a common length defined as a multiple of a pad_mulitple value, with a certain value.
+Then the arrays are concatenated along axis 0.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>]</em>) – A list of np.ndarrays to be padded and concatenated</p></li>
+<li><p><strong>multiple_of</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – A number that the padded size should be a multiple of.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The axis to be padded, typically a sequence dimension.</p></li>
+<li><p><strong>pad_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The padding value, typically zero.</p></li>
+<li><p><strong>batch_size_pad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The concatenated, padded batch.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)">numpy.ndarray</a></p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">_pad_batch_multiple</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,]])],</span> <span class="n">multiple_of</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">PadSequenceInBatchDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">multiple_of</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapDataset</span></code></p>
+<p>Creates a dataset that has only full batches by padding elements.</p>
+<p>This pads single elements (no batches) enabling having distributed batches over more devices.
+Assumes a dataset that consists of a flat dictionary of arrays.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.MapDataset</em>) – The existing dataset, items are assumed to be dicts of array.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The batch size to pad towards.</p></li>
+<li><p><strong>multiple_of</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – A number that the padded size should be a multiple of.</p></li>
+<li><p><strong>pad_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Value to pad with.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">PadSequenceInBatchDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])},</span>
+<span class="gp">... </span>     <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])},</span>
+<span class="gp">... </span>     <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])},</span>
+<span class="gp">... </span>     <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])}]</span>
+<span class="gp">... </span><span class="p">),</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">multiple_of</span><span class="o">=</span><span class="mi">3</span> <span class="p">)),</span> <span class="p">[</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])},</span>
+<span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])}])</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.batch_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.multiple_of">
+<span class="sig-name descname"><span class="pre">multiple_of</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.multiple_of" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.pad_value">
+<span class="sig-name descname"><span class="pre">pad_value</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.PadSequenceInBatchDataset.pad_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.SortedDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">SortedDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.SortedDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapDataset</span></code></p>
+<p>Creates a sorted dataset based on a key (applied to all items) and an existing dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.MapDataset</em>) – The existing dataset</p></li>
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a>) – Key Function to be applied for sorting</p></li>
+<li><p><strong>reverse</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If the sorting should be ascending (False, default) or descending</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">SortedDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SortedDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">3</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">SortedDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="p">[{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])},</span>
+<span class="gp">... </span>     <span class="p">{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]])}]),</span> <span class="n">token_length</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">{&#39;inputs&#39;: array([[1, 2]])}</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.SortedDataset.key">
+<span class="sig-name descname"><span class="pre">key</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.SortedDataset.key" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.SortedDataset.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.SortedDataset.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">MultihostSortedRemapDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloader_host_count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapDataset</span></code></p>
+<p>This implements an index re-shuffling for a SortedDataset.
+The problem:
+Given a sorted dataset, and multi-host dataloaders using .slice,
+the sorting is broken.
+Examplary dataset:
+[1 2 3 4 5 6 7 8]</p>
+<p>Multi-host (standard slicing - assumed as input):
+[1 2 3 4] [5 6 7 8]
+Multi-host batched:
+[[1 2] [3 4]] [[5 6] [7 8]]</p>
+<p>What we want actually for proper batching:
+[[1 2] [5 6]] [[3 4] [7 8]]
+such that the global batch still looks like:
+[[1 2 3 4] [5 6 7 8]]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.MapDataset</em>) – Original (sorted) dataset of which the order within batches should be kept.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>dataloader_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloaders that a global batch is created from.</p></li>
+</ul>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ds</span> <span class="o">=</span> <span class="n">MultihostSortedRemapDataset</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]),</span>
+<span class="gp">... </span>    <span class="n">global_batch_size</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">dataloader_host_count</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">host_slices</span> <span class="o">=</span> <span class="p">[</span><span class="nb">slice</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="nb">slice</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">host_slices</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">2</span><span class="p">)),</span> <span class="nb">list</span><span class="p">(</span><span class="n">ds</span><span class="o">.</span><span class="n">slice</span><span class="p">(</span><span class="n">host_slices</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">2</span><span class="p">))]</span>
+<span class="go">[[array([1, 2]), array([5, 6])], [array([3, 4]), array([7, 8])]]</span>
+</pre></div>
+</div>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.global_batch_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.dataloader_host_count">
+<span class="sig-name descname"><span class="pre">dataloader_host_count</span></span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.MultihostSortedRemapDataset.dataloader_host_count" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.lmeval_pipeline.lmeval_preprocessing_pipeline">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.lmeval_pipeline.</span></span><span class="sig-name descname"><span class="pre">lmeval_preprocessing_pipeline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloading_host_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hf_access_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eos_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bos_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_buffer_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_multiple</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">128</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_thread_prefetch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.lmeval_pipeline.lmeval_preprocessing_pipeline" title="Link to this definition"></a></dt>
+<dd><p>Create a mult-host dataloader for LMEval datasets for loglikelihood and
+loglikelihood_rolling tasks. This does not support generation tasks currently.
+Also, it just support recurrent models that can take infinite sequence lengths.
+For sequence_length limited models use the <cite>HFTokenizeLogLikelihoodRolling</cite> from
+<cite>lmeval_dataset.py</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloading_host_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the dataloading host. Will be used to select the
+correct shard of the dataset. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_index.html#jax.process_index" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_index()</span></code></a>.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloading hosts. Will be used to determine the
+shard size. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_count.html#jax.process_count" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_count()</span></code></a>.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The global mesh to shard the data over.</p></li>
+<li><p><strong>dataset</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>lm_eval.api.instance.Instance</em><em>]</em>) – The dataset to load. Should provide a <cite>__getitem__</cite> method to access elements.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>tokenizer_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the tokenizer.</p></li>
+<li><p><strong>hf_access_token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The access token for HuggingFace.</p></li>
+<li><p><strong>tokenizer_cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The cache directory for the tokenizer.</p></li>
+<li><p><strong>eos_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The token ID to use for the end-of-sequence token. If <cite>tokenizer_path</cite> is
+provided, the tokenizer’s EOS token ID is used.</p></li>
+<li><p><strong>bos_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The token ID to use for the beginning-of-sequence token. If <cite>tokenizer_path</cite> is
+provided, the tokenizer’s BOS token ID is used.</p></li>
+<li><p><strong>worker_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of workers to use. In grain, a single worker is usually
+sufficient, as the data loading is done in parallel across hosts.</p></li>
+<li><p><strong>worker_buffer_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The buffer size for the workers.</p></li>
+<li><p><strong>padding_multiple</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Pad to size being a multiple of.</p></li>
+<li><p><strong>use_thread_prefetch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Use thread prefetching instead of multiprocessing.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>MultiHostDataLoadIterator for the lmeval dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../multihost_dataloading/index.html#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator">xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../lmeval_dataset/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.lmeval_dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../multihost_dataloading/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.multihost_dataloading" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

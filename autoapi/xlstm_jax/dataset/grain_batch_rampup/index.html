@@ -1,0 +1,420 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.grain_batch_rampup &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.grain_data_processing" href="../grain_data_processing/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.configs" href="../configs/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.grain_batch_rampup</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/grain_batch_rampup/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.grain_batch_rampup">
+<span id="xlstm-jax-dataset-grain-batch-rampup"></span><h1>xlstm_jax.dataset.grain_batch_rampup<a class="headerlink" href="#module-xlstm_jax.dataset.grain_batch_rampup" title="Link to this heading"></a></h1>
+<p>Batch rampup schedule for grain IterDatasets.</p>
+<p>This module provides a BatchRampUpIterDataset that allows for a batch rampup
+schedule to be provided. The batch rampup schedule is a function that takes the
+current batch step and returns the batch size. It can be used to gradually
+increase the batch size over time.</p>
+<p>The implementation is based on the standard BatchIterDataset from grain, with
+the addition of a batch rampup schedule. See
+grain._src.python.dataset.transformations.batch for more details.</p>
+<p>NOTE: If the grain API for batching changes, this module may need to be updated.</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.T" title="xlstm_jax.dataset.grain_batch_rampup.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.S" title="xlstm_jax.dataset.grain_batch_rampup.S"><code class="xref py py-obj docutils literal notranslate"><span class="pre">S</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.LOGGER" title="xlstm_jax.dataset.grain_batch_rampup.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator" title="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_BatchRampUpDatasetIterator</span></code></a></p></td>
+<td><p>Iterator that batches elements with a batch rampup schedule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset" title="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BatchRampUpIterDataset</span></code></a></p></td>
+<td><p>Batch transformation with ramp up for IterDatasets.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup._make_batch" title="xlstm_jax.dataset.grain_batch_rampup._make_batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_make_batch</span></code></a>(values)</p></td>
+<td><p>Returns a batch of values with a new batch dimension at the front.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.batch_dataset_with_rampup" title="xlstm_jax.dataset.grain_batch_rampup.batch_dataset_with_rampup"><code class="xref py py-obj docutils literal notranslate"><span class="pre">batch_dataset_with_rampup</span></code></a>(parent, batch_size[, ...])</p></td>
+<td><p>Creates a BatchRampUpIterDataset from an IterDataset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.create_batch_rampup_schedule" title="xlstm_jax.dataset.grain_batch_rampup.create_batch_rampup_schedule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_batch_rampup_schedule</span></code></a>(batch_size, schedule_type)</p></td>
+<td><p>Creates a batch rampup schedule.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.constant_rampup_schedule" title="xlstm_jax.dataset.grain_batch_rampup.constant_rampup_schedule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">constant_rampup_schedule</span></code></a>(batch_size)</p></td>
+<td><p>Returns a constant batch rampup schedule.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.stepwise_rampup_schedule" title="xlstm_jax.dataset.grain_batch_rampup.stepwise_rampup_schedule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">stepwise_rampup_schedule</span></code></a>(batch_size, boundaries_and_scales)</p></td>
+<td><p>Returns a stepwise batch rampup schedule.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.T">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">T</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.T" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.S">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">S</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.S" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._make_batch">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">_make_batch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">values</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._make_batch" title="Link to this definition"></a></dt>
+<dd><p>Returns a batch of values with a new batch dimension at the front.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>values</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>T</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>T</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">_BatchRampUpDatasetIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_rampup_schedule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stats</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain._src.python.dataset.dataset.DatasetIterator</span></code>[<a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.T" title="xlstm_jax.dataset.grain_batch_rampup.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a>]</p>
+<p>Iterator that batches elements with a batch rampup schedule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent</strong> (<em>grain._src.python.dataset.dataset.DatasetIterator</em><em>[</em><em>S</em><em>]</em>)</p></li>
+<li><p><strong>batch_rampup_schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>)</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>batch_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>S</em><em>]</em><em>]</em><em>, </em><em>T</em><em>]</em>)</p></li>
+<li><p><strong>stats</strong> (<em>grain._src.python.dataset.stats.Stats</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._parent">
+<span class="sig-name descname"><span class="pre">_parent</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._parent" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_rampup_schedule">
+<span class="sig-name descname"><span class="pre">_batch_rampup_schedule</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_rampup_schedule" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._drop_remainder">
+<span class="sig-name descname"><span class="pre">_drop_remainder</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._drop_remainder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_fn">
+<span class="sig-name descname"><span class="pre">_batch_fn</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_step">
+<span class="sig-name descname"><span class="pre">_batch_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator._batch_step" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator.get_state">
+<span class="sig-name descname"><span class="pre">get_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator.get_state" title="Link to this definition"></a></dt>
+<dd><p>Return the state of the iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator.set_state">
+<span class="sig-name descname"><span class="pre">set_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup._BatchRampUpDatasetIterator.set_state" title="Link to this definition"></a></dt>
+<dd><p>Set the state of the iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">BatchRampUpIterDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_rampup_schedule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain._src.python.dataset.dataset.IterDataset</span></code>[<a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.T" title="xlstm_jax.dataset.grain_batch_rampup.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a>]</p>
+<p>Batch transformation with ramp up for IterDatasets.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent</strong> (<em>grain._src.python.dataset.dataset.IterDataset</em><em>[</em><em>S</em><em>]</em>)</p></li>
+<li><p><strong>batch_rampup_schedule</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>)</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>)</p></li>
+<li><p><strong>batch_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>S</em><em>]</em><em>]</em><em>, </em><em>T</em><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._batch_rampup_schedule">
+<span class="sig-name descname"><span class="pre">_batch_rampup_schedule</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._batch_rampup_schedule" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._drop_remainder">
+<span class="sig-name descname"><span class="pre">_drop_remainder</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._drop_remainder" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._batch_fn">
+<span class="sig-name descname"><span class="pre">_batch_fn</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset._batch_fn" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.batch_dataset_with_rampup">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">batch_dataset_with_rampup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schedule_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'stepwise'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundaries_and_scales</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.batch_dataset_with_rampup" title="Link to this definition"></a></dt>
+<dd><p>Creates a BatchRampUpIterDataset from an IterDataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>parent</strong> (<em>grain._src.python.dataset.dataset.IterDataset</em><em>[</em><em>S</em><em>]</em>) – The parent IterDataset whose elements are batched.</p></li>
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The initial batch size.</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to drop the last batch if it is smaller than
+batch_size.</p></li>
+<li><p><strong>batch_fn</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)"><em>collections.abc.Callable</em></a><em>[</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="(in Python v3.13)"><em>collections.abc.Sequence</em></a><em>[</em><em>S</em><em>]</em><em>]</em><em>, </em><em>T</em><em>] </em><em>| </em><em>None</em>) – A function that takes a list of elements and returns a batch.
+Defaults to stacking the elements along a new batch dimension.</p></li>
+<li><p><strong>schedule_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The type of the batch rampup schedule. Supported types are
+“constant” and “stepwise”.</p></li>
+<li><p><strong>boundaries_and_scales</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – Used only for the “stepwise” schedule type. A dictionary
+mapping the boundaries b_i to non-negative scaling factors f_i. For any
+step count s, the schedule returns batch_size scaled by the product of
+factor f_i for the largest b_i such that b_i &lt; s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A BatchRampUpIterDataset that batches elements. If no schedule is provided,
+falls back to the standard BatchIterDataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset" title="xlstm_jax.dataset.grain_batch_rampup.BatchRampUpIterDataset">BatchRampUpIterDataset</a>[T] | grain._src.python.dataset.dataset.IterDataset[T]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.create_batch_rampup_schedule">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">create_batch_rampup_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">schedule_type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundaries_and_scales</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.create_batch_rampup_schedule" title="Link to this definition"></a></dt>
+<dd><p>Creates a batch rampup schedule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The initial batch size.</p></li>
+<li><p><strong>schedule_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The type of the batch rampup schedule. Supported types are
+“constant” and “stepwise”.</p></li>
+<li><p><strong>boundaries_and_scales</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – A dictionary mapping the boundaries b_i to non-negative
+scaling factors f_i. For any step count s, the schedule returns batch_size
+scaled by the product of factor f_i for the largest b_i such that b_i &lt; s.
+Only required for the “stepwise” schedule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A function that takes the current batch step and returns the batch size.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.constant_rampup_schedule">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">constant_rampup_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.constant_rampup_schedule" title="Link to this definition"></a></dt>
+<dd><p>Returns a constant batch rampup schedule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The constant batch size.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A function that takes the current batch step and returns the batch size.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_batch_rampup.stepwise_rampup_schedule">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_batch_rampup.</span></span><span class="sig-name descname"><span class="pre">stepwise_rampup_schedule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundaries_and_scales</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_batch_rampup.stepwise_rampup_schedule" title="Link to this definition"></a></dt>
+<dd><p>Returns a stepwise batch rampup schedule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The initial batch size on which the factors are applied.</p></li>
+<li><p><strong>boundaries_and_scales</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>]</em>) – A dictionary mapping the boundaries b_i to non-negative scaling factors f_i.
+For any step count s, the schedule returns batch_size scaled by the product of factor f_i for the
+largest b_i such that b_i &lt; s.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A function that takes the current batch step and returns the batch size.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.13)">collections.abc.Callable</a>[[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../configs/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.configs" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../grain_data_processing/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.grain_data_processing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

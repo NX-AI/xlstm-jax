@@ -1,0 +1,383 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.multihost_dataloading &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.synthetic_dataloading" href="../synthetic_dataloading/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.lmeval_pipeline" href="../lmeval_pipeline/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.multihost_dataloading</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/multihost_dataloading/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.multihost_dataloading">
+<span id="xlstm-jax-dataset-multihost-dataloading"></span><h1>xlstm_jax.dataset.multihost_dataloading<a class="headerlink" href="#module-xlstm_jax.dataset.multihost_dataloading" title="Link to this heading"></a></h1>
+<p>Copyright 2023 Google LLC</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a></p>
+</div></blockquote>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<p>—</p>
+<p>SPMD Multihost Dataloading Utilities.</p>
+<p>Adapted from Sholto’s:
+<a class="reference external" href="https://github.com/sholtodouglas/multihost_dataloading">https://github.com/sholtodouglas/multihost_dataloading</a></p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading.LOGGER" title="xlstm_jax.dataset.multihost_dataloading.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">MultiHostDataLoadIterator</span></code></a></p></td>
+<td><p>Create a MultiHostDataLoadIterator.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading._build_global_shape_and_sharding" title="xlstm_jax.dataset.multihost_dataloading._build_global_shape_and_sharding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_build_global_shape_and_sharding</span></code></a>(local_shape, global_mesh)</p></td>
+<td><p>Create the global_shape and sharding based on the local_shape and global_mesh.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading._form_global_array" title="xlstm_jax.dataset.multihost_dataloading._form_global_array"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_form_global_array</span></code></a>(path, array, global_mesh)</p></td>
+<td><p>Put host sharded array into devices within a global sharded array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading._pad_array_to_shape" title="xlstm_jax.dataset.multihost_dataloading._pad_array_to_shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_pad_array_to_shape</span></code></a>(array_and_shape[, pad_value])</p></td>
+<td><p>Pad an array to a given shape by given values. Array and shape are inside a shared tuple to</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.multihost_dataloading.get_next_batch_sharded" title="xlstm_jax.dataset.multihost_dataloading.get_next_batch_sharded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_next_batch_sharded</span></code></a>(local_iterator, global_mesh[, ...])</p></td>
+<td><p>Splits the host loaded data equally over all devices. Optionally pad arrays for equal sizes.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading._build_global_shape_and_sharding">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">_build_global_shape_and_sharding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading._build_global_shape_and_sharding" title="Link to this definition"></a></dt>
+<dd><p>Create the global_shape and sharding based on the local_shape and global_mesh.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>local_shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>Ellipsis</em><em>]</em>) – Local tensor shape</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – Global mesh of devices</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Global tensor shape, Named Sharding of the mesh</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>, Ellipsis], <a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.NamedSharding" title="(in JAX)">jax.sharding.NamedSharding</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading._form_global_array">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">_form_global_array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading._form_global_array" title="Link to this definition"></a></dt>
+<dd><p>Put host sharded array into devices within a global sharded array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> – Tree def path of the array in a PyTree struct (for debugging purposes only)</p></li>
+<li><p><strong>array</strong> (<a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a>) – Distributed host array.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – Global mesh for the distributed array.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Distributed device array</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading._pad_array_to_shape">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">_pad_array_to_shape</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">array_and_shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading._pad_array_to_shape" title="Link to this definition"></a></dt>
+<dd><p>Pad an array to a given shape by given values. Array and shape are inside a shared tuple to
+enable easier mapping from a zip().</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>array_and_shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.1)"><em>numpy.ndarray</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>Ellipsis</em><em>]</em><em>]</em>) – The array and shape it should be padded to.</p></li>
+<li><p><strong>pad_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Padding value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Padded array.</p>
+</dd>
+</dl>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span>
+<span class="gp">... </span>    <span class="n">_pad_array_to_shape</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]]),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span> <span class="n">pad_value</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+<span class="gp">... </span>    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.get_next_batch_sharded">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">get_next_batch_sharded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">local_iterator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.get_next_batch_sharded" title="Link to this definition"></a></dt>
+<dd><p>Splits the host loaded data equally over all devices. Optionally pad arrays for equal sizes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>local_iterator</strong> (<a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterator" title="(in Python v3.13)"><em>collections.abc.Iterator</em></a>) – Local dataloader iterator.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – Global device mesh.</p></li>
+<li><p><strong>pad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to pad the batch.</p></li>
+<li><p><strong>pad_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Value to pad the batch with. Defaults to zero.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optionally padded, sharded data array.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>xlstm_jax.common_types.PyTree</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.multihost_dataloading.</span></span><span class="sig-name descname"><span class="pre">MultiHostDataLoadIterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iterator_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_after_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_shapes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="Link to this definition"></a></dt>
+<dd><p>Create a MultiHostDataLoadIterator.</p>
+<p>Wrapper around a <a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/data/Dataset" title="(in TensorFlow v2.4)"><code class="xref py py-class docutils literal notranslate"><span class="pre">tf.data.Dataset</span></code></a> or Iterable to iterate over data in a multi-host setup.
+Folds get_next_batch_sharded into an iterator class, and supports breaking indefinite iterator into epochs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloader</strong> (<a class="reference external" href="https://www.tensorflow.org/api_docs/python/tf/data/Dataset" title="(in TensorFlow v2.4)"><em>tf.data.Dataset</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Iterable" title="(in Python v3.13)"><em>collections.abc.Iterable</em></a>) – The dataloader to iterate over.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The mesh to shard the data over.</p></li>
+<li><p><strong>iterator_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The length of the iterator. If provided, the iterator will stop after this many steps with a
+<a class="reference external" href="https://docs.python.org/3/library/exceptions.html#StopIteration" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">StopIteration</span></code></a> exception. Otherwise, will continue over the iterator until it raises an exception
+itself.</p></li>
+<li><p><strong>dataset_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – size of the dataset. If provided, will be returned by get_dataset_size. Otherwise, will return
+<cite>None</cite>. Can be used to communicate the dataset size to functions that use the iterator.</p></li>
+<li><p><strong>reset_after_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to reset the iterator between epochs or not. If <cite>True</cite>, the iterator will reset
+after each epoch, otherwise it will continue from where it left off. If you have an indefinite iterator
+(e.g. train iterator with grain and shuffle), this should be set to <cite>False</cite>. For un-shuffled iterators in
+grain (e.g. validation), this should be set to <cite>True</cite>.</p></li>
+<li><p><strong>pad_shapes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to pad arrays to a common shape across all devices before merging.</p></li>
+<li><p><strong>pad_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Value to use for padding. Defaults to zero.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.global_mesh">
+<span class="sig-name descname"><span class="pre">global_mesh</span></span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.global_mesh" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.dataloader">
+<span class="sig-name descname"><span class="pre">dataloader</span></span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.dataloader" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.iterator_length">
+<span class="sig-name descname"><span class="pre">iterator_length</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.iterator_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.dataset_size">
+<span class="sig-name descname"><span class="pre">dataset_size</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.dataset_size" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.reset_after_epoch">
+<span class="sig-name descname"><span class="pre">reset_after_epoch</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.reset_after_epoch" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.state_set">
+<span class="sig-name descname"><span class="pre">state_set</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.state_set" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.step_counter">
+<span class="sig-name descname"><span class="pre">step_counter</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.step_counter" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.pad_shapes">
+<span class="sig-name descname"><span class="pre">pad_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.pad_shapes" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.pad_value">
+<span class="sig-name descname"><span class="pre">pad_value</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.pad_value" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.reset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.get_state">
+<span class="sig-name descname"><span class="pre">get_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.get_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.set_state">
+<span class="sig-name descname"><span class="pre">set_state</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator.set_state" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../lmeval_pipeline/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.lmeval_pipeline" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../synthetic_dataloading/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.synthetic_dataloading" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

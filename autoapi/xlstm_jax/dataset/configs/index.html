@@ -1,0 +1,658 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.configs &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.grain_batch_rampup" href="../grain_batch_rampup/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.batch" href="../batch/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.configs</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/configs/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.configs">
+<span id="xlstm-jax-dataset-configs"></span><h1>xlstm_jax.dataset.configs<a class="headerlink" href="#module-xlstm_jax.dataset.configs" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.configs.T" title="xlstm_jax.dataset.configs.T"><code class="xref py py-obj docutils literal notranslate"><span class="pre">T</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataConfig</span></code></a></p></td>
+<td><p>Base data configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.configs.HFHubDataConfig" title="xlstm_jax.dataset.configs.HFHubDataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">HFHubDataConfig</span></code></a></p></td>
+<td><p>HuggingFace dataset configuration for datasets on HuggingFace.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.configs.SyntheticDataConfig" title="xlstm_jax.dataset.configs.SyntheticDataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SyntheticDataConfig</span></code></a></p></td>
+<td><p>Synthetic dataset configuration.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig" title="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">GrainArrayRecordsDataConfig</span></code></a></p></td>
+<td><p>Grain dataset configuration for ArrayRecords datasets.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.T">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.configs.</span></span><span class="sig-name descname"><span class="pre">T</span></span><a class="headerlink" href="#xlstm_jax.dataset.configs.T" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.configs.</span></span><span class="sig-name descname"><span class="pre">DataConfig</span></span><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig" title="Link to this definition"></a></dt>
+<dd><p>Base data configuration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.shuffle_data">
+<span class="sig-name descname"><span class="pre">shuffle_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.shuffle_data" title="Link to this definition"></a></dt>
+<dd><p>Whether to shuffle the data. Usually True for training and False for validation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the dataset. Helpful for logging.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.data_config_type">
+<span class="sig-name descname"><span class="pre">data_config_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.data_config_type" title="Link to this definition"></a></dt>
+<dd><p>Type of data configuration. Used for initialization via Hydra. Can be ‘synthetic’,
+‘huggingface_hub’, ‘huggingface_local’, or ‘grain_arrayrecord’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.global_batch_size" title="Link to this definition"></a></dt>
+<dd><p>Global batch size for training.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.max_target_length">
+<span class="sig-name descname"><span class="pre">max_target_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.max_target_length" title="Link to this definition"></a></dt>
+<dd><p>Maximum length of the target sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.data_shuffle_seed">
+<span class="sig-name descname"><span class="pre">data_shuffle_seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.data_shuffle_seed" title="Link to this definition"></a></dt>
+<dd><p>Seed for data shuffling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.DataConfig.create_train_eval_configs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_train_eval_configs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.configs.DataConfig.create_train_eval_configs" title="Link to this definition"></a></dt>
+<dd><p>Create training and evaluation configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Training-exclusive keyword arguments.</p></li>
+<li><p><strong>eval_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Evaluation-exclusive keyword arguments.</p></li>
+<li><p><strong>**kwargs</strong> – Shared keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training and evaluation configurations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>, <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.configs.</span></span><span class="sig-name descname"><span class="pre">HFHubDataConfig</span></span><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataConfig</span></code></a></p>
+<p>HuggingFace dataset configuration for datasets on HuggingFace.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_path">
+<span class="sig-name descname"><span class="pre">hf_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the dataset on HuggingFace.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_cache_dir">
+<span class="sig-name descname"><span class="pre">hf_cache_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_cache_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory to cache the dataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_access_token">
+<span class="sig-name descname"><span class="pre">hf_access_token</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_access_token" title="Link to this definition"></a></dt>
+<dd><p>Access token for HuggingFace</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_data_dir">
+<span class="sig-name descname"><span class="pre">hf_data_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_data_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory for additional data files.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_data_files">
+<span class="sig-name descname"><span class="pre">hf_data_files</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_data_files" title="Link to this definition"></a></dt>
+<dd><p>Specific (training or evaluation) files to use</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.split">
+<span class="sig-name descname"><span class="pre">split</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'train'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.split" title="Link to this definition"></a></dt>
+<dd><p>Split to use (for training or evaluation).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.hf_num_data_processes">
+<span class="sig-name descname"><span class="pre">hf_num_data_processes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.hf_num_data_processes" title="Link to this definition"></a></dt>
+<dd><p>Number of processes to use for downloading the dataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.data_column">
+<span class="sig-name descname"><span class="pre">data_column</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.data_column" title="Link to this definition"></a></dt>
+<dd><p>Column name for (training or evaluation) data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.max_steps_per_epoch">
+<span class="sig-name descname"><span class="pre">max_steps_per_epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.max_steps_per_epoch" title="Link to this definition"></a></dt>
+<dd><p>Maximum number of steps per epoch (for training or evaluation).</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.tokenizer_path">
+<span class="sig-name descname"><span class="pre">tokenizer_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gpt2'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.tokenizer_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the tokenizer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.add_bos">
+<span class="sig-name descname"><span class="pre">add_bos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.add_bos" title="Link to this definition"></a></dt>
+<dd><p>Whether to add <cite>beginning of sequence</cite> token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.add_eos">
+<span class="sig-name descname"><span class="pre">add_eos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.add_eos" title="Link to this definition"></a></dt>
+<dd><p>Whether to add <cite>end of sequence</cite> token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.add_eod">
+<span class="sig-name descname"><span class="pre">add_eod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.add_eod" title="Link to this definition"></a></dt>
+<dd><p>Whether to add an end of document token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.grain_packing">
+<span class="sig-name descname"><span class="pre">grain_packing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.grain_packing" title="Link to this definition"></a></dt>
+<dd><p>Whether to perform packing via grain FirstFitPackIterDataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.grain_packing_bin_count">
+<span class="sig-name descname"><span class="pre">grain_packing_bin_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.grain_packing_bin_count" title="Link to this definition"></a></dt>
+<dd><p>Number of bins for grain packing. If None, use the local batch size. Higher values may improve packing
+efficiency but may also increase memory usage and pre-processing times.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.worker_count">
+<span class="sig-name descname"><span class="pre">worker_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.worker_count" title="Link to this definition"></a></dt>
+<dd><p>Number of workers for data processing.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.worker_buffer_size">
+<span class="sig-name descname"><span class="pre">worker_buffer_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.worker_buffer_size" title="Link to this definition"></a></dt>
+<dd><p>Buffer size for workers.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.drop_remainder">
+<span class="sig-name descname"><span class="pre">drop_remainder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.drop_remainder" title="Link to this definition"></a></dt>
+<dd><p>Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.batch_rampup_factors">
+<span class="sig-name descname"><span class="pre">batch_rampup_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.batch_rampup_factors" title="Link to this definition"></a></dt>
+<dd><p>Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
+the <cite>boundaries_and_scales</cite> doc in <cite>:func:grain_batch_rampup.create_batch_rampup_schedule</cite> for more details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.shuffle_data">
+<span class="sig-name descname"><span class="pre">shuffle_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.shuffle_data" title="Link to this definition"></a></dt>
+<dd><p>Whether to shuffle the data. Usually True for training and False for validation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the dataset. Helpful for logging.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.data_config_type">
+<span class="sig-name descname"><span class="pre">data_config_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.data_config_type" title="Link to this definition"></a></dt>
+<dd><p>Type of data configuration. Used for initialization via Hydra. Can be ‘synthetic’,
+‘huggingface_hub’, ‘huggingface_local’, or ‘grain_arrayrecord’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.global_batch_size" title="Link to this definition"></a></dt>
+<dd><p>Global batch size for training.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.max_target_length">
+<span class="sig-name descname"><span class="pre">max_target_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.max_target_length" title="Link to this definition"></a></dt>
+<dd><p>Maximum length of the target sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.data_shuffle_seed">
+<span class="sig-name descname"><span class="pre">data_shuffle_seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.data_shuffle_seed" title="Link to this definition"></a></dt>
+<dd><p>Seed for data shuffling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.HFHubDataConfig.create_train_eval_configs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_train_eval_configs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.configs.HFHubDataConfig.create_train_eval_configs" title="Link to this definition"></a></dt>
+<dd><p>Create training and evaluation configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Training-exclusive keyword arguments.</p></li>
+<li><p><strong>eval_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Evaluation-exclusive keyword arguments.</p></li>
+<li><p><strong>**kwargs</strong> – Shared keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training and evaluation configurations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>, <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.configs.</span></span><span class="sig-name descname"><span class="pre">SyntheticDataConfig</span></span><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataConfig</span></code></a></p>
+<p>Synthetic dataset configuration.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.num_batches">
+<span class="sig-name descname"><span class="pre">num_batches</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">100</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.num_batches" title="Link to this definition"></a></dt>
+<dd><p>Number of samples to generate for synthetic (training or evaluation) data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.shuffle_data">
+<span class="sig-name descname"><span class="pre">shuffle_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.shuffle_data" title="Link to this definition"></a></dt>
+<dd><p>Whether to shuffle the data. Usually True for training and False for validation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the dataset. Helpful for logging.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.data_config_type">
+<span class="sig-name descname"><span class="pre">data_config_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.data_config_type" title="Link to this definition"></a></dt>
+<dd><p>Type of data configuration. Used for initialization via Hydra. Can be ‘synthetic’,
+‘huggingface_hub’, ‘huggingface_local’, or ‘grain_arrayrecord’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.global_batch_size" title="Link to this definition"></a></dt>
+<dd><p>Global batch size for training.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.max_target_length">
+<span class="sig-name descname"><span class="pre">max_target_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.max_target_length" title="Link to this definition"></a></dt>
+<dd><p>Maximum length of the target sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.data_shuffle_seed">
+<span class="sig-name descname"><span class="pre">data_shuffle_seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.data_shuffle_seed" title="Link to this definition"></a></dt>
+<dd><p>Seed for data shuffling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.SyntheticDataConfig.create_train_eval_configs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_train_eval_configs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.configs.SyntheticDataConfig.create_train_eval_configs" title="Link to this definition"></a></dt>
+<dd><p>Create training and evaluation configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Training-exclusive keyword arguments.</p></li>
+<li><p><strong>eval_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Evaluation-exclusive keyword arguments.</p></li>
+<li><p><strong>**kwargs</strong> – Shared keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training and evaluation configurations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>, <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.configs.</span></span><span class="sig-name descname"><span class="pre">GrainArrayRecordsDataConfig</span></span><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataConfig</span></code></a></p>
+<p>Grain dataset configuration for ArrayRecords datasets.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_path">
+<span class="sig-name descname"><span class="pre">data_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the dataset directory.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_column">
+<span class="sig-name descname"><span class="pre">data_column</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'text'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_column" title="Link to this definition"></a></dt>
+<dd><p>Column name for (training or evaluation) data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.split">
+<span class="sig-name descname"><span class="pre">split</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'train'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.split" title="Link to this definition"></a></dt>
+<dd><p>Dataset split to use, e.g. ‘train’ or ‘validation’. Should be a subdirectory of data_dir.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.drop_remainder">
+<span class="sig-name descname"><span class="pre">drop_remainder</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.drop_remainder" title="Link to this definition"></a></dt>
+<dd><p>Whether to drop the remainder of the dataset when it does not divide evenly by the global batch size.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.max_steps_per_epoch">
+<span class="sig-name descname"><span class="pre">max_steps_per_epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.max_steps_per_epoch" title="Link to this definition"></a></dt>
+<dd><p>Maximum number of steps per epoch.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.tokenize_data">
+<span class="sig-name descname"><span class="pre">tokenize_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.tokenize_data" title="Link to this definition"></a></dt>
+<dd><p>Whether to tokenize the data data. If False, the data is assumed to be already tokenized.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.tokenizer_path">
+<span class="sig-name descname"><span class="pre">tokenizer_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'gpt2'</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.tokenizer_path" title="Link to this definition"></a></dt>
+<dd><p>Path to the tokenizer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_bos">
+<span class="sig-name descname"><span class="pre">add_bos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_bos" title="Link to this definition"></a></dt>
+<dd><p>Whether to add <cite>beginning of sequence</cite> token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_eos">
+<span class="sig-name descname"><span class="pre">add_eos</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_eos" title="Link to this definition"></a></dt>
+<dd><p>Whether to add <cite>end of sequence</cite> token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_eod">
+<span class="sig-name descname"><span class="pre">add_eod</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.add_eod" title="Link to this definition"></a></dt>
+<dd><p>Whether to add an end of document token.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.grain_packing">
+<span class="sig-name descname"><span class="pre">grain_packing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.grain_packing" title="Link to this definition"></a></dt>
+<dd><p>Whether to perform packing via grain FirstFitPackIterDataset.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.grain_packing_bin_count">
+<span class="sig-name descname"><span class="pre">grain_packing_bin_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.grain_packing_bin_count" title="Link to this definition"></a></dt>
+<dd><p>Number of bins for grain packing. If None, use the local batch size. Higher values may improve packing
+efficiency but may also increase memory usage and pre-processing times.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.worker_count">
+<span class="sig-name descname"><span class="pre">worker_count</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.worker_count" title="Link to this definition"></a></dt>
+<dd><p>Number of workers for data processing.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.worker_buffer_size">
+<span class="sig-name descname"><span class="pre">worker_buffer_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.worker_buffer_size" title="Link to this definition"></a></dt>
+<dd><p>Buffer size for workers.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.hf_cache_dir">
+<span class="sig-name descname"><span class="pre">hf_cache_dir</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.hf_cache_dir" title="Link to this definition"></a></dt>
+<dd><p>Directory to cache the dataset. Used to get the HF tokenizer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.hf_access_token">
+<span class="sig-name descname"><span class="pre">hf_access_token</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.hf_access_token" title="Link to this definition"></a></dt>
+<dd><p>Access token for HuggingFace. Used to get the HF tokenizer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.batch_rampup_factors">
+<span class="sig-name descname"><span class="pre">batch_rampup_factors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.batch_rampup_factors" title="Link to this definition"></a></dt>
+<dd><p>Ramp up the batch size if provided. The dictionary maps the step count to the scaling factor. See
+the <cite>boundaries_and_scales</cite> doc in <cite>:func:grain_batch_rampup.create_batch_rampup_schedule</cite> for more details.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.shuffle_data">
+<span class="sig-name descname"><span class="pre">shuffle_data</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.shuffle_data" title="Link to this definition"></a></dt>
+<dd><p>Whether to shuffle the data. Usually True for training and False for validation.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the dataset. Helpful for logging.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_config_type">
+<span class="sig-name descname"><span class="pre">data_config_type</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_config_type" title="Link to this definition"></a></dt>
+<dd><p>Type of data configuration. Used for initialization via Hydra. Can be ‘synthetic’,
+‘huggingface_hub’, ‘huggingface_local’, or ‘grain_arrayrecord’.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.global_batch_size">
+<span class="sig-name descname"><span class="pre">global_batch_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.global_batch_size" title="Link to this definition"></a></dt>
+<dd><p>Global batch size for training.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.max_target_length">
+<span class="sig-name descname"><span class="pre">max_target_length</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.max_target_length" title="Link to this definition"></a></dt>
+<dd><p>Maximum length of the target sequence.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_shuffle_seed">
+<span class="sig-name descname"><span class="pre">data_shuffle_seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">42</span></em><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.data_shuffle_seed" title="Link to this definition"></a></dt>
+<dd><p>Seed for data shuffling.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.create_train_eval_configs">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">create_train_eval_configs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eval_kwargs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig.create_train_eval_configs" title="Link to this definition"></a></dt>
+<dd><p>Create training and evaluation configurations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Training-exclusive keyword arguments.</p></li>
+<li><p><strong>eval_kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em> | </em><em>None</em>) – Evaluation-exclusive keyword arguments.</p></li>
+<li><p><strong>**kwargs</strong> – Shared keyword arguments.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Training and evaluation configurations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[<a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>, <a class="reference internal" href="#xlstm_jax.dataset.configs.DataConfig" title="xlstm_jax.dataset.configs.DataConfig">DataConfig</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../batch/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.batch" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../grain_batch_rampup/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.grain_batch_rampup" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

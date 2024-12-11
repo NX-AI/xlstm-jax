@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.callbacks.checkpointing &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.callbacks.extended_evaluation" href="../extended_evaluation/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.callbacks.callback" href="../callback/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.callbacks</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.callbacks.checkpointing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/callbacks/checkpointing/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.callbacks.checkpointing">
+<span id="xlstm-jax-trainer-callbacks-checkpointing"></span><h1>xlstm_jax.trainer.callbacks.checkpointing<a class="headerlink" href="#module-xlstm_jax.trainer.callbacks.checkpointing" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.LOGGER" title="xlstm_jax.trainer.callbacks.checkpointing.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig" title="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelCheckpointConfig</span></code></a></p></td>
+<td><p>Configuration for the ModelCheckpoint callback.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint" title="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ModelCheckpoint</span></code></a></p></td>
+<td><p>Callback to save model parameters and mutable variables to the logging directory.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.load_pretrained_model" title="xlstm_jax.trainer.callbacks.checkpointing.load_pretrained_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_pretrained_model</span></code></a>(checkpoint_path, trainer[, ...])</p></td>
+<td><p>Loads a pretrained model from a checkpoint.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.checkpointing.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.checkpointing.</span></span><span class="sig-name descname"><span class="pre">ModelCheckpointConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../callback/index.html#xlstm_jax.trainer.callbacks.callback.CallbackConfig" title="xlstm_jax.trainer.callbacks.callback.CallbackConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.trainer.callbacks.callback.CallbackConfig</span></code></a></p>
+<p>Configuration for the ModelCheckpoint callback.</p>
+<p>By default, the checkpoint saves the model parameters, training step, random number generator state, and metadata
+to the logging directory. The metadata includes the trainer, model, and optimizer configurations.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.max_to_keep">
+<span class="sig-name descname"><span class="pre">max_to_keep</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.max_to_keep" title="Link to this definition"></a></dt>
+<dd><p>Number of checkpoints to keep. If None, keeps all checkpoints. Otherwise, keeps the most recent
+<cite>max_to_keep</cite> checkpoints. If <cite>monitor</cite> is set, keeps the best <cite>max_to_keep</cite> checkpoints instead of the
+most recent.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.monitor">
+<span class="sig-name descname"><span class="pre">monitor</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.monitor" title="Link to this definition"></a></dt>
+<dd><p>Metric to monitor for saving the model. Should be a key of the evaluation metrics. If None, checkpoints
+are sorted by recency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.mode">
+<span class="sig-name descname"><span class="pre">mode</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.mode" title="Link to this definition"></a></dt>
+<dd><p>One of {“min”, “max”}. If “min”, saves the model with the smallest value of the monitored metric. If
+“max”, saves the model with the largest value of the monitored metric.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.save_optimizer_state">
+<span class="sig-name descname"><span class="pre">save_optimizer_state</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.save_optimizer_state" title="Link to this definition"></a></dt>
+<dd><p>Whether to save the optimizer state.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.save_dataloader_state">
+<span class="sig-name descname"><span class="pre">save_dataloader_state</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.save_dataloader_state" title="Link to this definition"></a></dt>
+<dd><p>Whether to save the dataloader state.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.enable_async_checkpointing">
+<span class="sig-name descname"><span class="pre">enable_async_checkpointing</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.enable_async_checkpointing" title="Link to this definition"></a></dt>
+<dd><p>Whether to enable asynchronous checkpointing. See orbax documentation for more
+information.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.log_path">
+<span class="sig-name descname"><span class="pre">log_path</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.log_path" title="Link to this definition"></a></dt>
+<dd><p>Path to save the checkpoints as subfolder to. If None, saves to the logging directory of the trainer.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">max_to_keep</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">monitor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">mode</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'min'</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">save_optimizer_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">save_dataloader_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">enable_async_checkpointing</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">log_path</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><span class="pre">pathlib.Path</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig.create" title="Link to this definition"></a></dt>
+<dd><p>Creates the ModelCheckpoint callback.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> (<em>Any</em>) – Trainer object.</p></li>
+<li><p><strong>data_module</strong> (<em>optional</em>) – Data module object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>ModelCheckpoint object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint" title="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint">ModelCheckpoint</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.checkpointing.</span></span><span class="sig-name descname"><span class="pre">ModelCheckpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../callback/index.html#xlstm_jax.trainer.callbacks.callback.Callback" title="xlstm_jax.trainer.callbacks.callback.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.trainer.callbacks.callback.Callback</span></code></a></p>
+<p>Callback to save model parameters and mutable variables to the logging directory.</p>
+<p>Sets up an orbax checkpoint manager to save model parameters, training step, random number generator state, and
+metadata to the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig" title="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpointConfig"><em>ModelCheckpointConfig</em></a>) – The configuration for the ModelCheckpoint callback.</p></li>
+<li><p><strong>trainer</strong> (<em>Any</em>) – The trainer object. If the trainer has no optimizer attribute, the optimizer part will not be loaded.</p></li>
+<li><p><strong>data_module</strong> (<a class="reference internal" href="../../data_module/index.html#xlstm_jax.trainer.data_module.DataloaderModule" title="xlstm_jax.trainer.data_module.DataloaderModule"><em>xlstm_jax.trainer.data_module.DataloaderModule</em></a><em> | </em><em>None</em>) – The data module object.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.checkpoint_path">
+<span class="sig-name descname"><span class="pre">checkpoint_path</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.checkpoint_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.dataloader_path">
+<span class="sig-name descname"><span class="pre">dataloader_path</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.dataloader_path" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.metadata">
+<span class="sig-name descname"><span class="pre">metadata</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.metadata" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.manager">
+<span class="sig-name descname"><span class="pre">manager</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.manager" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.on_filtered_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_filtered_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.on_filtered_validation_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Saves the model at the end of the validation epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_metrics</strong> – Dictionary of evaluation metrics. If a monitored metric is set, the model is saved based on
+the monitored metrics in this dictionary. If the monitored metric is not found, an error is raised.
+The metrics are saved along with the model.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.save_model">
+<span class="sig-name descname"><span class="pre">save_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.save_model" title="Link to this definition"></a></dt>
+<dd><p>Saves model state dict to the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of evaluation metrics. If a monitored metric is set, the model is saved based on
+the monitored metrics in this dictionary. If the monitored metric is not found, an error is raised.
+The metrics are saved along with the model.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.save_dataloader">
+<span class="sig-name descname"><span class="pre">save_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.save_dataloader" title="Link to this definition"></a></dt>
+<dd><p>Saves the dataloader state to the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current step.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.load_model">
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_params_before_loading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.load_model" title="Link to this definition"></a></dt>
+<dd><p>Loads model parameters and variables from the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the step to load. If -1, loads the latest step by default.</p></li>
+<li><p><strong>load_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True and step_idx is -1, loads the best checkpoint
+based on the monitored metric instead of the latest checkpoint.</p></li>
+<li><p><strong>delete_params_before_loading</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, deletes the current parameters in the
+trainer state before loading the new parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of loaded model parameters and additional variables.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.load_dataloader">
+<span class="sig-name descname"><span class="pre">load_dataloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.load_dataloader" title="Link to this definition"></a></dt>
+<dd><p>Loads the dataloader state from the logging directory.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the step to load. If -1, loads the latest step by default.</p></li>
+<li><p><strong>load_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True and step_idx is -1, loads the best checkpoint
+based on the monitored metric instead of the latest checkpoint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of loaded dataloader states.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.resolve_step_idx">
+<span class="sig-name descname"><span class="pre">resolve_step_idx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.resolve_step_idx" title="Link to this definition"></a></dt>
+<dd><p>Resolves the step index to load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the step to load. If -1, loads the latest step by default.</p></li>
+<li><p><strong>load_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True and step_idx is -1, loads the best checkpoint
+based on the monitored metric instead of the latest checkpoint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resolved step index.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.ModelCheckpoint.finalize" title="Link to this definition"></a></dt>
+<dd><p>Closes the checkpoint manager.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The status of the training run (e.g. success, failure).</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.checkpointing.load_pretrained_model">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.checkpointing.</span></span><span class="sig-name descname"><span class="pre">load_pretrained_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_params_before_loading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.checkpointing.load_pretrained_model" title="Link to this definition"></a></dt>
+<dd><p>Loads a pretrained model from a checkpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>checkpoint_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a>) – Path to the checkpoint directory.</p></li>
+<li><p><strong>trainer</strong> (<em>Any</em>) – Trainer object.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the step to load. If -1, loads the latest step by default.</p></li>
+<li><p><strong>load_optimizer</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True the optimizer state is loaded from the checkpoint.</p></li>
+<li><p><strong>load_best</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True and step_idx is -1, loads the best checkpoint
+based on the monitored metric instead of the latest checkpoint.</p></li>
+<li><p><strong>delete_params_before_loading</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If True, deletes the current parameters in the
+trainer state before loading the new parameters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Dictionary of loaded model parameters and additional variables, as well as the dataloader state
+and the resolved step index that was loaded.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any], <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any], <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../callback/index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.callbacks.callback" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../extended_evaluation/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.callbacks.extended_evaluation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

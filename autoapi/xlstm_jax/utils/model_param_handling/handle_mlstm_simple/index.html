@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.utils.model_param_handling.handle_mlstm_simple &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.utils.model_param_handling.load" href="../load/index.html" />
+    <link rel="prev" title="xlstm_jax.utils.model_param_handling.convert_state_dict" href="../convert_state_dict/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.utils</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.utils.model_param_handling</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.utils.model_param_handling.handle_mlstm_simple</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/utils/model_param_handling/handle_mlstm_simple/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.utils.model_param_handling.handle_mlstm_simple">
+<span id="xlstm-jax-utils-model-param-handling-handle-mlstm-simple"></span><h1>xlstm_jax.utils.model_param_handling.handle_mlstm_simple<a class="headerlink" href="#module-xlstm_jax.utils.model_param_handling.handle_mlstm_simple" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.LOGGER" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.create_mlstm_simple_config_from_jax_config" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.create_mlstm_simple_config_from_jax_config"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_mlstm_simple_config_from_jax_config</span></code></a>(...[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.apply_mlstm_param_reshapes" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.apply_mlstm_param_reshapes"><code class="xref py py-obj docutils literal notranslate"><span class="pre">apply_mlstm_param_reshapes</span></code></a>(state_dict)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.move_mlstm_jax_state_dict_into_torch_state_dict" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.move_mlstm_jax_state_dict_into_torch_state_dict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">move_mlstm_jax_state_dict_into_torch_state_dict</span></code></a>(...[, ...])</p></td>
+<td><p>Move the mLSTM jax model state dict into the torch model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.pipeline_convert_mlstm_checkpoint_jax_to_torch_simple" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.pipeline_convert_mlstm_checkpoint_jax_to_torch_simple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pipeline_convert_mlstm_checkpoint_jax_to_torch_simple</span></code></a>(...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.store_mlstm_simple_to_checkpoint" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.store_mlstm_simple_to_checkpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">store_mlstm_simple_to_checkpoint</span></code></a>(mlstm_model, ...[, ...])</p></td>
+<td><p>Stores a mLSTM simple model into a checkpoint directory, using either the</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.convert_mlstm_checkpoint_jax_to_torch_simple" title="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.convert_mlstm_checkpoint_jax_to_torch_simple"><code class="xref py py-obj docutils literal notranslate"><span class="pre">convert_mlstm_checkpoint_jax_to_torch_simple</span></code></a>(...[, ...])</p></td>
+<td><p>Convert a jax mLSTM checkpoint to a torch mLSTM checkpoint.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.create_mlstm_simple_config_from_jax_config">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">create_mlstm_simple_config_from_jax_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config_jax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.create_mlstm_simple_config_from_jax_config" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_config_jax</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+<li><p><strong>overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>mlstm_simple_torch.mlstm_simple.model.mLSTMConfig</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.apply_mlstm_param_reshapes">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">apply_mlstm_param_reshapes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.apply_mlstm_param_reshapes" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>state_dict</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, Any]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.move_mlstm_jax_state_dict_into_torch_state_dict">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">move_mlstm_jax_state_dict_into_torch_state_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_state_dict_torch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_state_dict_jax_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_state_dict_jax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.move_mlstm_jax_state_dict_into_torch_state_dict" title="Link to this definition"></a></dt>
+<dd><p>Move the mLSTM jax model state dict into the torch model.</p>
+<p>Either loads the jax model state dict from the model_state_dict_jax_path or uses the provided model_state_dict_jax.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model_torch</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The torch model.</p></li>
+<li><p><strong>model_state_dict_jax_path</strong> (<em>Path</em>) – The path to the jax model state dict. Defaults to None.</p></li>
+<li><p><strong>model_state_dict_jax</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The jax model state dict. Defaults to None.</p></li>
+<li><p><strong>model_state_dict_torch</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The torch model with the jax model state dict loaded.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>mLSTM</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.pipeline_convert_mlstm_checkpoint_jax_to_torch_simple">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">pipeline_convert_mlstm_checkpoint_jax_to_torch_simple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jax_orbax_model_checkpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">jax_model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">torch_model_config_overrides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.pipeline_convert_mlstm_checkpoint_jax_to_torch_simple" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jax_orbax_model_checkpoint</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+<li><p><strong>jax_model_config</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+<li><p><strong>torch_model_config_overrides</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>mlstm_simple_torch.mlstm_simple.model.mLSTM</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.store_mlstm_simple_to_checkpoint">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">store_mlstm_simple_to_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mlstm_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_torch_model_checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_shard_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.store_mlstm_simple_to_checkpoint" title="Link to this definition"></a></dt>
+<dd><p>Stores a mLSTM simple model into a checkpoint directory, using either the
+<cite>huggingface</cite> or <cite>plain</cite> format.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>mlstm_model</strong> (<em>mLSTM</em>) – The mLSTM simple model.</p></li>
+<li><p><strong>into.</strong> (<em>store_torch_model_checkpoint_path; Torch checkpoint path to store</em>)</p></li>
+<li><p><strong>checkpoint_type</strong> (<em>Literal</em><em>[</em><em>'plain'</em><em>, </em><em>'huggingface'</em><em>]</em>) – Type of model checkpoint, either ‘plain’ or ‘huggingface’.</p></li>
+<li><p><strong>max_shard_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Largest size of a checkpoint model shard. Zero means no sharding.</p></li>
+<li><p><strong>store_torch_model_checkpoint_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.utils.model_param_handling.handle_mlstm_simple.convert_mlstm_checkpoint_jax_to_torch_simple">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.utils.model_param_handling.handle_mlstm_simple.</span></span><span class="sig-name descname"><span class="pre">convert_mlstm_checkpoint_jax_to_torch_simple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">load_jax_model_checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_torch_model_checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">checkpoint_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'plain'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_shard_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.utils.model_param_handling.handle_mlstm_simple.convert_mlstm_checkpoint_jax_to_torch_simple" title="Link to this definition"></a></dt>
+<dd><p>Convert a jax mLSTM checkpoint to a torch mLSTM checkpoint.</p>
+<p>Loads the jax mLSTM checkpoint, creates a torch mLSTM model, and moves the jax checkpoint parameters into the
+torch model.</p>
+<p>The checkpoint for the torch model is then saved to the store_torch_model_checkpoint_path.</p>
+<p>The torch checkpoint is a directory containing the model params as .safetensors file(s) and a config.yaml file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>load_jax_model_checkpoint_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a>) – Orbax checkpoint path.</p></li>
+<li><p><strong>into.</strong> (<em>store_torch_model_checkpoint_path; Torch checkpoint path to store</em>)</p></li>
+<li><p><strong>checkpoint_type</strong> (<em>Literal</em><em>[</em><em>'plain'</em><em>, </em><em>'huggingface'</em><em>]</em>) – Type of model checkpoint, either ‘plain’ or ‘huggingface’.</p></li>
+<li><p><strong>max_shard_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Largest size of a checkpoint model shard. Zero means no sharding</p></li>
+<li><p><strong>store_torch_model_checkpoint_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../convert_state_dict/index.html" class="btn btn-neutral float-left" title="xlstm_jax.utils.model_param_handling.convert_state_dict" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../load/index.html" class="btn btn-neutral float-right" title="xlstm_jax.utils.model_param_handling.load" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

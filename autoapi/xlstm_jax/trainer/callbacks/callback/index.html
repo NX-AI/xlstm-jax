@@ -1,0 +1,504 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.callbacks.callback &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.callbacks.checkpointing" href="../checkpointing/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.callbacks" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.callbacks</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.callbacks.callback</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/callbacks/callback/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.callbacks.callback">
+<span id="xlstm-jax-trainer-callbacks-callback"></span><h1>xlstm_jax.trainer.callbacks.callback<a class="headerlink" href="#module-xlstm_jax.trainer.callbacks.callback" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig" title="xlstm_jax.trainer.callbacks.callback.CallbackConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CallbackConfig</span></code></a></p></td>
+<td><p>Base configuration of a callback.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.callback.Callback" title="xlstm_jax.trainer.callbacks.callback.Callback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Callback</span></code></a></p></td>
+<td><p>Base class for callbacks.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.callback.</span></span><span class="sig-name descname"><span class="pre">CallbackConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.configs.ConfigDict</span></code></a></p>
+<p>Base configuration of a callback.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.every_n_epochs">
+<span class="sig-name descname"><span class="pre">every_n_epochs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.every_n_epochs" title="Link to this definition"></a></dt>
+<dd><p>If the callback implements functions on a per-epoch basis (e.g. <cite>on_training_epoch_start</cite>,
+<cite>on_training_epoch_end</cite>, <cite>on_validation_epoch_start</cite>), this parameter specifies the frequency of calling these
+functions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.every_n_steps">
+<span class="sig-name descname"><span class="pre">every_n_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.every_n_steps" title="Link to this definition"></a></dt>
+<dd><p>If the callback implements functions on a per-step basis (e.g. <cite>on_training_step</cite>), this parameter specifies the
+frequency of calling these functions.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.main_process_only">
+<span class="sig-name descname"><span class="pre">main_process_only</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.main_process_only" title="Link to this definition"></a></dt>
+<dd><p>Whether to call the callback only in the main process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.create">
+<span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.create" title="Link to this definition"></a></dt>
+<dd><p>Creates the callback object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>trainer</strong> (<em>Any</em>) – Trainer object.</p></li>
+<li><p><strong>data_module</strong> (<em>optional</em>) – Data module object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callback object.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.trainer.callbacks.callback.Callback" title="xlstm_jax.trainer.callbacks.callback.Callback">Callback</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.get" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Converts the config to a dictionary.</p>
+<p>Helpful for saving to disk or logging.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.CallbackConfig.from_dict">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_classname_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_extensive_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">none_to_zero_for_ints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Utility for parsing dictionaries back into a nested dataclass structure, including arbitrary classes and types.</p>
+<p>Currently, this is tailored towards the current logging system with the “hardly” invertible to_dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – Typically a dataclass, but can be any other type as well
+If it is another type, the parser tries to create an object via
+config_class(<a href="#id1"><span class="problematic" id="id2">**</span></a>data) if data is a dictionary or config_class(data) else.</p></li>
+<li><p><strong>data</strong> (<em>Any</em>) – Typically a dictionary that contains attributes of the dataclass.
+Can be any other kind of data.</p></li>
+<li><p><strong>strict_classname_parsing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Parse class names strictly.</p></li>
+<li><p><strong>ignore_extensive_attributes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Ignore attributes that are not defined in the dataclass.</p></li>
+<li><p><strong>none_to_zero_for_ints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Convert None to 0 for integer types.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of type <cite>config_class</cite> that contains the data as attributes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.callbacks.callback.</span></span><span class="sig-name descname"><span class="pre">Callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trainer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_module</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback" title="Link to this definition"></a></dt>
+<dd><p>Base class for callbacks.</p>
+<p>Callbacks are used to perform additional actions during training, validation, and testing. We provide a set of
+predefined functions, that can be overridden by subclasses to implement custom behavior. The predefined functions
+are called at the beginning and end of training, validation, and testing, as well as at the beginning and end of
+each epoch or step.</p>
+<p>Note: all counts of epoch index and step index are starting at 1 (i.e. the first epoch is 1 instead of 0).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> (<a class="reference internal" href="#xlstm_jax.trainer.callbacks.callback.CallbackConfig" title="xlstm_jax.trainer.callbacks.callback.CallbackConfig"><em>CallbackConfig</em></a>) – Configuration dictionary.</p></li>
+<li><p><strong>trainer</strong> (<em>Any</em>) – Trainer object.</p></li>
+<li><p><strong>data_module</strong> (<em>optional</em>) – Data module object.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.config">
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.trainer">
+<span class="sig-name descname"><span class="pre">trainer</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.trainer" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.data_module">
+<span class="sig-name descname"><span class="pre">data_module</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.data_module" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback._every_n_epochs">
+<span class="sig-name descname"><span class="pre">_every_n_epochs</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback._every_n_epochs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback._every_n_steps">
+<span class="sig-name descname"><span class="pre">_every_n_steps</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback._every_n_steps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback._main_process_only">
+<span class="sig-name descname"><span class="pre">_main_process_only</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback._main_process_only" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback._active_on_epochs">
+<span class="sig-name descname"><span class="pre">_active_on_epochs</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback._active_on_epochs" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback._active_on_steps">
+<span class="sig-name descname"><span class="pre">_active_on_steps</span></span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback._active_on_steps" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_training_start">
+<span class="sig-name descname"><span class="pre">on_training_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_training_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of training.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_training_end">
+<span class="sig-name descname"><span class="pre">on_training_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_training_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of training.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_training_epoch_start">
+<span class="sig-name descname"><span class="pre">on_training_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_training_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of each training epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_epoch_start">
+<span class="sig-name descname"><span class="pre">on_filtered_training_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of each <cite>every_n_epochs</cite> training epoch. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_training_epoch_end">
+<span class="sig-name descname"><span class="pre">on_training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_training_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each training epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of training metrics of the current epoch.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_epoch_end">
+<span class="sig-name descname"><span class="pre">on_filtered_training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each <cite>every_n_epochs</cite> training epoch. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>train_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of training metrics of the current epoch.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_training_step">
+<span class="sig-name descname"><span class="pre">on_training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_training_step" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each training step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of training metrics of the current step.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_step">
+<span class="sig-name descname"><span class="pre">on_filtered_training_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_training_step" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each <cite>every_n_steps</cite> training step. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>step_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of training metrics of the current step.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epo.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_validation_epoch_start">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_validation_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of validation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_validation_epoch_start">
+<span class="sig-name descname"><span class="pre">on_filtered_validation_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_validation_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of <cite>every_n_epochs</cite> validation. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_validation_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each validation epoch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of evaluation metrics of the current epoch.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_validation_epoch_end">
+<span class="sig-name descname"><span class="pre">on_filtered_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_filtered_validation_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each <cite>every_n_epochs</cite> validation epoch. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>eval_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of evaluation metrics of the current epoch.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training epoch.</p></li>
+<li><p><strong>step_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current training step.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_test_epoch_start">
+<span class="sig-name descname"><span class="pre">on_test_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_test_epoch_start" title="Link to this definition"></a></dt>
+<dd><p>Called at the beginning of testing.</p>
+<p>To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.on_test_epoch_end">
+<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.on_test_epoch_end" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of each test epoch. To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>test_metrics</strong> (<em>xlstm_jax.common_types.Metrics</em>) – Dictionary of test metrics of the current epoch.</p></li>
+<li><p><strong>epoch_idx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Index of the current epoch.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.set_dataset">
+<span class="sig-name descname"><span class="pre">set_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_module</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.set_dataset" title="Link to this definition"></a></dt>
+<dd><p>Sets the data module.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>data_module</strong> (<a class="reference internal" href="../../data_module/index.html#xlstm_jax.trainer.data_module.DataloaderModule" title="xlstm_jax.trainer.data_module.DataloaderModule"><em>xlstm_jax.trainer.data_module.DataloaderModule</em></a>) – Data module object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.callbacks.callback.Callback.finalize">
+<span class="sig-name descname"><span class="pre">finalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">status</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.callbacks.callback.Callback.finalize" title="Link to this definition"></a></dt>
+<dd><p>Called at the end of the whole training process.</p>
+<p>To be implemented by subclasses.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>status</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – Status of the training process.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.callbacks" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../checkpointing/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.callbacks.checkpointing" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

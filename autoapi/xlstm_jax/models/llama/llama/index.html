@@ -1,0 +1,421 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.models.llama.llama &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.models.shared" href="../../shared/index.html" />
+    <link rel="prev" title="xlstm_jax.models.llama.feedforward" href="../feedforward/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.models</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.models.llama</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.models.llama.llama</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/models/llama/llama/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.models.llama.llama">
+<span id="xlstm-jax-models-llama-llama"></span><h1>xlstm_jax.models.llama.llama<a class="headerlink" href="#module-xlstm_jax.models.llama.llama" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlamaConfig</span></code></a></p></td>
+<td><p>Configuration for the LLAMA model.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.SelfAttentionBlock" title="xlstm_jax.models.llama.llama.SelfAttentionBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">SelfAttentionBlock</span></code></a></p></td>
+<td><p>Attention block consisting of self-attention and residual connection.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.FFNBlock" title="xlstm_jax.models.llama.llama.FFNBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FFNBlock</span></code></a></p></td>
+<td><p>Feedforward block consisting of a feedforward layer and residual connection.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.TransformerBlock" title="xlstm_jax.models.llama.llama.TransformerBlock"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransformerBlock</span></code></a></p></td>
+<td><p>Transformer block consisting of self-attention and feedforward block.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.TransformerBlockStack" title="xlstm_jax.models.llama.llama.TransformerBlockStack"><code class="xref py py-obj docutils literal notranslate"><span class="pre">TransformerBlockStack</span></code></a></p></td>
+<td><p>Stack of transformer blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaTransformer" title="xlstm_jax.models.llama.llama.LlamaTransformer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LlamaTransformer</span></code></a></p></td>
+<td><p>LLAMA transformer model.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">LlamaConfig</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../configs/index.html#xlstm_jax.models.configs.SubModelConfig" title="xlstm_jax.models.configs.SubModelConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.models.configs.SubModelConfig</span></code></a></p>
+<p>Configuration for the LLAMA model.</p>
+<p>For simplicity, all the configuration options are kept in a single class. Sub-configs for the attention and
+feedforward blocks are generated dynamically from this class.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.vocab_size">
+<span class="sig-name descname"><span class="pre">vocab_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.vocab_size" title="Link to this definition"></a></dt>
+<dd><p>Vocabulary size.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.embedding_dim">
+<span class="sig-name descname"><span class="pre">embedding_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.embedding_dim" title="Link to this definition"></a></dt>
+<dd><p>Embedding dimension.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.num_blocks">
+<span class="sig-name descname"><span class="pre">num_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.num_blocks" title="Link to this definition"></a></dt>
+<dd><p>Number of transformer blocks. One block consists of self-attention and feedforward block.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.head_dim">
+<span class="sig-name descname"><span class="pre">head_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">128</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.head_dim" title="Link to this definition"></a></dt>
+<dd><p>Dimension of the attention heads. The number of heads is inferred by <cite>embed_dim // head_dim</cite>.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.qk_norm">
+<span class="sig-name descname"><span class="pre">qk_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.qk_norm" title="Link to this definition"></a></dt>
+<dd><p>Whether to apply RMSNorm to Q and K.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.causal">
+<span class="sig-name descname"><span class="pre">causal</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.causal" title="Link to this definition"></a></dt>
+<dd><p>Whether to use causal attention masking.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.theta">
+<span class="sig-name descname"><span class="pre">theta</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">10000.0</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.theta" title="Link to this definition"></a></dt>
+<dd><p>Rotary position encoding frequency.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.ffn_multiple_of">
+<span class="sig-name descname"><span class="pre">ffn_multiple_of</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">64</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.ffn_multiple_of" title="Link to this definition"></a></dt>
+<dd><p>Multiple of the feedforward hidden dimension to increase to.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.ffn_dim_multiplier">
+<span class="sig-name descname"><span class="pre">ffn_dim_multiplier</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1.0</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.ffn_dim_multiplier" title="Link to this definition"></a></dt>
+<dd><p>Multiplier to apply to the feedforward hidden dimension. By default, the hidden dimension is 8/3 of the
+embedding dimension. The multiplier is applied to this hidden dimension.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.use_bias">
+<span class="sig-name descname"><span class="pre">use_bias</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.use_bias" title="Link to this definition"></a></dt>
+<dd><p>Whether to use bias in the linear layers.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.scan_blocks">
+<span class="sig-name descname"><span class="pre">scan_blocks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.scan_blocks" title="Link to this definition"></a></dt>
+<dd><p>Whether to scan the transformer blocks. Recommended for larger models to reduce compilation time.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.attention_backend">
+<span class="sig-name descname"><span class="pre">attention_backend</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xlstm_jax.models.llama.attention.AttentionBackend</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'xla'</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.attention_backend" title="Link to this definition"></a></dt>
+<dd><p>Which backend to use for the attention module. If triton or cudnn, respective Flash Attention kernels are used.
+cudnn is only supported for GPU backends, pallas_triton for both CPU and GPU backends, and xla on all backends.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.mask_across_document_boundaries">
+<span class="sig-name descname"><span class="pre">mask_across_document_boundaries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.mask_across_document_boundaries" title="Link to this definition"></a></dt>
+<dd><p>Whether to mask attention across document boundaries. If True, the tokens in a document can only attend to
+tokens within the same document.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.dtype">
+<span class="sig-name descname"><span class="pre">dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'float32'</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.dtype" title="Link to this definition"></a></dt>
+<dd><p>Data type to use for the activations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.dropout_rate">
+<span class="sig-name descname"><span class="pre">dropout_rate</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.dropout_rate" title="Link to this definition"></a></dt>
+<dd><p>Dropout rate to apply to the activations.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.add_embedding_dropout">
+<span class="sig-name descname"><span class="pre">add_embedding_dropout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.add_embedding_dropout" title="Link to this definition"></a></dt>
+<dd><p>Whether to apply dropout to the embeddings.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.logits_soft_cap">
+<span class="sig-name descname"><span class="pre">logits_soft_cap</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.logits_soft_cap" title="Link to this definition"></a></dt>
+<dd><p>Soft cap for the logits. If not None, the logits are soft-clipped to the range
+[-logits_soft_cap, logits_soft_cap].</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.parallel">
+<span class="sig-name descname"><span class="pre">parallel</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../../configs/index.html#xlstm_jax.models.configs.ParallelConfig" title="xlstm_jax.models.configs.ParallelConfig"><span class="pre">xlstm_jax.models.configs.ParallelConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.parallel" title="Link to this definition"></a></dt>
+<dd><p>Parallel configuration.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig._dtype">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_dtype</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)"><span class="pre">jax.numpy.dtype</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig._dtype" title="Link to this definition"></a></dt>
+<dd><p>Returns the real dtype instead of the str from configs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The jnp dtype corresponding to the string value.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.numpy.dtype.html#jax.numpy.dtype" title="(in JAX)">jax.numpy.dtype</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaConfig.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaConfig.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Converts the config to a dictionary.</p>
+<p>Helpful for saving to disk or logging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.SelfAttentionBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">SelfAttentionBlock</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.SelfAttentionBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Attention block consisting of self-attention and residual connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – Configuration for the attention block.</p></li>
+<li><p><strong>train</strong> – Whether to run in training mode or not. If True, applies dropout.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.SelfAttentionBlock.config">
+<span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><span class="pre">LlamaConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.SelfAttentionBlock.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.SelfAttentionBlock.train">
+<span class="sig-name descname"><span class="pre">train</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.SelfAttentionBlock.train" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.FFNBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">FFNBlock</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.FFNBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Feedforward block consisting of a feedforward layer and residual connection.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – Configuration for the feedforward block.</p></li>
+<li><p><strong>train</strong> – Whether to run in training mode or not. If True, applies dropout.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.FFNBlock.config">
+<span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><span class="pre">LlamaConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.FFNBlock.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.FFNBlock.train">
+<span class="sig-name descname"><span class="pre">train</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.FFNBlock.train" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.TransformerBlock">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">TransformerBlock</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.TransformerBlock" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Transformer block consisting of self-attention and feedforward block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config</strong> – Configuration for the transformer block.</p></li>
+<li><p><strong>train</strong> – Whether to run in training mode or not. If True, applies dropout.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.TransformerBlock.config">
+<span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><span class="pre">LlamaConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.TransformerBlock.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.TransformerBlock.train">
+<span class="sig-name descname"><span class="pre">train</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.TransformerBlock.train" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.TransformerBlockStack">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">TransformerBlockStack</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.TransformerBlockStack" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>Stack of transformer blocks.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> – Configuration for the transformer block stack.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.TransformerBlockStack.config">
+<span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><span class="pre">LlamaConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.TransformerBlockStack.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaTransformer">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.llama.llama.</span></span><span class="sig-name descname"><span class="pre">LlamaTransformer</span></span><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaTransformer" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">flax.linen.Module</span></code></p>
+<p>LLAMA transformer model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> – Configuration for the LLAMA model.</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.models.llama.llama.LlamaTransformer.config">
+<span class="sig-name descname"><span class="pre">config</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#xlstm_jax.models.llama.llama.LlamaConfig" title="xlstm_jax.models.llama.llama.LlamaConfig"><span class="pre">LlamaConfig</span></a></em><a class="headerlink" href="#xlstm_jax.models.llama.llama.LlamaTransformer.config" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../feedforward/index.html" class="btn btn-neutral float-left" title="xlstm_jax.models.llama.feedforward" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../../shared/index.html" class="btn btn-neutral float-right" title="xlstm_jax.models.shared" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

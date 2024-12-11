@@ -1,0 +1,530 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.batch &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.configs" href="../configs/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.batch</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/batch/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.batch">
+<span id="xlstm-jax-dataset-batch"></span><h1>xlstm_jax.dataset.batch<a class="headerlink" href="#module-xlstm_jax.dataset.batch" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.batch.dataclass_kwonly" title="xlstm_jax.dataset.batch.dataclass_kwonly"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dataclass_kwonly</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.batch.Batch" title="xlstm_jax.dataset.batch.Batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Batch</span></code></a></p></td>
+<td><p>Batch of training data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LLMBatch</span></code></a></p></td>
+<td><p>Batch for LLM training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMIndexedBatch" title="xlstm_jax.dataset.batch.LLMIndexedBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LLMIndexedBatch</span></code></a></p></td>
+<td><p>Batch for LLM data with document indices and sequence indices for correct ordering.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.dataclass_kwonly">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.batch.</span></span><span class="sig-name descname"><span class="pre">dataclass_kwonly</span></span><a class="headerlink" href="#xlstm_jax.dataset.batch.dataclass_kwonly" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.Batch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.batch.</span></span><span class="sig-name descname"><span class="pre">Batch</span></span><a class="headerlink" href="#xlstm_jax.dataset.batch.Batch" title="Link to this definition"></a></dt>
+<dd><p>Batch of training data.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.Batch.inputs">
+<span class="sig-name descname"><span class="pre">inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.Batch.inputs" title="Link to this definition"></a></dt>
+<dd><p>The input data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.Batch.targets">
+<span class="sig-name descname"><span class="pre">targets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.Batch.targets" title="Link to this definition"></a></dt>
+<dd><p>The target data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.batch.</span></span><span class="sig-name descname"><span class="pre">LLMBatch</span></span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.dataset.batch.Batch" title="xlstm_jax.dataset.batch.Batch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Batch</span></code></a></p>
+<p>Batch for LLM training.</p>
+<p>Contains inputs and targets along with their respective positions and segmentations.</p>
+<p>Padding is token 0. Segmentations are used to separate the subsequences.</p>
+<p>Note that we use grain packing (FirstFitPackIterDataset) for grouping the smaller sequence.
+If the last subsequence does not fit in the same sequence, it will be used in the next sequence (not shown below).</p>
+<dl class="simple">
+<dt>Using packing &amp; shift inputs (right):</dt><dd><p>targets:              [1, 2, 3, E, 4, 5, E, 0]
+inputs:               [E, 1, 2, 3, E, 4, 5, E] # The first token is always E (marking the beginning).
+targets_segmentation: [1, 1, 1, 1, 2, 2, 2, 0]
+inputs_segmentation:  [1, 1, 1, 1, 2, 2, 2, 0]
+targets_position:     [0, 1, 2, 3, 0, 1, 2, 0]
+inputs_position:      [0, 1, 2, 3, 0, 1, 2, 0]
+doc borders:          [1, 0, 0, 0, 1, 0, 0, 1]</p>
+</dd>
+</dl>
+<p>Note that the two segmentations are identical. They would be different for prediction with multiple prefix tokens.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.inputs_position">
+<span class="sig-name descname"><span class="pre">inputs_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.inputs_position" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Positions of the input tokens. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.inputs_segmentation">
+<span class="sig-name descname"><span class="pre">inputs_segmentation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.inputs_segmentation" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Segmentation of the input tokens. 0 to indicate padding. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.targets_position">
+<span class="sig-name descname"><span class="pre">targets_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.targets_position" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Positions of the target tokens. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.targets_segmentation">
+<span class="sig-name descname"><span class="pre">targets_segmentation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.targets_segmentation" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Segmentation of the target tokens. 0 to indicate padding. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch._document_borders">
+<span class="sig-name descname"><span class="pre">_document_borders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch._document_borders" title="Link to this definition"></a></dt>
+<dd><p>Document borders for the input data. This buffer should only be used to explicitly overwrite the standard
+algorithm to calculate the document borders; for instance, if slicing the batch. Otherwise, use
+<cite>:func:get_document_borders</cite> to get the document borders. dtype: bool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.get_document_borders">
+<span class="sig-name descname"><span class="pre">get_document_borders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.get_document_borders" title="Link to this definition"></a></dt>
+<dd><p>Get the document borders for the input data.</p>
+<p>A token represents a document border if its previous target token has a different target segmentation.
+For instance, if the input segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
+This mask can be useful for processing documents separately in a recurrent model, i.e. when to reset the
+hidden state.
+Note: If the last tokens are paddings, marking invalid tokens, the border between the last document and
+padding will also be marked as document border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A boolean array indicating the document borders.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.from_inputs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.from_inputs" title="Link to this definition"></a></dt>
+<dd><p>Create LLMBatch from inputs.</p>
+<p>Helper function for quickly creating a default LLM Batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The input data.</p></li>
+<li><p><strong>targets</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em>, </em><em>optional</em>) – The target data. If not provided, the inputs are used as targets and the
+inputs are shifted right by one.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An LLMBatch with respective inputs and targets.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch">LLMBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.get_dtype_struct">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_dtype_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.get_dtype_struct" title="Link to this definition"></a></dt>
+<dd><p>Get the shape and dtype structure for LLMBatch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The size of the batch.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum length of the sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An LLMBatch with <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.ShapeDtypeStruct.html#jax.ShapeDtypeStruct" title="(in JAX)"><code class="xref py py-class docutils literal notranslate"><span class="pre">jax.ShapeDtypeStruct</span></code></a> typed components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch">LLMBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.get_sample">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.get_sample" title="Link to this definition"></a></dt>
+<dd><p>Get a real sample of an LLMBatch. Needed for compilation when using
+jax.debug.* in the model or anywhere else in the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The size of the batch.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum length of the sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch">LLMBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.inputs">
+<span class="sig-name descname"><span class="pre">inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.inputs" title="Link to this definition"></a></dt>
+<dd><p>The input data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMBatch.targets">
+<span class="sig-name descname"><span class="pre">targets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMBatch.targets" title="Link to this definition"></a></dt>
+<dd><p>The target data.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.batch.</span></span><span class="sig-name descname"><span class="pre">LLMIndexedBatch</span></span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LLMBatch</span></code></a></p>
+<p>Batch for LLM data with document indices and sequence indices for correct ordering.</p>
+<p><cite>document_idx</cite> equals zero means padding.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.document_idx">
+<span class="sig-name descname"><span class="pre">document_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.document_idx" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Document indices for batch sequences. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.sequence_idx">
+<span class="sig-name descname"><span class="pre">sequence_idx</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.sequence_idx" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Sequence indices within documents for batch sequences. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.from_inputs">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_inputs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inputs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">document_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sequence_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">targets</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.from_inputs" title="Link to this definition"></a></dt>
+<dd><p>Create LLMBatch from inputs.</p>
+<p>Helper function for quickly creating a default LLM Batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inputs</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The input data.</p></li>
+<li><p><strong>targets</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The target data.</p></li>
+<li><p><strong>sequence_idx</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The sequence idx for each sample.</p></li>
+<li><p><strong>document_idx</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – The document idx for each sample. A document might be composed of multiple
+sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An LLMBatch with respective inputs and targets.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMIndexedBatch" title="xlstm_jax.dataset.batch.LLMIndexedBatch">LLMIndexedBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.get_dtype_struct">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_dtype_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.get_dtype_struct" title="Link to this definition"></a></dt>
+<dd><p>Get the shape and dtype structure for LLMIndexedBatch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The size of the batch.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum length of the sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An LLMBatch with <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.ShapeDtypeStruct.html#jax.ShapeDtypeStruct" title="(in JAX)"><code class="xref py py-class docutils literal notranslate"><span class="pre">jax.ShapeDtypeStruct</span></code></a> typed components.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMIndexedBatch" title="xlstm_jax.dataset.batch.LLMIndexedBatch">LLMIndexedBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.inputs_position">
+<span class="sig-name descname"><span class="pre">inputs_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.inputs_position" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Positions of the input tokens. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.inputs_segmentation">
+<span class="sig-name descname"><span class="pre">inputs_segmentation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.inputs_segmentation" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Segmentation of the input tokens. 0 to indicate padding. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.targets_position">
+<span class="sig-name descname"><span class="pre">targets_position</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.targets_position" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Positions of the target tokens. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.targets_segmentation">
+<span class="sig-name descname"><span class="pre">targets_segmentation</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.targets_segmentation" title="Link to this definition"></a></dt>
+<dd><p>np.int32</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Segmentation of the target tokens. 0 to indicate padding. dtype</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch._document_borders">
+<span class="sig-name descname"><span class="pre">_document_borders</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch._document_borders" title="Link to this definition"></a></dt>
+<dd><p>Document borders for the input data. This buffer should only be used to explicitly overwrite the standard
+algorithm to calculate the document borders; for instance, if slicing the batch. Otherwise, use
+<cite>:func:get_document_borders</cite> to get the document borders. dtype: bool</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.get_document_borders">
+<span class="sig-name descname"><span class="pre">get_document_borders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.get_document_borders" title="Link to this definition"></a></dt>
+<dd><p>Get the document borders for the input data.</p>
+<p>A token represents a document border if its previous target token has a different target segmentation.
+For instance, if the input segmentation is [1, 1, 2, 2, 2, 3], the document borders are [1, 0, 1, 0, 0, 1].
+This mask can be useful for processing documents separately in a recurrent model, i.e. when to reset the
+hidden state.
+Note: If the last tokens are paddings, marking invalid tokens, the border between the last document and
+padding will also be marked as document border.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A boolean array indicating the document borders.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.get_sample">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.get_sample" title="Link to this definition"></a></dt>
+<dd><p>Get a real sample of an LLMBatch. Needed for compilation when using
+jax.debug.* in the model or anywhere else in the pipeline.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The size of the batch.</p></li>
+<li><p><strong>max_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum length of the sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#xlstm_jax.dataset.batch.LLMBatch" title="xlstm_jax.dataset.batch.LLMBatch">LLMBatch</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.inputs">
+<span class="sig-name descname"><span class="pre">inputs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.inputs" title="Link to this definition"></a></dt>
+<dd><p>The input data.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.batch.LLMIndexedBatch.targets">
+<span class="sig-name descname"><span class="pre">targets</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><span class="pre">jax.Array</span></a></em><a class="headerlink" href="#xlstm_jax.dataset.batch.LLMIndexedBatch.targets" title="Link to this definition"></a></dt>
+<dd><p>The target data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../configs/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.configs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

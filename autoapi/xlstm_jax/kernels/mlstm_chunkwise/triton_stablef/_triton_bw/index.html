@@ -1,0 +1,282 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_fw" href="../_triton_fw/index.html" />
+    <link rel="prev" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef" href="../index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../../index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax.kernels</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.kernels.mlstm_chunkwise</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.kernels.mlstm_chunkwise.triton_stablef</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../_sources/autoapi/xlstm_jax/kernels/mlstm_chunkwise/triton_stablef/_triton_bw/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw">
+<span id="xlstm-jax-kernels-mlstm-chunkwise-triton-stablef-triton-bw"></span><h1>xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw<a class="headerlink" href="#module-xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw" title="Link to this heading"></a></h1>
+<p>Triton backend for the backward pass of the mLSTM chunkwise formulation.</p>
+<p>This file has been adapted from the original PyTorch Triton implementation to JAX.
+For the Triton kernels, see mlstm_kernels/mlstm_kernels/mlstm/chunkwise/triton_fwbw_stablef.py.</p>
+<p>In this file, we use the following notation:</p>
+<dl class="simple">
+<dt>Dimensions:</dt><dd><p>B: batch size
+H: number of heads
+S: sequence length (K, V)
+T: sequence length (Q)
+K: hidden dimension (Q, K)
+V: hidden dimension (H, V)
+NT: number of chunks
+BT: chunk size</p>
+</dd>
+</dl>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__recurrent_bw_dC" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__recurrent_bw_dC"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_mlstm_chunkwise__recurrent_bw_dC</span></code></a>(matQ, vecF, ...[, ...])</p></td>
+<td><p>Computes only the deltaC gradients for the backward pass.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__parallel_bw_dQKV" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__parallel_bw_dQKV"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_mlstm_chunkwise__parallel_bw_dQKV</span></code></a>(matQ, matK, matV, ...)</p></td>
+<td><p>Computes the gradients for the query, key and value matrices.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise_bw" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise_bw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">_mlstm_chunkwise_bw</span></code></a>(matQ, matK, matV, vecI, vecF[, ...])</p></td>
+<td><p>Computes the backward pass of the mLSTM chunkwise formulation.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__recurrent_bw_dC">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw.</span></span><span class="sig-name descname"><span class="pre">_mlstm_chunkwise__recurrent_bw_dC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaM_inter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecM</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecN_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaC_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qk_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">store_initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__recurrent_bw_dC" title="Link to this definition"></a></dt>
+<dd><p>Computes only the deltaC gradients for the backward pass.</p>
+<p>The other gradients are computed in the other (kernel) function.
+We do not need to compute the gradients for the denominator, as it cancels out in the forward in the groupnorm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matQ</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the query vectors. Shape (B, H, T, K).</p></li>
+<li><p><strong>vecF</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the log forget gate activations. Shape (B, H, NT, BT).</p></li>
+<li><p><strong>scaM_inter</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – States of the M scalar. Shape (B, H, NT+1).</p></li>
+<li><p><strong>vecM</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – M states. Shape (B, H, T).</p></li>
+<li><p><strong>matDeltaH</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the H gradients. Shape (B, H, T, V).</p></li>
+<li><p><strong>vecN_out</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – States of the N vector. Shape (B, H, NT * DHQK).</p></li>
+<li><p><strong>matDeltaC_last</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the last C gradients. Shape (B, H, DHQK, DHHV).
+Defaults to None.</p></li>
+<li><p><strong>qk_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Scale factor for the QK matrix. Defaults to None.</p></li>
+<li><p><strong>chunk_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Chunk size. Defaults to 64.</p></li>
+<li><p><strong>num_chunks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Number of chunks. Defaults to 1.</p></li>
+<li><p><strong>store_initial_state</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to store the inital state gradient and logscale (m state)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Tensor containing the C gradients and the C_first gradients.
+Shapes (B, H, NT * DHQK, DHHV), (B, H, DHQK, DHHV).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a> | None, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a> | None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__parallel_bw_dQKV">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw.</span></span><span class="sig-name descname"><span class="pre">_mlstm_chunkwise__parallel_bw_dQKV</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matK</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecM_combine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaM_inter</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matC_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaH</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecN_out</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaC_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qk_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_chunks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise__parallel_bw_dQKV" title="Link to this definition"></a></dt>
+<dd><p>Computes the gradients for the query, key and value matrices.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matQ</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the query vectors. Shape (B, H, T, K).</p></li>
+<li><p><strong>matK</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the key vectors. Shape (B, H, T, K).</p></li>
+<li><p><strong>matV</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the value vectors. Shape (B, H, T, V).</p></li>
+<li><p><strong>vecF</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the summed log forget gate activations. Shape (B, H, NT, BT).</p></li>
+<li><p><strong>vecI</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the input gate pre-activations. Shape (B, H, NT, BT).</p></li>
+<li><p><strong>vecM_combine</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Combined M states. Shape (B, H, T).</p></li>
+<li><p><strong>scaM_inter</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – States of the M scalar. Shape (B, H, NT+1).</p></li>
+<li><p><strong>matC_states</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – States of the C matrix. Shape (B, H, NT * DHQK, DHHV).</p></li>
+<li><p><strong>matDeltaH</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the H gradients. Shape (B, H, T, V).</p></li>
+<li><p><strong>vecN_out</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – States of the N vector. Shape (B, H, T).</p></li>
+<li><p><strong>matDeltaC_states</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the C gradients. Shape (B, H, (NT+1) * DHQK, DHHV).</p></li>
+<li><p><strong>qk_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Scale factor for the QK matrix. Defaults to None.</p></li>
+<li><p><strong>chunk_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Chunk size. Defaults to 64.</p></li>
+<li><p><strong>num_chunks</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Number of chunks. Defaults to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gradients for the query, key and value matrices. Shapes (B, H, T, K), (B, H, T, K), (B, H, T, V).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise_bw">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw.</span></span><span class="sig-name descname"><span class="pre">_mlstm_chunkwise_bw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matK</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matC_initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecN_initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaM_initial</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">qk_scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matC_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaM_states</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecN_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecM_out</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaH</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">matDeltaC_last</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">64</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_bw._mlstm_chunkwise_bw" title="Link to this definition"></a></dt>
+<dd><p>Computes the backward pass of the mLSTM chunkwise formulation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>matQ</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the query vectors. Shape (B, H, T, K).</p></li>
+<li><p><strong>matK</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the key vectors. Shape (B, H, T, K).</p></li>
+<li><p><strong>matV</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the value vectors. Shape (B, H, S, DHV).</p></li>
+<li><p><strong>vecI</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the input gate pre-activations. Shape (B, H, T).</p></li>
+<li><p><strong>vecF</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Tensor containing the forget gate pre-activations. Shape (B, H, T).</p></li>
+<li><p><strong>matC_initial</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the initial C states. Shape (B, H, DHQK, DHV).
+Defaults to None.</p></li>
+<li><p><strong>vecN_initial</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the initial N states. Shape (B, H, DHQK).
+Defaults to None.</p></li>
+<li><p><strong>scaM_initial</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the initial M states. Shape (B, NH).
+Defaults to None.</p></li>
+<li><p><strong>qk_scale</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>None</em>) – Scale factor for the QK matrix. Defaults to None.</p></li>
+<li><p><strong>matC_states</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing all C states. Shape (B, H, NT * DHQK, DHV).
+Defaults to None.</p></li>
+<li><p><strong>scaM_states</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing all M states. Shape (B, H, NC).
+Defaults to None.</p></li>
+<li><p><strong>vecN_out</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the N states for the output. Shape (B, H, T).
+Defaults to None.</p></li>
+<li><p><strong>vecM_out</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the M states for the output. Shape (B, H, T).
+Defaults to None.</p></li>
+<li><p><strong>matDeltaH</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the H gradients. Shape (B, H, S, DHV).
+Defaults to None.</p></li>
+<li><p><strong>matDeltaC_last</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a><em> | </em><em>None</em>) – Tensor containing the last C gradients. Shape (B, H, DHQK, DHV).
+Defaults to None.</p></li>
+<li><p><strong>chunk_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Chunk size. Defaults to 64.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gradients for the query, key, value, vecI and vecF matrices. Shapes (B, H, T, K),
+(B, H, T, K), (B, H, S, DHV), (B, H, T), (B, H, T). If initial states are provided,
+the function also returns the gradients for the initial C, N and M states.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a>, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a> | None, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a> | None, <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)">jax.Array</a> | None]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../index.html" class="btn btn-neutral float-left" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../_triton_fw/index.html" class="btn btn-neutral float-right" title="xlstm_jax.kernels.mlstm_chunkwise.triton_stablef._triton_fw" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

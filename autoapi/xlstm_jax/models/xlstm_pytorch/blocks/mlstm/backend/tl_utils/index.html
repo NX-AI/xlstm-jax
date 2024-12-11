@@ -1,0 +1,516 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.triton_chunk" href="../triton_chunk/index.html" />
+    <link rel="prev" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple" href="../simple/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../../../../index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../../../../index.html">xlstm_jax.models</a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">xlstm_jax.models.xlstm_pytorch</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax.models.xlstm_pytorch.blocks</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.models.xlstm_pytorch.blocks.mlstm</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../../../../_sources/autoapi/xlstm_jax/models/xlstm_pytorch/blocks/mlstm/backend/tl_utils/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils">
+<span id="xlstm-jax-models-xlstm-pytorch-blocks-mlstm-backend-tl-utils"></span><h1>xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils<a class="headerlink" href="#module-xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils" title="Link to this heading"></a></h1>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">CumsumFunction</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ReversedCumsumFunction</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.contiguous" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.contiguous"><code class="xref py py-obj docutils literal notranslate"><span class="pre">contiguous</span></code></a>(fn)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.checkpoint" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.checkpoint"><code class="xref py py-obj docutils literal notranslate"><span class="pre">checkpoint</span></code></a>(func)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.logcumsumexp_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.logcumsumexp_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">logcumsumexp_fwd_kernel</span></code></a>(s, z, s_s_h, s_s_t, s_s_d, T, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">softmax_fwd_kernel</span></code></a>(s, p, s_s_h, s_s_t, s_s_d, T, S, BT)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_bwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_bwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">softmax_bwd_kernel</span></code></a>(p, dp, ds, s_s_h, s_s_t, s_s_d, T, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_cumsum_fwd_kernel</span></code></a>(s, z, s_s_h, s_s_t, T, S, BS)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_bwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_bwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_cumsum_bwd_kernel</span></code></a>(ds, dz, s_s_h, s_s_t, T, S, BS)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_cumsum_fwd_kernel</span></code></a>(s, z, s_s_h, s_s_t, s_s_d, T, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_cumsum_bwd_kernel</span></code></a>(ds, dz, s_s_h, s_s_t, s_s_d, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_cumsum_fwd</span></code></a>(s[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_cumsum_bwd</span></code></a>(dz[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.cumsum" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.cumsum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cumsum</span></code></a>(s[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_reversed_cumsum_fwd_kernel</span></code></a>(s, z, s_s_h, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_bwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_bwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_reversed_cumsum_bwd_kernel</span></code></a>(ds, dz, s_s_h, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_reversed_cumsum_fwd_kernel</span></code></a>(s, z, s_s_h, s_s_t, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd_kernel" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd_kernel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_reversed_cumsum_bwd_kernel</span></code></a>(ds, dz, s_s_h, s_s_t, ...)</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_reversed_cumsum_fwd</span></code></a>(s[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd"><code class="xref py py-obj docutils literal notranslate"><span class="pre">chunk_reversed_cumsum_bwd</span></code></a>(dz[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.reversed_cumsum" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.reversed_cumsum"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reversed_cumsum</span></code></a>(s[, dtype])</p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.contiguous">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">contiguous</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.contiguous" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.checkpoint">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.checkpoint" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.logcumsumexp_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">logcumsumexp_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.logcumsumexp_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">softmax_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_bwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">softmax_bwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.softmax_bwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">recurrent_cumsum_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_bwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">recurrent_cumsum_bwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_cumsum_bwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_cumsum_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_cumsum_bwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_cumsum_fwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_fwd" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_cumsum_bwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_cumsum_bwd" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dz</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">CumsumFunction</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function" title="(in PyTorch v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction.forward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction.backward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.CumsumFunction.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.cumsum">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">cumsum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.cumsum" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">recurrent_reversed_cumsum_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_bwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">recurrent_reversed_cumsum_bwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.recurrent_reversed_cumsum_bwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_reversed_cumsum_fwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd_kernel">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_reversed_cumsum_bwd_kernel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s_s_d</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">S</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BT</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">BS</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd_kernel" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>T</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>S</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BT</strong> (<em>triton.language.constexpr</em>)</p></li>
+<li><p><strong>BS</strong> (<em>triton.language.constexpr</em>)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_reversed_cumsum_fwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_fwd" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">chunk_reversed_cumsum_bwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dz</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.chunk_reversed_cumsum_bwd" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dz</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">ReversedCumsumFunction</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/stable/autograd.html#torch.autograd.Function" title="(in PyTorch v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.autograd.Function</span></code></a></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction.forward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction.forward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction.backward">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">backward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ctx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dz</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.ReversedCumsumFunction.backward" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.reversed_cumsum">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.</span></span><span class="sig-name descname"><span class="pre">reversed_cumsum</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">s</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.tl_utils.reversed_cumsum" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>s</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)"><em>torch.Tensor</em></a>)</p></li>
+<li><p><strong>dtype</strong> (<a class="reference external" href="https://pytorch.org/docs/stable/tensor_attributes.html#torch.dtype" title="(in PyTorch v2.5)"><em>torch.dtype</em></a><em> | </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://pytorch.org/docs/stable/tensors.html#torch.Tensor" title="(in PyTorch v2.5)">torch.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../simple/index.html" class="btn btn-neutral float-left" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.simple" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../triton_chunk/index.html" class="btn btn-neutral float-right" title="xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.triton_chunk" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

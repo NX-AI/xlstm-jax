@@ -1,0 +1,551 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.trainer.optimizer.optimizer &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <link rel="next" title="xlstm_jax.trainer.optimizer.scheduler" href="../scheduler/index.html" />
+    <link rel="prev" title="xlstm_jax.trainer.optimizer.ademamix" href="../ademamix/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.optimizer</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.trainer.optimizer.optimizer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/optimizer/optimizer/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.trainer.optimizer.optimizer">
+<span id="xlstm-jax-trainer-optimizer-optimizer"></span><h1>xlstm_jax.trainer.optimizer.optimizer<a class="headerlink" href="#module-xlstm_jax.trainer.optimizer.optimizer" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.LOGGER" title="xlstm_jax.trainer.optimizer.optimizer.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig" title="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">OptimizerConfig</span></code></a></p></td>
+<td><p>Configuration for optimizer.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.build_optimizer" title="xlstm_jax.trainer.optimizer.optimizer.build_optimizer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_optimizer</span></code></a>(optimizer_config)</p></td>
+<td><p>Build optimizer from config.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.build_optimizer_function" title="xlstm_jax.trainer.optimizer.optimizer.build_optimizer_function"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_optimizer_function</span></code></a>(optimizer_config, learning_rate)</p></td>
+<td><p>Build optimizer class function from config.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.build_gradient_transformations" title="xlstm_jax.trainer.optimizer.optimizer.build_gradient_transformations"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_gradient_transformations</span></code></a>(optimizer_config)</p></td>
+<td><p>Build gradient transformations from config.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.clip_by_global_norm_sharded" title="xlstm_jax.trainer.optimizer.optimizer.clip_by_global_norm_sharded"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_global_norm_sharded</span></code></a>(max_norm)</p></td>
+<td><p>Clip gradients by global norm.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">OptimizerConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.configs.ConfigDict</span></code></a></p>
+<p>Configuration for optimizer.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.name">
+<span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.name" title="Link to this definition"></a></dt>
+<dd><p>Name of the optimizer. The supported optimizers are “adam”, “adamw”, “sgd”, “nadam”, “adamax”,
+“radam”, “nadamw”, “adamax”, and “lamb”. If “none” is provided, the optimizer will be set to an SGD
+optimizer with learning rate 0.0, effectively skipping the optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.scheduler">
+<span class="sig-name descname"><span class="pre">scheduler</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.scheduler" title="Link to this definition"></a></dt>
+<dd><p>Configuration for learning rate scheduler. Defaults to a constant learning rate.
+If the optimizer is “none”, the scheduler is not used.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../scheduler/index.html#xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig" title="xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig">SchedulerConfig</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta1">
+<span class="sig-name descname"><span class="pre">beta1</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta1" title="Link to this definition"></a></dt>
+<dd><p>Exponential decay rate for the first moment estimates. This includes momentum in SGD, which
+can be set to None for no momentum.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta2">
+<span class="sig-name descname"><span class="pre">beta2</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta2" title="Link to this definition"></a></dt>
+<dd><p>Exponential decay rate for the second moment estimates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta3">
+<span class="sig-name descname"><span class="pre">beta3</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.beta3" title="Link to this definition"></a></dt>
+<dd><p>For AdEMAMix, exponential decay rate for the slow EMA.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.alpha">
+<span class="sig-name descname"><span class="pre">alpha</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.alpha" title="Link to this definition"></a></dt>
+<dd><p>For AdEMAMix, mixing coefficient for the linear combination of the fast and slow EMAs.
+Commonly in the range 5-10, with Mamba models performing best at 8. TODO: Update with xLSTM results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.eps">
+<span class="sig-name descname"><span class="pre">eps</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.eps" title="Link to this definition"></a></dt>
+<dd><p>Epsilon value for numerical stability in Adam-like optimizers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay">
+<span class="sig-name descname"><span class="pre">weight_decay</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay" title="Link to this definition"></a></dt>
+<dd><p>Weight decay coefficient.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay_exclude">
+<span class="sig-name descname"><span class="pre">weight_decay_exclude</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay_exclude" title="Link to this definition"></a></dt>
+<dd><p>List of regex patterns of <cite>re.Pattern</cite> to exclude from weight decay.
+Parameter names are flattened and joined with “.”. Mutually exclusive with weight_decay_include.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay_include">
+<span class="sig-name descname"><span class="pre">weight_decay_include</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.weight_decay_include" title="Link to this definition"></a></dt>
+<dd><p>List of regex patterns of <cite>re.Pattern</cite> to include in weight decay.
+Parameter names are flattened and joined with “.”. Mutually exclusive with weight_decay_exclude.
+If neither exclude nor include is set, all parameters are included.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>] | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.grad_clip_norm">
+<span class="sig-name descname"><span class="pre">grad_clip_norm</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.grad_clip_norm" title="Link to this definition"></a></dt>
+<dd><p>Global norm to clip gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.use_sharded_clip_norm">
+<span class="sig-name descname"><span class="pre">use_sharded_clip_norm</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.use_sharded_clip_norm" title="Link to this definition"></a></dt>
+<dd><p>Whether to calculate the global norm for clipping over all shards of the
+parameter (True), or only calculate the grad norm for local shards (False). If True, may introduce a small
+communication overhead, but reproduces the behavior of the original implementation for sharded parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.grad_clip_value">
+<span class="sig-name descname"><span class="pre">grad_clip_value</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.grad_clip_value" title="Link to this definition"></a></dt>
+<dd><p>Value to clip gradients element-wise.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a> | None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.nesterov">
+<span class="sig-name descname"><span class="pre">nesterov</span></span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.nesterov" title="Link to this definition"></a></dt>
+<dd><p>Whether to use Nesterov momentum in SGD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)">bool</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">name</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">scheduler</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="../scheduler/index.html#xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig" title="xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig"><span class="pre">xlstm_jax.trainer.optimizer.scheduler.SchedulerConfig</span></a></em><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">beta1</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.9</span></em><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">beta2</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.999</span></em><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">beta3</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.9999</span></em><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">alpha</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">8.0</span></em><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">eps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1e-08</span></em><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id7">
+<span class="sig-name descname"><span class="pre">weight_decay</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id8">
+<span class="sig-name descname"><span class="pre">weight_decay_exclude</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">weight_decay_include</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">grad_clip_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id11">
+<span class="sig-name descname"><span class="pre">use_sharded_clip_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#id11" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id12">
+<span class="sig-name descname"><span class="pre">grad_clip_value</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#id12" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="id13">
+<span class="sig-name descname"><span class="pre">nesterov</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id13" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.get">
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.get" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.to_dict">
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.to_dict" title="Link to this definition"></a></dt>
+<dd><p>Converts the config to a dictionary.</p>
+<p>Helpful for saving to disk or logging.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.from_dict">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_classname_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_extensive_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">none_to_zero_for_ints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig.from_dict" title="Link to this definition"></a></dt>
+<dd><p>Utility for parsing dictionaries back into a nested dataclass structure, including arbitrary classes and types.</p>
+<p>Currently, this is tailored towards the current logging system with the “hardly” invertible to_dict.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>config_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – Typically a dataclass, but can be any other type as well
+If it is another type, the parser tries to create an object via
+config_class(<a href="#id14"><span class="problematic" id="id15">**</span></a>data) if data is a dictionary or config_class(data) else.</p></li>
+<li><p><strong>data</strong> (<em>Any</em>) – Typically a dictionary that contains attributes of the dataclass.
+Can be any other kind of data.</p></li>
+<li><p><strong>strict_classname_parsing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Parse class names strictly.</p></li>
+<li><p><strong>ignore_extensive_attributes</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Ignore attributes that are not defined in the dataclass.</p></li>
+<li><p><strong>none_to_zero_for_ints</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Convert None to 0 for integer types.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An object of type <cite>config_class</cite> that contains the data as attributes.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Any</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.build_optimizer">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">build_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.build_optimizer" title="Link to this definition"></a></dt>
+<dd><p>Build optimizer from config.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer_config</strong> (<a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig" title="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig"><em>OptimizerConfig</em></a>) – ConfigDict for optimizer.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimizer.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.build_optimizer_function">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">build_optimizer_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">learning_rate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.build_optimizer_function" title="Link to this definition"></a></dt>
+<dd><p>Build optimizer class function from config.</p>
+<p>By default, it supports Adam, AdamW, and SGD. To add custom optimizers, overwrite the
+function build_extra_optimizer_function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>optimizer_config</strong> (<a class="reference internal" href="#xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig" title="xlstm_jax.trainer.optimizer.optimizer.OptimizerConfig"><em>OptimizerConfig</em></a>) – ConfigDict for optimizer.</p></li>
+<li><p><strong>learning_rate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> | </em><em>optax.Schedule</em>) – Learning rate schedule.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Optimizer class function.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Callable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.build_gradient_transformations">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">build_gradient_transformations</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.build_gradient_transformations" title="Link to this definition"></a></dt>
+<dd><p>Build gradient transformations from config.</p>
+<p>By default, it supports gradient clipping by norm and value, and weight decay. We distinguish
+between pre- and post-optimizer gradient transformations. Pre-optimizer
+gradient transformations are applied before the optimizer, e.g. gradient clipping. Post-optimizer
+gradient transformations are applied after the optimizer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>optimizer_config</strong> (<a class="reference internal" href="../../../configs/index.html#xlstm_jax.configs.ConfigDict" title="xlstm_jax.configs.ConfigDict"><em>ConfigDict</em></a>) – ConfigDict for optimizer</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><dl class="simple">
+<dt>Tuple of pre-optimizer and</dt><dd><p>post-optimizer gradient transformations.</p>
+</dd>
+</dl>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Tuple[List[<a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a>], List[<a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a>]]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.trainer.optimizer.optimizer.clip_by_global_norm_sharded">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.optimizer.optimizer.</span></span><span class="sig-name descname"><span class="pre">clip_by_global_norm_sharded</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_norm</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.optimizer.optimizer.clip_by_global_norm_sharded" title="Link to this definition"></a></dt>
+<dd><p>Clip gradients by global norm.</p>
+<p>This extends optax.clip_by_global_norm to work with sharded gradients.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>max_norm</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Maximum norm.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Gradient transformation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://optax.readthedocs.io/en/latest/api/transformations.html#optax.GradientTransformation" title="(in Optax)">optax.GradientTransformation</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../ademamix/index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.optimizer.ademamix" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../scheduler/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.optimizer.scheduler" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

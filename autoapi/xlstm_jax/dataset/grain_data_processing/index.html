@@ -1,0 +1,370 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.grain_data_processing &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.grain_iterator" href="../grain_iterator/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.grain_batch_rampup" href="../grain_batch_rampup/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.grain_data_processing</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/grain_data_processing/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.grain_data_processing">
+<span id="xlstm-jax-dataset-grain-data-processing"></span><h1>xlstm_jax.dataset.grain_data_processing<a class="headerlink" href="#module-xlstm_jax.dataset.grain_data_processing" title="Link to this heading"></a></h1>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.LOGGER" title="xlstm_jax.dataset.grain_data_processing.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset" title="xlstm_jax.dataset.grain_data_processing.PaddedDataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PaddedDataset</span></code></a></p></td>
+<td><p>Dataset wrapper to pad the dataset to be a multiple of the global batch size.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.preprocess_dataset" title="xlstm_jax.dataset.grain_data_processing.preprocess_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">preprocess_dataset</span></code></a>(dataloading_host_index, ...[, ...])</p></td>
+<td><p>Pipeline for preprocessing an array_records or huggingface dataset.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.make_grain_iterator" title="xlstm_jax.dataset.grain_data_processing.make_grain_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_grain_iterator</span></code></a>(configs, global_mesh, process_indices)</p></td>
+<td><p>Load a dataset, create the preprocessing pipeline and return a multihost data-loading iterator.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.pad_dataset" title="xlstm_jax.dataset.grain_data_processing.pad_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad_dataset</span></code></a>(dataset, global_batch_size, column_name)</p></td>
+<td><p>Pads the dataset to match a multiple of the global batch size.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.load_array_record_dataset" title="xlstm_jax.dataset.grain_data_processing.load_array_record_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_array_record_dataset</span></code></a>(dataset_path[, file_extension])</p></td>
+<td><p>Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.load_huggingface_dataset" title="xlstm_jax.dataset.grain_data_processing.load_huggingface_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">load_huggingface_dataset</span></code></a>(config)</p></td>
+<td><p>Load a dataset from HuggingFace.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.preprocess_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">preprocess_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloading_host_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_column_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenize</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_target_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_shuffle_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_path</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">hf_access_token</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_bos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eos</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_eod</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing_bin_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tokenizer_cache_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.preprocess_dataset" title="Link to this definition"></a></dt>
+<dd><p>Pipeline for preprocessing an array_records or huggingface dataset.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloading_host_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the data loading host. Will be used to select the
+correct shard of the dataset. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_index.html#jax.process_index" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_index()</span></code></a>.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of data loading hosts. Will be used to determine the
+shard size. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_count.html#jax.process_count" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_count()</span></code></a>.</p></li>
+<li><p><strong>dataset</strong> (<em>Any</em>) – The dataset to load. Should provide a <cite>__getitem__</cite> method to access elements.</p></li>
+<li><p><strong>data_column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The column name for the data in the dataset.</p></li>
+<li><p><strong>tokenize</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to tokenize the data.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>max_target_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum target length.</p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shuffle the dataset.</p></li>
+<li><p><strong>data_shuffle_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The shuffle seed.</p></li>
+<li><p><strong>tokenizer_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The path to the tokenizer.</p></li>
+<li><p><strong>hf_access_token</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The access token for HuggingFace.</p></li>
+<li><p><strong>add_bos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to add the beginning of sequence token.</p></li>
+<li><p><strong>add_eos</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to add the end of sequence token.</p></li>
+<li><p><strong>add_eod</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to add an end of document token.</p></li>
+<li><p><strong>grain_packing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to perform packing of the data. This is useful for datasets
+with a lot of padding, as batch elements will be packed together in a sequence
+to reduce the amount of padding. This can improve throughput efficiency. Note:
+if packing is enabled, the length of the iterator cannot be determined in advance
+and is likely incorrect in the iterator (will be set to maximum number of batches).</p></li>
+<li><p><strong>grain_packing_bin_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of packing bins to use. If not provided, the
+bin count will be set to the batch size. It can be beneficial to increase the packing
+bins to reduce padding.</p></li>
+<li><p><strong>shift</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift the input data to create the target data.</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to drop the remainder of the dataset. Note that in case of
+providing a number of epochs, the last batch of all epochs together will be
+dropped if this is set to <cite>True</cite>. If set to <cite>False</cite>, the last batch of all epochs
+together will be included in the iterator.</p></li>
+<li><p><strong>num_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of epochs to train for. The dataset will be repeated for so
+many epochs, and the shuffle order will be different for each epoch. If None,
+the dataset will be repeated infinitely. Note that batches of an epoch can
+spill over into the first batch of the next epoch, to avoid dropping data.
+The argument <cite>drop_remainder</cite> controls whether the very last batch of all epochs
+together is dropped. By default, use None (infinite epochs) for training and validation.</p></li>
+<li><p><strong>tokenizer_cache_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> | </em><em>None</em>) – The cache directory for the tokenizer.</p></li>
+<li><p><strong>max_steps_per_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The maximum number of steps per epoch. If provided, the iterator
+will stop after this many steps with a <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#StopIteration" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">StopIteration</span></code></a> exception. Otherwise,
+will continue over the iterator until all batches are consumed.</p></li>
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The token ID to use for the end-of-document token. If <cite>tokenizer_path</cite> is
+provided, the tokenizer’s EOD token ID is used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The preprocessed grain dataset and the original data source.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a>[grain.python.IterDataset, grain.python.RandomAccessDataSource]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.make_grain_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">make_grain_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">configs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">process_indices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.make_grain_iterator" title="Link to this definition"></a></dt>
+<dd><p>Load a dataset, create the preprocessing pipeline and return a multihost data-loading iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>configs</strong> (<a class="reference internal" href="../configs/index.html#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig" title="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig"><em>xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig</em></a><em> | </em><a class="reference internal" href="../configs/index.html#xlstm_jax.dataset.configs.HFHubDataConfig" title="xlstm_jax.dataset.configs.HFHubDataConfig"><em>xlstm_jax.dataset.configs.HFHubDataConfig</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference internal" href="../configs/index.html#xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig" title="xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig"><em>xlstm_jax.dataset.configs.GrainArrayRecordsDataConfig</em></a><em> | </em><a class="reference internal" href="../configs/index.html#xlstm_jax.dataset.configs.HFHubDataConfig" title="xlstm_jax.dataset.configs.HFHubDataConfig"><em>xlstm_jax.dataset.configs.HFHubDataConfig</em></a><em>]</em>) – dataset configuration object for huggingface or arrayrecords dataset. If multiple configs are provided,
+the datasets will be loaded in parallel and the data will be interleaved in a mixing style. NOTE: the
+global batch size, worker count, worker buffer size, drop remainder, and batch rampup will be only used
+from the first config. The other configs are assumed to have the same values. Otherwise, warnings will be
+raised.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The global mesh to shard the data over.</p></li>
+<li><p><strong>process_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>]</em>) – List of process indices that should load the real data. This is used to determine the data
+loading host index and host count.</p></li>
+<li><p><strong>dataset_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – The weights for the datasets. If provided, the datasets will be mixed according to the
+weights. Otherwise, a uniform mixing is used. If a single dataset is provided, the weights are ignored.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>data-loading iterator (for training or evaluation).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../multihost_dataloading/index.html#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator">xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.PaddedDataset">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">PaddedDataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">full_dataset_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.RandomAccessDataSource</span></code></p>
+<p>Dataset wrapper to pad the dataset to be a multiple of the global batch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.ArrayRecordDataSource</em><em> | </em><em>datasets.Dataset</em>)</p></li>
+<li><p><strong>full_dataset_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>)</p></li>
+<li><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.PaddedDataset.dataset">
+<span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset.dataset" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.PaddedDataset.full_dataset_length">
+<span class="sig-name descname"><span class="pre">full_dataset_length</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset.full_dataset_length" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.PaddedDataset.column_name">
+<span class="sig-name descname"><span class="pre">column_name</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset.column_name" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.PaddedDataset.empty_sequence">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">empty_sequence</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset.empty_sequence" title="Link to this definition"></a></dt>
+<dd><p>Returns and empty sequence for padding, depending on the type of dataset.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.pad_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">pad_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">column_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.pad_dataset" title="Link to this definition"></a></dt>
+<dd><p>Pads the dataset to match a multiple of the global batch size.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset</strong> (<em>grain.python.ArrayRecordDataSource</em><em> | </em><em>datasets.Dataset</em>) – The dataset to pad.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>column_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The column name in the dataset.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The padded dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#xlstm_jax.dataset.grain_data_processing.PaddedDataset" title="xlstm_jax.dataset.grain_data_processing.PaddedDataset">PaddedDataset</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.load_array_record_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">load_array_record_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_extension</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'.arecord'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.load_array_record_dataset" title="Link to this definition"></a></dt>
+<dd><p>Take all files located at dataset_path and load it as grain.ArrayRecordDataSource.</p>
+<p>Assumes that the filenames are multiple shards where the shard idx is in the filename, e.g. train_000001.arecord’.
+We load the files in the order of the shard idx.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataset_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/pathlib.html#pathlib.Path" title="(in Python v3.13)"><em>pathlib.Path</em></a><em> | </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Path to the dataset folder, which contains .arecord files.</p></li>
+<li><p><strong>file_extension</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The file extension of the dataset files. Default is ‘.arecord’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The dataset as grain.ArrayRecordDataSource.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>grain.ArrayRecordDataSource</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_data_processing.load_huggingface_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_data_processing.</span></span><span class="sig-name descname"><span class="pre">load_huggingface_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_data_processing.load_huggingface_dataset" title="Link to this definition"></a></dt>
+<dd><p>Load a dataset from HuggingFace.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<a class="reference internal" href="../configs/index.html#xlstm_jax.dataset.configs.HFHubDataConfig" title="xlstm_jax.dataset.configs.HFHubDataConfig"><em>xlstm_jax.dataset.configs.HFHubDataConfig</em></a>) – The HFHubDataConfig object.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The loaded dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>datasets.Dataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../grain_batch_rampup/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.grain_batch_rampup" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../grain_iterator/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.grain_iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

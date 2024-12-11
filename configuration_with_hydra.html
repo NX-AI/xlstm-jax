@@ -1,0 +1,335 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Configuring Experiments with Hydra &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="autoapi/index.html" />
+    <link rel="prev" title="xlstm-jax documentation" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Configuring Experiments with Hydra</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#configuration-structure">Configuration Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-run-experiments">How to Run Experiments</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#remarks">Remarks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#using-experiment-files">Using Experiment Files</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#type-checking-of-the-configurations">Type Checking of the Configurations</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-run-experiments-on-a-slurm-cluster">How to run experiments on a SLURM cluster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-resume-an-experiment">How to Resume an Experiment?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Configuring Experiments with Hydra</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/configuration_with_hydra.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="configuring-experiments-with-hydra">
+<h1>Configuring Experiments with Hydra<a class="headerlink" href="#configuring-experiments-with-hydra" title="Link to this heading"></a></h1>
+<p>This project uses Hydra for managing configurations. Hydra is a framework that simplifies the process of configuring complex applications by allowing you to compose configurations dynamically.</p>
+<section id="configuration-structure">
+<h2>Configuration Structure<a class="headerlink" href="#configuration-structure" title="Link to this heading"></a></h2>
+<p>The configuration files are organized in the <code class="docutils literal notranslate"><span class="pre">configs</span></code> directory. For now, the structure is as follows</p>
+<ul>
+<li><p>[<code class="docutils literal notranslate"><span class="pre">configs/</span></code>]: Contains all configuration files.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>: The main configuration file. In there, the default sub-configurations are specified by way of the
+<code class="docutils literal notranslate"><span class="pre">defaults</span></code> list. Additionaly, global variables are defined.
+The submodules are in subfolders:</p></li>
+</ul>
+<p>TODO: fill up once ready</p>
+</li>
+</ul>
+</section>
+<section id="how-to-run-experiments">
+<h2>How to Run Experiments<a class="headerlink" href="#how-to-run-experiments" title="Link to this heading"></a></h2>
+<p>The principal entry point for hydra is the script <code class="docutils literal notranslate"><span class="pre">scripts/training/train_with_hydra.py</span></code>. On the command line, you can start a run locally by executing</p>
+<p><code class="docutils literal notranslate"><span class="pre">PYTHONPATH=.</span> <span class="pre">python</span> <span class="pre">scripts/training/train_with_hydra.py</span></code>.</p>
+<p>Note that currently, in order for the Triton kernels to work, the xlstm root folder must be added to
+your <code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code>.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">main_train()</span></code> function in that file is decorated with:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hydra</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;../configs&quot;</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">version_base</span><span class="o">=</span><span class="s2">&quot;1.3&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">main_train</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
+    <span class="o">...</span>
+</pre></div>
+</div>
+<p>The decorator invokes Hydra and the following happens: Hydra looks in the folder <code class="docutils literal notranslate"><span class="pre">../configs</span></code> for a file named <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. If it finds the file,
+Hydra starts to compile the configuration from the defaults supplied in <code class="docutils literal notranslate"><span class="pre">configs/config.yaml</span></code>.
+For example, if that file looks like this:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">defaults</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">config_schema</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">parallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">synthetic</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">synthetic</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mLSTM120M</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">_self_</span>
+
+
+<span class="c1"># General hyperparameters. Will be put in their respective config modules once they are created.</span>
+
+<span class="c1"># device. cpu or gpu</span>
+<span class="nt">device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cpu</span>
+</pre></div>
+</div>
+<p>the following will happen:</p>
+<ol class="arabic simple">
+<li><p>The first line reads <code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">config_schema</span></code>. This is related to the use of
+structured configs, which will be detailed elsewhere (TODO). As with all entries
+in the defaults list, Hydra will look for parameters in the file and append it
+to the compiled configuration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">parallel:</span> <span class="pre">synthetic</span></code> means that Hydra will now look in the <code class="docutils literal notranslate"><span class="pre">parallel</span></code> subfolder for the <code class="docutils literal notranslate"><span class="pre">synthetic.yaml</span></code>
+file and append all parameters in that file to the compiled list of parameters under the key <code class="docutils literal notranslate"><span class="pre">parallel</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">data:</span> <span class="pre">synthetic</span></code> means that Hydra will now look in the <code class="docutils literal notranslate"><span class="pre">data</span></code> subfolder for the <code class="docutils literal notranslate"><span class="pre">synthetic.yaml</span></code>
+file and append all parameters in that file to the compiled list of parameters under the key <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">-</span> <span class="pre">model:</span> <span class="pre">mLSTM120M</span></code> means that Hydra will now look in the <code class="docutils literal notranslate"><span class="pre">model</span></code> subfolder for the <code class="docutils literal notranslate"><span class="pre">mLSTM120M.yaml</span></code>
+file and append all parameters in that file to the compiled list of parameters under the key <code class="docutils literal notranslate"><span class="pre">model</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">_self_</span></code> means that all parameters in this file itself (that is, the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>) will be inserted into the
+compiled config.</p></li>
+</ol>
+<p>Note that all values that come later in the defaults list <strong>overwrite</strong> potential values that have been in the
+configuration before.</p>
+<p>Once Hydra has processed this file, it changes the current working directory as specified in the configs
+and executes
+<code class="docutils literal notranslate"><span class="pre">main_train(cfg)</span></code> in that directory, where <code class="docutils literal notranslate"><span class="pre">cfg</span></code> is the compiled configuration.
+All top level parameters are in <code class="docutils literal notranslate"><span class="pre">cfg</span></code>, as for example, <code class="docutils literal notranslate"><span class="pre">cfg.device</span></code> and the
+others are in their respective fields, for example, <code class="docutils literal notranslate"><span class="pre">cfg.parallel.data_axis_name</span></code>.</p>
+<p>This is where Hydra stops. Everything coming after in the <code class="docutils literal notranslate"><span class="pre">main_train</span></code> function is instantiated manually for now.</p>
+<section id="remarks">
+<h3>Remarks<a class="headerlink" href="#remarks" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p>It is possible to overwrite every parameter from the command line. So you can, for example, execute
+<code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/training/train_with_hydra.py</span> <span class="pre">device=gpu</span> <span class="pre">model.num_heads=42</span></code>
+to substitute <code class="docutils literal notranslate"><span class="pre">cpu</span></code>
+from the <code class="docutils literal notranslate"><span class="pre">config.yaml</span></code> with <code class="docutils literal notranslate"><span class="pre">gpu</span></code> and to substitute 42 for whatever value for <code class="docutils literal notranslate"><span class="pre">num_heads</span></code> was given in <code class="docutils literal notranslate"><span class="pre">mLSTM120M.yaml</span></code> file. This is probably not the approach you want to use to start experiments though.</p></li>
+</ul>
+</section>
+<section id="using-experiment-files">
+<h3>Using Experiment Files<a class="headerlink" href="#using-experiment-files" title="Link to this heading"></a></h3>
+<p>(see https://hydra.cc/docs/patterns/configuring_experiments/)</p>
+<p>A nicer since much more reproducible way to start experiments with Hydra is to use experiment files. In these files
+you can specify all parameters and config groups that you want to change. Let us take the <code class="docutils literal notranslate"><span class="pre">experiment/train_mLSTM7B_slimpajama6b.yaml</span></code> as an example. That file reads</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># @package _global_</span>
+<span class="nt">defaults</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">override /parallel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mLSTM7B</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">override /model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mLSTM7B</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">override /data</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slimpajama_6B_local_ds</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">override /optimizer</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">adamw</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">_self_</span>
+
+<span class="c1"># specify the deltas from the defaults:</span>
+<span class="nt">task_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mLSTM7B_slimpajama6b_example_experiment</span>
+<span class="nt">batch_size_per_device</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="nt">context_length</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2048</span>
+<span class="nt">num_epochs</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1000</span>
+<span class="nt">num_train_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">95_000</span>
+<span class="nt">lr</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5e-4</span>
+
+<span class="nt">trainer</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">gradient_accumulate_steps</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+</pre></div>
+</div>
+<p>To use this file, you execute the following:</p>
+<p><code class="docutils literal notranslate"><span class="pre">PYTHONPATH=.</span> <span class="pre">python</span> <span class="pre">scripts/training/train_with_hydra.py</span> <span class="pre">+experiment=train_mLSTM7B_slimpajama6b.yaml</span> </code></p>
+<p>Note the + before experiment, that’s not a typo!
+Hydra now checks the defaults list of the experiment file and replaces the respective fields from the general
+<code class="docutils literal notranslate"><span class="pre">config.yaml</span></code>. That is, instead of looking for the <code class="docutils literal notranslate"><span class="pre">synthetic.yaml</span></code> in the data subfolder it now looks for the
+<code class="docutils literal notranslate"><span class="pre">slimpajama_6B_local_ds.yaml</span></code> file and uses those paramters when compiling the configuration. In addition, you can
+overwrite any parameter with your own values. This goes for all parameters at every level of the config hierarchy.
+In this example, the value in <code class="docutils literal notranslate"><span class="pre">cfg.trainer.gradient_accumulation_steps</span></code>
+is overwritten with 1.
+By using experiment files, it becomes easy to specify and reproduce experiments.</p>
+</section>
+<section id="type-checking-of-the-configurations">
+<h3>Type Checking of the Configurations<a class="headerlink" href="#type-checking-of-the-configurations" title="Link to this heading"></a></h3>
+<p>One benefit of using the structured configs and dataclasses as basis for the configuration is that type checking
+becomes available. This happens when compiling the <code class="docutils literal notranslate"><span class="pre">cfg</span></code>. See also the structured configs section (TODO).</p>
+<p>To test whether you have supplied correctly typed parameters in your experiment files, you can execute</p>
+<p><code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/check_config.py</span> <span class="pre">+experiment={YOUR_EXPERIMENT_FILE}</span></code></p>
+<p>This function just compiles and logs your compiled config. But it’s a good way to check if you have supplied a
+working experiment file before starting a job on a cluster, for example.</p>
+</section>
+</section>
+<section id="how-to-run-experiments-on-a-slurm-cluster">
+<h2>How to run experiments on a SLURM cluster<a class="headerlink" href="#how-to-run-experiments-on-a-slurm-cluster" title="Link to this heading"></a></h2>
+<p>To run your script on a SLURM cluster you can use the <code class="docutils literal notranslate"><span class="pre">submitit_launcher</span></code>, which is installed for Hydra. The
+default configuration is provided in <code class="docutils literal notranslate"><span class="pre">configs/hydra/launcher/slurm_launcher.yaml</span></code>:</p>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="c1"># @package _global_</span>
+<span class="nt">defaults</span><span class="p">:</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">override /hydra/launcher</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">submitit_slurm</span>
+
+<span class="nt">hydra</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">launcher</span><span class="p">:</span>
+<span class="w">    </span><span class="nt">submitit_folder</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${hydra.sweep.dir}/.submitit/%j</span>
+<span class="w">    </span><span class="nt">timeout_min</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+<span class="w">    </span><span class="nt">cpus_per_task</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">28</span>
+<span class="w">    </span><span class="nt">gpus_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">    </span><span class="nt">gres</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpu:8</span>
+<span class="w">    </span><span class="nt">tasks_per_node</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8</span>
+<span class="w">    </span><span class="nt">mem_gb</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">~</span>
+<span class="w">    </span><span class="nt">nodes</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span>
+<span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">${hydra.job.name}</span>
+<span class="w">    </span><span class="nt">_target_</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">hydra_plugins.hydra_submitit_launcher.submitit_launcher.SlurmLauncher</span>
+<span class="w">    </span><span class="nt">partition</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">compute</span>
+<span class="w">    </span><span class="nt">qos</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+<span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testing_slurmit_launcher</span>
+<span class="w">    </span><span class="nt">additional_parameters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
+<span class="w">      </span><span class="s">&quot;gpu-bind&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">&quot;wait-all-nodes&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">&quot;time&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;2-00:00:00&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">&quot;exclusive&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">    </span><span class="p p-Indicator">}</span>
+<span class="w">    </span><span class="nt">setup</span><span class="p">:</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_CROSS_NIC=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_SOCKET_NTHREADS=16</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_DEBUG=WARN</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_CUMEM_ENABLE=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_SPLIT_DATA_ON_QPS=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_QPS_PER_CONNECTION=16</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_GID_INDEX=3</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_TC=41</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_SL=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_TIMEOUT=22</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_NET_PLUGIN=none</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_SOCKET_IFNAME=eth0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IGNORE_CPU_AFFINITY=1</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_HCA=&quot;=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export HCOLL_ENABLE_MCAST_ALL=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export coll_hcoll_enable=0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export UCX_TLS=tcp</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export UCX_NET_DEVICES=eth0</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export RX_QUEUE_LEN=8192</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export IB_RX_QUEUE_LEN=8192</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export OMPI_MCA_coll=^hcoll</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat</span>
+</pre></div>
+</div>
+<p>Here, you can supply (or rather overwrite in an experment file!) the things you would normally put into a SLURM run
+script. To use the <code class="docutils literal notranslate"><span class="pre">submitit_launcher</span></code> you have to execute the following with the conda env
+activated that you want to use for the experiment:</p>
+<p><code class="docutils literal notranslate"><span class="pre">PYTHONPATH=.</span> <span class="pre">python</span> <span class="pre">scripts/training/train_with_hydra.py</span> <span class="pre">--multirun</span> <span class="pre">hydra/launcher=slurm_launcher</span> <span class="pre">+experiment={YOUR_EXPERIMENT_FILE}</span></code></p>
+<p>So the only thing you have to add is <code class="docutils literal notranslate"><span class="pre">--multirun</span> <span class="pre">hydra/launcher=slurm_launcher</span></code> (and to overwrite SLURM-specific parameters as the number of nodes, for example, in your experiment file).</p>
+</section>
+<section id="how-to-resume-an-experiment">
+<h2>How to Resume an Experiment?<a class="headerlink" href="#how-to-resume-an-experiment" title="Link to this heading"></a></h2>
+<p>To resume an experiment you need to know the path to the output
+folder of the experiment. You then execute</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">traininig</span><span class="o">/</span><span class="n">get_cli_command_to_resume_training</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">resume_from_folder</span><span class="o">=</span><span class="n">PATH_TO_RUN</span>
+</pre></div>
+</div>
+<p>If you want to use SLURM, set the flag <code class="docutils literal notranslate"><span class="pre">--use_slurm</span></code>.
+Not that this is only required if
+the original run was executed with SLURM by way of the CLI override
+<code class="docutils literal notranslate"><span class="pre">--multirun</span> <span class="pre">hydra/launcher=slurm_launcher</span></code> and
+not by way of experiment file. If it was specified in the experiment file, SLURM is used anyway.</p>
+<p>If you want to use the latest checkpoint, you don’t need to supply anything but if you want to use a
+specific checkpoint, use <code class="docutils literal notranslate"><span class="pre">--checkpoint_step=X</span></code> to use checkpoint X.</p>
+<p>New hydra overrides can be supplied by way of <code class="docutils literal notranslate"><span class="pre">--new_overrides=STRING_OF_OVERRIDES</span></code>.
+Example of such a string for more training steps, a different learning rate and
+a different logging frequency would be
+<code class="docutils literal notranslate"><span class="pre">--new_overrides=&quot;num_train_steps=20000</span> <span class="pre">lr=0.0001</span> <span class="pre">logger.log_every_n_steps=10&quot;</span></code>, that is,
+the format is exactly as you would supply for CLI overrides.</p>
+<p>Executing <code class="docutils literal notranslate"><span class="pre">get_cli_command_to_resume_training</span></code> will return a string of the command that you
+have to execute to continue the training run.</p>
+<p>A full example to call is</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">training</span><span class="o">/</span><span class="n">get_cli_command_to_resume_training</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">resume_from_folder</span><span class="o">=</span><span class="n">PATH_TO_RUN</span> <span class="o">--</span><span class="n">use_slurm</span> <span class="o">--</span><span class="n">checkpoint_step</span><span class="o">=</span><span class="mi">95000</span> <span class="o">--</span><span class="n">new_overrides</span><span class="o">=</span><span class="s2">&quot;num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10&quot;</span>
+</pre></div>
+</div>
+<p>What the script does is to look in the specified folder and obtain the overrides (including the experiment file)
+that were used to start the previous run. It then compiles a new command from these, which, for the current
+example would look something like this:</p>
+<p><code class="docutils literal notranslate"><span class="pre">PYTHONPATH=.</span> <span class="pre">python</span> <span class="pre">scripts/training/resume_training_with_hydra.py</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">-m</span> <span class="pre">hydra/launcher=slurm_launcher</span> <span class="pre">+experiment=synthetic_experiment_slurm</span> <span class="pre">+resume_from_folder=PATH_TO_RUN</span>&#160;&#160;&#160;&#160;&#160;&#160;&#160; <span class="pre">+checkpoint_step=95000</span> <span class="pre">num_train_steps=20000</span> <span class="pre">lr=0.0001</span> <span class="pre">logger.log_every_n_steps=10</span></code></p>
+<p>This is the actual command you have to run to resume the experiment. Keep in mind that you can still
+use any other CLI overrides at this point so using them in the previous step is not strictly necessary.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="xlstm-jax documentation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

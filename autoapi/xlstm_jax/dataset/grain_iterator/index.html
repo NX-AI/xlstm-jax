@@ -1,0 +1,389 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>xlstm_jax.dataset.grain_iterator &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <link rel="next" title="xlstm_jax.dataset.grain_transforms" href="../grain_transforms/index.html" />
+    <link rel="prev" title="xlstm_jax.dataset.grain_data_processing" href="../grain_data_processing/index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../../index.html">API Reference</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="../../index.html">xlstm_jax</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="../../index.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="../index.html">xlstm_jax.dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../distributed/index.html">xlstm_jax.distributed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../kernels/index.html">xlstm_jax.kernels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../models/index.html">xlstm_jax.models</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../trainer/index.html">xlstm_jax.trainer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../utils/index.html">xlstm_jax.utils</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">API Reference</a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax</a></li>
+          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.dataset</a></li>
+      <li class="breadcrumb-item active">xlstm_jax.dataset.grain_iterator</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../../../../_sources/autoapi/xlstm_jax/dataset/grain_iterator/index.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-xlstm_jax.dataset.grain_iterator">
+<span id="xlstm-jax-dataset-grain-iterator"></span><h1>xlstm_jax.dataset.grain_iterator<a class="headerlink" href="#module-xlstm_jax.dataset.grain_iterator" title="Link to this heading"></a></h1>
+<p>Copyright 2023 Google LLC.</p>
+<p>Licensed under the Apache License, Version 2.0 (the “License”);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+<blockquote>
+<div><p><a class="reference external" href="https://www.apache.org/licenses/LICENSE-2.0">https://www.apache.org/licenses/LICENSE-2.0</a></p>
+</div></blockquote>
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an “AS IS” BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+<p>—</p>
+<p>LLM Data Iterator with Grain</p>
+<section id="attributes">
+<h2>Attributes<a class="headerlink" href="#attributes" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.LOGGER" title="xlstm_jax.dataset.grain_iterator.LOGGER"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LOGGER</span></code></a></p></td>
+<td><p></p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.shard_grain_dataset" title="xlstm_jax.dataset.grain_iterator.shard_grain_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shard_grain_dataset</span></code></a>(grain_dataset, ...)</p></td>
+<td><p>Shard a grain dataset for multi-host training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset" title="xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_grain_llm_dataset</span></code></a>(dataloading_host_index, ...[, ...])</p></td>
+<td><p>Create a grain IterDataset for LLM training.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator" title="xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_grain_multihost_iterator</span></code></a>(grain_datasets, ...[, ...])</p></td>
+<td><p>Create a multi-host dataloader for LLM training.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.make_grain_llm_iterator" title="xlstm_jax.dataset.grain_iterator.make_grain_llm_iterator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">make_grain_llm_iterator</span></code></a>(dataloading_host_index, ...[, ...])</p></td>
+<td><p>Create a multi-host dataloader for LLM training.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="module-contents">
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_iterator.LOGGER">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_iterator.</span></span><span class="sig-name descname"><span class="pre">LOGGER</span></span><a class="headerlink" href="#xlstm_jax.dataset.grain_iterator.LOGGER" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_iterator.shard_grain_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_iterator.</span></span><span class="sig-name descname"><span class="pre">shard_grain_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grain_dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_iterator.shard_grain_dataset" title="Link to this definition"></a></dt>
+<dd><p>Shard a grain dataset for multi-host training.</p>
+<p>This function will slice the dataset into the correct shard for the host. If the dataset is not evenly divisible
+by the number of hosts, the first N hosts will have one more element than the rest. This is to ensure that the
+dataset is evenly divided across all hosts.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grain_dataset</strong> (<em>grain.python.MapDataset</em>) – The grain dataset to shard.</p></li>
+<li><p><strong>dataloading_host_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the dataloading host. Will be used to select the correct shard of the
+dataset.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloading hosts. Will be used to determine the shard size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The sharded grain dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>grain.python.MapDataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_iterator.</span></span><span class="sig-name descname"><span class="pre">make_grain_llm_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloading_host_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_target_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_shuffle_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing_bin_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset" title="Link to this definition"></a></dt>
+<dd><p>Create a grain IterDataset for LLM training.</p>
+<p>The dataset will perform packing, padding, and shifting of the data. However, no batching
+will be performed. The dataset will be returned as a grain IterDataset object that can be
+used to create a multi-host iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloading_host_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the dataloading host. Will be used to select the
+correct shard of the dataset. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_index.html#jax.process_index" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_index()</span></code></a>.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloading hosts. Will be used to determine the
+shard size. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_count.html#jax.process_count" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_count()</span></code></a>.</p></li>
+<li><p><strong>dataset</strong> (<em>Any</em>) – The dataset to load. Should provide a <cite>__getitem__</cite> method to access elements.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>max_target_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum target length.</p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shuffle the dataset.</p></li>
+<li><p><strong>data_shuffle_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The shuffle seed.</p></li>
+<li><p><strong>num_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of epochs to train for. The dataset will be repeated for so
+many epochs, and the shuffle order will be different for each epoch. If None,
+the dataset will be repeated infinitely. Note that batches of an epoch can
+spill over into the first batch of the next epoch, to avoid dropping data.
+The argument <cite>drop_remainder</cite> controls whether the very last batch of all epochs
+together is dropped.</p></li>
+<li><p><strong>operations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>grain.python.MapTransform</em><em>] </em><em>| </em><em>None</em>) – A list of <cite>grain</cite> operations to apply to the dataset before batching.</p></li>
+<li><p><strong>grain_packing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to perform packing of the data. This is useful for datasets
+with a lot of padding, as batch elements will be packed together in a sequence
+to reduce the amount of padding. This can improve throughput efficiency. NOTE:
+if packing is enabled, the length of the iterator cannot be determined in advance
+and is likely incorrect in the iterator (will be set to maximum number of batches).</p></li>
+<li><p><strong>grain_packing_bin_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of packing bins to use. If not provided, the
+bin count will be set to the batch size. It can be beneficial to increase the packing
+bins to reduce padding.</p></li>
+<li><p><strong>shift</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift the input data to create the target data.</p></li>
+<li><p><strong>shift_target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift the targets left (True) or inputs right (False).</p></li>
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The token ID to use for the end-of-document token. Used if shifting the
+inputs right and adding an end-of-document token to the sequence. If not
+provided, the default value of 0 will be used. Recommended to set this to a value
+explicitly with the tokenizer’s EOD token ID.</p></li>
+<li><p><strong>apply_padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Pad sequence to the maximum target length.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">grain.IterDataset</span></code> object that can be used to iterate over the dataset or apply further
+transformations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>grain.python.IterDataset</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_iterator.</span></span><span class="sig-name descname"><span class="pre">make_grain_multihost_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grain_datasets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_lengths</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset_weights</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_buffer_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LLMBatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_after_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_thread_prefetch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_rampup_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator" title="Link to this definition"></a></dt>
+<dd><p>Create a multi-host dataloader for LLM training.</p>
+<p>The dataloader will perform batch packing, padding, and shifting of the data to create
+a batch of LLMBatch objects. The LLMBatch object will contain the input and target data
+for the model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grain_datasets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>grain.python.IterDataset</em><em>] </em><em>| </em><em>grain.python.IterDataset</em>) – The grain datasets to iterate over. If multiple datasets are provided,
+they will be mixed together. The datasets should be provided as a list of grain datasets.</p></li>
+<li><p><strong>dataset_weights</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – The weights for the datasets. If not provided, the datasets will be mixed
+with equal weights.</p></li>
+<li><p><strong>dataset_lengths</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>] </em><em>| </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The lengths of the datasets for a single epoch. Used to determine the
+length of the iterator. An epoch corresponds to the time until the longest dataset
+is exhausted, i.e. at least one epoch for all datasets.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The global mesh to shard the data over.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloading hosts. Will be used to determine the
+shard size. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_count.html#jax.process_count" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_count()</span></code></a>.</p></li>
+<li><p><strong>worker_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of workers to use. In <cite>grain</cite>, a single worker is usually
+sufficient, as the data loading is done in parallel across hosts.</p></li>
+<li><p><strong>worker_buffer_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The buffer size for the workers.</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to drop the remainder of the dataset. Note that in case of
+providing a number of epochs, the last batch of all epochs together will be
+dropped if this is set to <cite>True</cite>. If set to <cite>False</cite>, the last batch of all epochs
+together will be included in the iterator.</p></li>
+<li><p><strong>batch_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – Batch class used to collate data to batch.</p></li>
+<li><p><strong>reset_after_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to reset the iterator after each epoch. If set to <cite>True</cite>,
+the iterator will start from the beginning of the dataset after each epoch. If set
+to <cite>False</cite>, the iterator will continue from where it left off in the dataset. Note
+that resetting the iterator can be expensive in a multi-host setup and can fail if
+the multiprocessing pool could not be set up.</p></li>
+<li><p><strong>use_thread_prefetch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to use thread prefetching instead of multiprocessing.</p></li>
+<li><p><strong>batch_rampup_factors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – A dictionary of boundaries and scales for the batch
+ramp-up schedule. If provided, the batch size will be ramped up according to the
+schedule. The boundaries are the steps at which the batch size will be increased,
+and the scales are the factors by which the batch size will be scaled. Note that
+the factors are not accumulated, but applied to the initial batch size. If not provided,
+the global batch size will be used as the batch size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">MultiHostDataLoadIterator</span></code> object that can be used to iterate over the dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../multihost_dataloading/index.html#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator">xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="xlstm_jax.dataset.grain_iterator.make_grain_llm_iterator">
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.dataset.grain_iterator.</span></span><span class="sig-name descname"><span class="pre">make_grain_llm_iterator</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataloading_host_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataloading_host_count</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_mesh</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_batch_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_target_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shuffle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_shuffle_seed</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">operations</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grain_packing_bin_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shift_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_count</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker_buffer_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_padding</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">drop_remainder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">LLMBatch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reset_after_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_thread_prefetch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_rampup_factors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.dataset.grain_iterator.make_grain_llm_iterator" title="Link to this definition"></a></dt>
+<dd><p>Create a multi-host dataloader for LLM training.</p>
+<p>Combines the creation of the grain dataset and the multi-host iterator into a single function.
+See <a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset" title="xlstm_jax.dataset.grain_iterator.make_grain_llm_dataset"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_grain_llm_dataset()</span></code></a> and <a class="reference internal" href="#xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator" title="xlstm_jax.dataset.grain_iterator.make_grain_multihost_iterator"><code class="xref py py-func docutils literal notranslate"><span class="pre">make_grain_multihost_iterator()</span></code></a> for more details.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataloading_host_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the dataloading host. Will be used to select the
+correct shard of the dataset. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_index.html#jax.process_index" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_index()</span></code></a>.</p></li>
+<li><p><strong>dataloading_host_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of dataloading hosts. Will be used to determine the
+shard size. In JAX, this is equivalent to <a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.process_count.html#jax.process_count" title="(in JAX)"><code class="xref py py-func docutils literal notranslate"><span class="pre">jax.process_count()</span></code></a>.</p></li>
+<li><p><strong>global_mesh</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/jax.sharding.html#jax.sharding.Mesh" title="(in JAX)"><em>jax.sharding.Mesh</em></a>) – The global mesh to shard the data over.</p></li>
+<li><p><strong>dataset</strong> (<em>Any</em>) – The dataset to load. Should provide a <cite>__getitem__</cite> method to access elements.</p></li>
+<li><p><strong>global_batch_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The global batch size.</p></li>
+<li><p><strong>max_target_length</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The maximum target length.</p></li>
+<li><p><strong>shuffle</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shuffle the dataset.</p></li>
+<li><p><strong>data_shuffle_seed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The shuffle seed.</p></li>
+<li><p><strong>num_epochs</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of epochs to train for. The dataset will be repeated for so
+many epochs, and the shuffle order will be different for each epoch. If None,
+the dataset will be repeated infinitely. Note that batches of an epoch can
+spill over into the first batch of the next epoch, to avoid dropping data.
+The argument <cite>drop_remainder</cite> controls whether the very last batch of all epochs
+together is dropped.</p></li>
+<li><p><strong>operations</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em>[</em><em>grain.python.MapTransform</em><em>] </em><em>| </em><em>None</em>) – A list of <cite>grain</cite> operations to apply to the dataset before batching.</p></li>
+<li><p><strong>grain_packing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to perform packing of the data. This is useful for datasets
+with a lot of padding, as batch elements will be packed together in a sequence
+to reduce the amount of padding. This can improve throughput efficiency. NOTE:
+if packing is enabled, the length of the iterator cannot be determined in advance
+and is likely incorrect in the iterator (will be set to maximum number of batches).</p></li>
+<li><p><strong>grain_packing_bin_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> | </em><em>None</em>) – The number of packing bins to use. If not provided, the
+bin count will be set to the batch size. It can be beneficial to increase the packing
+bins to reduce padding.</p></li>
+<li><p><strong>shift</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift the input data to create the target data.</p></li>
+<li><p><strong>shift_target</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to shift the targets left (True) or inputs right (False).</p></li>
+<li><p><strong>eod_token_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The token ID to use for the end-of-document token. Used if shifting
+the inputs right and adding an end-of-document token to the sequence. If not
+provided, the default value of 0 will be used. Recommended to set this to a value
+explicitly with the tokenizer’s EOD token ID.</p></li>
+<li><p><strong>worker_count</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The number of workers to use. In <cite>grain</cite>, a single worker is usually
+sufficient, as the data loading is done in parallel across hosts.</p></li>
+<li><p><strong>worker_buffer_size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The buffer size for the workers.</p></li>
+<li><p><strong>apply_padding</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Pad sequence to the maximum target length.</p></li>
+<li><p><strong>drop_remainder</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to drop the remainder of the dataset. Note that in case of
+providing a number of epochs, the last batch of all epochs together will be
+dropped if this is set to <cite>True</cite>. If set to <cite>False</cite>, the last batch of all epochs
+together will be included in the iterator.</p></li>
+<li><p><strong>batch_class</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.13)"><em>type</em></a>) – Batch class used to collate data to batch.</p></li>
+<li><p><strong>reset_after_epoch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to reset the iterator after each epoch. If set to <cite>True</cite>,
+the iterator will start from the beginning of the dataset after each epoch. If set
+to <cite>False</cite>, the iterator will continue from where it left off in the dataset. Note
+that resetting the iterator can be expensive in a multi-host setup and can fail if
+the multiprocessing pool could not be set up.</p></li>
+<li><p><strong>use_thread_prefetch</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – Whether to use thread prefetching instead of multiprocessing.</p></li>
+<li><p><strong>batch_rampup_factors</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>] </em><em>| </em><em>None</em>) – A dictionary of boundaries and scales for the batch
+rampup schedule. If provided, the batch size will be ramped up according to the
+schedule. The boundaries are the steps at which the batch size will be increased,
+and the scales are the factors by which the batch size will be scaled. Note that
+the factors are not accumulated, but applied to the initial batch size. If not provided,
+the global batch size will be used as the batch size.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <code class="xref py py-class docutils literal notranslate"><span class="pre">MultiHostDataLoadIterator</span></code> object that can be used to iterate over the dataset.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../multihost_dataloading/index.html#xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator" title="xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator">xlstm_jax.dataset.multihost_dataloading.MultiHostDataLoadIterator</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../grain_data_processing/index.html" class="btn btn-neutral float-left" title="xlstm_jax.dataset.grain_data_processing" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../grain_transforms/index.html" class="btn btn-neutral float-right" title="xlstm_jax.dataset.grain_transforms" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
