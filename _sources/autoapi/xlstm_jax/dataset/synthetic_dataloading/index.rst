@@ -21,9 +21,6 @@ xlstm_jax.dataset.synthetic_dataloading
 
    ---
 
-   This file is a modified version of the file input_pipeline_interface.py from the maxtext project,
-   see https://github.com/AI-Hypercomputer/maxtext/MaxText/input_pipeline/input_pipeline_interface.py.
-
    Synthetic Data Iterator
 
 

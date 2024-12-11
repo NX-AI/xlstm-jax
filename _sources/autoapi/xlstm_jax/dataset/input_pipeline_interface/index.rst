@@ -21,9 +21,6 @@ xlstm_jax.dataset.input_pipeline_interface
 
    ---
 
-   This file is a modified version of the file input_pipeline_interface.py from the maxtext project
-   https://github.com/AI-Hypercomputer/maxtext/blob/main/MaxText/input_pipeline/input_pipeline_interface.py.
-
    Input pipeline
 
 

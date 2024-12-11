@@ -1,28 +1,113 @@
 # Configuring Experiments with Hydra
 
-This project uses Hydra for managing configurations. Hydra is a framework that simplifies the process of configuring complex applications by allowing you to compose configurations dynamically.
+This project uses [Hydra](https://hydra.cc/) for managing configurations. Hydra is a framework that simplifies the process of configuring complex applications by allowing you to compose configurations dynamically. If you
+have never worked with Hydra it might seem daunting at first and
+you might want to go through
+the [Hydra tutorial](https://hydra.cc/docs/1.3/intro/) first.
+
+We use structured configs and Python dataclasses as basis for our configuration. There is
+an additional [Hydra tutorial](https://hydra.cc/docs/1.3/tutorials/structured_config/intro/) for
+structured configs, which you should go through if you've never worked with those.
+
+We will still give a very short introduction here s.t. you can get started by running your
+own experiment quickly.
 
 ## Configuration Structure
 
-The configuration files are organized in the `configs` directory. For now, the structure is as follows
+### The Config Dataclasses
+
+The first thing to be aware of is that we use Python dataclasses as foundational configuration objects.
+Let us look at the example of the `ParallelConfig`, located at `xlstm_jax.models.configs.ParallelConfig`:
+
+```python
+@dataclass(kw_only=True, frozen=False)
+class ParallelConfig:
+    """Configuration for parallelism."""
+
+    data_axis_size: int = -1
+    """Size of the data axis. If -1, it will be inferred by the number of available devices."""
+    fsdp_axis_size: int = 1
+    """Size of the FSDP axis. If -1, it will be inferred by the number of available devices."""
+    pipeline_axis_size: int = 1
+    """Size of the pipeline axis. If -1, it will be inferred by the number of available devices."""
+    model_axis_size: int = 1
+    """Size of the model axis. If -1, it will be inferred by the number of available devices."""
+    data_axis_name: str = "dp"
+    """Name of the data axis."""
+    fsdp_axis_name: str = "fsdp"
+    """Name of the FSDP axis."""
+    pipeline_axis_name: str = "pp"
+    """Name of the pipeline axis."""
+    model_axis_name: str = "tp"
+    """Name of the model axis."""
+    remat: list[str] = field(default_factory=lambda: [])
+    """Module names on which we apply activation checkpointing / rematerialization."""
+    fsdp_modules: list[str] = field(default_factory=lambda: [])
+    """Module names on which we apply FSDP sharding."""
+    fsdp_min_weight_size: int = 2**18
+    """Minimum size of a parameter to be sharded with FSDP."""
+    fsdp_gather_dtype: str | None = None
+    """The dtype to cast the parameters to before gathering with FSDP. If `None`, no casting is performed and parameters
+    are gathered in original precision (for example `float32`)."""
+    fsdp_grad_scatter_dtype: str | None = None
+    """The dtype to cast the gradients to before scattering. If `None`, the dtype of the parameters is used."""
+    tp_async_dense: bool = False
+    """Whether to use asynchronous tensor parallelism for dense layers. Default to `False`, as on local hardware,
+    ppermute communication introduces large overhead."""
+
+    def __post_init__(self):
+        _allowed_fsdp_dtypes = ["float32", "bfloat16", "float16"]
+
+        if self.fsdp_gather_dtype is not None:
+            assert self.fsdp_gather_dtype in _allowed_fsdp_dtypes
+        if self.fsdp_grad_scatter_dtype is not None:
+            assert self.fsdp_grad_scatter_dtype in _allowed_fsdp_dtypes
+
+```
+
+Here, all attributes and default values of `ParallelConfig` can be seen. To tell Hydra which
+attributes are available in the dataclass we have to add it to Hydra's config store. This is done
+in `xlstm_jax/define_hydra_schemas.py` and looks like this for the `ParallelConfig`:
+
+```python
+cs.store(name="parallel_schema", group="parallel", node=ParallelConfig)
+```
+
+It tells Hydra that whenever I use the string "parallel_schema" in a configuration yaml file, it
+uses `ParallelConfig` as basis and uses all attributes and default values from that class.
+
+### The Config yaml files
+
+To overwrite the default values from the dataclasses, Hydra
+uses yaml files, which are
+organized in the `configs` directory.
+For now, the structure is as follows:
 
 
-- [`configs/`]: Contains all configuration files.
-  - `config.yaml`: The main configuration file. In there, the default sub-configurations are specified by way of the
-  `defaults` list. Additionaly, global variables are defined.
-  The submodules are in subfolders:
+- `configs/`: Contains all configuration files.
+  - `config.yaml`: The main configuration file. This is the most important file since the defaults are
+   specified here.
 
-  TODO: fill up once ready
+  - The submodules are in subfolders:
+    - `checkpointing`
+    - `data`
+    - `hydra`
+    - `logger`
+    - `lr_monitor`
+    - `model`
+    - `optimizer`
+    - `parallel`
+    - `profiling`
+    - `scheduler`
+    - `trainer`
+
+  Experiment files are located in the subfolder
+  - `experiment`
 
 
 ## How to Run Experiments
 
-The principal entry point for hydra is the script `scripts/training/train_with_hydra.py`. On the command line, you can start a run locally by executing
-
-```PYTHONPATH=. python scripts/training/train_with_hydra.py```.
-
-Note that currently, in order for the Triton kernels to work, the xlstm root folder must be added to
-your `PYTHONPATH`.
+The principal entry point for hydra is the script `scripts/training/train_with_hydra.py`.
 
 The `main_train()` function in that file is decorated with:
 
@@ -40,7 +125,6 @@ For example, if that file looks like this:
 defaults:
   - config_schema
   - parallel: synthetic
-  - data: synthetic
   - model: mLSTM120M
   - _self_
 
@@ -54,17 +138,15 @@ device: cpu
 the following will happen:
 
 1. The first line reads `- config_schema`. This is related to the use of
-structured configs, which will be detailed elsewhere (TODO). As with all entries
-in the defaults list, Hydra will look for parameters in the file and append it
-to the compiled configuration.
+structured configs and tells Hydra which values and types are allowed to be set in
+this file.
+You can check `define_hydra_schemas.py` to see the definition for `config_schema`.
 
 2. `- parallel: synthetic` means that Hydra will now look in the `parallel` subfolder for the `synthetic.yaml`
  file and append all parameters in that file to the compiled list of parameters under the key `parallel`.
-3. `- data: synthetic` means that Hydra will now look in the `data` subfolder for the `synthetic.yaml`
- file and append all parameters in that file to the compiled list of parameters under the key `data`.
-4. `- model: mLSTM120M` means that Hydra will now look in the `model` subfolder for the `mLSTM120M.yaml`
+3. `- model: mLSTM120M` means that Hydra will now look in the `model` subfolder for the `mLSTM120M.yaml`
  file and append all parameters in that file to the compiled list of parameters under the key `model`.
-5. `_self_` means that all parameters in this file itself (that is, the `config.yaml`) will be inserted into the
+4. `_self_` means that all parameters in this file itself (that is, the `config.yaml`) will be inserted into the
 compiled config.
 
 Note that all values that come later in the defaults list **overwrite** potential values that have been in the
@@ -76,60 +158,67 @@ and executes
 All top level parameters are in `cfg`, as for example, `cfg.device` and the
 others are in their respective fields, for example, `cfg.parallel.data_axis_name`.
 
-This is where Hydra stops. Everything coming after in the `main_train` function is instantiated manually for now.
+**Remark**
+It is possible to overwrite every parameter from the command line. So you can, for example, execute
 
+```PYTHONPATH=. python scripts/training/train_with_hydra.py device=gpu model.num_heads=42```
 
-### Remarks
-- It is possible to overwrite every parameter from the command line. So you can, for example, execute
-```python scripts/training/train_with_hydra.py device=gpu model.num_heads=42```
 to substitute `cpu`
-from the `config.yaml` with `gpu` and to substitute 42 for whatever value for `num_heads` was given in `mLSTM120M.yaml` file. This is probably not the approach you want to use to start experiments though.
-
+from the `config.yaml` with `gpu` and to substitute 42 for whatever value for `num_heads` was given in `mLSTM120M.yaml` file. It is more convenient to use experiment files for overwriting
+parameters though.
 
 ### Using Experiment Files
 (see https://hydra.cc/docs/patterns/configuring_experiments/)
 
-A nicer since much more reproducible way to start experiments with Hydra is to use experiment files. In these files
-you can specify all parameters and config groups that you want to change. Let us take the `experiment/train_mLSTM7B_slimpajama6b.yaml` as an example. That file reads
+A more reproducible way to start experiments with Hydra is to use experiment files. In these files
+you can specify all parameters and config groups that you want to change. Let us take the `experiment/synthetic_experiment.yaml` as an example.
+The top of that file reads
 
 ```yaml
 # @package _global_
 defaults:
-  - override /parallel: mLSTM7B
-  - override /model: mLSTM7B
-  - override /data: slimpajama_6B_local_ds
-  - override /optimizer: adamw
+  - /data@data_train.ds1: synthetic
+  - override /parallel: synthetic
+  - override /model: mLSTMv1_165M
   - _self_
 
 # specify the deltas from the defaults:
-task_name: mLSTM7B_slimpajama6b_example_experiment
-batch_size_per_device: 8
-context_length: 2048
-num_epochs: 1000
-num_train_steps: 95_000
-lr: 5e-4
+task_name: slurm_tests
+batch_size_per_device: 2
+context_length: 128
+num_train_steps: 10
+lr: 1e-3
 
-trainer:
-  gradient_accumulate_steps: 1
+logger:
+  log_every_n_steps: 2
 ```
 
-To use this file, you execute the following:
+Hydra now checks the defaults list of the experiment file and replaces the respective fields from the general
+`config.yaml` with the new values given here.
+That is, no matter what was provided as `parallel` config in the `config.yaml`,
+we override that with the `synthetic` configuration instead.
 
-```PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTM7B_slimpajama6b.yaml ```
+Similarly, no matter what was supplied as model in the
+`config.yaml`, we overwrite that with the `mLSTMv1_165M`.
+
+
+In addition, you can
+overwrite any parameter with your own values. This goes for all parameters at
+every level of the config hierarchy.  In this example, the value in
+`cfg.logger.log_every_n_steps` is overwritten with 2.
+By using
+experiment files, it becomes easy to specify and reproduce experiments.
+
+To run this experiment, you execute
+
+```PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=synthetic_experiment```
 
 Note the + before experiment, that's not a typo!
-Hydra now checks the defaults list of the experiment file and replaces the respective fields from the general
-`config.yaml`. That is, instead of looking for the `synthetic.yaml` in the data subfolder it now looks for the
-`slimpajama_6B_local_ds.yaml` file and uses those paramters when compiling the configuration. In addition, you can
-overwrite any parameter with your own values. This goes for all parameters at every level of the config hierarchy.
-In this example, the value in `cfg.trainer.gradient_accumulation_steps`
- is overwritten with 1.
-By using experiment files, it becomes easy to specify and reproduce experiments.
 
 ### Type Checking of the Configurations
 
 One benefit of using the structured configs and dataclasses as basis for the configuration is that type checking
-becomes available. This happens when compiling the `cfg`. See also the structured configs section (TODO).
+becomes available. This happens when compiling the `cfg`.
 
 To test whether you have supplied correctly typed parameters in your experiment files, you can execute
 
@@ -140,7 +229,9 @@ working experiment file before starting a job on a cluster, for example.
 
 
 ## How to run experiments on a SLURM cluster
-To run your script on a SLURM cluster you can use the `submitit_launcher`, which is installed for Hydra. The
+To run your script on a SLURM cluster you can use the `submitit_launcher`, which should have been installed
+for Hydra if you have used our conda env.
+The
 default configuration is provided in `configs/hydra/launcher/slurm_launcher.yaml`:
 
 ```yaml
@@ -153,9 +244,9 @@ hydra:
     submitit_folder: ${hydra.sweep.dir}/.submitit/%j
     timeout_min: 60
     cpus_per_task: 28
-    gpus_per_node: 8
-    gres: gpu:8
-    tasks_per_node: 8
+    gpus_per_task: 1   # each GPU must have its separate task for jax
+    gres: gpu:${n_gpus}
+    tasks_per_node: ${n_gpus}
     mem_gb: ~
     nodes: 1
     name: ${hydra.job.name}
@@ -164,11 +255,13 @@ hydra:
     qos: null
     comment: testing_slurmit_launcher
     additional_parameters: {
-      "gpu-bind": "none",
+      "gpu-bind": "closest",
       "wait-all-nodes": "1",
-      "time": "2-00:00:00",
+      "time": "7-00:00:00",
       "exclusive": "",
     }
+    srun_args:
+      - "--kill-on-bad-exit=1"
     setup:
       - export NCCL_CROSS_NIC=0
       - export NCCL_SOCKET_NTHREADS=16
@@ -192,7 +285,14 @@ hydra:
       - export IB_RX_QUEUE_LEN=8192
       - export OMPI_MCA_coll=^hcoll
       - export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/nfs-gpu/xlstm/miniforge3/envs/python_3.11_jax_0.4.34_cuda_12.6/cuda-compat
+      - export TOKENIZERS_PARALLELISM=0
+      - export JAX_COMPILATION_CACHE_DIR=/nfs-gpu/xlstm/data/jax_compilation_cache
+
 ```
+
+Note that the path to the `cuda-compat` package and the
+`JAX_COMPILATION_CACHE_DIR` must be adjusted
+by you!
 
 Here, you can supply (or rather overwrite in an experment file!) the things you would normally put into a SLURM run
 script. To use the `submitit_launcher` you have to execute the following with the conda env
@@ -201,6 +301,20 @@ activated that you want to use for the experiment:
 ```PYTHONPATH=. python scripts/training/train_with_hydra.py --multirun hydra/launcher=slurm_launcher +experiment={YOUR_EXPERIMENT_FILE}```
 
 So the only thing you have to add is ```--multirun hydra/launcher=slurm_launcher``` (and to overwrite SLURM-specific parameters as the number of nodes, for example, in your experiment file).
+
+Note that you can also add this to your experiment file. See,
+for example, the experiment `synthetic_experiment_slurm.yaml`,
+where the lines
+
+```yaml
+  - override /hydra/launcher: slurm_launcher
+
+hydra:
+  mode: MULTIRUN
+```
+
+will make Hydra use the `submitit_launcher`
+
 
 
 ## How to Resume an Experiment?
