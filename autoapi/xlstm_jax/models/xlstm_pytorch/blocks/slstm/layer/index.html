@@ -1,115 +1,410 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../../../../../../">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer &mdash; xlstm-jax  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../../../../../../_static/graphviz.css?v=4ae1632d" />
 
+<html lang="en" data-content_root="../../../../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer &#8212; xlstm-jax  documentation</title>
   
-      <script src="../../../../../../../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../../../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../../../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../../../../../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../../../../../_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../../../../_static/custom.css?v=9df3ab08" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../../../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/xlstm_jax/models/xlstm_pytorch/blocks/slstm/layer/index';</script>
     <link rel="index" title="Index" href="../../../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../../../search.html" />
     <link rel="next" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.src" href="../src/index.html" />
-    <link rel="prev" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell" href="../cell/index.html" /> 
-</head>
+    <link rel="prev" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell" href="../cell/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-          
-          
-          <a href="../../../../../../../index.html" class="icon icon-home">
-            xlstm-jax
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../../../../_static/nxai_logo_light.svg" class="logo__image only-light" alt="xlstm-jax  documentation - Home"/>
+    <img src="../../../../../../../_static/nxai_logo_dark.svg" class="logo__image only-dark pst-js-only" alt="xlstm-jax  documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../dataset_preparation.html">Dataset Preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../example_training.html">Training large language models in xlstm-jax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../../../distributed_training.html">Distributed Training</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../../../../../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../../../../../index.html">xlstm_jax</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../../../../../index.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../../../../../common_types/index.html">xlstm_jax.common_types</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../configs/index.html">xlstm_jax.configs</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/index.html">xlstm_jax.dataset</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/index.html">xlstm_jax.distributed</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/index.html">xlstm_jax.kernels</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../main_train/index.html">xlstm_jax.main_train</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="../../../../index.html">xlstm_jax.models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../start_training/index.html">xlstm_jax.start_training</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/index.html">xlstm_jax.trainer</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../utils/index.html">xlstm_jax.utils</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../../../../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../../../../../index.html">xlstm_jax</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../dataset/index.html">xlstm_jax.dataset</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/batch/index.html">xlstm_jax.dataset.batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/configs/index.html">xlstm_jax.dataset.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/grain_batch_rampup/index.html">xlstm_jax.dataset.grain_batch_rampup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/grain_data_processing/index.html">xlstm_jax.dataset.grain_data_processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/grain_iterator/index.html">xlstm_jax.dataset.grain_iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/grain_transforms/index.html">xlstm_jax.dataset.grain_transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/hf_tokenizer/index.html">xlstm_jax.dataset.hf_tokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/input_pipeline_interface/index.html">xlstm_jax.dataset.input_pipeline_interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/lmeval_dataset/index.html">xlstm_jax.dataset.lmeval_dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/lmeval_pipeline/index.html">xlstm_jax.dataset.lmeval_pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/multihost_dataloading/index.html">xlstm_jax.dataset.multihost_dataloading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../dataset/synthetic_dataloading/index.html">xlstm_jax.dataset.synthetic_dataloading</a></li>
 </ul>
-</li>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../distributed/index.html">xlstm_jax.distributed</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/array_utils/index.html">xlstm_jax.distributed.array_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/data_parallel/index.html">xlstm_jax.distributed.data_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/mesh_utils/index.html">xlstm_jax.distributed.mesh_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/pipeline_parallel/index.html">xlstm_jax.distributed.pipeline_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/single_gpu/index.html">xlstm_jax.distributed.single_gpu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/tensor_parallel/index.html">xlstm_jax.distributed.tensor_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../distributed/xla_utils/index.html">xlstm_jax.distributed.xla_utils</a></li>
 </ul>
-</li>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../kernels/index.html">xlstm_jax.kernels</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/kernel_utils/index.html">xlstm_jax.kernels.kernel_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/mlstm_chunkwise/index.html">xlstm_jax.kernels.mlstm_chunkwise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/mlstm_recurrent/index.html">xlstm_jax.kernels.mlstm_recurrent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../kernels/stride_utils/index.html">xlstm_jax.kernels.stride_utils</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="../../../../index.html">xlstm_jax.models</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../../../configs/index.html">xlstm_jax.models.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../llama/index.html">xlstm_jax.models.llama</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../shared/index.html">xlstm_jax.models.shared</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../xlstm_clean/index.html">xlstm_jax.models.xlstm_clean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../xlstm_parallel/index.html">xlstm_jax.models.xlstm_parallel</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="../../../index.html">xlstm_jax.models.xlstm_pytorch</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../trainer/index.html">xlstm_jax.trainer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/base/index.html">xlstm_jax.trainer.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/callbacks/index.html">xlstm_jax.trainer.callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/data_module/index.html">xlstm_jax.trainer.data_module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/llm/index.html">xlstm_jax.trainer.llm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/logger/index.html">xlstm_jax.trainer.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/metrics/index.html">xlstm_jax.trainer.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../trainer/optimizer/index.html">xlstm_jax.trainer.optimizer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../utils/index.html">xlstm_jax.utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../utils/error_logging_utils/index.html">xlstm_jax.utils.error_logging_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../utils/model_param_handling/index.html">xlstm_jax.utils.model_param_handling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../../../utils/pytree_utils/index.html">xlstm_jax.utils.pytree_utils</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../../../../../index.html">xlstm-jax</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../../../../../index.html">API Reference</a></li>
-          <li class="breadcrumb-item"><a href="../../../../../index.html">xlstm_jax</a></li>
-          <li class="breadcrumb-item"><a href="../../../../index.html">xlstm_jax.models</a></li>
-          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax.models.xlstm_pytorch</a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.models.xlstm_pytorch.blocks</a></li>
-          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.models.xlstm_pytorch.blocks.slstm</a></li>
-      <li class="breadcrumb-item active">xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="../../../../../../../_sources/autoapi/xlstm_jax/models/xlstm_pytorch/blocks/slstm/layer/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../../../../../_sources/autoapi/xlstm_jax/models/xlstm_pytorch/blocks/slstm/layer/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.embedding_dim"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.embedding_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.num_heads"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.num_heads</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.conv1d_kernel_size"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.conv1d_kernel_size</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.group_norm_weight"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.group_norm_weight</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.dropout"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.dropout</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config_class"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.config_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.fgate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.fgate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.igate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.igate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.zgate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.zgate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.ogate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.ogate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.slstm_cell"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.slstm_cell</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.group_norm"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.group_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.dropout"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.dropout</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.reset_parameters"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.reset_parameters()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.forward"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="module-xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer">
-<span id="xlstm-jax-models-xlstm-pytorch-blocks-slstm-layer"></span><h1>xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer<a class="headerlink" href="#module-xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer" title="Link to this heading"></a></h1>
+<span id="xlstm-jax-models-xlstm-pytorch-blocks-slstm-layer"></span><h1>xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer<a class="headerlink" href="#module-xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer" title="Link to this heading">#</a></h1>
 <section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
-<table class="autosummary longtable docutils align-default">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">sLSTMLayerConfig</span></code></a></p></td>
 <td><p></p></td>
@@ -119,43 +414,44 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.</span></span><span class="sig-name descname"><span class="pre">sLSTMLayerConfig</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.</span></span><span class="sig-name descname"><span class="pre">sLSTMLayerConfig</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../cell/index.html#xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell.sLSTMCellConfig</span></code></a></p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.embedding_dim">
-<span class="sig-name descname"><span class="pre">embedding_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.embedding_dim" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">embedding_dim</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.embedding_dim" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.num_heads">
-<span class="sig-name descname"><span class="pre">num_heads</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.num_heads" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">num_heads</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.num_heads" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.conv1d_kernel_size">
-<span class="sig-name descname"><span class="pre">conv1d_kernel_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.conv1d_kernel_size" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">conv1d_kernel_size</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">4</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.conv1d_kernel_size" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.group_norm_weight">
-<span class="sig-name descname"><span class="pre">group_norm_weight</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.group_norm_weight" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">group_norm_weight</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.group_norm_weight" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.dropout">
-<span class="sig-name descname"><span class="pre">dropout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.dropout" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dropout</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><span class="pre">float</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.dropout" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 </dd></dl>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.</span></span><span class="sig-name descname"><span class="pre">sLSTMLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.</span></span><span class="sig-name descname"><span class="pre">sLSTMLayer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://pytorch.org/docs/stable/generated/torch.nn.Module.html#torch.nn.Module" title="(in PyTorch v2.5)"><code class="xref py py-obj docutils literal notranslate"><span class="pre">torch.nn.Module</span></code></a></p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -164,57 +460,57 @@
 </dl>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config_class">
-<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config_class" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">config_class</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config_class" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config">
-<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">config</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.fgate">
-<span class="sig-name descname"><span class="pre">fgate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.fgate" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">fgate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.fgate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.igate">
-<span class="sig-name descname"><span class="pre">igate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.igate" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">igate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.igate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.zgate">
-<span class="sig-name descname"><span class="pre">zgate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.zgate" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">zgate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.zgate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.ogate">
-<span class="sig-name descname"><span class="pre">ogate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.ogate" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">ogate</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.ogate" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.slstm_cell">
-<span class="sig-name descname"><span class="pre">slstm_cell</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.slstm_cell" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">slstm_cell</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.slstm_cell" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.group_norm">
-<span class="sig-name descname"><span class="pre">group_norm</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.group_norm" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">group_norm</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.group_norm" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.dropout">
-<span class="sig-name descname"><span class="pre">dropout</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.dropout" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dropout</span></span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.dropout" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.reset_parameters">
-<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.reset_parameters" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">reset_parameters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.reset_parameters" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.forward">
-<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_last_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.forward" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_last_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.forward" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -234,34 +530,129 @@
 </section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../cell/index.html" class="btn btn-neutral float-left" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../src/index.html" class="btn btn-neutral float-right" title="xlstm_jax.models.xlstm_pytorch.blocks.slstm.src" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+                </article>
+              
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2024, NXAI.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../cell/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">xlstm_jax.models.xlstm_pytorch.blocks.slstm.cell</p>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+    </a>
+    <a class="right-next"
+       href="../src/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">xlstm_jax.models.xlstm_pytorch.blocks.slstm.src</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-</body>
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.embedding_dim"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.embedding_dim</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.num_heads"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.num_heads</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.conv1d_kernel_size"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.conv1d_kernel_size</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.group_norm_weight"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.group_norm_weight</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayerConfig.dropout"><code class="docutils literal notranslate"><span class="pre">sLSTMLayerConfig.dropout</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config_class"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.config_class</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.config"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.fgate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.fgate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.igate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.igate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.zgate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.zgate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.ogate"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.ogate</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.slstm_cell"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.slstm_cell</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.group_norm"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.group_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.dropout"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.dropout</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.reset_parameters"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.reset_parameters()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.models.xlstm_pytorch.blocks.slstm.layer.sLSTMLayer.forward"><code class="docutils literal notranslate"><span class="pre">sLSTMLayer.forward()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By NXAI GmbH
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, NXAI GmbH.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>

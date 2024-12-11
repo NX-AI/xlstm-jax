@@ -1,113 +1,475 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="../../../../../">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xlstm_jax.trainer.llm.trainer &mdash; xlstm-jax  documentation</title>
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
 
+<html lang="en" data-content_root="../../../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>xlstm_jax.trainer.llm.trainer &#8212; xlstm-jax  documentation</title>
   
-      <script src="../../../../../_static/jquery.js?v=5d32c60e"></script>
-      <script src="../../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="../../../../../_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
-      <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../../../../../_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="../../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="../../../../../_static/custom.css?v=9df3ab08" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="../../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="../../../../../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../../../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'autoapi/xlstm_jax/trainer/llm/trainer/index';</script>
     <link rel="index" title="Index" href="../../../../../genindex.html" />
     <link rel="search" title="Search" href="../../../../../search.html" />
     <link rel="next" title="xlstm_jax.trainer.logger" href="../../logger/index.html" />
-    <link rel="prev" title="xlstm_jax.trainer.llm.sampling" href="../sampling/index.html" /> 
-</head>
+    <link rel="prev" title="xlstm_jax.trainer.llm.sampling" href="../sampling/index.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-          
-          
-          <a href="../../../../../index.html" class="icon icon-home">
-            xlstm-jax
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../../../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="../../../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul class="current">
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../../../_static/nxai_logo_light.svg" class="logo__image only-light" alt="xlstm-jax  documentation - Home"/>
+    <img src="../../../../../_static/nxai_logo_dark.svg" class="logo__image only-dark pst-js-only" alt="xlstm-jax  documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../dataset_preparation.html">Dataset Preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../example_training.html">Training large language models in xlstm-jax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../../../distributed_training.html">Distributed Training</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../../../../index.html">API Reference</a><ul class="current">
-<li class="toctree-l2 current"><a class="reference internal" href="../../../index.html">xlstm_jax</a><ul class="current">
-<li class="toctree-l3 current"><a class="reference internal" href="../../../index.html#submodules">Submodules</a><ul class="current">
-<li class="toctree-l4"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
-<li class="toctree-l4 current"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../../../index.html">API Reference</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="../../../index.html">xlstm_jax</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../../../common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../dataset/index.html">xlstm_jax.dataset</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/batch/index.html">xlstm_jax.dataset.batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/configs/index.html">xlstm_jax.dataset.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/grain_batch_rampup/index.html">xlstm_jax.dataset.grain_batch_rampup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/grain_data_processing/index.html">xlstm_jax.dataset.grain_data_processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/grain_iterator/index.html">xlstm_jax.dataset.grain_iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/grain_transforms/index.html">xlstm_jax.dataset.grain_transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/hf_tokenizer/index.html">xlstm_jax.dataset.hf_tokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/input_pipeline_interface/index.html">xlstm_jax.dataset.input_pipeline_interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/lmeval_dataset/index.html">xlstm_jax.dataset.lmeval_dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/lmeval_pipeline/index.html">xlstm_jax.dataset.lmeval_pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/multihost_dataloading/index.html">xlstm_jax.dataset.multihost_dataloading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../dataset/synthetic_dataloading/index.html">xlstm_jax.dataset.synthetic_dataloading</a></li>
 </ul>
-</li>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../distributed/index.html">xlstm_jax.distributed</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/array_utils/index.html">xlstm_jax.distributed.array_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/data_parallel/index.html">xlstm_jax.distributed.data_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/mesh_utils/index.html">xlstm_jax.distributed.mesh_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/pipeline_parallel/index.html">xlstm_jax.distributed.pipeline_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/single_gpu/index.html">xlstm_jax.distributed.single_gpu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/tensor_parallel/index.html">xlstm_jax.distributed.tensor_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../distributed/xla_utils/index.html">xlstm_jax.distributed.xla_utils</a></li>
 </ul>
-</li>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../kernels/index.html">xlstm_jax.kernels</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/kernel_utils/index.html">xlstm_jax.kernels.kernel_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/mlstm_chunkwise/index.html">xlstm_jax.kernels.mlstm_chunkwise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/mlstm_recurrent/index.html">xlstm_jax.kernels.mlstm_recurrent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../kernels/stride_utils/index.html">xlstm_jax.kernels.stride_utils</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../models/index.html">xlstm_jax.models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/configs/index.html">xlstm_jax.models.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/llama/index.html">xlstm_jax.models.llama</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/shared/index.html">xlstm_jax.models.shared</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/xlstm_clean/index.html">xlstm_jax.models.xlstm_clean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/xlstm_parallel/index.html">xlstm_jax.models.xlstm_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../models/xlstm_pytorch/index.html">xlstm_jax.models.xlstm_pytorch</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../../train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l3 current active has-children"><a class="reference internal" href="../../index.html">xlstm_jax.trainer</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="../../base/index.html">xlstm_jax.trainer.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../callbacks/index.html">xlstm_jax.trainer.callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../data_module/index.html">xlstm_jax.trainer.data_module</a></li>
+<li class="toctree-l4 current active"><a class="reference internal" href="../index.html">xlstm_jax.trainer.llm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../logger/index.html">xlstm_jax.trainer.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../metrics/index.html">xlstm_jax.trainer.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../optimizer/index.html">xlstm_jax.trainer.optimizer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../../../utils/index.html">xlstm_jax.utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/error_logging_utils/index.html">xlstm_jax.utils.error_logging_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/model_param_handling/index.html">xlstm_jax.utils.model_param_handling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../../../utils/pytree_utils/index.html">xlstm_jax.utils.pytree_utils</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
 <li class="toctree-l2"><a class="reference internal" href="../../../../lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
 </ul>
-</li>
+</details></li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../../../index.html">xlstm-jax</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../../../../index.html">API Reference</a></li>
-          <li class="breadcrumb-item"><a href="../../../index.html">xlstm_jax</a></li>
-          <li class="breadcrumb-item"><a href="../../index.html">xlstm_jax.trainer</a></li>
-          <li class="breadcrumb-item"><a href="../index.html">xlstm_jax.trainer.llm</a></li>
-      <li class="breadcrumb-item active">xlstm_jax.trainer.llm.trainer</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="../../../../../_sources/autoapi/xlstm_jax/trainer/llm/trainer/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../../../_sources/autoapi/xlstm_jax/trainer/llm/trainer/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>xlstm_jax.trainer.llm.trainer</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_logit_stats"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_logit_stats</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_logit_stats</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.seed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.debug"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.debug</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.donate_train_state"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.donate_train_state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.enable_progress_bar"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.enable_progress_bar</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_steps"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.gradient_accumulate_steps</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_scan"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.gradient_accumulate_scan</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_epoch"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_val_every_n_epoch</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_steps"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_val_every_n_steps</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_for_nan"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_for_nan</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_grad_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm_per_param"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_grad_norm_per_param</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_param_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm_per_param"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_param_norm_per_param</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_intermediates"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_intermediates</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.default_train_log_modes"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.default_train_log_modes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.intermediates_log_modes"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.intermediates_log_modes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.logger"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.logger</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.callbacks</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed_eval"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.seed_eval</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.get"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.get()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.to_dict"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.to_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.from_dict"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.from_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer"><code class="docutils literal notranslate"><span class="pre">LLMTrainer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.loss_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.loss_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_metric_postprocess_fn"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_metric_postprocess_fn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_generate_fn"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_generate_fn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_cache_shape_dtype_struct"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_cache_shape_dtype_struct()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_recurrent_evaluation_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_recurrent_evaluation_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.trainer_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.trainer_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.model_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.model_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.optimizer_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.optimizer_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.exmp_batch"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.exmp_batch</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._train_metric_shapes"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._train_metric_shapes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_metric_shapes"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._eval_metric_shapes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.mesh"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.mesh</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_partition_specs"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.batch_partition_specs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.state"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.callbacks</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.first_step"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.first_step</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.global_step"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.global_step</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.dataset"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.dataset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_to_input"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.batch_to_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_mesh"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_mesh()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.build_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.build_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_logger"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_logger()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_callbacks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_optimizer"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_optimizer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_train_metrics"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_train_metrics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_eval_metrics"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_eval_metrics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.set_dataset"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.set_dataset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_model_rng"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_model_rng()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.run_model_init"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.run_model_init()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tabulate_params"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.tabulate_params()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_num_params"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_num_params()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_jitted_functions"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_jitted_functions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_training_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_training_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_evaluation_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_evaluation_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.train_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.train_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_model_in_train_loop"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._eval_model_in_train_loop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.test_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_eval_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.test_eval_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.eval_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.eval_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._run_model_eval"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._run_model_eval()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tracker"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.tracker()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.log_training_info"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.log_training_info()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_validation_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_validation_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_test_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_test_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_data_loaders"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_data_loaders()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.restore_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_data_loaders"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.restore_data_loaders()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_pretrained_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_pretrained_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_from_checkpoint"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_from_checkpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="module-xlstm_jax.trainer.llm.trainer">
-<span id="xlstm-jax-trainer-llm-trainer"></span><h1>xlstm_jax.trainer.llm.trainer<a class="headerlink" href="#module-xlstm_jax.trainer.llm.trainer" title="Link to this heading"></a></h1>
+<span id="xlstm-jax-trainer-llm-trainer"></span><h1>xlstm_jax.trainer.llm.trainer<a class="headerlink" href="#module-xlstm_jax.trainer.llm.trainer" title="Link to this heading">#</a></h1>
 <section id="classes">
-<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
-<table class="autosummary longtable docutils align-default">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig" title="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LLMTrainerConfig</span></code></a></p></td>
 <td><p>Configuration for the LLM trainer.</p></td>
@@ -117,43 +479,44 @@
 </tr>
 </tbody>
 </table>
+</div>
 </section>
 <section id="module-contents">
-<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading"></a></h2>
+<h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.llm.trainer.</span></span><span class="sig-name descname"><span class="pre">LLMTrainerConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.llm.trainer.</span></span><span class="sig-name descname"><span class="pre">LLMTrainerConfig</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../../base/trainer/index.html#xlstm_jax.trainer.base.trainer.TrainerConfig" title="xlstm_jax.trainer.base.trainer.TrainerConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.trainer.base.trainer.TrainerConfig</span></code></a></p>
 <p>Configuration for the LLM trainer.</p>
 <p>See TrainerConfig for inherited attributes.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_logit_stats">
-<span class="sig-name descname"><span class="pre">log_logit_stats</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_logit_stats" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_logit_stats</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_logit_stats" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log statistics of the logits during training. Note that for large vocabularies, this
 can be expensive.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="id0">
-<span class="sig-name descname"><span class="pre">log_logit_stats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_logit_stats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#id0" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed">
-<span class="sig-name descname"><span class="pre">seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">seed</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed" title="Link to this definition">#</a></dt>
 <dd><p>Random seed for reproducibility. To be used in the model init and training step.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.debug">
-<span class="sig-name descname"><span class="pre">debug</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.debug" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">debug</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.debug" title="Link to this definition">#</a></dt>
 <dd><p>Whether to run in debug mode. This disables jitting of the training and evaluation functions, which will slow
 down the training significantly but makes debugging easier.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.donate_train_state">
-<span class="sig-name descname"><span class="pre">donate_train_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.donate_train_state" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">donate_train_state</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.donate_train_state" title="Link to this definition">#</a></dt>
 <dd><p>Whether to donate the train state in the training step. This can reduce memory usage as the parameters and
 optimizer states are in-place updated in the training step. However, this prevents using the previous train state
 after calling the training step (not used in Trainer, but keep in mind for custom training loops and callbacks).</p>
@@ -161,72 +524,72 @@ after calling the training step (not used in Trainer, but keep in mind for custo
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.enable_progress_bar">
-<span class="sig-name descname"><span class="pre">enable_progress_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.enable_progress_bar" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">enable_progress_bar</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.enable_progress_bar" title="Link to this definition">#</a></dt>
 <dd><p>Whether to enable the progress bar. For multiprocess training, only the main process will show the progress bar.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_steps">
-<span class="sig-name descname"><span class="pre">gradient_accumulate_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_steps" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">gradient_accumulate_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_steps" title="Link to this definition">#</a></dt>
 <dd><p>Number of steps to accumulate gradients before updating the parameters.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_scan">
-<span class="sig-name descname"><span class="pre">gradient_accumulate_scan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_scan" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">gradient_accumulate_scan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_scan" title="Link to this definition">#</a></dt>
 <dd><p>Whether to use scan for gradient accumulation. This can be more memory efficient and significantly faster to
 compile for large models, but can be slighlty slower due to memory slicing.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_epoch">
-<span class="sig-name descname"><span class="pre">check_val_every_n_epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_epoch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_val_every_n_epoch</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_epoch" title="Link to this definition">#</a></dt>
 <dd><p>Check validation every N training epochs. If -1, no validation is performed after an epoch. Note that this is
 not mutually exclusive with check_val_every_n_steps, and both can be used.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_steps">
-<span class="sig-name descname"><span class="pre">check_val_every_n_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_steps" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_val_every_n_steps</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">-1</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_steps" title="Link to this definition">#</a></dt>
 <dd><p>Check validation every N training steps. If -1, no validation is performed on a per-step basis. Note that this
 is not mutually exclusive with check_val_every_n_epoch, and both can be used.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_for_nan">
-<span class="sig-name descname"><span class="pre">check_for_nan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_for_nan" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">check_for_nan</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_for_nan" title="Link to this definition">#</a></dt>
 <dd><p>Whether to check for NaN values in the loss during training. If NaNs are found, training will be stopped.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm">
-<span class="sig-name descname"><span class="pre">log_grad_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_grad_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log the gradient norm.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm_per_param">
-<span class="sig-name descname"><span class="pre">log_grad_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm_per_param" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_grad_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm_per_param" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log the gradient norm per parameter. If the model has many parameters, this can lead to a large log
 file.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm">
-<span class="sig-name descname"><span class="pre">log_param_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_param_norm</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log the parameter norm.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm_per_param">
-<span class="sig-name descname"><span class="pre">log_param_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm_per_param" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_param_norm_per_param</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm_per_param" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log the parameter norm per parameter. If the model has many parameters, this can lead to a large log
 file.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_intermediates">
-<span class="sig-name descname"><span class="pre">log_intermediates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_intermediates" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_intermediates</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><span class="pre">bool</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_intermediates" title="Link to this definition">#</a></dt>
 <dd><p>Whether to log intermediate values during training. This is useful for debugging, but can lead to a large log
 file and a bit of overhead during training, if intermediates are complex to compute. Intermediates can be recorded
 by using the <code class="docutils literal notranslate"><span class="pre">self.sow(&quot;intermediates&quot;,</span> <span class="pre">&quot;KEY&quot;,</span> <span class="pre">VALUE)</span></code> method in the model. The intermediate values are
@@ -235,7 +598,7 @@ automatically registered and logged. Note that the values should be scalars.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.default_train_log_modes">
-<span class="sig-name descname"><span class="pre">default_train_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.default_train_log_modes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">default_train_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.default_train_log_modes" title="Link to this definition">#</a></dt>
 <dd><p>Default logging modes for training metrics. Can be <cite>mean</cite>, <cite>mean_nopostfix</cite>, <cite>single</cite>, <cite>max</cite>, or <cite>std</cite>. See
 metrics for more information. Each selected mode will be logged with the corresponding postfix. During validation,
 we only log the <cite>mean</cite> of the metrics.</p>
@@ -243,32 +606,32 @@ we only log the <cite>mean</cite> of the metrics.</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.intermediates_log_modes">
-<span class="sig-name descname"><span class="pre">intermediates_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.intermediates_log_modes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">intermediates_log_modes</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">['mean']</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.intermediates_log_modes" title="Link to this definition">#</a></dt>
 <dd><p>Logging modes for intermediate values. See <cite>default_train_log_modes</cite> for more information.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.logger">
-<span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xlstm_jax.trainer.logger.LoggerConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.logger" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">logger</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">xlstm_jax.trainer.logger.LoggerConfig</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.logger" title="Link to this definition">#</a></dt>
 <dd><p>Configuration for the logger.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.callbacks">
-<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">xlstm_jax.trainer.callbacks.CallbackConfig</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.callbacks" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><span class="pre">xlstm_jax.trainer.callbacks.CallbackConfig</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">[]</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.callbacks" title="Link to this definition">#</a></dt>
 <dd><p>List of callbacks to apply.</p>
 </dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed_eval">
-<span class="sig-name descname"><span class="pre">seed_eval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed_eval" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">seed_eval</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed_eval" title="Link to this definition">#</a></dt>
 <dd><p>Random seed for evaluation, if the model uses randomness during evaluation. This is useful to ensure
 reproducibility of evaluation metrics.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.get">
-<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.get" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">default</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.get" title="Link to this definition">#</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>)</p>
@@ -278,14 +641,14 @@ reproducibility of evaluation metrics.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.to_dict">
-<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.to_dict" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">to_dict</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.to_dict" title="Link to this definition">#</a></dt>
 <dd><p>Converts the config to a dictionary.</p>
 <p>Helpful for saving to disk or logging.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.from_dict">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_classname_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_extensive_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">none_to_zero_for_ints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.from_dict" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict_classname_parsing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_extensive_attributes</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">none_to_zero_for_ints</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.from_dict" title="Link to this definition">#</a></dt>
 <dd><p>Utility for parsing dictionaries back into a nested dataclass structure, including arbitrary classes and types.</p>
 <p>Currently, this is tailored towards the current logging system with the “hardly” invertible to_dict.</p>
 <dl class="field-list simple">
@@ -314,7 +677,7 @@ Can be any other kind of data.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.llm.trainer.</span></span><span class="sig-name descname"><span class="pre">LLMTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">xlstm_jax.trainer.llm.trainer.</span></span><span class="sig-name descname"><span class="pre">LLMTrainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">trainer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference internal" href="../../base/trainer/index.html#xlstm_jax.trainer.base.trainer.TrainerModule" title="xlstm_jax.trainer.base.trainer.TrainerModule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">xlstm_jax.trainer.base.trainer.TrainerModule</span></code></a></p>
 <p>Trainer for Autoregressive Language Models.</p>
 <dl class="field-list simple">
@@ -330,7 +693,7 @@ Can be any other kind of data.</p></li>
 </dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.loss_function">
-<span class="sig-name descname"><span class="pre">loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutable_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.loss_function" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">loss_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_fn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mutable_variables</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.loss_function" title="Link to this definition">#</a></dt>
 <dd><p>Calculate the loss function for the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -355,7 +718,7 @@ mutable. Defaults to None.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.get_metric_postprocess_fn">
-<span class="sig-name descname"><span class="pre">get_metric_postprocess_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_metric_postprocess_fn" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_metric_postprocess_fn</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_metric_postprocess_fn" title="Link to this definition">#</a></dt>
 <dd><p>Get function to post-process metrics with on host.</p>
 <p>Will be passed to logger. Adds perplexity to the metrics.</p>
 <dl class="field-list simple">
@@ -370,7 +733,7 @@ mutable. Defaults to None.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.get_generate_fn">
-<span class="sig-name descname"><span class="pre">get_generate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token_sample_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">temperature_sampling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_params_once</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_generate_fn" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_generate_fn</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2048</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eod_token_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">token_sample_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">temperature_sampling</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gather_params_once</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">param_dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_generate_fn" title="Link to this definition">#</a></dt>
 <dd><p>Create a function to generate text from the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -425,7 +788,7 @@ cache. It returns the generated tokens and a mask for valid tokens, including th
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.get_cache_shape_dtype_struct">
-<span class="sig-name descname"><span class="pre">get_cache_shape_dtype_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_cache_shape_dtype_struct" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_cache_shape_dtype_struct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_cache_shape_dtype_struct" title="Link to this definition">#</a></dt>
 <dd><p>Get the shape, dtype, and structure of the cache.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -443,7 +806,7 @@ example batch from the trainer is used.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.create_recurrent_evaluation_step_function">
-<span class="sig-name descname"><span class="pre">create_recurrent_evaluation_step_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exmp_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_init_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_recurrent_evaluation_step_function" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_recurrent_evaluation_step_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exmp_batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cache_init_fn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_recurrent_evaluation_step_function" title="Link to this definition">#</a></dt>
 <dd><p>Create and return a function for the evaluation step.</p>
 <p>Compared to the <cite>create_evaluation_step_function</cite>, this evaluation supports much longer sequences by chunking
 the input and running the model recurrently over the chunks. This is useful for evaluation on long documents.
@@ -474,72 +837,72 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.trainer_config">
-<span class="sig-name descname"><span class="pre">trainer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.trainer_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">trainer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.trainer_config" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.model_config">
-<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.model_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">model_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.model_config" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.optimizer_config">
-<span class="sig-name descname"><span class="pre">optimizer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.optimizer_config" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">optimizer_config</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.optimizer_config" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.exmp_batch">
-<span class="sig-name descname"><span class="pre">exmp_batch</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.exmp_batch" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">exmp_batch</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.exmp_batch" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer._train_metric_shapes">
-<span class="sig-name descname"><span class="pre">_train_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._train_metric_shapes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_train_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._train_metric_shapes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_metric_shapes">
-<span class="sig-name descname"><span class="pre">_eval_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_metric_shapes" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_eval_metric_shapes</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_metric_shapes" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.mesh">
-<span class="sig-name descname"><span class="pre">mesh</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.mesh" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">mesh</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.mesh" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_partition_specs">
-<span class="sig-name descname"><span class="pre">batch_partition_specs</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_partition_specs" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">batch_partition_specs</span></span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_partition_specs" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.state">
-<span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.state" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">state</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.state" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.callbacks">
-<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.callbacks" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">callbacks</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.callbacks" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.first_step">
-<span class="sig-name descname"><span class="pre">first_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.first_step" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">first_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">True</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.first_step" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.global_step">
-<span class="sig-name descname"><span class="pre">global_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.global_step" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">global_step</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.global_step" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.dataset">
-<span class="sig-name descname"><span class="pre">dataset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.dataset" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">dataset</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">None</span></em><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.dataset" title="Link to this definition">#</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_to_input">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_to_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_to_input" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">batch_to_input</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_to_input" title="Link to this definition">#</a></dt>
 <dd><p>Convert a batch to the input format expected by the model.</p>
 <p>Needs to be implemented by the subclass if <cite>batch.inputs</cite> is not sufficient.</p>
 <dl class="field-list simple">
@@ -557,7 +920,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_mesh">
-<span class="sig-name descname"><span class="pre">init_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_mesh" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mesh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_mesh" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the mesh for parallel training if no mesh is supplied.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -571,7 +934,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.build_model">
-<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.build_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">build_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.build_model" title="Link to this definition">#</a></dt>
 <dd><p>Create the model class from the model_config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -582,7 +945,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_logger">
-<span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_logger" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_logger</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">logger_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_logger" title="Link to this definition">#</a></dt>
 <dd><p>Initialize a logger and creates a logging directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -593,7 +956,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_callbacks">
-<span class="sig-name descname"><span class="pre">init_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_configs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_callbacks" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_callbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">callback_configs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_callbacks" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the callbacks defined in the trainer config.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -604,7 +967,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_optimizer">
-<span class="sig-name descname"><span class="pre">init_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_optimizer" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_optimizer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">optimizer_config</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_optimizer" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the optimizer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -615,7 +978,7 @@ The function should take the shape dtype struct of the cache as input and return
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_model">
-<span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_model" title="Link to this definition">#</a></dt>
 <dd><p>Create an initial training state with newly generated network parameters.</p>
 <p>This function is parallelized over the mesh to initialize the per-device parameters. It also initializes the
 optimizer parameters. As a result, it sets the training state of the trainer with the initialized parameters.</p>
@@ -628,7 +991,7 @@ optimizer parameters. As a result, it sets the training state of the trainer wit
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_train_metrics">
-<span class="sig-name descname"><span class="pre">init_train_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_train_metrics" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_train_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_train_metrics" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the training metrics with zeros.</p>
 <p>We infer the training metric shape from the train_step function. This is done to prevent a double-compilation of
 the train_step function, where the first step has to be done with metrics None, and the next one with the
@@ -648,7 +1011,7 @@ metrics shape.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.init_eval_metrics">
-<span class="sig-name descname"><span class="pre">init_eval_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_eval_metrics" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">init_eval_metrics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">batch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_eval_metrics" title="Link to this definition">#</a></dt>
 <dd><p>Initialize the evaluation metrics with zeros.</p>
 <p>See init_train_metrics for more details.</p>
 <dl class="field-list simple">
@@ -666,7 +1029,7 @@ metrics shape.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.set_dataset">
-<span class="sig-name descname"><span class="pre">set_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.set_dataset" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">set_dataset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataset</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.set_dataset" title="Link to this definition">#</a></dt>
 <dd><p>Set the dataset for the trainer and the callbacks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -677,7 +1040,7 @@ metrics shape.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.get_model_rng">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_model_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_model_rng" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_model_rng</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_model_rng" title="Link to this definition">#</a></dt>
 <dd><p>Return a dictionary of PRNGKey for init and tabulate.</p>
 <p>By default, adds a key for the parameters and one for dropout. If more keys are needed, this function should be
 overwritten.</p>
@@ -696,7 +1059,7 @@ overwritten.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.run_model_init">
-<span class="sig-name descname"><span class="pre">run_model_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.run_model_init" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">run_model_init</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_rng</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.run_model_init" title="Link to this definition">#</a></dt>
 <dd><p>The model initialization call.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -716,7 +1079,7 @@ overwritten.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.tabulate_params">
-<span class="sig-name descname"><span class="pre">tabulate_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tabulate_params" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">tabulate_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tabulate_params" title="Link to this definition">#</a></dt>
 <dd><p>Return a string summary of the parameters represented as table.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -730,7 +1093,7 @@ overwritten.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.get_num_params">
-<span class="sig-name descname"><span class="pre">get_num_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_num_params" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_num_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_num_params" title="Link to this definition">#</a></dt>
 <dd><p>Return the number of parameters in the model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
@@ -744,14 +1107,14 @@ overwritten.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.create_jitted_functions">
-<span class="sig-name descname"><span class="pre">create_jitted_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_jitted_functions" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_jitted_functions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_jitted_functions" title="Link to this definition">#</a></dt>
 <dd><p>Create jitted versions of the training and evaluation functions.</p>
 <p>If self.trainer_config.debug is True, not jitting is applied.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.create_training_step_function">
-<span class="sig-name descname"><span class="pre">create_training_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_training_step_function" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_training_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_training_step_function" title="Link to this definition">#</a></dt>
 <dd><p>Create and return a function for the training step.</p>
 <p>The function takes as input the training state and a batch from the train loader. The function is expected to
 return a dictionary of logging metrics, and a new train state.</p>
@@ -764,7 +1127,7 @@ return a dictionary of logging metrics, and a new train state.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.create_evaluation_step_function">
-<span class="sig-name descname"><span class="pre">create_evaluation_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_evaluation_step_function" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">create_evaluation_step_function</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_evaluation_step_function" title="Link to this definition">#</a></dt>
 <dd><p>Create and return a function for the evaluation step.</p>
 <p>The function takes as input the training state and a batch from the val/test loader. The function is expected to
 return a dictionary of logging metrics, and a new train state.</p>
@@ -777,7 +1140,7 @@ return a dictionary of logging metrics, and a new train state.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.train_model">
-<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.train_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">train_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.train_model" title="Link to this definition">#</a></dt>
 <dd><p>Start a training loop for the given number of epochs.</p>
 <p>Inside the training loop, we use an epoch index and a global step index. Both indices are starting to count
 at 1 (i.e. first epoch is “epoch 1”, not “epoch 0”).</p>
@@ -809,7 +1172,7 @@ best model on the validation set.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_model_in_train_loop">
-<span class="sig-name descname"><span class="pre">_eval_model_in_train_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_model_in_train_loop" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_eval_model_in_train_loop</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_model_in_train_loop" title="Link to this definition">#</a></dt>
 <dd><p>Evaluate the model on the validation set during the training loop.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -830,7 +1193,7 @@ datasets in the dictionary, and the key of the dataset is used as a prefix for t
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.test_model">
-<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">test_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_callbacks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_model" title="Link to this definition">#</a></dt>
 <dd><p>Tests the model on the given test set.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -852,7 +1215,7 @@ in the dictionary, and the key of the dataset is used as a prefix for the metric
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.test_eval_function">
-<span class="sig-name descname"><span class="pre">test_eval_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_eval_function" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">test_eval_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_eval_function" title="Link to this definition">#</a></dt>
 <dd><p>Test the evaluation function on a single batch.</p>
 <p>This is useful to check if the functions have the correct signature and return the correct values. This prevents
 annoying errors that occur at the first evaluation step.</p>
@@ -872,7 +1235,7 @@ time is logged during the very first training step.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.eval_model">
-<span class="sig-name descname"><span class="pre">eval_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.eval_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">eval_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.eval_model" title="Link to this definition">#</a></dt>
 <dd><p>Evaluate the model on a dataset.</p>
 <p>If multiple datasets are given, the evaluation is performed on all datasets and the metrics are prefixed with
 the dataset key (i.e. <cite>DATAKEY_METRICKEY</cite>). The evaluation metrics are logged and returned as host metrics.</p>
@@ -896,7 +1259,7 @@ all datasets in the dictionary, and the key of the dataset is used as a prefix f
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer._run_model_eval">
-<span class="sig-name descname"><span class="pre">_run_model_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._run_model_eval" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">_run_model_eval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._run_model_eval" title="Link to this definition">#</a></dt>
 <dd><p>Evaluate the model on a single dataset.</p>
 <p>In contrast to eval_model, this function does not log the metrics and returns the on-device metrics. It also
 does not support evaluation on multiple datasets. For this, use eval_model.</p>
@@ -919,7 +1282,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.tracker">
-<span class="sig-name descname"><span class="pre">tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tracker" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">tracker</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterator</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tracker" title="Link to this definition">#</a></dt>
 <dd><p>Wrap an iterator in a progress bar tracker (tqdm) if the progress bar is enabled.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -939,7 +1302,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.log_training_info">
-<span class="sig-name descname"><span class="pre">log_training_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.log_training_info" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">log_training_info</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_epochs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_train_steps</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">steps_per_epoch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.log_training_info" title="Link to this definition">#</a></dt>
 <dd><p>Log the general training information.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -957,21 +1320,21 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_start">
-<span class="sig-name descname"><span class="pre">on_training_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_start" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_training_start</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_start" title="Link to this definition">#</a></dt>
 <dd><p>Method called before training is started.</p>
 <p>Can be used for additional initialization operations etc.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_end">
-<span class="sig-name descname"><span class="pre">on_training_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_end" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_training_end</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_end" title="Link to this definition">#</a></dt>
 <dd><p>Method called after training has finished.</p>
 <p>Can be used for additional logging or similar.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_start">
-<span class="sig-name descname"><span class="pre">on_training_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_start" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_training_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_start" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the start of each training epoch. Can be used for additional logging or similar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -982,7 +1345,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_end">
-<span class="sig-name descname"><span class="pre">on_training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_end" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_training_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_end" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the end of each training epoch. Can be used for additional logging or similar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -996,7 +1359,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_start">
-<span class="sig-name descname"><span class="pre">on_validation_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_start" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_validation_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_start" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the start of each validation epoch. Can be used for additional logging or similar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1010,7 +1373,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_end">
-<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_end" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_validation_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">eval_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_end" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the end of each validation epoch. Can be used for additional logging and evaluation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1025,7 +1388,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_start">
-<span class="sig-name descname"><span class="pre">on_test_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_start" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_test_epoch_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_start" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the start of each test epoch. Can be used for additional logging or similar.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1036,7 +1399,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_end">
-<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_end" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">on_test_epoch_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">test_metrics</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epoch_idx</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_end" title="Link to this definition">#</a></dt>
 <dd><p>Method called at the end of each test epoch. Can be used for additional logging and evaluation.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1050,7 +1413,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.load_model">
-<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_if_not_found</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_if_not_found</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_model" title="Link to this definition">#</a></dt>
 <dd><p>Load model parameters and batch statistics from the logging directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1064,7 +1427,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.load_data_loaders">
-<span class="sig-name descname"><span class="pre">load_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_data_loaders" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_data_loaders" title="Link to this definition">#</a></dt>
 <dd><p>Load states of the data loaders from the logging directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1080,7 +1443,7 @@ does not support evaluation on multiple datasets. For this, use eval_model.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_model">
-<span class="sig-name descname"><span class="pre">restore_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">restore_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_model" title="Link to this definition">#</a></dt>
 <dd><p>Restore the state of the trainer from a state dictionary.
 Only if the current trainer state has a tx and opt_state attribute, update these.
 Re-use the class of the current trainer state to allow such a pruned one.</p>
@@ -1094,7 +1457,7 @@ Optional keys that overwrite the trainer state are “step”, “opt_state”, 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_data_loaders">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">restore_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_data_loaders" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">restore_data_loaders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state_dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_data_loaders" title="Link to this definition">#</a></dt>
 <dd><p>Restore the state of the data loaders from a state dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1111,7 +1474,7 @@ the data loader states.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.load_pretrained_model">
-<span class="sig-name descname"><span class="pre">load_pretrained_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_params_before_loading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_pretrained_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">load_pretrained_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">step_idx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_best</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load_optimizer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">train_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">val_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_loader</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delete_params_before_loading</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_pretrained_model" title="Link to this definition">#</a></dt>
 <dd><p>Load a pretrained model from a checkpoint directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1135,7 +1498,7 @@ model. Saves memory on the device, but original model parameters cannot be used 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="xlstm_jax.trainer.llm.trainer.LLMTrainer.load_from_checkpoint">
-<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_from_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_from_checkpoint" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">load_from_checkpoint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">checkpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exmp_input</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">batch_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_from_checkpoint" title="Link to this definition">#</a></dt>
 <dd><p>Create a Trainer object with same hyperparameters and loaded model from a checkpoint directory.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1160,34 +1523,194 @@ model. Saves memory on the device, but original model parameters cannot be used 
 </section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../sampling/index.html" class="btn btn-neutral float-left" title="xlstm_jax.trainer.llm.sampling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="../../logger/index.html" class="btn btn-neutral float-right" title="xlstm_jax.trainer.logger" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+                </article>
+              
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2024, NXAI.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="../sampling/index.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">xlstm_jax.trainer.llm.sampling</p>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+    </a>
+    <a class="right-next"
+       href="../../logger/index.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">xlstm_jax.trainer.logger</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-</body>
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#classes">Classes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-contents">Module Contents</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_logit_stats"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_logit_stats</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#id0"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_logit_stats</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.seed</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.debug"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.debug</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.donate_train_state"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.donate_train_state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.enable_progress_bar"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.enable_progress_bar</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_steps"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.gradient_accumulate_steps</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.gradient_accumulate_scan"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.gradient_accumulate_scan</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_epoch"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_val_every_n_epoch</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_val_every_n_steps"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_val_every_n_steps</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.check_for_nan"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.check_for_nan</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_grad_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_grad_norm_per_param"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_grad_norm_per_param</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_param_norm</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_param_norm_per_param"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_param_norm_per_param</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.log_intermediates"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.log_intermediates</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.default_train_log_modes"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.default_train_log_modes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.intermediates_log_modes"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.intermediates_log_modes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.logger"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.logger</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.callbacks</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.seed_eval"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.seed_eval</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.get"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.get()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.to_dict"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.to_dict()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainerConfig.from_dict"><code class="docutils literal notranslate"><span class="pre">LLMTrainerConfig.from_dict()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer"><code class="docutils literal notranslate"><span class="pre">LLMTrainer</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.loss_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.loss_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_metric_postprocess_fn"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_metric_postprocess_fn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_generate_fn"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_generate_fn()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_cache_shape_dtype_struct"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_cache_shape_dtype_struct()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_recurrent_evaluation_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_recurrent_evaluation_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.trainer_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.trainer_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.model_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.model_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.optimizer_config"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.optimizer_config</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.exmp_batch"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.exmp_batch</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._train_metric_shapes"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._train_metric_shapes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_metric_shapes"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._eval_metric_shapes</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.mesh"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.mesh</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_partition_specs"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.batch_partition_specs</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.state"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.state</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.callbacks</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.first_step"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.first_step</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.global_step"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.global_step</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.dataset"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.dataset</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.batch_to_input"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.batch_to_input()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_mesh"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_mesh()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.build_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.build_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_logger"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_logger()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_callbacks"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_callbacks()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_optimizer"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_optimizer()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_train_metrics"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_train_metrics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.init_eval_metrics"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.init_eval_metrics()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.set_dataset"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.set_dataset()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_model_rng"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_model_rng()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.run_model_init"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.run_model_init()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tabulate_params"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.tabulate_params()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.get_num_params"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.get_num_params()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_jitted_functions"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_jitted_functions()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_training_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_training_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.create_evaluation_step_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.create_evaluation_step_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.train_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.train_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._eval_model_in_train_loop"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._eval_model_in_train_loop()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.test_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.test_eval_function"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.test_eval_function()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.eval_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.eval_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer._run_model_eval"><code class="docutils literal notranslate"><span class="pre">LLMTrainer._run_model_eval()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.tracker"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.tracker()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.log_training_info"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.log_training_info()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_training_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_training_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_validation_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_validation_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_validation_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_start"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_test_epoch_start()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.on_test_epoch_end"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.on_test_epoch_end()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_data_loaders"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_data_loaders()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.restore_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.restore_data_loaders"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.restore_data_loaders()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_pretrained_model"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_pretrained_model()</span></code></a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#xlstm_jax.trainer.llm.trainer.LLMTrainer.load_from_checkpoint"><code class="docutils literal notranslate"><span class="pre">LLMTrainer.load_from_checkpoint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By NXAI GmbH
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, NXAI GmbH.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>

@@ -1,82 +1,383 @@
 
-
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" data-content_root="./">
-<head>
-  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>xlstm-jax documentation &mdash; xlstm-jax  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
-      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
-      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
 
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>xlstm-jax documentation &#8212; xlstm-jax  documentation</title>
   
-      <script src="_static/jquery.js?v=5d32c60e"></script>
-      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
-      <script src="_static/documentation_options.js?v=5929fcd5"></script>
-      <script src="_static/doctools.js?v=9bcbadda"></script>
-      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/js/theme.js"></script>
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!-- 
+    this give us a css class that will be invisible only if js is disabled 
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=9df3ab08" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Installation" href="installation.html" /> 
-</head>
+    <link rel="next" title="Installation" href="installation.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
 
-          
-          
-          <a href="#" class="icon icon-home">
-            xlstm-jax
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
 </div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/nxai_logo_light.svg" class="logo__image only-light" alt="xlstm-jax  documentation - Home"/>
+    <img src="_static/nxai_logo_dark.svg" class="logo__image only-dark pst-js-only" alt="xlstm-jax  documentation - Home"/>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="dataset_preparation.html">Dataset Preparation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="example_training.html">Training large language models in xlstm-jax</a></li>
 <li class="toctree-l1"><a class="reference internal" href="configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
 <li class="toctree-l1"><a class="reference internal" href="distributed_training.html">Distributed Training</a></li>
-<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="autoapi/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="autoapi/xlstm_jax/index.html">xlstm_jax</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/common_types/index.html">xlstm_jax.common_types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/configs/index.html">xlstm_jax.configs</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/dataset/index.html">xlstm_jax.dataset</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/batch/index.html">xlstm_jax.dataset.batch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/configs/index.html">xlstm_jax.dataset.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/grain_batch_rampup/index.html">xlstm_jax.dataset.grain_batch_rampup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/grain_data_processing/index.html">xlstm_jax.dataset.grain_data_processing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/grain_iterator/index.html">xlstm_jax.dataset.grain_iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/grain_transforms/index.html">xlstm_jax.dataset.grain_transforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/hf_tokenizer/index.html">xlstm_jax.dataset.hf_tokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/input_pipeline_interface/index.html">xlstm_jax.dataset.input_pipeline_interface</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/lmeval_dataset/index.html">xlstm_jax.dataset.lmeval_dataset</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/lmeval_pipeline/index.html">xlstm_jax.dataset.lmeval_pipeline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/multihost_dataloading/index.html">xlstm_jax.dataset.multihost_dataloading</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/dataset/synthetic_dataloading/index.html">xlstm_jax.dataset.synthetic_dataloading</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/define_hydra_schemas/index.html">xlstm_jax.define_hydra_schemas</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/distributed/index.html">xlstm_jax.distributed</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/array_utils/index.html">xlstm_jax.distributed.array_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/data_parallel/index.html">xlstm_jax.distributed.data_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/mesh_utils/index.html">xlstm_jax.distributed.mesh_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/pipeline_parallel/index.html">xlstm_jax.distributed.pipeline_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/single_gpu/index.html">xlstm_jax.distributed.single_gpu</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/tensor_parallel/index.html">xlstm_jax.distributed.tensor_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/distributed/xla_utils/index.html">xlstm_jax.distributed.xla_utils</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/import_utils/index.html">xlstm_jax.import_utils</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/kernels/index.html">xlstm_jax.kernels</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/kernels/kernel_utils/index.html">xlstm_jax.kernels.kernel_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/kernels/mlstm_chunkwise/index.html">xlstm_jax.kernels.mlstm_chunkwise</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/kernels/mlstm_recurrent/index.html">xlstm_jax.kernels.mlstm_recurrent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/kernels/stride_utils/index.html">xlstm_jax.kernels.stride_utils</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/main_train/index.html">xlstm_jax.main_train</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/models/index.html">xlstm_jax.models</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/configs/index.html">xlstm_jax.models.configs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/llama/index.html">xlstm_jax.models.llama</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/shared/index.html">xlstm_jax.models.shared</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/xlstm_clean/index.html">xlstm_jax.models.xlstm_clean</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/xlstm_parallel/index.html">xlstm_jax.models.xlstm_parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/models/xlstm_pytorch/index.html">xlstm_jax.models.xlstm_pytorch</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/resume_training/index.html">xlstm_jax.resume_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/start_training/index.html">xlstm_jax.start_training</a></li>
+<li class="toctree-l3"><a class="reference internal" href="autoapi/xlstm_jax/train_init_fns/index.html">xlstm_jax.train_init_fns</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/trainer/index.html">xlstm_jax.trainer</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/base/index.html">xlstm_jax.trainer.base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/callbacks/index.html">xlstm_jax.trainer.callbacks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/data_module/index.html">xlstm_jax.trainer.data_module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/llm/index.html">xlstm_jax.trainer.llm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/logger/index.html">xlstm_jax.trainer.logger</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/metrics/index.html">xlstm_jax.trainer.metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/trainer/optimizer/index.html">xlstm_jax.trainer.optimizer</a></li>
+</ul>
+</details></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="autoapi/xlstm_jax/utils/index.html">xlstm_jax.utils</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/utils/error_logging_utils/index.html">xlstm_jax.utils.error_logging_utils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/utils/model_param_handling/index.html">xlstm_jax.utils.model_param_handling</a></li>
+<li class="toctree-l4"><a class="reference internal" href="autoapi/xlstm_jax/utils/pytree_utils/index.html">xlstm_jax.utils.pytree_utils</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="autoapi/lmeval_extended_evaluation/index.html">lmeval_extended_evaluation</a></li>
+</ul>
+</details></li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="#">xlstm-jax</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="#" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">xlstm-jax documentation</li>
-      <li class="wy-breadcrumbs-aside">
-            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/index.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button>
+
+
+<button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+</button>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>xlstm-jax documentation</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
   <section id="xlstm-jax-documentation">
-<h1>xlstm-jax documentation<a class="headerlink" href="#xlstm-jax-documentation" title="Link to this heading"></a></h1>
+<h1>xlstm-jax documentation<a class="headerlink" href="#xlstm-jax-documentation" title="Link to this heading">#</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a><ul>
@@ -145,7 +446,7 @@
 </ul>
 </div>
 <section id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading"></a></h2>
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Link to this heading">#</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
 <li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
@@ -155,33 +456,95 @@
 </section>
 
 
-           </div>
-          </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation.html" class="btn btn-neutral float-right" title="Installation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+                </article>
+              
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2024, NXAI.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="installation.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Installation</p>
       </div>
-    </section>
-  </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
-</body>
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By NXAI GmbH
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2024, NXAI GmbH.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>
