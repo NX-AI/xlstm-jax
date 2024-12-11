@@ -1,0 +1,169 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Training large language models in xlstm-jax &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Configuring Experiments with Hydra" href="configuration_with_hydra.html" />
+    <link rel="prev" title="Dataset Preparation" href="dataset_preparation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataset_preparation.html">Dataset Preparation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Training large language models in xlstm-jax</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#training-without-hydra">Training without Hydra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#training-with-a-hydra-configuration">Training with a Hydra configuration</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#default-configurations">Default configurations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#experiment-configuration">Experiment configuration</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1"><a class="reference internal" href="distributed_training.html">Distributed Training</a></li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Training large language models in xlstm-jax</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/example_training.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="training-large-language-models-in-xlstm-jax">
+<span id="training-llms"></span><h1>Training large language models in xlstm-jax<a class="headerlink" href="#training-large-language-models-in-xlstm-jax" title="Link to this heading"></a></h1>
+<p>Here we explain how to train large language models (LLMs) in <code class="docutils literal notranslate"><span class="pre">xlstm-jax</span></code>.
+We provide examples for training xLSTM and LLama on the DCLM and Slimpajama-627B datasets,
+using our trainer and distributed models implemented in jax.
+The training scripts are located in the <code class="docutils literal notranslate"><span class="pre">scripts/training</span></code> directory. It is currently required to run the scripts from the root directory of the repository and adding <code class="docutils literal notranslate"><span class="pre">PYTHONPATH=.</span></code> to the run command.
+While the recommended way to train models is using Hydra and Slurm, we will start with a simpler entry point and describe training with Hydra later.</p>
+<section id="training-without-hydra">
+<h2>Training without Hydra<a class="headerlink" href="#training-without-hydra" title="Link to this heading"></a></h2>
+<p>To train an xLSTM model without Hydra on the SlimPajama dataset, you need to specify the model configuration by way of the config dataclasses.
+For example, you can use the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>scripts/training/run_train_slimpajama.py<span class="w"> </span>--log_dir<span class="o">=</span>&lt;log_dir&gt;<span class="w"> </span>--model<span class="o">=</span>&lt;model&gt;
+</pre></div>
+</div>
+<p>where</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;log_dir&gt;</span></code> is the directory where the logs and checkpoints will be saved. Note that the checkpoints including model weights are quite large, so make sure you have enough disk space and fast I/O.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&lt;model&gt;</span></code> indicates one of the default configurations provided in the beginning of the script, that is one of [<code class="docutils literal notranslate"><span class="pre">120M</span></code>, <code class="docutils literal notranslate"><span class="pre">165M</span></code>, <code class="docutils literal notranslate"><span class="pre">165M_v1</span></code>, <code class="docutils literal notranslate"><span class="pre">1.3B</span></code>, <code class="docutils literal notranslate"><span class="pre">1.3B_v1</span></code>, <code class="docutils literal notranslate"><span class="pre">7B</span></code>, <code class="docutils literal notranslate"><span class="pre">7B_v1</span></code> ]. The name indicates the number of parameters and whether the mLSTM from the original paper is used or the version named “v1” that we used for training our 7B parameter model.</p></li>
+<li><p>By default, the script uses a smaller subset <a class="reference external" href="https://huggingface.co/datasets/DKYoon/SlimPajama-6B/tree/main">SlimPajama-6B</a>.
+Please use the flag <code class="docutils literal notranslate"><span class="pre">--use_full_dataset</span></code> for training on the full dataset <a class="reference external" href="https://huggingface.co/datasets/cerebras/SlimPajama-627B">SlimPajama-627B</a>.</p></li>
+</ul>
+<p>Similarly, a LLama baseline can be trained with the following command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">PYTHONPATH</span><span class="o">=.</span> <span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">training</span><span class="o">/</span><span class="n">run_train_llama_slimpajama</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">log_dir</span><span class="o">=&lt;</span><span class="n">log_dir</span><span class="o">&gt;</span> <span class="o">--</span><span class="n">model</span><span class="o">=&lt;</span><span class="n">model</span><span class="o">&gt;</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&lt;model&gt;</span></code> should be <code class="docutils literal notranslate"><span class="pre">1.3B</span></code> or <code class="docutils literal notranslate"><span class="pre">165M</span></code>, indicating a 1.3 billion or 165 million parameter model configuration, defined in the script.</p>
+</section>
+<section id="training-with-a-hydra-configuration">
+<h2>Training with a Hydra configuration<a class="headerlink" href="#training-with-a-hydra-configuration" title="Link to this heading"></a></h2>
+<p>Our recommended way to train models is by using Hydra for hyperparameter configuration.
+Please see <span class="xref std std-ref">configuring-experiments-with-hydra</span> for more details on the Hydra configuration.</p>
+<section id="default-configurations">
+<h3>Default configurations<a class="headerlink" href="#default-configurations" title="Link to this heading"></a></h3>
+<p>Many default configurations are already provided in the <code class="docutils literal notranslate"><span class="pre">configs</span></code> directory.
+For example, the subfolder <code class="docutils literal notranslate"><span class="pre">configs/model</span></code> contains several xLSTM and Llama model configs,
+and <code class="docutils literal notranslate"><span class="pre">configs/data</span></code> contains configs for the DCLM, Slimpajama and other datasets.
+These default configurations can be left untouched if you want to train one of the default model architectures on existing datasets.</p>
+</section>
+<section id="experiment-configuration">
+<h3>Experiment configuration<a class="headerlink" href="#experiment-configuration" title="Link to this heading"></a></h3>
+<p>The main config files you need to interact with are the experiment config files located in the <code class="docutils literal notranslate"><span class="pre">configs/experiment</span></code> directory.
+To train a model with a specific experiment configuration, you can use the script <code class="docutils literal notranslate"><span class="pre">train_with_hydra.py</span></code> with one of the experiment configs.
+For example, you can train a mLSTM-v1 model with 165M parameters on the Slimpajama-627B dataset with the following command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">PYTHONPATH</span><span class="o">=</span>.<span class="w"> </span>python<span class="w"> </span>scripts/training/train_with_hydra.py<span class="w"> </span>+experiment<span class="o">=</span>train_mLSTMv1_165M_slimpajama627b
+</pre></div>
+</div>
+<p>This will use the configs for data, model, parallel, optimizer, etc. as specified by default and overridden in the <code class="docutils literal notranslate"><span class="pre">train_mLSTMv1_165M_slimpajama627b.yaml</span></code> file.</p>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dataset_preparation.html" class="btn btn-neutral float-left" title="Dataset Preparation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="configuration_with_hydra.html" class="btn btn-neutral float-right" title="Configuring Experiments with Hydra" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

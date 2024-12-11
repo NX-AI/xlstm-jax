@@ -1,0 +1,190 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distributed Training &mdash; xlstm-jax  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+      <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=5929fcd5"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="API Reference" href="autoapi/index.html" />
+    <link rel="prev" title="Configuring Experiments with Hydra" href="configuration_with_hydra.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            xlstm-jax
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dataset_preparation.html">Dataset Preparation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="example_training.html">Training large language models in xlstm-jax</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration_with_hydra.html">Configuring Experiments with Hydra</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Distributed Training</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#distributed-computing-in-jax">Distributed Computing in JAX</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#jit-vs-shard-map">JIT vs Shard Map</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#multi-host-training">Multi-Host Training</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#parallelization-strategies">Parallelization Strategies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-parallelism">Data Parallelism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#fully-sharded-data-parallelism">Fully-Sharded Data Parallelism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pipeline-parallelism">Pipeline Parallelism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tensor-parallelism">Tensor Parallelism</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#miscellaneous">Miscellaneous</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="autoapi/index.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">xlstm-jax</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Distributed Training</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/distributed_training.md.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="distributed-training">
+<h1>Distributed Training<a class="headerlink" href="#distributed-training" title="Link to this heading"></a></h1>
+<p>xLSTM-jax supports different parallelization strategies (data, fsdp, tensor) and activation checkpointing (referred to as remat in JAX),
+enabling efficient training on large-scale distributed systems with hundreds or thousands of GPUs.
+For an in-depth tutorial on 3D parallelization in JAX, please see <a class="reference external" href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/overview.html">Training Models At Scale</a> by Phillip Lippe,
+covering</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/data_parallel_fsdp.html#Data-Parallelism">Data Parallelism (DP)</a></p></li>
+<li><p><a class="reference external" href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/data_parallel_fsdp.html#Parameter-Sharding">Fully-sharded Data Parallelism (FSDP)</a></p></li>
+<li><p><a class="reference external" href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/tensor_parallel_simple.html">Tensor Parallelism (TP)</a></p></li>
+</ul>
+<p>Several default parallelization configurations are located in <code class="docutils literal notranslate"><span class="pre">configs/parallel</span></code> directory.
+For model sizes of up to 7B parameters, trained on up to 256 H100 GPUs, we found the combination of FSDP and activation checkpointing (remat) to be the most performant on our cluster (different hardware setups may favor different setups).
+Tensor parallelization is required for larger models.</p>
+<section id="distributed-computing-in-jax">
+<h2>Distributed Computing in JAX<a class="headerlink" href="#distributed-computing-in-jax" title="Link to this heading"></a></h2>
+<section id="jit-vs-shard-map">
+<h3>JIT vs Shard Map<a class="headerlink" href="#jit-vs-shard-map" title="Link to this heading"></a></h3>
+<p>In JAX, distributed computing can be implemented by way of automatic parallelization with <a class="reference external" href="https://jax.readthedocs.io/en/latest/notebooks/Distributed_arrays_and_automatic_parallelization.html"><code class="docutils literal notranslate"><span class="pre">jax.jit</span></code></a> or manual sharding with <a class="reference external" href="https://jax.readthedocs.io/en/latest/notebooks/shard_map.html"><code class="docutils literal notranslate"><span class="pre">shard_map</span></code></a>. In our initial experiments, we obtained significantly better performance in reducing communication bottlenecks with <code class="docutils literal notranslate"><span class="pre">shard_map</span></code> than with <code class="docutils literal notranslate"><span class="pre">jit</span></code> on our compute cluster. Hence, we use <code class="docutils literal notranslate"><span class="pre">shard_map</span></code> for our parallelization strategies, but note that for other hardware setups, <code class="docutils literal notranslate"><span class="pre">jit</span></code> may be more performant.</p>
+</section>
+<section id="multi-host-training">
+<h3>Multi-Host Training<a class="headerlink" href="#multi-host-training" title="Link to this heading"></a></h3>
+<p>For multi-host training, one JAX process needs to be started per host (see <a class="reference external" href="https://jax.readthedocs.io/en/latest/multi_process.html">official documentation</a>). On a SLURM cluster, we start by default one process per GPU by way of <code class="docutils literal notranslate"><span class="pre">jax.distributed.initialize()</span></code>, which is coordinated by the environment variables set by SLURM. On a single host, we also support running a single process for all GPUs (for example for quick debugging).</p>
+<p>Each JAX process starts its own data loading pipeline, in which each process loads only its respective shard of the full dataset. The batch size is then divided by the number of processes. For model parallelization strategies (TP or PP), we first gather the batch over the model parallel dimension before applying the model forward pass. To support batch sizes smaller than 1 per device, one could integrate “fake” data loaders like in <a class="reference external" href="https://github.com/AI-Hypercomputer/maxtext">MaxText</a> and slice the batch accordingly within the forward pass. However, as this is not needed for a 7B model scale on H100s, we are not yet supporting this.</p>
+</section>
+</section>
+<section id="parallelization-strategies">
+<h2>Parallelization Strategies<a class="headerlink" href="#parallelization-strategies" title="Link to this heading"></a></h2>
+<p>For a detailed explanation of the parallelization strategies with <code class="docutils literal notranslate"><span class="pre">shard_map</span></code>, please see the <a class="reference external" href="https://uvadlc-notebooks.readthedocs.io/en/latest/tutorial_notebooks/scaling/JAX/overview.html">Training Models At Scale</a> overview. We create a distributed 4D mesh with the following dimensions:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dp</span></code> (data parallel)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">fsdp</span></code> (fully sharded data parallel)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pp</span></code> (pipeline parallel)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">tp</span></code> (tensor parallel)</p></li>
+</ul>
+<p>For our 7B model training on 256 H100 GPUs, we used a mesh shape of <code class="docutils literal notranslate"><span class="pre">(32,</span> <span class="pre">8,</span> <span class="pre">1,</span> <span class="pre">1)</span></code> (ie FSDP within a node, DP across nodes).</p>
+<section id="data-parallelism">
+<h3>Data Parallelism<a class="headerlink" href="#data-parallelism" title="Link to this heading"></a></h3>
+<p>In data parallelism, the model is replicated across all devices, and each device processes a different batch of data. The gradients are then averaged across all devices. While some gradient communications can be performed asynchronously, note that stacking parameters by way of the scan transformation over layers may force some communications to only happen after all layers have been processed. However, this did not significantly impact our training performance.</p>
+</section>
+<section id="fully-sharded-data-parallelism">
+<h3>Fully-Sharded Data Parallelism<a class="headerlink" href="#fully-sharded-data-parallelism" title="Link to this heading"></a></h3>
+<p>Fully-sharded data parallelism (FSDP) extends DP by sharding the model parameters and optimizer state across all devices. Before the forward pass of a module, we gather the model parameters over the <code class="docutils literal notranslate"><span class="pre">fsdp</span></code> dimension. Similarly, during the backward pass, we scatter the gradients over the <code class="docutils literal notranslate"><span class="pre">fsdp</span></code> dimension. This strategy reduces the memory footprint of the model on each device, as only a fraction of the model is stored on each device.</p>
+<p>Separating the DP and FSDP dimensions allows for a flexible combination of both strategies. For example, we can use FSDP within a node to take advantage of its fast communication, and DP across nodes to scale to a large number of devices. Note that most FSDP communications can be performed asynchronously, which can further reduce the communication overhead. To prevent minor tensors from being sharded (for example biases or input/forget gate), we only shard tensors with a size larger than a certain threshold (specified in config). Additionally, for faster communication, we support gather the weights in different precisions (for example <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code>), if they are casted to the same precision before the forward pass.</p>
+</section>
+<section id="pipeline-parallelism">
+<h3>Pipeline Parallelism<a class="headerlink" href="#pipeline-parallelism" title="Link to this heading"></a></h3>
+<p>Pipeline parallelism (PP) splits the model “vertically” (that is layer dimension) across the <code class="docutils literal notranslate"><span class="pre">pp</span></code> dimension. However, due to the max training size of 256 GPUs, we are not actively using and supporting PP in our current setup. For model parallelism, we recommend using TP instead.</p>
+</section>
+<section id="tensor-parallelism">
+<h3>Tensor Parallelism<a class="headerlink" href="#tensor-parallelism" title="Link to this heading"></a></h3>
+<p>Tensor parallelism (TP) splits the model “horizontally” (that is feature dimension) across the <code class="docutils literal notranslate"><span class="pre">tp</span></code> dimension, which is useful for models that do not fit on a single device. As the xLSTM-7B model has a very similar architecture to a standard Transformer, we can apply the same tensor parallelization strategies: in the mLSTM block, we split the heads across the <code class="docutils literal notranslate"><span class="pre">tp</span></code> dimension, and in the feedforward block, we split the up-projected hidden dimension across the <code class="docutils literal notranslate"><span class="pre">tp</span></code> dimension. As TP can introduce some communication bottlenecks, we support the asynchronous TP execution of linear layers, similar to the <a class="reference external" href="https://arxiv.org/abs/2302.05442">ViT-22b</a>, but note that GPUs with fully connected NVLinks may not benefit from this due to the communication layout.</p>
+</section>
+<section id="miscellaneous">
+<h3>Miscellaneous<a class="headerlink" href="#miscellaneous" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><strong>Activation Checkpointing (Remat)</strong>: We use activation checkpointing (remat) to reduce the memory footprint of the model and to reduce the communication overhead. This is especially important for large models like xLSTM-7B, as it allows us to trade off memory for computation. We use the <code class="docutils literal notranslate"><span class="pre">remat</span></code> transformation around the individual blocks of the xLSTM model.</p></li>
+<li><p><strong>Gradient Accumulation</strong>: We support gradient accumulation across multiple steps, which can be useful for large batch sizes or for models that do not fit on a single device.</p></li>
+<li><p><strong>Mixed Precision Training</strong>: We support mixed precision training with setting the JAX dtype in the model config (for example to <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code>), which can reduce the memory footprint and increase the training speed.</p></li>
+<li><p><strong>Distributed Gradient Clipping</strong>: We support gradient clipping to prevent exploding gradients, which computes the norm across all (distributed) gradients and clips them accordingly.</p></li>
+</ul>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="configuration_with_hydra.html" class="btn btn-neutral float-left" title="Configuring Experiments with Hydra" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="autoapi/index.html" class="btn btn-neutral float-right" title="API Reference" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, NXAI.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
