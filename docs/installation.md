@@ -14,5 +14,5 @@ In order to install or update the kernels manually run `git submodule init` or `
 We use conda for managing dependencies.
 You can create a new conda environment and install the required dependencies by running the following command:
 ```bash
-conda env create -f envs/environment_jax_0.4.32_gpu_python_3.11.yaml
+conda env create -f envs/environment_jax_0.4.32_gpu_python_3.11.yml
 ```

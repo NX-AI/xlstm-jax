@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "xlstm-jax"
-copyright = "2024, NXAI"
-author = "NXAI"
+copyright = "2024, NXAI GmbH"
+author = "NXAI GmbH"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -26,7 +26,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.todo",
     # "sphinx.ext.viewcode",  # throws an error
-    "sphinx_rtd_theme",
+    # "sphinx_rtd_theme",
     "myst_parser",
 ]
 
@@ -79,5 +79,12 @@ intersphinx_mapping = {
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_rtd_theme"
+html_theme = "sphinx_book_theme"
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
+html_theme_options = {
+    "logo": {
+        "image_light": "_static/nxai_logo_light.svg",
+        "image_dark": "_static/nxai_logo_dark.svg",
+    }
+}
