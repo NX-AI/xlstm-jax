@@ -7,8 +7,8 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = "xlstm-jax"
-copyright = "2024, NXAI"
-author = "NXAI"
+copyright = "2024, NXAI GmbH"
+author = "NXAI GmbH"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -26,7 +26,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.todo",
     # "sphinx.ext.viewcode",  # throws an error
-    "sphinx_rtd_theme",
+    # "sphinx_rtd_theme",
     "myst_parser",
 ]
 
