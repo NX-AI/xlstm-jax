@@ -1,7 +1,7 @@
 [
     {
         "include": [
-            "**/*.py",
+            "**/*.py"
         ],
         "exclude": [
             "**/venv/**",
@@ -9,7 +9,7 @@
             "xlstm_jax/dataset/grain_transforms.py",
             "xlstm_jax/dataset/input_pipeline_interface.py",
             "xlstm_jax/dataset/multihost_dataloading.py",
-            "xlstm_jax/dataset/synthetic_dataloading.py",
+            "xlstm_jax/dataset/synthetic_dataloading.py"
         ],
         "license": "./.github/license-check/header_python.txt"
     },
