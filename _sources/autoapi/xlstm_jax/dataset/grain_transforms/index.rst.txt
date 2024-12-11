@@ -21,6 +21,9 @@ xlstm_jax.dataset.grain_transforms
 
    ---
 
+   This file contains code from the maxtext project (https://github.com/AI-Hypercomputer/maxtext).
+   Especially the file _input_pipeline_utils.py (https://github.com/AI-Hypercomputer/maxtext/MaxText/input_pipeline/_input_pipeline_utils.py).
+
    Operations used by Grain
 
 
