@@ -7,9 +7,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Literal
 
-from omegaconf import OmegaConf
-
 from mlstm_simple_torch.mlstm_simple.model import mLSTM, mLSTMConfig
+from omegaconf import OmegaConf
 
 from .convert_checkpoint import convert_orbax_checkpoint_to_torch_state_dict
 from .convert_state_dict import apply_weight_transforms_, move_safetensors_state_dict_params_, move_state_dict_params_

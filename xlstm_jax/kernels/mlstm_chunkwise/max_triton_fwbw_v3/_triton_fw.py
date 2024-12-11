@@ -1,6 +1,5 @@
 #  Copyright (c) NXAI GmbH.
 #  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
-
 """Triton backend for the forward pass of the mLSTM chunkwise formulation.
 
 This file has been adapted from the original PyTorch Triton implementation to JAX.

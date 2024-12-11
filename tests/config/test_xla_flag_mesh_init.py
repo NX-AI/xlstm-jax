@@ -1,6 +1,5 @@
 #  Copyright (c) NXAI GmbH.
 #  This software may be used and distributed according to the terms of the NXAI Community License Agreement.
-
 """Runs tests to see whether setting of XLA flags in previous Hydra tests makes mesh initialization break."""
 
 import pytest
