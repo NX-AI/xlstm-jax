@@ -1,5 +1,5 @@
 # xLSTM-jax
-[xLSTM Paper](https://arxiv.org/abs/2405.04517) | [Citation](#citation)
+[Paper](https://arxiv.org/abs/2405.04517) | [Model](https://huggingface.co/NX-AI/xLSTM-7b) | [Docs](https://xlstm-jax.readthedocs.io/) | [Citation](#citation)
 
 The official repository for the xLSTM model and training code in JAX.
 
