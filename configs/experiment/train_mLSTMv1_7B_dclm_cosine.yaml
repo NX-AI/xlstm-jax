@@ -3,24 +3,24 @@ defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
   - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
   - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
-  - override /parallel: mLSTMv1_1.3B
-  - override /model: mLSTMv1_1.3B
+  - override /parallel: mLSTMv1_7B
+  - override /model: mLSTMv1_7B
   - override /optimizer: adamw
   - override /scheduler: cosine_decay
+  - override /profiling: jax_profiling
   - override /hydra/launcher: slurm_launcher
   - _self_
 
 # specify the deltas from the defaults:
 task_name: DCLM
-batch_size_per_device: 8
+batch_size_per_device: 4
 context_length: 8192
 num_epochs: 1000
 num_train_steps: 95_000
-lr: 7e-4 # TWO RUNS: 7e-4 (9088), 1e-3 (8995)
+lr: 5e-4
 
 scheduler:
-  warmup_steps: 750
-  cooldown_steps: 2000
+  warmup_steps: 3000
 
 trainer:
   gradient_accumulate_steps: 1
@@ -34,6 +34,10 @@ checkpointing:
 data_train:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
+    batch_rampup_factors:
+      0: 0.25
+      1_000: 0.5
+      2_000: 1.0
 
 data_eval:
   ds1:
@@ -46,16 +50,19 @@ model:
   vocab_size: -1
   backend: "triton_kernels"
   backend_name: "chunkwise--triton_xl_chunk"
+  cell_norm_type_v1: rmsnorm
+
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_short
 
 profiling:
   # Not profiling to reduce time and potential failure points.
   profile_every_n_minutes: -1
 
 # Run command:
-# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTMv1_1.3B_dclm_cosine
+# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTMv1_7B_dclm_cosine
 hydra:
   launcher:
-    nodes: 4
+    nodes: 16
     additional_parameters: {
       "gpu-bind": "closest",
       "wait-all-nodes": "1",
@@ -63,7 +70,3 @@ hydra:
       "exclusive": "",
     }
   mode: MULTIRUN
-  # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  # sweeper:
-  #   params:
-  #     lr: 7e-4, 1e-3

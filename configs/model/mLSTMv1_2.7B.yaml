@@ -1,0 +1,11 @@
+defaults:
+  - model_schema
+  - mLSTMv1_default
+  - _self_
+
+name: mLSTMv1_2.7B
+# xLSTMLMModelConfig
+embedding_dim: 2560
+num_blocks: 32
+# mLSTMLayerConfig
+num_heads: 5
