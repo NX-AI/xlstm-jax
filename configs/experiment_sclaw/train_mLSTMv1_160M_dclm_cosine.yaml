@@ -48,6 +48,7 @@ model:
   vocab_size: -1
   backend: "triton_kernels"
   backend_name: "chunkwise--triton_xl_chunk"
+  chunk_size: 64
 
   num_blocks: 12
   num_heads: 4
