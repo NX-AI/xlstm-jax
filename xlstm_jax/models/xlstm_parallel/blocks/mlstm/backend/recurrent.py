@@ -12,14 +12,14 @@ from .config import mLSTMBackend
 
 
 def recurrent_step_fw(
-    matC_state: jax.Array,  # (B, NH, DHQK, DHV)
-    vecN_state: jax.Array,  # (B, NH, DHQK)
-    scaM_state: jax.Array,  # (B, NH, 1)
-    vecQ: jax.Array,  # (B, NH, DHQK)
-    vecK: jax.Array,  # (B, NH, DHQK)
-    vecV: jax.Array,  # (B, NH, DHV)
-    scaI: jax.Array,  # (B, NH, 1)
-    scaF: jax.Array,  # (B, NH, 1)
+    c: jax.Array,  # (B, NH, DHQK, DHV)
+    n: jax.Array,  # (B, NH, DHQK)
+    m: jax.Array,  # (B, NH, 1)
+    q: jax.Array,  # (B, NH, DHQK)
+    k: jax.Array,  # (B, NH, DHQK)
+    v: jax.Array,  # (B, NH, DHV)
+    i: jax.Array,  # (B, NH, 1)
+    f: jax.Array,  # (B, NH, 1)
     eps: float = 1e-6,
 ) -> tuple[
     jax.Array, tuple[jax.Array, jax.Array, jax.Array]
@@ -27,40 +27,40 @@ def recurrent_step_fw(
     """This is a single step of the mLSTM operation in recurrent form.
 
     Args:
-        matC_state: Memory state tensor of shape (B, NH, DHQK, DHV).
-        vecN_state: Normalizer state tensor of shape (B, NH, DHQK).
-        scaM_state: Max state tensor of shape (B, NH, 1).
-        vecQ: Queries tensor of shape (B, NH, DHQK).
-        vecK: Keys tensor of shape (B, NH, DHQK).
-        vecV: Values tensor of shape (B, NH, DHV).
-        scaI: Input gate tensor of shape (B, NH, 1).
-        scaF: Forget gate tensor of shape (B, NH, 1).
+        c: Memory state tensor of shape (B, NH, DHQK, DHV).
+        n: Normalizer state tensor of shape (B, NH, DHQK).
+        m: Max state tensor of shape (B, NH, 1).
+        q: Queries tensor of shape (B, NH, DHQK).
+        k: Keys tensor of shape (B, NH, DHQK).
+        v: Values tensor of shape (B, NH, DHV).
+        i: Input gate tensor of shape (B, NH, 1).
+        f: Forget gate tensor of shape (B, NH, 1).
         eps: Used for building the forgetgate matrix. Defaults to 1e-6.
 
     Returns:
         The hidden state and the new states (matC_state_new, vecN_state_new, vecM_state_new).
     """
-    DHQK = vecQ.shape[-1]
-    state_dtype = matC_state.dtype
-    qkv_dtype = vecQ.dtype
+    DHQK = q.shape[-1]
+    state_dtype = c.dtype
+    qkv_dtype = q.dtype
 
     # gates
-    scaF_log = jax.nn.log_sigmoid(scaF)
+    scaF_log = jax.nn.log_sigmoid(f)
     scaF_log = scaF_log.astype(state_dtype)
-    scaI = scaI.astype(state_dtype)
+    i = i.astype(state_dtype)
 
     # update rule
-    scaM_state_new = jnp.maximum(scaF_log + scaM_state, scaI)  # (B, NH, 1)
+    scaM_state_new = jnp.maximum(scaF_log + m, i)  # (B, NH, 1)
 
-    scaF_act = jnp.exp(scaF_log + scaM_state - scaM_state_new)  # (B, NH, 1)
-    scaI_act = jnp.exp(scaI - scaM_state_new)  # (B, NH, 1)
+    scaF_act = jnp.exp(scaF_log + m - scaM_state_new)  # (B, NH, 1)
+    scaI_act = jnp.exp(i - scaM_state_new)  # (B, NH, 1)
 
-    vecQ_scaled = vecQ / math.sqrt(DHQK)  # (B, NH, DHQK)
+    vecQ_scaled = q / math.sqrt(DHQK)  # (B, NH, DHQK)
 
-    matC_state_new = scaF_act[:, :, :, None] * matC_state + scaI_act[:, :, :, None] * (
-        vecK[:, :, :, None] @ vecV[:, :, None, :]
+    matC_state_new = scaF_act[:, :, :, None] * c + scaI_act[:, :, :, None] * (
+        k[:, :, :, None] @ v[:, :, None, :]
     )  # (B, NH, DHQK, DHV)
-    vecN_state_new = scaF_act * vecN_state + scaI_act * vecK  # (B, NH, DHQK)
+    vecN_state_new = scaF_act * n + scaI_act * k  # (B, NH, DHQK)
 
     h_num = vecQ_scaled[:, :, None, :] @ matC_state_new.astype(qkv_dtype)  # (B, NH, 1, DHV)
     h_num = h_num.squeeze(2)  # (B, NH, DHV)
@@ -148,14 +148,14 @@ def recurrent_sequence_fw(
     if S == 1:
         # Single step can skip the loop and other operations.
         matH, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
-            matC_state=matC_state,
-            vecN_state=vecN_state,
-            scaM_state=vecM_state,
-            vecQ=queries[:, :, 0],
-            vecK=keys[:, :, 0],
-            vecV=values[:, :, 0],
-            scaI=igate_preact[:, :, 0],
-            scaF=fgate_preact[:, :, 0],
+            c=matC_state,
+            n=vecN_state,
+            m=vecM_state,
+            q=queries[:, :, 0],
+            k=keys[:, :, 0],
+            v=values[:, :, 0],
+            i=igate_preact[:, :, 0],
+            f=fgate_preact[:, :, 0],
             eps=eps,
         )
         matH = matH[:, :, None]
@@ -167,14 +167,14 @@ def recurrent_sequence_fw(
             vecQ_t, vecK_t, vecV_t, vecI_t, vecF_t = inputs
 
             vecH, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
-                matC_state=matC_state,
-                vecN_state=vecN_state,
-                scaM_state=vecM_state,
-                vecQ=vecQ_t,
-                vecK=vecK_t,
-                vecV=vecV_t,
-                scaI=vecI_t,
-                scaF=vecF_t,
+                c=matC_state,
+                n=vecN_state,
+                m=vecM_state,
+                q=vecQ_t,
+                k=vecK_t,
+                v=vecV_t,
+                i=vecI_t,
+                f=vecF_t,
                 eps=eps,
             )
             return (matC_state, vecN_state, vecM_state), vecH
@@ -190,11 +190,11 @@ def recurrent_sequence_fw(
         # Recurrent loop step function. The states are in the carry,
         # and the inputs are the tensors at the current time step.
         inputs = {
-            "vecQ": queries,
-            "vecK": keys,
-            "vecV": values,
-            "scaI": igate_preact,
-            "scaF": fgate_preact,
+            "q": queries,
+            "k": keys,
+            "v": values,
+            "i": igate_preact,
+            "f": fgate_preact,
         }
         inputs = jax.tree.map(
             lambda x: jnp.moveaxis(x, 2, 0), inputs
@@ -203,9 +203,9 @@ def recurrent_sequence_fw(
         for t in range(S):
             inputs_t = jax.tree_map(lambda x: x[t], inputs)
             vecH_t, (matC_state, vecN_state, vecM_state) = mlstm_step_fn(
-                matC_state=matC_state,
-                vecN_state=vecN_state,
-                scaM_state=vecM_state,
+                c=matC_state,
+                n=vecN_state,
+                m=vecM_state,
                 **inputs_t,
                 eps=eps,
             )

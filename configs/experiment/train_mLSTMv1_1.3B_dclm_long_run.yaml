@@ -49,7 +49,7 @@ model:
   reset_at_document_boundaries: true
   vocab_size: -1
   backend: "triton_kernels"
-  backend_name: "max_triton_xlchunksize"
+  backend_name: "chunkwise--triton_xl_chunk"
 
 profiling:
   # Not profiling to reduce time and potential failure points.

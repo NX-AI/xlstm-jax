@@ -7,6 +7,7 @@ import numpy as np
 import pytest
 import torch
 from flax import linen as nn
+from mlstm_kernels.jax import get_available_mlstm_kernels, get_available_mlstm_step_kernels
 
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.attention import (
     mLSTMBackendAttention,
@@ -19,8 +20,16 @@ from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent import (
     mLSTMBackendRecurrent,
     mLSTMBackendRecurrentConfig,
 )
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent_triton import (
+    mLSTMBackendRecurrentTriton,
+    mLSTMBackendRecurrentTritonConfig,
+)
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.simple import (
     parallel_stabilized_simple as parallel_stabilized_simple_jax,
+)
+from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels import (
+    mLSTMBackendTriton,
+    mLSTMBackendTritonConfig,
 )
 from xlstm_jax.models.xlstm_pytorch.blocks.mlstm.backend.fwbw import (
     mLSTMfwbw as mLSTMfwbw_torch,
@@ -631,3 +640,67 @@ def test_attention_backend(context_length: int, activation_function: str, qk_pre
     assert not np.allclose(
         out[0, 0, pert_idx + 1 :], out_key_perturbed[0, 0, pert_idx + 1 :]
     ), "Perturbation of the key must affect the output of the same key."
+
+
+@pytest.mark.skipif(not pytest.triton_available, reason="Triton backend not available.")
+@pytest.mark.parametrize("backend_name", get_available_mlstm_kernels())
+def test_triton_kernels_backend(backend_name: str):
+    # Prepare the input data.
+    B = 16
+    NH = 4
+    S = 256
+    DH = 128
+    rng = np.random.default_rng(2)
+    q = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    k = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    v = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    igate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32)
+    fgate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32) + 4.5
+
+    config = mLSTMBackendTritonConfig(
+        backend_name=backend_name,
+    )
+    backend = mLSTMBackendTriton(config)
+
+    # Run the JAX backend.
+    out_jax = backend(
+        jnp.array(q),
+        jnp.array(k),
+        jnp.array(v),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+    )
+    out_jax = jax.device_get(out_jax)
+    assert out_jax.shape == v.shape, "Output shape must match the values shape."
+
+
+@pytest.mark.skipif(not pytest.triton_available, reason="Triton backend not available.")
+@pytest.mark.parametrize("backend_name", get_available_mlstm_step_kernels())
+def test_recurrent_triton_backend(backend_name: str):
+    # Prepare the input data.
+    B = 16
+    NH = 4
+    S = 256
+    DH = 128
+    rng = np.random.default_rng(2)
+    q = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    k = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    v = rng.normal(size=(B, NH, S, DH)).astype(np.float32)
+    igate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32)
+    fgate_preact = rng.normal(size=(B, NH, S, 1)).astype(np.float32) + 4.5
+
+    config = mLSTMBackendRecurrentTritonConfig(
+        backend_name=backend_name,
+    )
+    backend = mLSTMBackendRecurrentTriton(config)
+
+    # Run the JAX backend.
+    out_jax = backend(
+        jnp.array(q),
+        jnp.array(k),
+        jnp.array(v),
+        jnp.array(igate_preact),
+        jnp.array(fgate_preact),
+    )
+    out_jax = jax.device_get(out_jax)
+    assert out_jax.shape == v.shape, "Output shape must match the values shape."

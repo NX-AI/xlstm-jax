@@ -1,3 +1,0 @@
-[submodule "mlstm_kernels"]
-	path = mlstm_kernels
-	url = git@github.com:NX-AI/mlstm_kernels.git

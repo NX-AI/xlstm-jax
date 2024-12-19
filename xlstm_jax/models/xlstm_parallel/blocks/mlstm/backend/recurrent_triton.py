@@ -4,8 +4,7 @@
 from dataclasses import dataclass
 
 import jax
-
-from xlstm_jax.kernels import mlstm_recurrent_step_triton_fused
+from mlstm_kernels.jax import get_mlstm_step_kernel
 
 from .config import mLSTMBackend
 from .recurrent import recurrent_sequence_fw
@@ -23,6 +22,8 @@ class mLSTMBackendRecurrentTritonConfig:
     """Data type for the state tensors. If None, the data type is inferred from the input tensors."""
     use_scan: bool = False
     """Whether to use scan for the recurrent sequence."""
+    backend_name: str = "triton"
+    """Name of the step kernel to use."""
 
     def assign_model_config_params(self, model_config):
         pass
@@ -71,7 +72,7 @@ class mLSTMBackendRecurrentTriton(mLSTMBackend):
             Output tensor of shape (B, NH, S, DH).
         """
         return recurrent_sequence_fw(
-            mlstm_step_fn=mlstm_recurrent_step_triton_fused,
+            mlstm_step_fn=get_mlstm_step_kernel(self.config.backend_name),
             queries=q,
             keys=k,
             values=v,

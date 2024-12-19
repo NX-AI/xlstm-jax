@@ -31,3 +31,4 @@ dependencies:
       - wandb
       - hydra-core
       - hydra-submitit-launcher
+      - mlstm_kernels==1.0.3

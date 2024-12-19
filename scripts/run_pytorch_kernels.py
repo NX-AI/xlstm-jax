@@ -5,8 +5,7 @@ from pathlib import Path
 
 import numpy as np
 import torch
-
-from mlstm_kernels.mlstm_kernels.mlstm.chunkwise.max_triton_fwbw_v3.triton_fwbw import mlstm_chunkwise_fwbw
+from mlstm_kernels.torch.chunkwise.triton_limit_chunk import mlstm_chunkwise__limit_chunk
 
 assert torch.cuda.is_available(), "This script needs to be run with the PyTorch environment and GPU support."
 
@@ -54,13 +53,13 @@ def run_pytorch_kernel(
     fgate_preact_torch = torch.from_numpy(fgate_preact).to(device=device, dtype=torch.float32).requires_grad_()
 
     # Run the PyTorch kernel.
-    out_torch: torch.Tensor = mlstm_chunkwise_fwbw(
+    out_torch: torch.Tensor = mlstm_chunkwise__limit_chunk(
         q_torch,
         k_torch,
         v_torch,
         igate_preact_torch,
         fgate_preact_torch,
-        CHUNK_SIZE=chunk_size,
+        chunk_size=chunk_size,
         autocast_kernel_dtype=autocast_kernel_dtype,
     )
     out_torch = out_torch.to(torch.float32)

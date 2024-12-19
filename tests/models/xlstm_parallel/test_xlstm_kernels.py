@@ -38,7 +38,9 @@ MODEL_CONFIGS = [
                 context_length=64,
                 mlstm_cell=mLSTMCellConfig(
                     igate_bias_init_range=-3.0,
-                    backend=mLSTMBackendNameAndKwargs(name="triton_kernels", kwargs={"backend_name": "max_triton"}),
+                    backend=mLSTMBackendNameAndKwargs(
+                        name="triton_kernels", kwargs={"backend_name": "chunkwise--triton_limit_chunk"}
+                    ),
                 ),
                 qk_dim_factor=0.5,
                 v_dim_factor=2.0,
@@ -76,45 +78,8 @@ MODEL_CONFIGS = [
                 mlstm_cell=mLSTMCellConfig(
                     igate_bias_init_range=-3.0,
                     backend=mLSTMBackendNameAndKwargs(
-                        name="triton_kernels", kwargs={"backend_name": "max_triton_noslice"}
+                        name="triton_kernels", kwargs={"backend_name": "chunkwise--triton_xl_chunk"}
                     ),
-                ),
-                qk_dim_factor=0.5,
-                v_dim_factor=2.0,
-            ),
-            feedforward=FeedForwardConfig(
-                proj_factor=8.0 / 3.0,
-                act_fn="swish",
-                embedding_dim=64,
-                dropout=0.0,
-                bias=False,
-                ff_type="ffn_gated",
-                dtype="float32",
-            ),
-        ),
-    ),
-    # mlstm kernel triton_stablef
-    lambda parallel: xLSTMLMModelConfig(
-        vocab_size=100,
-        embedding_dim=64,
-        logits_soft_cap=None,
-        num_blocks=1,
-        context_length=64,
-        tie_weights=False,
-        add_embedding_dropout=True,
-        add_post_blocks_norm=True,
-        parallel=parallel,
-        scan_blocks=True,
-        dtype="float32",
-        mlstm_block=mLSTMBlockConfig(
-            mlstm=mLSTMLayerConfig(
-                layer_type="mlstm_v1",
-                num_heads=2,
-                embedding_dim=64,
-                context_length=64,
-                mlstm_cell=mLSTMCellConfig(
-                    igate_bias_init_range=-3.0,
-                    backend=mLSTMBackendNameAndKwargs(name="triton_kernels", kwargs={"backend_name": "triton_stablef"}),
                 ),
                 qk_dim_factor=0.5,
                 v_dim_factor=2.0,

@@ -27,7 +27,7 @@ v_dim_factor: 1.0
 # mLSTMCellConfig
 gate_dtype: float32
 backend: triton_kernels
-backend_name: "max_triton_noslice"
+backend_name: "chunkwise--triton_xl_chunk"
 igate_bias_init_range: -10.0
 add_qk_norm: false
 cell_norm_type: rmsnorm

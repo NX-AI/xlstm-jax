@@ -17,7 +17,6 @@ from xlstm_jax.dataset.configs import (
 from xlstm_jax.models.configs import ParallelConfig
 from xlstm_jax.models.shared import InitDistribution, InitFnName
 from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend import BackendType
-from xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels import BackendNameType
 from xlstm_jax.models.xlstm_parallel.components.normalization import NormType
 from xlstm_jax.trainer.base.trainer import TrainerConfig
 from xlstm_jax.trainer.callbacks.checkpointing import ModelCheckpointConfig
@@ -87,7 +86,6 @@ class CombinedModelConfig:
         """make sure that the allowed backends are checked"""
 
         assert self.backend in typing.get_args(BackendType)
-        assert self.backend_name in typing.get_args(BackendNameType)
         assert self.output_init_fn in typing.get_args(InitFnName)
         assert self.init_distribution in typing.get_args(InitDistribution)
         assert self.init_distribution_embed in typing.get_args(InitDistribution)
