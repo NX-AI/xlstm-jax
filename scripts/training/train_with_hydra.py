@@ -37,12 +37,15 @@ def copy_experiment_file_to_out_folder(cfg: DictConfig) -> None:
     overrides = HydraConfig.get().overrides.task
     # See if experiment file is specified in the overrides.
     for override in overrides:
-        if override.startswith("+experiment="):
+        if override.startswith("+experiment"):
             experiment_name = override.split("=")[1]
 
+            experiment_folder_name = override.split("=")[0].split("+")[1]
+
     os.makedirs(os.path.join(cfg.logger.log_path, "experiment_file"), exist_ok=True)
+
     shutil.copy(
-        os.path.join(CONFIG_PATH, "experiment", f"{experiment_name}.yaml"),
+        os.path.join(CONFIG_PATH, experiment_folder_name, f"{experiment_name}.yaml"),
         os.path.join(cfg.logger.log_path, "experiment_file", f"{experiment_name}.yaml"),
     )
 
