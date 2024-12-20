@@ -16,7 +16,6 @@ Submodules
    /autoapi/xlstm_jax/define_hydra_schemas/index
    /autoapi/xlstm_jax/distributed/index
    /autoapi/xlstm_jax/import_utils/index
-   /autoapi/xlstm_jax/kernels/index
    /autoapi/xlstm_jax/main_train/index
    /autoapi/xlstm_jax/models/index
    /autoapi/xlstm_jax/resume_training/index

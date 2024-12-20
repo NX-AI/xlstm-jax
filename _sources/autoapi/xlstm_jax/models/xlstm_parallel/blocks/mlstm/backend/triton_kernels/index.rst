@@ -4,14 +4,6 @@ xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels
 .. py:module:: xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels
 
 
-Attributes
-----------
-
-.. autoapisummary::
-
-   xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.triton_kernels.BackendNameType
-
-
 Classes
 -------
 
@@ -23,8 +15,6 @@ Classes
 
 Module Contents
 ---------------
-
-.. py:data:: BackendNameType
 
 .. py:class:: mLSTMBackendTritonConfig
 
@@ -55,8 +45,8 @@ Module Contents
 
 
    .. py:attribute:: backend_name
-      :type:  BackendNameType
-      :value: 'max_triton_noslice'
+      :type:  str
+      :value: 'chunkwise--triton_xl_chunk'
 
 
       Backend name for the kernel type used

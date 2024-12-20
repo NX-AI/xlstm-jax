@@ -25,18 +25,18 @@ Functions
 Module Contents
 ---------------
 
-.. py:function:: recurrent_step_fw(matC_state, vecN_state, scaM_state, vecQ, vecK, vecV, scaI, scaF, eps = 1e-06)
+.. py:function:: recurrent_step_fw(c, n, m, q, k, v, i, f, eps = 1e-06)
 
    This is a single step of the mLSTM operation in recurrent form.
 
-   :param matC_state: Memory state tensor of shape (B, NH, DHQK, DHV).
-   :param vecN_state: Normalizer state tensor of shape (B, NH, DHQK).
-   :param scaM_state: Max state tensor of shape (B, NH, 1).
-   :param vecQ: Queries tensor of shape (B, NH, DHQK).
-   :param vecK: Keys tensor of shape (B, NH, DHQK).
-   :param vecV: Values tensor of shape (B, NH, DHV).
-   :param scaI: Input gate tensor of shape (B, NH, 1).
-   :param scaF: Forget gate tensor of shape (B, NH, 1).
+   :param c: Memory state tensor of shape (B, NH, DHQK, DHV).
+   :param n: Normalizer state tensor of shape (B, NH, DHQK).
+   :param m: Max state tensor of shape (B, NH, 1).
+   :param q: Queries tensor of shape (B, NH, DHQK).
+   :param k: Keys tensor of shape (B, NH, DHQK).
+   :param v: Values tensor of shape (B, NH, DHV).
+   :param i: Input gate tensor of shape (B, NH, 1).
+   :param f: Forget gate tensor of shape (B, NH, 1).
    :param eps: Used for building the forgetgate matrix. Defaults to 1e-6.
 
    :returns: The hidden state and the new states (matC_state_new, vecN_state_new, vecM_state_new).

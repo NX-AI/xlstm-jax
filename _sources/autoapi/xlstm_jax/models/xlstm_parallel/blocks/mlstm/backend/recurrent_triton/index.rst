@@ -45,6 +45,14 @@ Module Contents
       Whether to use scan for the recurrent sequence.
 
 
+   .. py:attribute:: backend_name
+      :type:  str
+      :value: 'triton'
+
+
+      Name of the step kernel to use.
+
+
    .. py:method:: assign_model_config_params(model_config)
 
 

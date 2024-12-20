@@ -16,8 +16,8 @@
     document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
     document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
   </script>
-  <!-- 
-    this give us a css class that will be invisible only if js is disabled 
+  <!--
+    this give us a css class that will be invisible only if js is disabled
   -->
   <noscript>
     <style>
@@ -27,8 +27,8 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="../../../../../../../../_static/styles/theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
-<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=26a4bc78f4c0ddb94549" rel="stylesheet" />
+  <link href="../../../../../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="../../../../../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
@@ -36,10 +36,10 @@
     <link rel="stylesheet" type="text/css" href="../../../../../../../../_static/custom.css?v=2eb6d7a9" />
   
   <!-- So that users can add custom icons -->
-  <script src="../../../../../../../../_static/scripts/fontawesome.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script src="../../../../../../../../_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549" />
-<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549" />
+  <link rel="preload" as="script" href="../../../../../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
     <script src="../../../../../../../../_static/documentation_options.js?v=9eb32ce0"></script>
     <script src="../../../../../../../../_static/doctools.js?v=9bcbadda"></script>
@@ -182,13 +182,6 @@
 </ul>
 </details></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../../import_utils/index.html">xlstm_jax.import_utils</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="../../../../../../kernels/index.html">xlstm_jax.kernels</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../../kernels/kernel_utils/index.html">xlstm_jax.kernels.kernel_utils</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../../kernels/mlstm_chunkwise/index.html">xlstm_jax.kernels.mlstm_chunkwise</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../../kernels/mlstm_recurrent/index.html">xlstm_jax.kernels.mlstm_recurrent</a></li>
-<li class="toctree-l4"><a class="reference internal" href="../../../../../../kernels/stride_utils/index.html">xlstm_jax.kernels.stride_utils</a></li>
-</ul>
-</details></li>
 <li class="toctree-l3"><a class="reference internal" href="../../../../../../main_train/index.html">xlstm_jax.main_train</a></li>
 <li class="toctree-l3 current active has-children"><a class="reference internal" href="../../../../../index.html">xlstm_jax.models</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l4"><a class="reference internal" href="../../../../../configs/index.html">xlstm_jax.models.configs</a></li>
@@ -231,9 +224,14 @@
   
   
   <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
   </div>
-  
-  <div id="rtd-footer-container"></div>
 
 
       </div>
@@ -414,7 +412,7 @@
 <h2>Functions<a class="headerlink" href="#functions" title="Link to this heading">#</a></h2>
 <div class="pst-scrollable-table-container"><table class="autosummary longtable table autosummary">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw" title="xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_step_fw</span></code></a>(matC_state, vecN_state, scaM_state, ...)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw" title="xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_step_fw</span></code></a>(c, n, m, q, k, v, i, f[, eps])</p></td>
 <td><p>This is a single step of the mLSTM operation in recurrent form.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_sequence_fw" title="xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_sequence_fw"><code class="xref py py-obj docutils literal notranslate"><span class="pre">recurrent_sequence_fw</span></code></a>(queries, keys, values, ...[, ...])</p></td>
@@ -428,19 +426,19 @@
 <h2>Module Contents<a class="headerlink" href="#module-contents" title="Link to this heading">#</a></h2>
 <dl class="py function">
 <dt class="sig sig-object py" id="xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw">
-<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.</span></span><span class="sig-name descname"><span class="pre">recurrent_step_fw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matC_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecN_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaM_state</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecQ</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecK</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vecV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaI</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scaF</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.</span></span><span class="sig-name descname"><span class="pre">recurrent_step_fw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">c</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">m</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">i</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">f</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#xlstm_jax.models.xlstm_parallel.blocks.mlstm.backend.recurrent.recurrent_step_fw" title="Link to this definition">#</a></dt>
 <dd><p>This is a single step of the mLSTM operation in recurrent form.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>matC_state</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Memory state tensor of shape (B, NH, DHQK, DHV).</p></li>
-<li><p><strong>vecN_state</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Normalizer state tensor of shape (B, NH, DHQK).</p></li>
-<li><p><strong>scaM_state</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Max state tensor of shape (B, NH, 1).</p></li>
-<li><p><strong>vecQ</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Queries tensor of shape (B, NH, DHQK).</p></li>
-<li><p><strong>vecK</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Keys tensor of shape (B, NH, DHQK).</p></li>
-<li><p><strong>vecV</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Values tensor of shape (B, NH, DHV).</p></li>
-<li><p><strong>scaI</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Input gate tensor of shape (B, NH, 1).</p></li>
-<li><p><strong>scaF</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Forget gate tensor of shape (B, NH, 1).</p></li>
+<li><p><strong>c</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Memory state tensor of shape (B, NH, DHQK, DHV).</p></li>
+<li><p><strong>n</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Normalizer state tensor of shape (B, NH, DHQK).</p></li>
+<li><p><strong>m</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Max state tensor of shape (B, NH, 1).</p></li>
+<li><p><strong>q</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Queries tensor of shape (B, NH, DHQK).</p></li>
+<li><p><strong>k</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Keys tensor of shape (B, NH, DHQK).</p></li>
+<li><p><strong>v</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Values tensor of shape (B, NH, DHV).</p></li>
+<li><p><strong>i</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Input gate tensor of shape (B, NH, 1).</p></li>
+<li><p><strong>f</strong> (<a class="reference external" href="https://jax.readthedocs.io/en/latest/_autosummary/jax.Array.html#jax.Array" title="(in JAX)"><em>jax.Array</em></a>) – Forget gate tensor of shape (B, NH, 1).</p></li>
 <li><p><strong>eps</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Used for building the forgetgate matrix. Defaults to 1e-6.</p></li>
 </ul>
 </dd>
@@ -661,8 +659,8 @@ By NXAI GmbH
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="../../../../../../../../_static/scripts/bootstrap.js?digest=26a4bc78f4c0ddb94549"></script>
-<script defer src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=26a4bc78f4c0ddb94549"></script>
+  <script defer src="../../../../../../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="../../../../../../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
 
   <footer class="bd-footer">
   </footer>
