@@ -15,7 +15,7 @@ task_name: sclaw
 batch_size_per_device: 4
 context_length: 8192
 num_epochs: 1000
-num_train_steps: 38_000 #95_000
+num_train_steps: 76_000 #95_000
 lr: 5e-4
 
 scheduler:
@@ -69,7 +69,7 @@ logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_2.7B_dclm_cosine
 hydra:
   launcher:
-    nodes: 16
+    nodes: 8
     additional_parameters: {
       "gpu-bind": "closest",
       "wait-all-nodes": "1",
