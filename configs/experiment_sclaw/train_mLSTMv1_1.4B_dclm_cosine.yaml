@@ -16,7 +16,7 @@ batch_size_per_device: 8
 context_length: 8192
 num_epochs: 1000
 num_train_steps: 76_000 #95_000
-lr: 1e-3
+lr: 8e-4
 
 scheduler:
   warmup_steps: 750
