@@ -69,7 +69,7 @@ logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_1.4B_dclm_cosine
 hydra:
   launcher:
-    nodes: 16
+    nodes: 8
     additional_parameters: {
       "gpu-bind": "closest",
       "wait-all-nodes": "1",
