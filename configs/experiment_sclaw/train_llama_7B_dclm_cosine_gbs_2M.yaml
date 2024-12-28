@@ -19,7 +19,7 @@ num_train_steps: 76_000
 lr: 5e-4
 
 scheduler:
-  warmup_steps: 750
+  warmup_steps: 3000 #750
   cooldown_steps: 1000 #2000
 
 trainer:
@@ -54,7 +54,7 @@ model:
 
   theta: 500_000
 
-  num_blocks: 24
+  num_blocks: 32
   head_dim: 128 #@32 heads
   embedding_dim: 4096
 
