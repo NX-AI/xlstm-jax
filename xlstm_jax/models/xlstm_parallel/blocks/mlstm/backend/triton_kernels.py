@@ -13,7 +13,7 @@ from .config import mLSTMBackend
 class mLSTMBackendTritonConfig:
     autocast_dtype: str | None = None
     """Dtype to use for the kernel computation. If None, uses the query dtype."""
-    chunk_size: int = 64
+    chunk_size: int = 128
     """Chunk size for the kernel computation."""
     reduce_slicing: bool = True
     """Whether to reduce slicing operations before the kernel computation.
@@ -27,6 +27,8 @@ class mLSTMBackendTritonConfig:
     """Normalizer upper bound value - max(norm_val e^-m, |n q|)"""
     stabilize_correctly: bool = True
     """Whether to stabilize correctly, i.e. scale norm_val with the maximizer state - see above"""
+    normalize: bool = True
+    """Only relevant for the "siging" backend. Whether to normalize the C matrix."""
 
     def assign_model_config_params(self, model_config):
         pass
@@ -74,19 +76,44 @@ class mLSTMBackendTriton(mLSTMBackend):
             i = i[..., 0]
             f = f[..., 0]
         kernel_fn = get_mlstm_kernel(self.config.backend_name)
-        return kernel_fn(
-            q,
-            k,
-            v,
-            i,
-            f,
-            c_initial=c_initial,
-            n_initial=n_initial,
-            m_initial=m_initial,
-            return_last_states=return_last_states,
-            chunk_size=self.config.chunk_size,
-            autocast_kernel_dtype=autocast_kernel_dtype,
-        )
+
+        if "siging" in self.config.backend_name:
+            # Note: The mLSTM sigmoid input gate ("siging") version has a different
+            # signature as it does not have a m state.
+            ret = kernel_fn(
+                q,
+                k,
+                v,
+                i,
+                f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                return_last_states=return_last_states,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
+                normalize=self.config.normalize,
+                eps=self.config.eps,
+            )
+            if isinstance(ret, tuple):
+                # return None for the m state
+                return ret[0], (ret[1][0], ret[1][1], None)
+            else:
+                return ret
+        else:
+            return kernel_fn(
+                q,
+                k,
+                v,
+                i,
+                f,
+                c_initial=c_initial,
+                n_initial=n_initial,
+                m_initial=m_initial,
+                return_last_states=return_last_states,
+                chunk_size=self.config.chunk_size,
+                autocast_kernel_dtype=autocast_kernel_dtype,
+                eps=self.config.eps,
+            )
 
     @property
     def can_vmap_over_heads(self) -> bool:
