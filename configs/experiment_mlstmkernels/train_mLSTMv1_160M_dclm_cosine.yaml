@@ -48,7 +48,9 @@ model:
   vocab_size: -1
   backend: "triton_kernels"
   backend_name: "chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
+
   chunk_size: 128
+  normalize_siging: true
 
   num_blocks: 12
   num_heads: 4
@@ -59,7 +61,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}
 
 logger:
   wb_tags:
