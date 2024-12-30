@@ -27,4 +27,4 @@ wb_entity: xlstm
 wb_name: ${logging_name}_gbs${global_batch_size}
 wb_tags:
   - ${task_name}
-  - ${logging_name}
+  # - ${logging_name}
