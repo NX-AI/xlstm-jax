@@ -111,10 +111,14 @@ class mLSTMLayerV1(nn.Module):
             return init_fn
 
         # Compute the gate pre-activations.
-        igate_preact = gate_layer(
-            bias_init=gate_init(self.config.mlstm_cell.igate_bias_init_range),
-            name="igate",
-        )(x)
+        if self.config.mlstm_cell.igate_preact_fixed_to is None:
+            igate_preact = gate_layer(
+                bias_init=gate_init(self.config.mlstm_cell.igate_bias_init_range),
+                name="igate",
+            )(x)
+        else:
+            igate_preact = jnp.full((B, S, num_local_heads), self.config.mlstm_cell.igate_preact_fixed_to)
+
         fgate_preact = gate_layer(
             bias_init=gate_init(self.config.mlstm_cell.fgate_bias_init_range),
             name="fgate",

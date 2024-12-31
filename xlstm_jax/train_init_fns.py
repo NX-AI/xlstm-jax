@@ -305,6 +305,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         norm_eps=cfg.model.cell_norm_eps,
                         gate_soft_cap=cfg.model.gate_soft_cap,
                         reset_at_document_boundaries=cfg.model.reset_at_document_boundaries,
+                        igate_preact_fixed_to=cfg.model.igate_preact_fixed_to,
                     ),
                 ),
                 feedforward=FeedForwardConfig(

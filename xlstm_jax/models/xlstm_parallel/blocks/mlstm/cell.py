@@ -57,6 +57,9 @@ class mLSTMCellConfig(SubModelConfig):
     parallel: ParallelConfig | None = None
     """Parallel configuration for the mLSTM cell."""
 
+    igate_preact_fixed_to: float | None = None
+    """If not None, the input gate is fixed to the given value. If None, the input gate is computed as usual."""
+
     @property
     def _dtype(self) -> jnp.dtype:
         """
@@ -155,10 +158,15 @@ class mLSTMCell(nn.Module):
                 return init_fn
 
             # Compute the gate pre-activations.
-            igate_preact = gate_layer(
-                bias_init=gate_init(self.config.igate_bias_init_range),
-                name="igate",
-            )(gate_input)
+            if self.config.igate_preact_fixed_to is not None:
+                igate_preact = jnp.full(
+                    (B, S, self.config.num_heads), self.config.igate_preact_fixed_to, dtype=self.config._gate_dtype
+                )
+            else:
+                igate_preact = gate_layer(
+                    bias_init=gate_init(self.config.igate_bias_init_range),
+                    name="igate",
+                )(gate_input)
             fgate_preact = gate_layer(
                 bias_init=gate_init(self.config.fgate_bias_init_range),
                 name="fgate",

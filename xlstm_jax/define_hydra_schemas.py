@@ -72,6 +72,7 @@ class CombinedModelConfig:
     cell_norm_eps: float
     gate_soft_cap: float
     reset_at_document_boundaries: bool
+    igate_preact_fixed_to: float | None
 
     # feedforward_config
     proj_factor: float
