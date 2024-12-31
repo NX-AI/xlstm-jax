@@ -1,8 +1,7 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval
   - override /parallel: mLSTMv1_1.3B # use this for no FSDP (pure dp)
   - override /model: mLSTMv1_default
   - override /optimizer: adamw
@@ -12,10 +11,10 @@ defaults:
 
 # specify the deltas from the defaults:
 task_name: mlstmkernels
-batch_size_per_device: 8
-context_length: 8192
+batch_size_per_device: 16
+context_length: 4096
 num_epochs: 1000
-num_train_steps: 46_000 #95_000
+num_train_steps: 36_000 #95_000
 lr: 3e-3
 
 scheduler:
@@ -38,11 +37,9 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
-  name: mLSTMv1_400M
+  name: mLSTMv1_160M
 
   reset_at_document_boundaries: true
   vocab_size: -1
@@ -50,12 +47,13 @@ model:
   backend_name: "chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
 
   chunk_size: 128
-  normalize_siging: true
+  normalize_siging: true # only used for siging kernels
 
-  num_blocks: 24
+  num_blocks: 12
   num_heads: 4
-  embedding_dim: 1024
+  embedding_dim: 768
 
+  igate_bias_init_range: 0.0
   igate_preact_fixed_to: null
 
 profiling:
@@ -63,7 +61,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}
+logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}
 
 logger:
   wb_tags:
@@ -74,7 +72,7 @@ logger:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
 hydra:
   launcher:
-    nodes: 2
+    nodes: 1
     additional_parameters: {
       "gpu-bind": "closest",
       "wait-all-nodes": "1",

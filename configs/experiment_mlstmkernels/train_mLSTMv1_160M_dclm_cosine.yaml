@@ -27,6 +27,7 @@ trainer:
   check_val_every_n_steps: 500
   log_logit_stats: true
   log_intermediates: true
+  seed: 42
 
 checkpointing:
   monitor: dclm_perplexity
@@ -55,6 +56,8 @@ model:
   num_blocks: 12
   num_heads: 4
   embedding_dim: 768
+
+  igate_preact_fixed_to: null
 
 profiling:
   # Not profiling to reduce time and potential failure points.
