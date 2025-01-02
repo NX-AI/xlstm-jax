@@ -47,8 +47,8 @@ model:
   reset_at_document_boundaries: true
   vocab_size: -1
   backend: "triton_kernels"
-  backend_name: "chunkwise--triton_limit_chunk"
-  chunk_size: 64
+  backend_name: "chunkwise--triton_xl_chunk" #"chunkwise--triton_limit_chunk"
+  chunk_size: 128 #64
 
   num_blocks: 24
   num_heads: 4
@@ -59,7 +59,12 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_nh${model.num_heads}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_nh${model.num_heads}_bname${model.backend_name}_cs${model.chunk_size}
+
+logger:
+  wb_tags:
+    - ${task_name}
+    - ${model.backend_name}
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_1.4B_dclm_cosine

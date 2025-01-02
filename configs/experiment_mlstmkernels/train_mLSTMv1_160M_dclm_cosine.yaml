@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_1.3B # use this for no FSDP (pure dp)
   - override /model: mLSTMv1_default
   - override /optimizer: adamw
@@ -24,7 +24,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
-  check_val_every_n_steps: 500
+  check_val_every_n_steps: 1000
   log_logit_stats: true
   log_intermediates: true
   seed: 42
@@ -39,8 +39,8 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   name: mLSTMv1_160M
@@ -51,12 +51,13 @@ model:
   backend_name: "chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
 
   chunk_size: 128
-  normalize_siging: true
+  normalize_siging: false
 
   num_blocks: 12
   num_heads: 4
   embedding_dim: 768
 
+  igate_bias_init_range: -10.0
   igate_preact_fixed_to: null
 
 profiling:
@@ -64,8 +65,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}
-
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}_igp${model.igate_preact_fixed_to}_nh${model.num_heads}
 logger:
   wb_tags:
     - ${task_name}
