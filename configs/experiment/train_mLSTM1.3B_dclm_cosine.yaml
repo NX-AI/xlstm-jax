@@ -3,8 +3,8 @@ defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
   - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
   - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
-  - override /parallel: mLSTMv1_1.3B
-  - override /model: mLSTMv1_1.3B
+  - override /parallel: mLSTM1.3B
+  - override /model: mLSTM1.3B
   - override /optimizer: adamw
   - override /scheduler: cosine_decay
   - override /hydra/launcher: slurm_launcher
@@ -16,7 +16,7 @@ batch_size_per_device: 8
 context_length: 8192
 num_epochs: 1000
 num_train_steps: 95_000
-lr: 7e-4 # TWO RUNS: 7e-4 (9088), 1e-3 (8995)
+lr: 5e-4
 
 scheduler:
   warmup_steps: 750
@@ -42,7 +42,7 @@ data_eval:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
-  reset_at_document_boundaries: true
+  reset_at_document_boundaries: false
   vocab_size: -1
   backend: "triton_kernels"
   backend_name: "chunkwise--triton_xl_chunk"
@@ -52,7 +52,7 @@ profiling:
   profile_every_n_minutes: -1
 
 # Run command:
-# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTMv1_1.3B_dclm_cosine
+# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment=train_mLSTM1.3B_dclm_cosine
 hydra:
   launcher:
     nodes: 4
@@ -63,7 +63,3 @@ hydra:
       "exclusive": "",
     }
   mode: MULTIRUN
-  # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  # sweeper:
-  #   params:
-  #     lr: 7e-4, 1e-3
