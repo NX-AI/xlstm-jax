@@ -61,7 +61,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}
+logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_nh${model.num_heads}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}
 
 logger:
   wb_tags:

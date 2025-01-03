@@ -65,7 +65,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}_igp${model.igate_preact_fixed_to}_nh${model.num_heads}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}_igp${model.igate_preact_fixed_to}_nh${model.num_heads}_s${trainer.seed}
 logger:
   wb_tags:
     - ${task_name}
