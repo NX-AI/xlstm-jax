@@ -2,6 +2,7 @@
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
   - /data@data_eval.ds1: dclm_arrayrecord_eval
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_1.3B # use this for no FSDP (pure dp)
   - override /model: mLSTMv1_default
   - override /optimizer: adamw
@@ -11,11 +12,11 @@ defaults:
 
 # specify the deltas from the defaults:
 task_name: mlstmkernels
-batch_size_per_device: 16
+batch_size_per_device: 8
 context_length: 4096
 num_epochs: 1000
-num_train_steps: 36_000 #95_000
-lr: 3e-3
+num_train_steps: 46_000 #95_000
+lr: 1e-3
 
 scheduler:
   warmup_steps: 750
@@ -26,6 +27,7 @@ trainer:
   check_val_every_n_steps: 1000
   log_logit_stats: true
   log_intermediates: true
+  seed: 42
 
 checkpointing:
   monitor: dclm_perplexity
@@ -37,21 +39,23 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
-  name: mLSTMv1_160M
+  name: mLSTMv1_400M
 
   reset_at_document_boundaries: true
   vocab_size: -1
   backend: "triton_kernels"
-  backend_name: "chunkwise--triton_limit_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
+  backend_name: "chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
 
-  chunk_size: 64
-  normalize_siging: false # only used for siging kernels
+  chunk_size: 128
+  normalize_siging: false
 
-  num_blocks: 12
-  num_heads: 6
-  embedding_dim: 768
+  num_blocks: 24
+  num_heads: 8
+  embedding_dim: 1024
 
   igate_bias_init_range: -10.0
   igate_preact_fixed_to: null
@@ -61,7 +65,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_nh${model.num_heads}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_normsig${model.normalize_siging}_cs${model.chunk_size}_igp${model.igate_preact_fixed_to}_nh${model.num_heads}_s${trainer.seed}
 
 logger:
   wb_tags:
@@ -72,7 +76,7 @@ logger:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
 hydra:
   launcher:
-    nodes: 1
+    nodes: 2
     additional_parameters: {
       "gpu-bind": "closest",
       "wait-all-nodes": "1",
