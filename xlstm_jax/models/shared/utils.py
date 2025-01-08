@@ -59,6 +59,6 @@ def soft_cap_logits(logits: jax.Array, cap_value: float | jax.Array) -> jax.Arra
     Returns:
         The capped logits.
     """
-    if cap_value is None:
+    if cap_value is None or cap_value < 0.0:
         return logits
     return cap_value * nn.tanh(logits / cap_value)
