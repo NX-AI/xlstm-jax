@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=2eb6d7a9" />
@@ -402,7 +402,7 @@ own experiment quickly.</p>
 <p>The first thing to be aware of is that we use Python dataclasses as foundational configuration objects.
 Let us look at the example of the <code class="docutils literal notranslate"><span class="pre">ParallelConfig</span></code>, located at <code class="docutils literal notranslate"><span class="pre">xlstm_jax.models.configs.ParallelConfig</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">ParallelConfig</span><span class="p">:</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ParallelConfig</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for parallelism.&quot;&quot;&quot;</span>
 
     <span class="n">data_axis_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
@@ -436,7 +436,7 @@ Let us look at the example of the <code class="docutils literal notranslate"><sp
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to use asynchronous tensor parallelism for dense layers. Default to `False`, as on local hardware,</span>
 <span class="sd">    ppermute communication introduces large overhead.&quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">_allowed_fsdp_dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;bfloat16&quot;</span><span class="p">,</span> <span class="s2">&quot;float16&quot;</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsdp_gather_dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -495,7 +495,7 @@ specified here.</p></li>
 <p>The principal entry point for hydra is the script <code class="docutils literal notranslate"><span class="pre">scripts/training/train_with_hydra.py</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">main_train()</span></code> function in that file is decorated with:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hydra</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;../configs&quot;</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">version_base</span><span class="o">=</span><span class="s2">&quot;1.3&quot;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">main_train</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main_train</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
 </div>

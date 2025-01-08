@@ -30,7 +30,7 @@
   <link href="../../../../_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="../../../../_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="../../../../_static/custom.css?v=2eb6d7a9" />
@@ -518,7 +518,7 @@ If there is no prefix, it is simply an empty string.</p>
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)">dict</a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a>, <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a> | <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a>]</p>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">xlstm_jax.utils.pytree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pytree_diff</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span><span class="n">ParseLMEval</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="p">{</span><span class="s2">&quot;idx&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 <span class="gp">... </span>     <span class="s2">&quot;req&quot;</span><span class="p">:</span> <span class="n">Instance</span><span class="p">(</span>
@@ -537,7 +537,7 @@ If there is no prefix, it is simply an empty string.</p>
 <dd><p>Bases: <code class="xref py py-obj docutils literal notranslate"><span class="pre">grain.python.MapTransform</span></code></p>
 <p>Grain Transform that uses an indexed dataset (with “idx”) and fills it towards all
 components of a LLMIndexedBatch.</p>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">xlstm_jax.utils.pytree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pytree_diff</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="n">CompleteLLMIndexedBatch</span><span class="p">()</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
 <span class="gp">... </span>        <span class="p">{</span><span class="s2">&quot;inputs&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="s2">&quot;targets&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]]),</span> <span class="s2">&quot;idx&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="mi">0</span><span class="p">)}),</span>
@@ -686,7 +686,7 @@ Assumes a dataset that consists of a flat dictionary of arrays.</p>
 </ul>
 </dd>
 </dl>
-<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">xlstm_jax.utils.pytree_utils</span> <span class="kn">import</span> <span class="n">pytree_diff</span>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">xlstm_jax.utils.pytree_utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">pytree_diff</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">pytree_diff</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">PadSequenceInBatchDataset</span><span class="p">(</span><span class="n">grain</span><span class="o">.</span><span class="n">MapDataset</span><span class="o">.</span><span class="n">source</span><span class="p">(</span>
 <span class="gp">... </span>    <span class="p">[{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">5</span><span class="p">]])},</span>
 <span class="gp">... </span>     <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]])},</span>

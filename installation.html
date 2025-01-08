@@ -30,7 +30,7 @@
   <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 <link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
 
-    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
     <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=2eb6d7a9" />
@@ -361,8 +361,10 @@
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repository-installation">Repository Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-repository">Clone repository</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-environment">Conda environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pip-install">Pip install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-installation">Testing installation</a></li>
 </ul>
             </nav>
         </div>
@@ -376,21 +378,42 @@
                   
   <section id="installation">
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading">#</a></h1>
-<section id="repository-installation">
-<h2>Repository Installation<a class="headerlink" href="#repository-installation" title="Link to this heading">#</a></h2>
-<p>To install the package, clone the repository and install the package using pip:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>--recurse-submodules<span class="w"> </span>git@github.com:NX-AI/xlstm-jax.git
-pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+<section id="clone-repository">
+<h2>Clone repository<a class="headerlink" href="#clone-repository" title="Link to this heading">#</a></h2>
+<p>To clone the repository, execute</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/NX-AI/xlstm-jax.git
+<span class="nb">cd</span><span class="w"> </span>xlstm-jax
 </pre></div>
 </div>
-<p>This repository relies on custom Triton kernels hosted in https://github.com/NX-AI/mlstm_kernels and included as a submodule.
-In order to install or update the kernels manually run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">init</span></code> or <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span></code>.</p>
 </section>
 <section id="conda-environment">
 <h2>Conda environment<a class="headerlink" href="#conda-environment" title="Link to this heading">#</a></h2>
 <p>We use conda for managing dependencies.
 You can create a new conda environment and install the required dependencies by running the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>envs/environment_jax_0.4.32_gpu_python_3.11.yml
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>env<span class="w"> </span>create<span class="w"> </span>-f<span class="w"> </span>envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
+</pre></div>
+</div>
+<p>if you use mamba.</p>
+</section>
+<section id="pip-install">
+<h2>Pip install<a class="headerlink" href="#pip-install" title="Link to this heading">#</a></h2>
+<p>When creation of the conda env has finished pip install the repository with</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="testing-installation">
+<h2>Testing installation<a class="headerlink" href="#testing-installation" title="Link to this heading">#</a></h2>
+<p>You can run one of the tests to verify that your installation works correctly, for example,</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>tests/config/test_equivalence_hydra_nonhydra.py
+</pre></div>
+</div>
+<p>or to test it with a GPU</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CUDA_VISIBLE_DEVICES</span><span class="o">=</span><span class="m">0</span><span class="w"> </span>pytest<span class="w"> </span>tests/config/test_equivalence_hydra_nonhydra.py
 </pre></div>
 </div>
 </section>
@@ -442,8 +465,10 @@ You can create a new conda environment and install the required dependencies by 
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#repository-installation">Repository Installation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#clone-repository">Clone repository</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conda-environment">Conda environment</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pip-install">Pip install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#testing-installation">Testing installation</a></li>
 </ul>
   </nav></div>
 

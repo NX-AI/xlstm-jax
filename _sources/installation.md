@@ -1,18 +1,36 @@
 # Installation
 
-## Repository Installation
-To install the package, clone the repository and install the package using pip:
+## Clone repository
+To clone the repository, execute
 ```bash
-git clone --recurse-submodules git@github.com:NX-AI/xlstm-jax.git
-pip install -e .
+git clone https://github.com/NX-AI/xlstm-jax.git
+cd xlstm-jax
 ```
-
-This repository relies on custom Triton kernels hosted in https://github.com/NX-AI/mlstm_kernels and included as a submodule.
-In order to install or update the kernels manually run `git submodule init` or `git submodule update`.
 
 ## Conda environment
 We use conda for managing dependencies.
 You can create a new conda environment and install the required dependencies by running the following command:
 ```bash
-conda env create -f envs/environment_jax_0.4.32_gpu_python_3.11.yml
+conda env create -f envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
+```
+or
+```bash
+mamba env create -f envs/environment_python_3.11_jax_0.4.34_cuda_12.6.yml
+```
+if you use mamba.
+
+## Pip install
+When creation of the conda env has finished pip install the repository with
+```bash
+pip install -e .
+```
+
+## Testing installation
+You can run one of the tests to verify that your installation works correctly, for example,
+```bash
+pytest tests/config/test_equivalence_hydra_nonhydra.py
+```
+or to test it with a GPU
+```bash
+CUDA_VISIBLE_DEVICES=0 pytest tests/config/test_equivalence_hydra_nonhydra.py
 ```
