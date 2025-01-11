@@ -49,7 +49,7 @@ model:
 
   theta: 500_000
 
-  num_blocks: 24
+  num_blocks: 32
   head_dim: 80 #@32 heads
   embedding_dim: 2560
 
