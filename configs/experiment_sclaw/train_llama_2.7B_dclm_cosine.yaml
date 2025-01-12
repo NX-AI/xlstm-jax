@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: llama7B # fsdp
   - override /model: llama_default
   - override /optimizer: adamw
@@ -16,7 +16,7 @@ batch_size_per_device: 8
 context_length: 8192
 num_epochs: 1000
 num_train_steps: 76_000 #16_000, 150_000
-lr: 6e-4
+lr: 7e-4
 
 scheduler:
   warmup_steps: 750
@@ -24,7 +24,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
-  check_val_every_n_steps: 500
+  check_val_every_n_steps: 1000 #500
   log_logit_stats: false
   log_intermediates: false
 
@@ -38,8 +38,8 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   name: llama_2.7B
