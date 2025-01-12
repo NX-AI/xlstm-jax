@@ -16,7 +16,7 @@ batch_size_per_device: 8
 context_length: 8192
 num_epochs: 1000
 num_train_steps: 76_000 #16_000, 150_000
-lr: 7e-4
+lr: 8e-4 # first round: 7e-4
 
 scheduler:
   warmup_steps: 750
@@ -74,6 +74,7 @@ hydra:
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  # sweeper:
-  #   params:
-  #     lr: 7e-4, 1e-3
+  sweeper:
+    params:
+      # lr: 7e-4, 1e-3
+      num_train_steps: 16_000, 31_000, 76_000, 150_000
