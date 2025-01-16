@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: mLSTMv1_1.3B # use this for no FSDP (pure dp)
   - override /model: mLSTMv1_default
   - override /optimizer: adamw
@@ -24,7 +24,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
-  check_val_every_n_steps: 500
+  check_val_every_n_steps: 1000
   log_logit_stats: true
   log_intermediates: true
 
@@ -38,8 +38,8 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   name: mLSTMv1_160M
@@ -47,7 +47,7 @@ model:
   reset_at_document_boundaries: true
   vocab_size: -1
   backend: "triton_kernels"
-  backend_name: "chunkwise--triton_xl_chunk"
+  backend_name: "chunkwise--triton_limit_chunk"
   chunk_size: 64
 
   num_blocks: 12
@@ -59,7 +59,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_nh${model.num_heads}
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
