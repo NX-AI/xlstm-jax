@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: llama7B # fsdp
   - override /model: llama_default
   - override /optimizer: adamw
@@ -15,16 +15,16 @@ task_name: sclaw
 batch_size_per_device: 4
 context_length: 8192
 num_epochs: 1000
-num_train_steps: 76_000
-lr: 5e-4
+num_train_steps: 362_000 #16_000, 150_000
+lr: 5e-4 # first round: 7e-4
 
 scheduler:
-  warmup_steps: 3000 #750
+  warmup_steps: 3000
   cooldown_steps: 1000 #2000
 
 trainer:
   gradient_accumulate_steps: 1
-  check_val_every_n_steps: 1000 #500
+  check_val_every_n_steps: 2000
   log_logit_stats: false
   log_intermediates: false
 
@@ -39,12 +39,11 @@ data_train:
       1_000: 0.5
       2_000: 1.0
 
-
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   name: llama_7B
@@ -63,7 +62,7 @@ profiling:
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_nh${model.num_heads}
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_1.4B_dclm_cosine
@@ -81,4 +80,5 @@ hydra:
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
   # sweeper:
   #   params:
-  #     lr: 7e-4, 1e-3
+  #     # lr: 7e-4, 1e-3
+  #     num_train_steps: 16_000, 31_000, 76_000, 150_000

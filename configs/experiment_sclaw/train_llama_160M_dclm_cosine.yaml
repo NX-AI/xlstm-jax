@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
-  - /data@data_eval.ds2: dclm_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds1: slimpajama_627B_arrayrecord_eval_preprocessed
   - override /parallel: llama1.3B # no fsdp
   - override /model: llama_default
   - override /optimizer: adamw
@@ -24,7 +24,7 @@ scheduler:
 
 trainer:
   gradient_accumulate_steps: 1
-  check_val_every_n_steps: 500
+  check_val_every_n_steps: 1000
   log_logit_stats: false
   log_intermediates: false
 
@@ -38,8 +38,8 @@ data_train:
 data_eval:
   ds1:
     tokenizer_path: "EleutherAI/gpt-neox-20b"
-  ds2:
-    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
 
 model:
   name: llama_160M
@@ -70,7 +70,7 @@ hydra:
       "wait-all-nodes": "1",
       "time": "21-00:00:00",
       "exclusive": "",
-      "exclude": "compute-permanent-node-[83,160]",
+      "exclude": "",
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done

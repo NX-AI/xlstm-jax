@@ -74,7 +74,7 @@ hydra:
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  sweeper:
-    params:
-      # lr: 7e-4, 1e-3
-      num_train_steps: 16_000, 31_000, 76_000, 150_000
+  # sweeper:
+  #   params:
+  #     # lr: 7e-4, 1e-3
+  #     num_train_steps: 16_000, 31_000, 76_000, 150_000, 375_000
