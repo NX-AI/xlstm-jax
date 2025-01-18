@@ -294,6 +294,7 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                                 "backend_name": cfg.model.backend_name,
                                 "chunk_size": cfg.model.chunk_size,
                                 "normalize": cfg.model.normalize_siging,
+                                "eps": cfg.model.backend_eps,
                             }
                             if cfg.model.backend == "triton_kernels"
                             else {},
@@ -352,7 +353,12 @@ def init_model_config(cfg: DictConfig, parallel: ParallelConfig) -> ModelConfig:
                         gate_dtype=cfg.model.gate_dtype,
                         backend=mLSTMBackendNameAndKwargs(
                             name=cfg.model.backend,
-                            kwargs={"backend_name": cfg.model.backend_name, "chunk_size": cfg.model.chunk_size}
+                            kwargs={
+                                "backend_name": cfg.model.backend_name,
+                                "chunk_size": cfg.model.chunk_size,
+                                "normalize": cfg.model.normalize_siging,
+                                "eps": cfg.model.backend_eps,
+                            }
                             if cfg.model.backend == "triton_kernels"
                             else {},
                         ),

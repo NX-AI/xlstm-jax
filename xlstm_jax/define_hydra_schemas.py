@@ -65,6 +65,8 @@ class CombinedModelConfig:
     backend_name: str
     chunk_size: int
     normalize_siging: bool
+    backend_eps: float
+
     igate_bias_init_range: float
     add_qk_norm: bool
     cell_norm_type: str

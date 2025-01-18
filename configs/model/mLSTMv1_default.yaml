@@ -29,6 +29,7 @@ gate_dtype: float32
 backend: triton_kernels
 backend_name: "chunkwise--triton_xl_chunk"
 chunk_size: 128
+backend_eps: 1e-6
 normalize_siging: false
 igate_bias_init_range: -10.0
 add_qk_norm: false

@@ -59,18 +59,20 @@ model:
   cell_norm_type_v1: rmsnorm
   cell_norm_eps: 1e-6
 
+  backend_eps: 1e-6
+
 profiling:
   # Not profiling to reduce time and potential failure points.
   profile_every_n_minutes: -1
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
-logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_nh${model.num_heads}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}_nt${model.cell_norm_type_v1}_ne${model.cell_norm_eps}_nsig${model.normalize_siging}
+logging_name: ${data_train.ds1.name}_${model.name}_igexps_ctx${context_length}_lr${lr}_steps${num_train_steps}_bname${model.backend_name}_cs${model.chunk_size}_nh${model.num_heads}_igpf${model.igate_preact_fixed_to}_igpb${model.igate_bias_init_range}_nt${model.cell_norm_type_v1}_ne${model.cell_norm_eps}_nsig${model.normalize_siging}_be${model.backend_eps}
 
 logger:
   wb_tags:
     - ${task_name}
     - ${model.backend_name}
-    - normeps
+    - backendeps
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
@@ -85,7 +87,8 @@ hydra:
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  sweeper:
-    params:
-      model.igate_bias_init_range: -10.0, -5.0, -2.0
-      model.cell_norm_eps: 1e-8, 1e-6, 1e-4, 1e-2
+  # sweeper:
+  #   params:
+  #     model.igate_bias_init_range: 0.0 #-10.0, -5.0, -2.0
+  #     # model.cell_norm_eps: 1e-8, 1e-6, 1e-4, 1e-2
+  #     model.backend_eps: 1e-6, 0.0
