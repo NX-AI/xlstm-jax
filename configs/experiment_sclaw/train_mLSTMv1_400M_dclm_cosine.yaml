@@ -61,6 +61,12 @@ profiling:
 base_dir: /nfs-gpu/xlstm/outputs_beck
 logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}
 
+logger:
+  wb_tags:
+    - ${task_name}
+    - ${model.backend_name}
+    - ${model.name}
+
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
 hydra:

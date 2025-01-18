@@ -51,7 +51,7 @@ model:
   chunk_size: 64
 
   num_blocks: 12
-  num_heads: 4
+  num_heads: 6
   embedding_dim: 768
 
 profiling:
@@ -60,6 +60,11 @@ profiling:
 
 base_dir: /nfs-gpu/xlstm/outputs_beck
 logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}_nh${model.num_heads}
+
+logger:
+  wb_tags:
+    - ${task_name}
+    - ${model.backend_name}
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
@@ -76,4 +81,5 @@ hydra:
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
   # sweeper:
   #   params:
-  #     lr: 7e-4, 1e-3
+  #     # lr: 7e-4, 1e-3
+  #     num_train_steps: 36000, 18000, 8000, 5000 #345000, 173000 #
