@@ -1,0 +1,84 @@
+# @package _global_
+defaults:
+  - /data@data_train.ds1: dclm_arrayrecord_train
+  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
+  - override /parallel: llama1.3B # no fsdp
+  - override /model: llama_default
+  - override /optimizer: adamw
+  - override /scheduler: cosine_decay
+  - override /hydra/launcher: slurm_launcher
+  - _self_
+
+# specify the deltas from the defaults:
+task_name: mlstmkernels
+batch_size_per_device: 8
+context_length: 4096
+num_epochs: 1000
+num_train_steps: 46_000 #95_000
+lr: 1e-3
+
+scheduler:
+  warmup_steps: 750
+  cooldown_steps: 1000 #2000
+
+trainer:
+  gradient_accumulate_steps: 1
+  check_val_every_n_steps: 1000
+  log_logit_stats: false
+  log_intermediates: false
+
+checkpointing:
+  monitor: dclm_perplexity
+
+data_train:
+  ds1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+
+data_eval:
+  ds1:
+    tokenizer_path: "EleutherAI/gpt-neox-20b"
+  # ds2:
+  #   tokenizer_path: "EleutherAI/gpt-neox-20b"
+
+model:
+  name: llama_400M
+
+  reset_at_document_boundaries: true
+  vocab_size: -1
+
+  theta: 500_000
+
+  num_blocks: 24
+  head_dim: 64 #@16 heads
+  embedding_dim: 1024
+
+profiling:
+  # Not profiling to reduce time and potential failure points.
+  profile_every_n_minutes: -1
+
+base_dir: /nfs-gpu/xlstm/outputs_beck
+logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_steps${num_train_steps}
+
+logger:
+  wb_tags:
+    - ${task_name}
+    - ${model.backend_name}
+
+# Run command:
+# PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_1.4B_dclm_cosine
+hydra:
+  launcher:
+    nodes: 2
+    additional_parameters: {
+      "gpu-bind": "closest",
+      "wait-all-nodes": "1",
+      "time": "21-00:00:00",
+      "exclusive": "",
+      "exclude": "compute-permanent-node-[83,160]",
+    }
+  mode: MULTIRUN
+  # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
+  # sweeper:
+  #   params:
+  #     lr: 7e-4, 1e-3
