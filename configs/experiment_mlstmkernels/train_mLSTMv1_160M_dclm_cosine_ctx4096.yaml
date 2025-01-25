@@ -45,17 +45,19 @@ model:
   reset_at_document_boundaries: true
   vocab_size: -1
   backend: "triton_kernels"
-  backend_name: "chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
+  backend_name: "chunkwise--triton_xl_chunk_siging" #"chunkwise--triton_xl_chunk" # "chunkwise--triton_limit_chunk", "chunkwise--triton_xl_chunk_siging", "parallel--native_siging_autograd"
 
   chunk_size: 128
   normalize_siging: false
 
   num_blocks: 12
-  num_heads: 4
+  num_heads: 6
   embedding_dim: 768
 
   igate_bias_init_range: -10.0
   igate_preact_fixed_to: null
+
+  cell_norm_type_v1: layernorm #rmsnorm
 
 profiling:
   # Not profiling to reduce time and potential failure points.
@@ -82,6 +84,8 @@ hydra:
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
-  # sweeper:
-  #   params:
-  #     lr: 7e-4, 1e-3
+  sweeper:
+    params:
+      # lr: 7e-4, 1e-3
+      model.normalize_siging: false, true
+      model.num_heads: 6, 12

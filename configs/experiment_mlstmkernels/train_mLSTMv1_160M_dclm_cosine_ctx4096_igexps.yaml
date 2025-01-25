@@ -72,7 +72,7 @@ logger:
   wb_tags:
     - ${task_name}
     - ${model.backend_name}
-    - backendeps
+    - normeps
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_160M_dclm_cosine
@@ -83,12 +83,12 @@ hydra:
       "gpu-bind": "closest",
       "wait-all-nodes": "1",
       "time": "21-00:00:00",
-      "exclude": "compute-permanent-node-72",
+      "exclude": "",
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
   # sweeper:
   #   params:
-  #     model.igate_bias_init_range: 0.0 #-10.0, -5.0, -2.0
-  #     # model.cell_norm_eps: 1e-8, 1e-6, 1e-4, 1e-2
-  #     model.backend_eps: 1e-6, 0.0
+  #     model.igate_bias_init_range: -7.0 #-10.0, -5.0, -2.0
+  #     model.cell_norm_eps: 1e-5, 1e-8, 1e-6, 1e-4, 1e-2
+  #     # model.backend_eps: 1e-6, 0.0

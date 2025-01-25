@@ -1,8 +1,8 @@
 # @package _global_
 defaults:
   - /data@data_train.ds1: dclm_arrayrecord_train
-  - /data@data_eval.ds1: dclm_arrayrecord_eval_preprocessed
-  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval_preprocessed
+  - /data@data_eval.ds1: dclm_arrayrecord_eval
+  # - /data@data_eval.ds2: slimpajama_627B_arrayrecord_eval
   - override /parallel: llama1.3B # no fsdp
   - override /model: llama_default
   - override /optimizer: adamw
@@ -63,7 +63,7 @@ logging_name: ${data_train.ds1.name}_${model.name}_ctx${context_length}_lr${lr}_
 logger:
   wb_tags:
     - ${task_name}
-    - ${model.backend_name}
+    - llama_baseline_ctx4096
 
 # Run command:
 # PYTHONPATH=. python scripts/training/train_with_hydra.py +experiment_sclaw=train_mLSTMv1_1.4B_dclm_cosine
@@ -75,7 +75,7 @@ hydra:
       "wait-all-nodes": "1",
       "time": "21-00:00:00",
       "exclusive": "",
-      "exclude": "compute-permanent-node-[83,160]",
+      "exclude": "",
     }
   mode: MULTIRUN
   # this will start the runs locally and serially, i.e. submitit will wait until the first jobs is done
