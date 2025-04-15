@@ -123,6 +123,7 @@ def main():
         # default=".",
         help="PYTHONPATH to set for the subprocess. Default is current directory.",
     )
+    parser.add_argument("--filename_suffices", type=str, help="File name suffices to filter config files, E.g '_0,_1'.")
 
     args = parser.parse_args()
 
@@ -130,6 +131,8 @@ def main():
     script_path = args.script
     wait_time = args.wait
     pythonpath = args.pythonpath
+
+    filname_suffices = args.filename_suffices.split(",") if args.filename_suffices else []
 
     if not config_path.is_dir():
         print(f"Error: Configuration directory not found: {config_path}", file=sys.stderr)
@@ -149,6 +152,16 @@ def main():
         sys.exit(1)
 
     print(f"Found {len(config_files)} configuration files in '{config_path}'.")
+
+    filtered_config_files = []
+    if filname_suffices:
+        for suff in filname_suffices:
+            filtered_config_files.extend([f for f in config_files if f.stem.endswith(suff)])
+
+        print(f"Filtered {len(filtered_config_files)} configuration files with suffices: {filname_suffices}.")
+        config_files = filtered_config_files
+
+    print(f"Using {len(config_files)} configuration files for experiments.")
     print(f"Using config group name: '{config_group}'")
     print(f"Using script: '{script_path}'")
     print(f"Wait time before SIGINT: {wait_time} seconds")
