@@ -7,7 +7,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Literal
 
-from mlstm_simple_torch.mlstm_simple.model import mLSTM, mLSTMConfig
+from xlstm.xlstm_large import xLSTMLarge, xLSTMLargeConfig
+
 from omegaconf import OmegaConf
 
 from .convert_checkpoint import convert_orbax_checkpoint_to_torch_state_dict
@@ -21,7 +22,7 @@ LOGGER = logging.getLogger(__name__)
 def create_mlstm_simple_config_from_jax_config(
     model_config_jax: dict[str, Any],
     overrides: dict[str, Any] = None,
-) -> mLSTMConfig:
+) -> xLSTMLargeConfig:
     new_cfg = dict(
         embedding_dim=model_config_jax["embedding_dim"],
         num_heads=model_config_jax["mlstm_block"]["mlstm"]["num_heads"],
@@ -37,7 +38,7 @@ def create_mlstm_simple_config_from_jax_config(
     )
     if overrides is not None:
         new_cfg.update(overrides)
-    new_cfg = mLSTMConfig(**new_cfg)
+    new_cfg = xLSTMLargeConfig(**new_cfg)
     return new_cfg
 
 
@@ -139,7 +140,7 @@ def pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(
     jax_orbax_model_checkpoint: dict[str, Any],
     jax_model_config: dict[str, Any],
     torch_model_config_overrides: dict[str, Any] = None,
-) -> mLSTM:
+) -> xLSTMLarge:
     LOGGER.info("Jax model checkpoint loaded.")
     LOGGER.info("Converting jax model checkpoint to torch model checkpoint.")
     torch_state_dict_from_jax = convert_orbax_checkpoint_to_torch_state_dict(
@@ -149,7 +150,7 @@ def pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(
     LOGGER.info("Creating torch mLSTM config.")
     mlstm_config = create_mlstm_simple_config_from_jax_config(jax_model_config, overrides=torch_model_config_overrides)
     LOGGER.info("Creating torch mLSTM model.")
-    mlstm_model = mLSTM(mlstm_config)
+    mlstm_model = xLSTMLarge(mlstm_config)
     LOGGER.info("Moving jax model checkpoint parameters into torch model.")
     model_state_dict = mlstm_model.state_dict()
     mlstm_model_state_dict = move_mlstm_jax_state_dict_into_torch_state_dict(
@@ -165,7 +166,7 @@ def pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(
 
 
 def store_mlstm_simple_to_checkpoint(
-    mlstm_model: mLSTM,
+    mlstm_model: xLSTMLarge,
     store_torch_model_checkpoint_path: Path,
     checkpoint_type: Literal["plain", "huggingface"] = "plain",
     max_shard_size: int = 0,
