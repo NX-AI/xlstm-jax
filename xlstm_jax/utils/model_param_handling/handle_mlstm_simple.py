@@ -212,6 +212,7 @@ def convert_mlstm_checkpoint_jax_to_torch_simple(
     checkpoint_type: Literal["plain", "huggingface"] = "plain",
     torch_model_config_overrides: dict[str, Any] = None,
     max_shard_size: int = 0,
+    dtype: str = "float32",
 ) -> None:
     """Convert a jax mLSTM checkpoint to a torch mLSTM checkpoint.
 
@@ -238,6 +239,10 @@ def convert_mlstm_checkpoint_jax_to_torch_simple(
     mlstm_model = pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(
         jax_orbax_model_checkpoint, jax_model_config, torch_model_config_overrides=torch_model_config_overrides
     )
+
+    # Cast model parameters to the specified dtype before storing
+    import torch
+    mlstm_model = mlstm_model.to(dtype=getattr(torch, dtype))
 
     store_mlstm_simple_to_checkpoint(
         mlstm_model,

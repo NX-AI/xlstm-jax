@@ -51,6 +51,7 @@ def process_checkpoint_conversion_for_checkpoint(
     input_directory: str,
     output_directory: str,
     max_shard_size: int,
+    dtype: str,
     dryrun: bool = False,
 ) -> Path:
     # Load JAX checkpoint path
@@ -113,7 +114,8 @@ def process_checkpoint_conversion_for_checkpoint(
                 load_jax_model_checkpoint_path=jax_checkpoint_path,
                 store_torch_model_checkpoint_path=checkpoint_folder,
                 checkpoint_type="huggingface",
-                max_shard_size=args.max_shard_size,
+                max_shard_size=max_shard_size,
+                dtype=dtype,
             )
             return checkpoint_folder
         except RuntimeError as e:
@@ -141,7 +143,8 @@ def process_checkpoint_conversion_for_checkpoint(
                 store_torch_model_checkpoint_path=checkpoint_folder,
                 checkpoint_type="huggingface",
                 torch_model_config_overrides={"ffn_proj_factor": new_ffn_proj_factor},
-                max_shard_size=args.max_shard_size,
+                max_shard_size=max_shard_size,
+                dtype=dtype,
             )
             return checkpoint_folder
 
@@ -158,6 +161,12 @@ if __name__ == "__main__":
     )
     parser.add_argument("--input_dir", type=str, help="Path to the root input directory containing the JAX checkpoints")
     parser.add_argument("--output_dir", type=str, help="Path to the output directory for the converted checkpoints")
+    parser.add_argument(
+        "--dtype",
+        type=str,
+        default="bfloat16",
+        help="Data type for the converted model parameters (e.g., float32, float16, bfloat16)",
+    )
     parser.add_argument(
         "--max_shard_size",
         type=int,
@@ -193,13 +202,19 @@ if __name__ == "__main__":
 
         try:
             checkpoint_folder = process_checkpoint_conversion_for_checkpoint(
-                checkpoint_dict, args.input_dir, args.output_dir, args.max_shard_size, args.dry_run
+                checkpoint_data=checkpoint_dict,
+                input_directory=args.input_dir,
+                output_directory=args.output_dir,
+                max_shard_size=args.max_shard_size,
+                dtype=args.dtype,
+                dryrun=args.dry_run,
             )
             successful.append((checkpoint_dict, checkpoint_folder))
         except Exception as e:
             LOGGER.error(
                 f"Error processing checkpoint with run name: {checkpoint_dict.get('name', 'N/A')} and run_id: {checkpoint_dict.get('run_id', 'N/A')}. Error: {e}"
             )
+            LOGGER.exception("Full traceback:")
             failed.append(checkpoint_dict)
 
     successful_paths = "\n".join([str(ckpt[1]) for ckpt in successful if ckpt[1] is not None])
@@ -217,5 +232,6 @@ PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoint
     --input_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/scaling_law_checkpoints" \
     --output_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/converted/xlstm_tokenparam" \
     --max_shard_size 4294967296 \
+    --dtype bfloat16 \
     --dry-run
 """
