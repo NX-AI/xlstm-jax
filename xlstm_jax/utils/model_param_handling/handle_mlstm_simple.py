@@ -96,9 +96,9 @@ def move_mlstm_jax_state_dict_into_torch_state_dict(
 
     """
 
-    assert (
-        model_state_dict_jax_path is not None or model_state_dict_jax is not None
-    ), "Either model_state_dict_jax_path or model_state_dict_jax must be provided."
+    assert model_state_dict_jax_path is not None or model_state_dict_jax is not None, (
+        "Either model_state_dict_jax_path or model_state_dict_jax must be provided."
+    )
 
     match_dict = {
         "lm_head.out_dense.kernel": "lm_head.weight",
@@ -211,6 +211,7 @@ def convert_mlstm_checkpoint_jax_to_torch_simple(
     load_jax_model_checkpoint_path: Path,
     store_torch_model_checkpoint_path: Path,
     checkpoint_type: Literal["plain", "huggingface"] = "plain",
+    torch_model_config_overrides: dict[str, Any] = None,
     max_shard_size: int = 0,
 ) -> None:
     """Convert a jax mLSTM checkpoint to a torch mLSTM checkpoint.
@@ -226,6 +227,7 @@ def convert_mlstm_checkpoint_jax_to_torch_simple(
         load_jax_model_checkpoint_path: Orbax checkpoint path.
         store_torch_model_checkpoint_path; Torch checkpoint path to store into.
         checkpoint_type: Type of model checkpoint, either 'plain' or 'huggingface'.
+        torch_model_config_overrides: Overrides for the torch model configuration.
         max_shard_size: Largest size of a checkpoint model shard. Zero means no sharding
 
     """
@@ -234,7 +236,9 @@ def convert_mlstm_checkpoint_jax_to_torch_simple(
         load_jax_model_checkpoint_path
     )
 
-    mlstm_model = pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(jax_orbax_model_checkpoint, jax_model_config)
+    mlstm_model = pipeline_convert_mlstm_checkpoint_jax_to_torch_simple(
+        jax_orbax_model_checkpoint, jax_model_config, torch_model_config_overrides=torch_model_config_overrides
+    )
 
     store_mlstm_simple_to_checkpoint(
         mlstm_model,

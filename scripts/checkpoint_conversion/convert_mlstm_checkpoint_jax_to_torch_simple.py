@@ -34,3 +34,12 @@ if __name__ == "__main__":
         checkpoint_type=args.checkpoint_type,
         max_shard_size=args.max_shard_size,
     )
+
+"""Example usage:
+
+PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_checkpoint_jax_to_torch_simple.py \
+    --checkpoint_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/scaling_law_checkpoints/sclaw/dclm_mLSTMv1_400M_ctx8192_lr0.003_steps18000_2024-12-21T12:07:09/0/checkpoints/checkpoint_18000" \
+    --output_path "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/converted/dclm_mLSTMv1_400M_ctx8192_lr0.003_steps18000/" \
+    --max_shard_size 4294967296 \
+    --checkpoint_type "huggingface"
+"""

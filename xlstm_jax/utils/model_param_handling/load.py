@@ -45,7 +45,7 @@ def load_model_params_and_config_from_checkpoint(
         data_axis_size=1,
         tp_async_dense=False,
     )
-    mesh = initialize_mesh(parallel_config=parallel)
+    mesh = initialize_mesh(parallel_config=parallel, init_distributed_on_slurm=False)
 
     LOGGER.info("Mesh initialized.")
     LOGGER.info(f"Devices: {jax.devices()}")

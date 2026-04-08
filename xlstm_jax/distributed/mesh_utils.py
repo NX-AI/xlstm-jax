@@ -6,9 +6,18 @@ import os
 
 import jax
 import numpy as np
+from jax._src.distributed import global_state as jax_distributed_global_state
 from jax.sharding import Mesh
 
 from xlstm_jax.models.configs import ParallelConfig
+
+
+def _jax_distributed_is_initialized() -> bool:
+    """Return whether JAX distributed has already been initialized."""
+    is_initialized_fn = getattr(jax.distributed, "is_initialized", None)
+    if callable(is_initialized_fn):
+        return is_initialized_fn()
+    return jax_distributed_global_state.client is not None or jax_distributed_global_state.service is not None
 
 
 def initialize_mesh(
@@ -25,7 +34,7 @@ def initialize_mesh(
     Returns:
         The initialized mesh.
     """
-    if init_distributed_on_slurm and "SLURM_STEP_NODELIST" in os.environ:
+    if init_distributed_on_slurm and "SLURM_STEP_NODELIST" in os.environ and not _jax_distributed_is_initialized():
         # Initializes one process per device, using the SLURM environment variables.
         # TODO: We may need to do this already before data loading, so very early in the run script.
         # To be checked once the framework is more mature.
