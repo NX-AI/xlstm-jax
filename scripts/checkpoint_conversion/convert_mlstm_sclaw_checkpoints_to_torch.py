@@ -7,11 +7,13 @@ import logging
 import sys
 from pathlib import Path
 from typing import Any
+
 import pandas as pd
 from tqdm.auto import tqdm
+
 from xlstm_jax.utils.model_param_handling.handle_mlstm_simple import (
-    create_mlstm_simple_config_from_jax_config,
     convert_mlstm_checkpoint_jax_to_torch_simple,
+    create_mlstm_simple_config_from_jax_config,
     load_model_params_and_config_from_checkpoint,
 )
 
@@ -49,10 +51,10 @@ def process_checkpoint_conversion_for_checkpoint(
     max_shard_size: int,
     dryrun: bool = False,
 ) -> None:
-
     # Load JAX checkpoint path
     # The checkpoint paths is a json string containing a list of checkpoint paths.
-    # We select the last checkpoint from the list with format "checkpoint_{step}" for conversion, as this run folder contains the latest checkpoint.
+    # We select the last checkpoint from the list with format
+    # "checkpoint_{step}" for conversion, as this run folder contains the latest checkpoint.
     jax_original_checkpoint_path = json.loads(checkpoint_data["model_checkpoint_paths"])[-1]
 
     # Format the jax checkpoint path to strip the prefix
@@ -112,9 +114,14 @@ def process_checkpoint_conversion_for_checkpoint(
                 max_shard_size=args.max_shard_size,
             )
         except RuntimeError as e:
-            # Note: We have different ffn_dim computations in jax and torch due to the different rounding strategies for the projection up dimension. This can lead to parameter mismatch issues during conversion. To mitigate this, we catch the RuntimeError and retry the conversion with a different ffn_proj_factor that leads to a different rounding result for the projection up dimension.
+            # Note: We have different ffn_dim computations in jax and torch due to the different
+            # rounding strategies for the projection up dimension.
+            # This can lead to parameter mismatch issues during conversion.
+            # To mitigate this, we catch the RuntimeError and retry the conversion
+            # with a different ffn_proj_factor that leads to a different rounding result
+            # for the projection up dimension.
             LOGGER.warning(f"Conversion failed for checkpoint {jax_checkpoint_path} with error: {e}")
-            LOGGER.warning(f"Retrying conversion with different ffn_proj_factor to avoid parameter mismatch issues..")
+            LOGGER.warning("Retrying conversion with different ffn_proj_factor to avoid parameter mismatch issues..")
 
             _, jax_model_config = load_model_params_and_config_from_checkpoint(jax_checkpoint_path)
             mlstm_simple_config = create_mlstm_simple_config_from_jax_config(jax_model_config)
@@ -141,7 +148,7 @@ if __name__ == "__main__":
         'Use together with JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICE="" to not run out of memory.'
     )
     # Schema for csv file:
-    # experiment_set_ctx_length,name,run_tag,model_type,num_params,num_tokens_training,num_flops_training,val/.dclm_loss,token_param_ratio,width_depth_ratio,Preset Token Param Ratio,experiment_set,context_length,learning_rate,global_batch_size,num_train_steps,val/.dclm_perplexity,Preset Num Params,Model Size,embedding_dim,num_blocks,num_heads,proj_factor_ffn,ffn_multiple_of,ffn_dim,head_dim_qk,head_dim_v,IsoFLOP,train/.loss_mean,run_id,model_checkpoint_paths
+    # experiment_set_ctx_length,name,run_tag,model_type,num_params,num_tokens_training,num_flops_training,val/.dclm_loss,token_param_ratio,width_depth_ratio,Preset Token Param Ratio,experiment_set,context_length,learning_rate,global_batch_size,num_train_steps,val/.dclm_perplexity,Preset Num Params,Model Size,embedding_dim,num_blocks,num_heads,proj_factor_ffn,ffn_multiple_of,ffn_dim,head_dim_qk,head_dim_v,IsoFLOP,train/.loss_mean,run_id,model_checkpoint_paths # noqa
     parser.add_argument(
         "--checkpoints_file", type=str, help="Path to the .csv file containing the checkpoints to convert"
     )
@@ -172,8 +179,6 @@ if __name__ == "__main__":
     checkpoint_records = checkpoint_df.to_dict("records")
 
     LOGGER.info(f"Loaded {len(checkpoint_records)} checkpoints from {args.checkpoints_file}")
-    
-    # jax.distributed.initialize()  # Initialize JAX distributed system to avoid issues with loading large checkpoints, even for CPU usage.
 
     successful = []
     failed = []
@@ -193,17 +198,15 @@ if __name__ == "__main__":
             )
             failed.append(checkpoint_dict)
 
-    successful_paths = '\n'.join([ckpt.get('model_checkpoint_paths', 'N/A') for ckpt in successful])
+    successful_paths = "\n".join([ckpt.get("model_checkpoint_paths", "N/A") for ckpt in successful])
     LOGGER.info(f"Successfully converted {len(successful)} checkpoints: {successful_paths}")
     if len(failed) > 0:
-        failed_paths = '\n'.join([ckpt.get('model_checkpoint_paths', 'N/A') for ckpt in failed])
-        LOGGER.warning(
-            f"Failed to convert {len(failed)} checkpoints. Failed checkpoint paths: {failed_paths}"
-        )
+        failed_paths = "\n".join([ckpt.get("model_checkpoint_paths", "N/A") for ckpt in failed])
+        LOGGER.warning(f"Failed to convert {len(failed)} checkpoints. Failed checkpoint paths: {failed_paths}")
 
 """Example usage:
 
-Converting tokenparam xlstm checkpoints: 
+Converting tokenparam xlstm checkpoints:
 
 PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoints_to_torch.py \
     --checkpoints_file "./scripts/checkpoint_conversion/tokenparam_mlstm.csv" \

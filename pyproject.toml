@@ -45,6 +45,8 @@ max-doc-length = 120
 max-line-length = 120
 per-file-ignores = """
     */__init__.py: F401
+    scripts/checkpoint_conversion/convert_mlstm_checkpoint_jax_to_torch_simple.py:E501,W505
+    scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoints_to_torch.py:E501
 """
 
 # interrogate

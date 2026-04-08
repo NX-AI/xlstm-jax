@@ -7,9 +7,8 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any, Literal
 
-from xlstm.xlstm_large import xLSTMLarge, xLSTMLargeConfig
-
 from omegaconf import OmegaConf
+from xlstm.xlstm_large import xLSTMLarge, xLSTMLargeConfig
 
 from .convert_checkpoint import convert_orbax_checkpoint_to_torch_state_dict
 from .convert_state_dict import apply_weight_transforms_, move_safetensors_state_dict_params_, move_state_dict_params_
@@ -96,9 +95,9 @@ def move_mlstm_jax_state_dict_into_torch_state_dict(
 
     """
 
-    assert model_state_dict_jax_path is not None or model_state_dict_jax is not None, (
-        "Either model_state_dict_jax_path or model_state_dict_jax must be provided."
-    )
+    assert (
+        model_state_dict_jax_path is not None or model_state_dict_jax is not None
+    ), "Either model_state_dict_jax_path or model_state_dict_jax must be provided."
 
     match_dict = {
         "lm_head.out_dense.kernel": "lm_head.weight",
