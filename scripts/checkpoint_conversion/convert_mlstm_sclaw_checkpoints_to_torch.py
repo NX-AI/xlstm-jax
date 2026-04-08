@@ -37,6 +37,8 @@ def format_compact_count(value: float | int) -> str:
     numeric_value = float(value)
     abs_value = abs(numeric_value)
 
+    if abs_value >= 1_000_000_000_000:
+        return f"{numeric_value / 1_000_000_000_000:.2f}".rstrip("0").rstrip(".") + "T"
     if abs_value >= 1_000_000_000:
         return f"{numeric_value / 1_000_000_000:.2f}".rstrip("0").rstrip(".") + "B"
     if abs_value >= 1_000_000:
@@ -50,7 +52,7 @@ def process_checkpoint_conversion_for_checkpoint(
     output_directory: str,
     max_shard_size: int,
     dryrun: bool = False,
-) -> None:
+) -> Path:
     # Load JAX checkpoint path
     # The checkpoint paths is a json string containing a list of checkpoint paths.
     # We select the last checkpoint from the list with format
@@ -113,6 +115,7 @@ def process_checkpoint_conversion_for_checkpoint(
                 checkpoint_type="huggingface",
                 max_shard_size=args.max_shard_size,
             )
+            return checkpoint_folder
         except RuntimeError as e:
             # Note: We have different ffn_dim computations in jax and torch due to the different
             # rounding strategies for the projection up dimension.
@@ -140,6 +143,7 @@ def process_checkpoint_conversion_for_checkpoint(
                 torch_model_config_overrides={"ffn_proj_factor": new_ffn_proj_factor},
                 max_shard_size=args.max_shard_size,
             )
+            return checkpoint_folder
 
 
 if __name__ == "__main__":
@@ -188,18 +192,18 @@ if __name__ == "__main__":
         )
 
         try:
-            process_checkpoint_conversion_for_checkpoint(
+            checkpoint_folder = process_checkpoint_conversion_for_checkpoint(
                 checkpoint_dict, args.input_dir, args.output_dir, args.max_shard_size, args.dry_run
             )
-            successful.append(checkpoint_dict)
+            successful.append((checkpoint_dict, checkpoint_folder))
         except Exception as e:
             LOGGER.error(
                 f"Error processing checkpoint with run name: {checkpoint_dict.get('name', 'N/A')} and run_id: {checkpoint_dict.get('run_id', 'N/A')}. Error: {e}"
             )
             failed.append(checkpoint_dict)
 
-    successful_paths = "\n".join([ckpt.get("model_checkpoint_paths", "N/A") for ckpt in successful])
-    LOGGER.info(f"Successfully converted {len(successful)} checkpoints: {successful_paths}")
+    successful_paths = "\n".join([str(ckpt[1]) for ckpt in successful if ckpt[1] is not None])
+    LOGGER.info(f"Successfully converted {len(successful)} checkpoints:\n{successful_paths}")
     if len(failed) > 0:
         failed_paths = "\n".join([ckpt.get("model_checkpoint_paths", "N/A") for ckpt in failed])
         LOGGER.warning(f"Failed to convert {len(failed)} checkpoints. Failed checkpoint paths: {failed_paths}")
@@ -209,9 +213,9 @@ if __name__ == "__main__":
 Converting tokenparam xlstm checkpoints:
 
 PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoints_to_torch.py \
-    --checkpoints_file "./scripts/checkpoint_conversion/tokenparam_mlstm.csv" \
+    --checkpoints_file "./scripts/checkpoint_conversion/tokenparam_xlstm.csv" \
     --input_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/scaling_law_checkpoints" \
-    --output_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/converted/xlstm/tokenparam" \
+    --output_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/converted/xlstm_tokenparam" \
     --max_shard_size 4294967296 \
     --dry-run
 """
