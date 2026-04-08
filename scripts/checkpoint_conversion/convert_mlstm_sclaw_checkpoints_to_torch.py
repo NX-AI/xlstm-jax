@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
 Converting tokenparam xlstm checkpoints:
 
-PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoints_to_torch.py \
+JAX_PLATFORMS=cpu CUDA_VISIBLE_DEVICE="" PYTHONPATH=. python scripts/checkpoint_conversion/convert_mlstm_sclaw_checkpoints_to_torch.py \
     --checkpoints_file "./scripts/checkpoint_conversion/tokenparam_xlstm.csv" \
     --input_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/scaling_law_checkpoints" \
     --output_dir "/nfs-gpu/users_work/beck/xlstm_sclaw_ckpts/converted/xlstm_tokenparam" \
