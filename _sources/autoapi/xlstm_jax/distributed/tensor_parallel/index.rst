@@ -52,7 +52,7 @@ Module Contents
 
 
    .. py:attribute:: module_fn
-      :type:  collections.abc.Callable[Ellipsis, flax.linen.Module]
+      :type:  collections.abc.Callable[..., flax.linen.Module]
 
 
    .. py:attribute:: mask_except_model_idx

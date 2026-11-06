@@ -47,5 +47,24 @@ Package Contents
       :type:  dict[str, type]
 
 
+   .. py:attribute:: name
+      :type:  str
+      :value: ''
+
+
+
+   .. py:attribute:: kwargs
+      :type:  dict[str, Any] | None
+
+
+   .. py:method:: get_config_class_for_kwargs()
+
+
+   .. py:method:: get_class_for_name()
+
+
+   .. py:method:: create_name_instance()
+
+
 .. py:data:: create_mlstm_backend
 

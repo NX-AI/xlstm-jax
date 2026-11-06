@@ -107,7 +107,7 @@ Module Contents
 
 
    .. py:attribute:: module_fns
-      :type:  list[collections.abc.Callable[Ellipsis, flax.linen.Module]]
+      :type:  list[collections.abc.Callable[..., flax.linen.Module]]
 
 
 .. py:class:: xLSTMBlock

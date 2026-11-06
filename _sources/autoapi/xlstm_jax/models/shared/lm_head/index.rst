@@ -43,7 +43,7 @@ Module Contents
 
 
    .. py:attribute:: norm_fn
-      :type:  collections.abc.Callable[Ellipsis, flax.linen.Module] | None
+      :type:  collections.abc.Callable[..., flax.linen.Module] | None
 
 
    .. py:attribute:: lm_head_dtype

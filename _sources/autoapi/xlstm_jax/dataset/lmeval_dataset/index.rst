@@ -66,8 +66,6 @@ Module Contents
 
 
    .. py:attribute:: bos_token_id
-      :value: None
-
 
 
    .. py:attribute:: eos_token_id

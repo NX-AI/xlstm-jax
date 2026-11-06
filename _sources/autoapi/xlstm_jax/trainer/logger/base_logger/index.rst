@@ -179,8 +179,6 @@ Module Contents
 
 
    .. py:attribute:: metric_postprocess_fn
-      :value: None
-
 
 
    .. py:attribute:: epoch

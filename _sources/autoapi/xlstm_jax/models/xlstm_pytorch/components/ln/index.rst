@@ -30,8 +30,6 @@ Module Contents
 
 
    .. py:attribute:: bias
-      :value: None
-
 
 
    .. py:attribute:: eps
@@ -77,8 +75,6 @@ Module Contents
 
 
    .. py:attribute:: bias
-      :value: None
-
 
 
    .. py:attribute:: eps

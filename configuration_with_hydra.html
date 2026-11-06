@@ -27,25 +27,26 @@
   </noscript>
   
   <!-- Loaded before other Sphinx assets -->
-  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
-<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+  <link href="_static/styles/theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=90905a2f556bf617f1a9" rel="stylesheet" />
 
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
-    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=a3416100" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=4418a689" />
     <link rel="stylesheet" type="text/css" href="_static/graphviz.css?v=4ae1632d" />
     <link rel="stylesheet" type="text/css" href="_static/custom.css?v=2eb6d7a9" />
   
   <!-- So that users can add custom icons -->
-  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/fontawesome.js?digest=90905a2f556bf617f1a9"></script>
   <!-- Pre-loaded scripts that we'll load fully later -->
-  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
-<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9" />
 
     <script src="_static/documentation_options.js?v=9eb32ce0"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=fab101a9"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'configuration_with_hydra';</script>
+    <script>DOCUMENTATION_OPTIONS.search_as_you_type = false;</script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Distributed Training" href="distributed_training.html" />
@@ -53,20 +54,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   <meta name="docsearch:version" content="" />
+  
+    
+    <script src="_static/searchtools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <script src="searchindex.js"></script>
+  
   </head>
-  
-  
-  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
-
+  <body data-default-mode="">
   
   
   <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+
   
   <div id="pst-scroll-pixel-helper"></div>
   
   <button type="button" class="btn rounded-pill" id="pst-back-to-top">
     <i class="fa-solid fa-arrow-up"></i>Back to top</button>
-
+  
+  
+  
   
   <dialog id="pst-search-dialog">
     
@@ -92,7 +99,51 @@
 </div>
 
   
-    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    <header id="pst-header" class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
     </header>
   
 
@@ -314,7 +365,7 @@
 
 
 <button onclick="toggleFullScreen()"
-  class="btn btn-sm btn-fullscreen-button"
+  class="btn btn-sm btn-fullscreen-button pst-navbar-icon"
   title="Fullscreen mode"
   data-bs-placement="bottom" data-bs-toggle="tooltip"
 >
@@ -328,17 +379,24 @@
 
 
 
-<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
-  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
-  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
-  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
-</button>
+<div class="theme-switch-container dropdown pst-js-only" data-bs-toggle="tooltip" data-bs-placement="bottom" title="Color mode">
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button dropdown-toggle" aria-label="Color mode" data-bs-toggle="dropdown">
+    <i class="theme-switch fa-solid fa-sun fa-lg fa-fw" data-mode="light" title="Light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg fa-fw" data-mode="dark" title="Dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg fa-fw" data-mode="auto" title="System Settings"></i>
+  </button>
+  <ul class="dropdown-menu dropdown-menu-end">
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg fa-fw me-1"></i>System Settings</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="light"><i class="fa-solid fa-sun fa-lg fa-fw me-1"></i>Light</button></li>
+    <li><button class="dropdown-item d-flex align-items-center theme-change-button" data-mode="dark"><i class="fa-solid fa-moon fa-lg fa-fw me-1"></i>Dark</button></li>
+  </ul>
+</div>
 
 
 <button class="btn btn-sm pst-navbar-icon search-button search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <i class="fa-solid fa-magnifying-glass fa-lg"></i>
 </button>
-<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+<button class="sidebar-toggle secondary-toggle btn btn-sm pst-navbar-icon" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
     <span class="fa-solid fa-list"></span>
 </button>
 </div></div>
@@ -360,7 +418,7 @@
                 <h2> Contents </h2>
             </div>
             <nav aria-label="Page">
-                <ul class="visible nav section-nav flex-column">
+                <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-structure">Configuration Structure</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-config-dataclasses">The Config Dataclasses</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-config-yaml-files">The Config yaml files</a></li>
@@ -403,41 +461,41 @@ own experiment quickly.</p>
 Let us look at the example of the <code class="docutils literal notranslate"><span class="pre">ParallelConfig</span></code>, located at <code class="docutils literal notranslate"><span class="pre">xlstm_jax.models.configs.ParallelConfig</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@dataclass</span><span class="p">(</span><span class="n">kw_only</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ParallelConfig</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Configuration for parallelism.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Configuration for parallelism."""</span>
 
     <span class="n">data_axis_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Size of the data axis. If -1, it will be inferred by the number of available devices.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Size of the data axis. If -1, it will be inferred by the number of available devices."""</span>
     <span class="n">fsdp_axis_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Size of the FSDP axis. If -1, it will be inferred by the number of available devices.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Size of the FSDP axis. If -1, it will be inferred by the number of available devices."""</span>
     <span class="n">pipeline_axis_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Size of the pipeline axis. If -1, it will be inferred by the number of available devices.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Size of the pipeline axis. If -1, it will be inferred by the number of available devices."""</span>
     <span class="n">model_axis_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Size of the model axis. If -1, it will be inferred by the number of available devices.&quot;&quot;&quot;</span>
-    <span class="n">data_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;dp&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of the data axis.&quot;&quot;&quot;</span>
-    <span class="n">fsdp_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;fsdp&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of the FSDP axis.&quot;&quot;&quot;</span>
-    <span class="n">pipeline_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;pp&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of the pipeline axis.&quot;&quot;&quot;</span>
-    <span class="n">model_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;tp&quot;</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Name of the model axis.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Size of the model axis. If -1, it will be inferred by the number of available devices."""</span>
+    <span class="n">data_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"dp"</span>
+<span class="w">    </span><span class="sd">"""Name of the data axis."""</span>
+    <span class="n">fsdp_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"fsdp"</span>
+<span class="w">    </span><span class="sd">"""Name of the FSDP axis."""</span>
+    <span class="n">pipeline_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"pp"</span>
+<span class="w">    </span><span class="sd">"""Name of the pipeline axis."""</span>
+    <span class="n">model_axis_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"tp"</span>
+<span class="w">    </span><span class="sd">"""Name of the model axis."""</span>
     <span class="n">remat</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Module names on which we apply activation checkpointing / rematerialization.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Module names on which we apply activation checkpointing / rematerialization."""</span>
     <span class="n">fsdp_modules</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="p">[])</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Module names on which we apply FSDP sharding.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Module names on which we apply FSDP sharding."""</span>
     <span class="n">fsdp_min_weight_size</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">2</span><span class="o">**</span><span class="mi">18</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Minimum size of a parameter to be sharded with FSDP.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Minimum size of a parameter to be sharded with FSDP."""</span>
     <span class="n">fsdp_gather_dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The dtype to cast the parameters to before gathering with FSDP. If `None`, no casting is performed and parameters</span>
-<span class="sd">    are gathered in original precision (for example `float32`).&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The dtype to cast the parameters to before gathering with FSDP. If `None`, no casting is performed and parameters</span>
+<span class="sd">    are gathered in original precision (for example `float32`)."""</span>
     <span class="n">fsdp_grad_scatter_dtype</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;The dtype to cast the gradients to before scattering. If `None`, the dtype of the parameters is used.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""The dtype to cast the gradients to before scattering. If `None`, the dtype of the parameters is used."""</span>
     <span class="n">tp_async_dense</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Whether to use asynchronous tensor parallelism for dense layers. Default to `False`, as on local hardware,</span>
-<span class="sd">    ppermute communication introduces large overhead.&quot;&quot;&quot;</span>
+<span class="w">    </span><span class="sd">"""Whether to use asynchronous tensor parallelism for dense layers. Default to `False`, as on local hardware,</span>
+<span class="sd">    ppermute communication introduces large overhead."""</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">_allowed_fsdp_dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;bfloat16&quot;</span><span class="p">,</span> <span class="s2">&quot;float16&quot;</span><span class="p">]</span>
+        <span class="n">_allowed_fsdp_dtypes</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"float32"</span><span class="p">,</span> <span class="s2">"bfloat16"</span><span class="p">,</span> <span class="s2">"float16"</span><span class="p">]</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsdp_gather_dtype</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">fsdp_gather_dtype</span> <span class="ow">in</span> <span class="n">_allowed_fsdp_dtypes</span>
@@ -449,7 +507,7 @@ Let us look at the example of the <code class="docutils literal notranslate"><sp
 <p>Here, all attributes and default values of <code class="docutils literal notranslate"><span class="pre">ParallelConfig</span></code> can be seen. To tell Hydra which
 attributes are available in the dataclass we have to add it to Hydra’s config store. This is done
 in <code class="docutils literal notranslate"><span class="pre">xlstm_jax/define_hydra_schemas.py</span></code> and looks like this for the <code class="docutils literal notranslate"><span class="pre">ParallelConfig</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cs</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;parallel_schema&quot;</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">&quot;parallel&quot;</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">ParallelConfig</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cs</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"parallel_schema"</span><span class="p">,</span> <span class="n">group</span><span class="o">=</span><span class="s2">"parallel"</span><span class="p">,</span> <span class="n">node</span><span class="o">=</span><span class="n">ParallelConfig</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>It tells Hydra that whenever I use the string “parallel_schema” in a configuration yaml file, it
@@ -494,7 +552,7 @@ specified here.</p></li>
 <h2>How to Run Experiments<a class="headerlink" href="#how-to-run-experiments" title="Link to this heading">#</a></h2>
 <p>The principal entry point for hydra is the script <code class="docutils literal notranslate"><span class="pre">scripts/training/train_with_hydra.py</span></code>.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">main_train()</span></code> function in that file is decorated with:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hydra</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">&quot;../configs&quot;</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">version_base</span><span class="o">=</span><span class="s2">&quot;1.3&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@hydra</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">config_path</span><span class="o">=</span><span class="s2">"../configs"</span><span class="p">,</span> <span class="n">config_name</span><span class="o">=</span><span class="s2">"config"</span><span class="p">,</span> <span class="n">version_base</span><span class="o">=</span><span class="s2">"1.3"</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">main_train</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n">DictConfig</span><span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
@@ -617,13 +675,13 @@ default configuration is provided in <code class="docutils literal notranslate">
 <span class="w">    </span><span class="nt">qos</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
 <span class="w">    </span><span class="nt">comment</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">testing_slurmit_launcher</span>
 <span class="w">    </span><span class="nt">additional_parameters</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{</span>
-<span class="w">      </span><span class="s">&quot;gpu-bind&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;closest&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">      </span><span class="s">&quot;wait-all-nodes&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;1&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">      </span><span class="s">&quot;time&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;7-00:00:00&quot;</span><span class="p p-Indicator">,</span>
-<span class="w">      </span><span class="s">&quot;exclusive&quot;</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">"gpu-bind"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"closest"</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">"wait-all-nodes"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"1"</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">"time"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">"7-00:00:00"</span><span class="p p-Indicator">,</span>
+<span class="w">      </span><span class="s">"exclusive"</span><span class="p p-Indicator">:</span><span class="w"> </span><span class="s">""</span><span class="p p-Indicator">,</span>
 <span class="w">    </span><span class="p p-Indicator">}</span>
 <span class="w">    </span><span class="nt">srun_args</span><span class="p">:</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;--kill-on-bad-exit=1&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"--kill-on-bad-exit=1"</span>
 <span class="w">    </span><span class="nt">setup</span><span class="p">:</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_CROSS_NIC=0</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_SOCKET_NTHREADS=16</span>
@@ -638,7 +696,7 @@ default configuration is provided in <code class="docutils literal notranslate">
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_NET_PLUGIN=none</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_SOCKET_IFNAME=eth0</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IGNORE_CPU_AFFINITY=1</span>
-<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_HCA=&quot;=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17&quot;</span>
+<span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export NCCL_IB_HCA="=mlx5_0,mlx5_1,mlx5_3,mlx5_4,mlx5_5,mlx5_6,mlx5_7,mlx5_8,mlx5_9,mlx5_10,mlx5_12,mlx5_13,mlx5_14,mlx5_15,mlx5_16,mlx5_17"</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export HCOLL_ENABLE_MCAST_ALL=0</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export coll_hcoll_enable=0</span>
 <span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">export UCX_TLS=tcp</span>
@@ -692,7 +750,7 @@ the format is exactly as you would supply for CLI overrides.</p>
 <p>Executing <code class="docutils literal notranslate"><span class="pre">get_cli_command_to_resume_training</span></code> will return a string of the command that you
 have to execute to continue the training run.</p>
 <p>A full example to call is</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">training</span><span class="o">/</span><span class="n">get_cli_command_to_resume_training</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">resume_from_folder</span><span class="o">=</span><span class="n">PATH_TO_RUN</span> <span class="o">--</span><span class="n">use_slurm</span> <span class="o">--</span><span class="n">checkpoint_step</span><span class="o">=</span><span class="mi">95000</span> <span class="o">--</span><span class="n">new_overrides</span><span class="o">=</span><span class="s2">&quot;num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10&quot;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">scripts</span><span class="o">/</span><span class="n">training</span><span class="o">/</span><span class="n">get_cli_command_to_resume_training</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">resume_from_folder</span><span class="o">=</span><span class="n">PATH_TO_RUN</span> <span class="o">--</span><span class="n">use_slurm</span> <span class="o">--</span><span class="n">checkpoint_step</span><span class="o">=</span><span class="mi">95000</span> <span class="o">--</span><span class="n">new_overrides</span><span class="o">=</span><span class="s2">"num_train_steps=20000 lr=0.0001 logger.log_every_n_steps=10"</span>
 </pre></div>
 </div>
 <p>What the script does is to look in the specified folder and obtain the overrides (including the experiment file)
@@ -744,12 +802,13 @@ use any other CLI overrides at this point so using them in the previous step is 
                 <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
 
 
-  <div class="sidebar-secondary-item">
-  <div class="page-toc tocsection onthispage">
+  <div class="sidebar-secondary-item"><div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
     <i class="fa-solid fa-list"></i> Contents
   </div>
-  <nav class="bd-toc-nav page-toc">
-    <ul class="visible nav section-nav flex-column">
+  <nav id="pst-page-toc-nav" class="page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="pst-show_toc_level nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#configuration-structure">Configuration Structure</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-config-dataclasses">The Config Dataclasses</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-config-yaml-files">The Config yaml files</a></li>
@@ -810,8 +869,8 @@ By NXAI GmbH
   </div>
   
   <!-- Scripts loaded after <body> so the DOM is not blocked -->
-  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
-<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+  <script defer src="_static/scripts/bootstrap.js?digest=90905a2f556bf617f1a9"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=90905a2f556bf617f1a9"></script>
 
   <footer class="bd-footer">
   </footer>

@@ -188,3 +188,7 @@ Module Contents
       :rtype: bool
 
 
+   .. py:attribute:: config
+      :type:  Any
+
+

@@ -106,8 +106,6 @@ Module Contents
 
 
    .. py:attribute:: max_length_prefix
-      :value: None
-
 
 
    .. py:attribute:: add_bos_token
@@ -121,13 +119,9 @@ Module Contents
 
 
    .. py:attribute:: eos_token_id
-      :value: None
-
 
 
    .. py:attribute:: bos_token_id
-      :value: None
-
 
 
    .. py:method:: map(features)
@@ -387,8 +381,6 @@ Module Contents
 
 
    .. py:attribute:: key_map
-      :value: None
-
 
 
    .. py:method:: map(data)
