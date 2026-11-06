@@ -38,11 +38,15 @@ Contributions to this repository are welcome.
 ## Citation
 If you use this codebase, or otherwise find our work valuable, please cite the xLSTM paper and this repository:
 ```
-@article{xlstm,
-  title={xLSTM: Extended Long Short-Term Memory},
-  author={Beck, Maximilian and P{\"o}ppel, Korbinian and Spanring, Markus and Auer, Andreas and Prudnikova, Oleksandra and Kopp, Michael and Klambauer, G{\"u}nter and Brandstetter, Johannes and Hochreiter, Sepp},
-  journal={arXiv preprint arXiv:2405.04517},
-  year={2024}
+@inproceedings{xlstm,
+  title     = {{xLSTM}: Extended Long Short-Term Memory},
+  author    = {Beck, Maximilian and P{\"o}ppel, Korbinian and Spanring, Markus and Auer, Andreas and Prudnikova, Oleksandra and Kopp, Michael and Klambauer, G{\"u}nter and Brandstetter, Johannes and Hochreiter, Sepp},
+  booktitle = {Advances in Neural Information Processing Systems},
+  year      = {2024},
+  eprint    = {2405.04517},
+  archivePrefix = {arXiv},
+  primaryClass  = {cs.LG},
+  url       = {https://arxiv.org/abs/2405.04517}
 }
 ```
 
